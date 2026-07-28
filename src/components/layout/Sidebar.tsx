@@ -22,6 +22,7 @@ import {
   ChevronRight,
   Menu,
   X,
+  ChevronLeft,
 } from 'lucide-react'
 
 interface NavItem {
@@ -98,6 +99,7 @@ const navigation: NavSection[] = [
 export function Sidebar({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => void }) {
   const pathname = usePathname()
   const [collapsedSections, setCollapsedSections] = useState<string[]>(['Overview', 'Ibadah', 'Kesehatan', 'Mental', 'Perbaikan'])
+  const [isCollapsed, setIsCollapsed] = useState(false)
 
   const toggleSection = (title: string) => {
     setCollapsedSections(prev =>
@@ -109,71 +111,92 @@ export function Sidebar({ isOpen, onToggle }: { isOpen: boolean; onToggle: () =>
     <aside
       className={cn(
         'fixed inset-y-0 left-0 z-40 bg-card border-r transition-all duration-300 lg:relative',
-        isOpen ? 'w-64 translate-x-0' : 'w-64 -translate-x-full lg:translate-x-0'
+        isOpen
+          ? isCollapsed
+            ? 'w-16 translate-x-0'
+            : 'w-64 translate-x-0'
+          : 'w-64 -translate-x-full lg:translate-x-0'
       )}
     >
       <div className="flex h-full flex-col">
         {/* Logo */}
-        <div className="flex h-16 items-center justify-between border-b px-4">
-          <Link href="/overview/bulanan" className="flex items-center gap-2 font-bold text-xl text-primary">
-            <Sparkles className="h-6 w-6" />
-            <span>Daytrack</span>
+        <div className={cn('flex h-14 items-center border-b px-3', isCollapsed && 'justify-center')}>
+          <Link href="/overview/bulanan" className="flex items-center gap-2 font-bold text-lg text-primary" onClick={onToggle}>
+            <Sparkles className="h-5 w-5 flex-shrink-0" />
+            {!isCollapsed && <span className="truncate">Daytrack</span>}
           </Link>
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden"
+            className={cn('lg:hidden', isCollapsed && 'hidden')}
             onClick={onToggle}
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" />
           </Button>
+          {!isCollapsed && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden lg:flex ml-auto"
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {isCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
+            </Button>
+          )}
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-4">
-          <ul className="space-y-1">
+        <nav className="flex-1 overflow-y-auto p-2">
+          <ul className="space-y-0.5">
             {navigation.map((section) => {
               if ('items' in section) {
-                const isOpen = !collapsedSections.includes(section.title)
+                const isSectionOpen = !collapsedSections.includes(section.title)
                 const isActive = section.items.some(item => pathname === item.href)
 
                 return (
-                  <Collapsible key={section.title} open={isOpen} onOpenChange={() => toggleSection(section.title)}>
+                  <Collapsible key={section.title} open={isSectionOpen} onOpenChange={() => toggleSection(section.title)}>
                     <CollapsibleTrigger asChild>
                       <Button
                         variant="ghost"
                         className={cn(
                           'w-full justify-between text-left px-2 py-2',
+                          isCollapsed && 'justify-center',
                           isActive && 'bg-primary/10 text-primary'
                         )}
+                        disabled={isCollapsed}
                       >
-                        <span className="flex items-center gap-2">
-                          <section.icon className="h-5 w-5" />
-                          <span className="font-medium">{section.title}</span>
+                        <span className={cn('flex items-center gap-2', isCollapsed && 'justify-center')}>
+                          <section.icon className="h-5 w-5 flex-shrink-0" />
+                          {!isCollapsed && <span className="font-medium truncate">{section.title}</span>}
                         </span>
-                        <ChevronDown className={cn(
-                          'h-4 w-4 text-muted-foreground transition-transform duration-200',
-                          isOpen && 'rotate-180'
-                        )} />
+                        {!isCollapsed && (
+                          <ChevronDown className={cn(
+                            'h-4 w-4 text-muted-foreground transition-transform duration-200 flex-shrink-0',
+                            isSectionOpen && 'rotate-180'
+                          )} />
+                        )}
                       </Button>
                     </CollapsibleTrigger>
-                    <CollapsibleContent className="pl-4 space-y-1">
-                      {section.items.map((item) => (
-                        <Link
-                          key={item.title}
-                          href={item.href}
-                          className={cn(
-                            'flex items-center gap-2 px-2 py-1.5 text-sm rounded-md transition-colors',
-                            pathname === item.href
-                              ? 'bg-primary text-primary-foreground font-medium'
-                              : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                          )}
-                        >
-                          <item.icon className="h-4 w-4" />
-                          {item.title}
-                        </Link>
-                      ))}
-                    </CollapsibleContent>
+                    {!isCollapsed && (
+                      <CollapsibleContent className="pl-3 space-y-0.5">
+                        {section.items.map((item) => (
+                          <Link
+                            key={item.title}
+                            href={item.href}
+                            className={cn(
+                              'flex items-center gap-2 px-2 py-1.5 text-sm rounded-md transition-colors',
+                              pathname === item.href
+                                ? 'bg-primary text-primary-foreground font-medium'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                            )}
+                          >
+                            <item.icon className="h-4 w-4 flex-shrink-0" />
+                            {item.title}
+                          </Link>
+                        ))}
+                      </CollapsibleContent>
+                    )}
                   </Collapsible>
                 )
               }
@@ -185,13 +208,15 @@ export function Sidebar({ isOpen, onToggle }: { isOpen: boolean; onToggle: () =>
                   href={section.href as string}
                   className={cn(
                     'flex items-center gap-3 px-2 py-2 text-sm rounded-md transition-colors',
+                    isCollapsed && 'justify-center',
                     isActive
                       ? 'bg-primary text-primary-foreground font-medium'
                       : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                   )}
+                  title={isCollapsed ? section.title : undefined}
                 >
-                  <section.icon className="h-5 w-5" />
-                  <span className="font-medium">{section.title}</span>
+                  <section.icon className="h-5 w-5 flex-shrink-0" />
+                  {!isCollapsed && <span className="font-medium truncate">{section.title}</span>}
                 </Link>
               )
             })}
@@ -199,7 +224,7 @@ export function Sidebar({ isOpen, onToggle }: { isOpen: boolean; onToggle: () =>
         </nav>
 
         {/* Mobile close button */}
-        <div className="lg:hidden border-t p-4">
+        <div className="lg:hidden border-t p-2">
           <Button variant="outline" className="w-full" onClick={onToggle}>
             <Menu className="mr-2 h-4 w-4" />
             Tutup Menu

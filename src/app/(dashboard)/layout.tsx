@@ -11,7 +11,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   const [queryClient] = useState(
@@ -26,6 +26,10 @@ export default function DashboardLayout({
       })
   )
 
+  const handleSidebarToggle = () => {
+    setSidebarOpen(!sidebarOpen)
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen bg-background">
@@ -38,15 +42,15 @@ export default function DashboardLayout({
         )}
 
         {/* Sidebar */}
-        <Sidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
+        <Sidebar isOpen={sidebarOpen} onToggle={handleSidebarToggle} />
 
         {/* Main content */}
-        <div className="lg:pl-64">
+        <div className={sidebarOpen ? 'lg:pl-64' : 'lg:pl-0'}>
           {/* Header */}
-          <Header onMenuClick={() => setMobileNavOpen(true)} />
+          <Header onMenuClick={() => setMobileNavOpen(true)} onSidebarToggle={handleSidebarToggle} />
 
           {/* Page content */}
-          <main className="p-4 lg:p-6">
+          <main className="p-3 lg:p-4">
             {children}
           </main>
         </div>

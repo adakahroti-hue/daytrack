@@ -8,7 +8,7 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from '@/components/ui/chart'
-import { getPriorityLabel, getPriorityColor } from '@/lib/utils'
+import { getPriorityLabel } from '@/lib/utils'
 
 interface PriorityChartProps {
   data: { p1: number; p2: number; p3: number; p4: number }
@@ -35,14 +35,14 @@ export function PriorityChart({ data }: PriorityChartProps) {
 
   if (total === 0) {
     return (
-      <div className="h-[300px] w-full sm:h-[350px] flex items-center justify-center">
+      <div className="w-full min-h-[280px] flex items-center justify-center">
         <p className="text-muted-foreground">Belum ada data prioritas</p>
       </div>
     )
   }
 
   return (
-    <div className="h-[300px] w-full sm:h-[350px]">
+    <div className="w-full min-h-[280px]">
       <ChartContainer config={CHART_CONFIG}>
         <RechartsPrimitive.PieChart>
           <RechartsPrimitive.Pie
@@ -51,8 +51,8 @@ export function PriorityChart({ data }: PriorityChartProps) {
             nameKey="name"
             cx="50%"
             cy="50%"
-            innerRadius={50}
-            outerRadius={90}
+            innerRadius={60}
+            outerRadius={110}
             label={({ name, percent }) => total > 0 ? `${name} ${(percent * 100).toFixed(0)}%` : ''}
             labelLine={false}
           >
