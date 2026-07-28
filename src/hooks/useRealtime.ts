@@ -14,6 +14,39 @@ interface RealtimeOptions {
   queryKeys?: string[][]
 }
 
+// Global channel registry to prevent duplicate channels per table
+const channelRegistry = new Map<string, { channel: RealtimeChannel; count: number }>()
+
+function getOrCreateChannel(table: string, filter: string | undefined, supabase: ReturnType<typeof createClient>): RealtimeChannel {
+  const key = `${table}:${filter || 'all'}`
+  
+  if (channelRegistry.has(key)) {
+    const entry = channelRegistry.get(key)!
+    entry.count++
+    return entry.channel
+  }
+  
+  // Create new channel with stable name (no timestamp)
+  const channelName = `daytrack:${key}`
+  const channel = supabase.channel(channelName)
+  
+  channelRegistry.set(key, { channel, count: 1 })
+  return channel
+}
+
+function releaseChannel(table: string, filter: string | undefined, supabase: ReturnType<typeof createClient>) {
+  const key = `${table}:${filter || 'all'}`
+  const entry = channelRegistry.get(key)
+  
+  if (entry) {
+    entry.count--
+    if (entry.count === 0) {
+      supabase.removeChannel(entry.channel)
+      channelRegistry.delete(key)
+    }
+  }
+}
+
 export function useRealtime({
   table,
   filter,
@@ -25,6 +58,7 @@ export function useRealtime({
   const queryClient = useQueryClient()
   const channelRef = useRef<RealtimeChannel | null>(null)
   const supabaseRef = useRef(createClient())
+  const subscribedRef = useRef(false)
 
   const handleRealtimeEvent = useCallback((payload: any) => {
     console.log(`[Realtime] ${payload.eventType} on ${table}:`, payload)
@@ -48,54 +82,51 @@ export function useRealtime({
     }
   }, [table, queryClient, queryKeys, onInsert, onUpdate, onDelete])
 
-  const channelName = useCallback(() => {
-    const filterStr = filter ? encodeURIComponent(filter) : 'all'
-    return `realtime:${table}:${filterStr}`
-  }, [table, filter])
-
-  const subscribedRef = useRef(false)
-
   useEffect(() => {
     const supabase = supabaseRef.current
     
-    // Only subscribe once per unique table+filter combination
-    if (subscribedRef.current) return
+    // Get or create shared channel for this table
+    const channel = getOrCreateChannel(table, filter, supabase)
+    channelRef.current = channel
 
-    const chName = channelName()
-    channelRef.current = supabase
-      .channel(chName)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table,
-          filter,
-        },
-        handleRealtimeEvent
-      )
-      .subscribe((status) => {
+    // Add callback BEFORE subscribe (or if already subscribed, it's fine - same channel)
+    channel.on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table,
+        filter,
+      },
+      handleRealtimeEvent
+    )
+
+    // Subscribe only once per channel
+    if (!subscribedRef.current) {
+      channel.subscribe((status) => {
         console.log(`[Realtime] Channel ${table} status:`, status)
       })
-
-    subscribedRef.current = true
+      subscribedRef.current = true
+    }
 
     return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current)
-        channelRef.current = null
-        subscribedRef.current = false
-      }
+      // Remove this specific callback from channel
+      // Note: supabase-js doesn't support removing single callback easily
+      // So we rely on reference counting
+      releaseChannel(table, filter, supabase)
+      channelRef.current = null
+      subscribedRef.current = false
     }
-  }, [table, filter, channelName, handleRealtimeEvent])
+  }, [table, filter, handleRealtimeEvent])
 
-  // Return cleanup function for manual cleanup if needed
   const cleanup = useCallback(() => {
     if (channelRef.current) {
-      supabaseRef.current.removeChannel(channelRef.current)
+      const supabase = supabaseRef.current
+      releaseChannel(table, filter, supabase)
       channelRef.current = null
+      subscribedRef.current = false
     }
-  }, [])
+  }, [table, filter])
 
   return { cleanup }
 }
@@ -183,12 +214,14 @@ export function useOverviewRealtime() {
   const queryClient = useQueryClient()
   const channelRef = useRef<RealtimeChannel | null>(null)
   const supabaseRef = useRef(createClient())
+  const subscribedRef = useRef(false)
 
   useEffect(() => {
     const supabase = supabaseRef.current
     const tables = ['tasks', 'sholat', 'quran', 'doa', 'tidur', 'minum_air', 'masalah', 'pmo', 'syukur', 'kesenangan', 'saran_perbaikan']
     
-    const channelName = `realtime:overview:${Date.now()}`
+    // Use stable channel name
+    const channelName = `daytrack:overview:all`
     
     channelRef.current = supabase.channel(channelName)
     
@@ -210,12 +243,17 @@ export function useOverviewRealtime() {
       )
     })
     
-    channelRef.current.subscribe()
+    // Subscribe only once
+    if (!subscribedRef.current) {
+      channelRef.current.subscribe()
+      subscribedRef.current = true
+    }
 
     return () => {
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current)
         channelRef.current = null
+        subscribedRef.current = false
       }
     }
   }, [queryClient])
