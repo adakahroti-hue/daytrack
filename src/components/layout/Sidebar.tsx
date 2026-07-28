@@ -23,8 +23,8 @@ import {
   Menu,
   X,
   ChevronLeft,
+  Clock,
 } from 'lucide-react'
-import { useIsMobile, useIsDesktop } from '@/hooks/useMediaQuery'
 
 interface NavItem {
   title: string
@@ -97,21 +97,11 @@ const navigation: NavSection[] = [
   },
 ]
 
-interface SidebarProps {
-  isOpen: boolean
-  onToggle: () => void
-}
-
-export function Sidebar({ isOpen, onToggle }: SidebarProps) {
+export function Sidebar({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => void }) {
   const pathname = usePathname()
-  const [collapsedSections, setCollapsedSections] = useState<string[]>(['Overview', 'Ibadah', 'Kesehatan', 'Mental', 'Perbaikan'])
+  // Default all sections expanded (empty array = all open)
+  const [collapsedSections, setCollapsedSections] = useState<string[]>([])
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const isMobile = useIsMobile()
-  const isDesktop = useIsDesktop()
-
-  // On desktop, sidebar is always visible (not an overlay)
-  // On desktop: isOpen controls collapsed state, not visibility
-  const isVisible = isDesktop || isOpen
 
   const toggleSection = (title: string) => {
     setCollapsedSections(prev =>
@@ -119,18 +109,14 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
     )
   }
 
-  // On mobile, sidebar slides in/out. On desktop, it's always visible
+  // Sidebar is always visible on desktop, on mobile it's controlled by isOpen
+  const isVisible = isOpen
+
   const sidebarClasses = cn(
     'fixed inset-y-0 left-0 z-40 bg-card border-r transition-all duration-300 lg:relative',
-    isDesktop
-      ? isCollapsed
-        ? 'w-16 translate-x-0'
-        : 'w-64 translate-x-0'
-      : isOpen
-      ? isCollapsed
-        ? 'w-16 translate-x-0'
-        : 'w-64 translate-x-0'
-      : 'w-64 -translate-x-full lg:translate-x-0'
+    isCollapsed
+      ? 'w-16 translate-x-0'
+      : 'w-64 translate-x-0'
   )
 
   if (!isVisible) return null
@@ -141,31 +127,18 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
         {/* Logo */}
         <div className={cn('flex h-14 items-center border-b px-3', isCollapsed && 'justify-center')}>
           <Link href="/overview/bulanan" className="flex items-center gap-2 font-bold text-lg text-primary" onClick={onToggle}>
-            <Sparkles className="h-5 w-5 flex-shrink-0" />
+            <Clock className="h-5 w-5 flex-shrink-0" />
             {!isCollapsed && <span className="truncate">Daytrack</span>}
           </Link>
           {/* Mobile close button */}
-          {!isMobile && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn('lg:hidden', isCollapsed && 'hidden')}
-              onClick={onToggle}
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          )}
-          {!isCollapsed && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hidden lg:flex ml-auto"
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              {isCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
-            </Button>
-          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn('lg:hidden', isCollapsed && 'hidden')}
+            onClick={onToggle}
+          >
+            <X className="h-5 w-5" />
+          </Button>
         </div>
 
         {/* Navigation */}
@@ -245,15 +218,13 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           </ul>
         </nav>
 
-        {/* Mobile close button - only on mobile overlay */}
-        {isMobile && (
-          <div className="lg:hidden border-t p-2">
-            <Button variant="outline" className="w-full" onClick={onToggle}>
-              <Menu className="mr-2 h-4 w-4" />
-              Tutup Menu
-            </Button>
-          </div>
-        )}
+        {/* Mobile close button */}
+        <div className="lg:hidden border-t p-2">
+          <Button variant="outline" className="w-full" onClick={onToggle}>
+            <Menu className="mr-2 h-4 w-4" />
+            Tutup Menu
+          </Button>
+        </div>
       </div>
     </aside>
   )
