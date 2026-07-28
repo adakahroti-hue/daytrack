@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { format, subDays, addDays, isSameDay } from 'date-fns'
+import { format, subDays, addDays, startOfWeek, endOfWeek, isSameDay } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight, Calendar, RotateCcw, Lightbulb, Plus, Edit, Trash2, CheckCircle2, Clock, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -10,11 +10,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
-import { useSaranPerbaikan, useUpsertSaranPerbaikan, useUpdateSaranPerbaikanStatus, useDeleteSaranPerbaikan } from '@/hooks/useSaranPerbaikan'
+import { useSaranPerbaikan, useSaranPerbaikanRange, useUpsertSaranPerbaikan, useUpdateSaranPerbaikanStatus, useDeleteSaranPerbaikan } from '@/hooks/useSaranPerbaikan'
 import { useSaranPerbaikanRealtime } from '@/hooks/useRealtime'
 
 interface SaranData {
@@ -35,13 +33,19 @@ export default function SaranPerbaikanPage() {
   const dateKey = format(currentDate, 'yyyy-MM-dd')
   const isToday = isSameDay(currentDate, new Date())
 
-  const { data: saranList = [], isLoading, error, refetch } = useSaranPerbaikan(dateKey)
+  // Get single date data for today's form
+  const { data: todayData, isLoading, error, refetch } = useSaranPerbaikan(dateKey)
+  // Get weekly data for stats and list
+  const weekStart = format(startOfWeek(currentDate, { weekStartsOn: 1 }), 'yyyy-MM-dd')
+  const weekEnd = format(endOfWeek(currentDate, { weekStartsOn: 1 }), 'yyyy-MM-dd')
+  const { data: saranList = [], isLoading: isLoadingWeekly } = useSaranPerbaikanRange(weekStart, weekEnd)
+
   const upsertSaran = useUpsertSaranPerbaikan()
   const updateSaranStatus = useUpdateSaranPerbaikanStatus()
   const deleteSaran = useDeleteSaranPerbaikan()
 
-  // Subscribe to realtime updates
-  useSaranPerbaikanRealtime([['saran-perbaikan', dateKey]])
+  // Subscribe to realtime updates - use saran_perbaikan (table name) for queryKey
+  useSaranPerbaikanRealtime([['saran_perbaikan']])
 
   const filteredList = saranList.filter((s: SaranData) => s.tanggal === dateKey)
 

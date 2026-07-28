@@ -195,7 +195,10 @@ export default function PMOPage() {
               </div>
             </div>
           ) : (
-            <p className="text-center text-muted-foreground py-8">Memuat data...</p>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Belum ada catatan PMO untuk hari ini</p>
+              <p className="text-sm text-muted-foreground mt-1">Pilih hari ke dan status untuk mulai mencatat</p>
+            </div>
           )}
         </CardContent>
       </Card>

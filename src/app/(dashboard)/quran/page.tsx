@@ -192,7 +192,10 @@ export default function QuranPage() {
               })}
             </div>
           ) : (
-            <p className="text-center text-muted-foreground py-8">Memuat data...</p>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Belum ada catatan bacaan Quran untuk hari ini</p>
+              <p className="text-sm text-muted-foreground mt-1">Klik tombol di atas untuk mulai mencatat</p>
+            </div>
           )}
         </CardContent>
       </Card>

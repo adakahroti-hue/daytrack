@@ -155,7 +155,7 @@ export default function SyukurPage() {
               </div>
             </div>
           ) : (
-            <p className="text-center text-muted-foreground py-8">Memuat data...</p>
+            <p className="text-center text-muted-foreground py-8">Belum ada data untuk hari ini</p>
           )}
         </CardContent>
       </Card>
