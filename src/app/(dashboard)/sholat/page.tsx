@@ -83,33 +83,6 @@ export default function SholatPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Sholat</h1>
-          <p className="text-muted-foreground">Catat kehadiran sholat 5 waktu + Dhuha</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => navigateDay('prev')}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-lg">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium whitespace-nowrap">
-              {format(currentDate, 'EEEE, d MMMM yyyy', { locale: id })}
-            </span>
-          </div>
-          <Button variant="outline" size="icon" onClick={() => navigateDay('next')}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          {!isToday && (
-            <Button variant="ghost" size="icon" onClick={goToToday}>
-              <RotateCcw className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      </div>
-
       {/* Sholat Grid */}
       <Card>
         <CardHeader>

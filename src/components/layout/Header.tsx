@@ -15,9 +15,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Loader2, LogOut, User, Menu, RefreshCw, Calendar, ChevronLeft, ChevronRight, Clock } from 'lucide-react'
-import { format, subDays, addDays, isSameDay, startOfDay } from 'date-fns'
+import { Loader2, LogOut, User, Menu, RefreshCw, Calendar, ChevronLeft, ChevronRight, Clock, LayoutDashboard, CalendarDays, CalendarRange } from 'lucide-react'
+import { format, subDays, addDays, isSameDay, startOfDay, subMonths, addMonths, subWeeks, addWeeks, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns'
 import { id } from 'date-fns/locale'
+import { useHeaderControls, formatDateForPeriod } from './HeaderControls'
 
 interface HeaderProps {
   onMenuClick: () => void
@@ -27,7 +28,16 @@ interface HeaderProps {
 export function Header({ onMenuClick, onSidebarToggle }: HeaderProps) {
   const pathname = usePathname()
   const [isLoading, setIsLoading] = useState(false)
-  const [currentDate, setCurrentDate] = useState(new Date())
+  const { 
+    title, 
+    description, 
+    currentDate, 
+    period, 
+    navigate, 
+    goToToday,
+    setPeriod,
+    isToday,
+  } = useHeaderControls()
 
   const handleSignOut = async () => {
     setIsLoading(true)
@@ -36,36 +46,13 @@ export function Header({ onMenuClick, onSidebarToggle }: HeaderProps) {
     window.location.href = '/login'
   }
 
-  const getPageInfo = () => {
-    const info: Record<string, { title: string; description: string }> = {
-      '/overview/bulanan': { title: 'Overview Bulanan', description: 'Ringkasan aktivitas bulanan Anda' },
-      '/overview/mingguan': { title: 'Overview Mingguan', description: 'Ringkasan aktivitas mingguan Anda' },
-      '/overview/harian': { title: 'Overview Harian', description: 'Ringkasan aktivitas harian Anda' },
-      '/jadwal-tugas': { title: 'Jadwal Tugas', description: 'Kelola dan catat jadwal tugas harian' },
-      '/sholat': { title: 'Sholat', description: 'Catat kehadiran sholat 5 waktu + Dhuha' },
-      '/quran': { title: 'Quran', description: 'Catat membaca Quran setelah sholat 5 waktu' },
-      '/doa': { title: 'Doa', description: 'Catat doa harian Anda' },
-      '/syukur': { title: 'Syukur', description: 'Menulis syukur harian' },
-      '/tidur': { title: 'Tidur', description: 'Catat pola tidur harian' },
-      '/masalah': { title: 'Masalah', description: 'Catat dan kelola masalah' },
-      '/minum-air': { title: 'Minum Air', description: 'Target 6 kali minum air sehari' },
-      '/pmo': { title: 'PMO Recovery', description: 'Tracking 7 hari recovery' },
-      '/kesenangan': { title: 'Kesenangan', description: 'Catat momen kesenangan' },
-      '/saran-perbaikan': { title: 'Saran Perbaikan', description: 'Catat saran perbaikan dan lacak progres' },
-    }
-    return info[pathname] || { title: 'Daytrack', description: 'Tracker aktivitas harian' }
+  const periodLabels = {
+    monthly: { label: 'Bulan', icon: CalendarRange },
+    weekly: { label: 'Minggu', icon: CalendarDays },
+    daily: { label: 'Hari', icon: Clock },
   }
 
-  const pageInfo = getPageInfo()
-  const isToday = isSameDay(currentDate, new Date())
-  const dateKey = format(currentDate, 'yyyy-MM-dd')
-  const formattedDate = format(currentDate, 'EEEE, d MMMM yyyy', { locale: id })
-
-  const navigateDay = (direction: 'prev' | 'next') => {
-    setCurrentDate(prev => direction === 'prev' ? subDays(prev, 1) : addDays(prev, 1))
-  }
-
-  const goToToday = () => setCurrentDate(new Date())
+  const getPeriodLabel = () => periodLabels[period]?.label || 'Tanggal'
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 lg:px-4">
@@ -82,22 +69,40 @@ export function Header({ onMenuClick, onSidebarToggle }: HeaderProps) {
 
       {/* Page title & description - left side */}
       <div className="flex-1 min-w-0">
-        <h1 className="text-lg font-semibold truncate">{pageInfo.title}</h1>
-        <p className="text-xs text-muted-foreground truncate">{pageInfo.description}</p>
+        <h1 className="text-lg font-semibold truncate">{title}</h1>
+        <p className="text-xs text-muted-foreground truncate">{description}</p>
       </div>
 
-      {/* Date picker & Refresh - right side */}
+      {/* Period selector & Date picker & Refresh - right side */}
       <div className="flex items-center gap-2">
+        {/* Period Selector */}
+        <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border">
+          {Object.entries(periodLabels).map(([key, { label, icon: Icon }]) => (
+            <Button
+              key={key}
+              variant={period === key ? 'default' : 'ghost'}
+              size="sm"
+              className="h-8 px-3 gap-1"
+              onClick={() => setPeriod(key as 'monthly' | 'weekly' | 'daily')}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{label}</span>
+            </Button>
+          ))}
+        </div>
+
         {/* Date navigation */}
-        <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateDay('prev')} aria-label="Hari sebelumnya">
+        <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate('prev')} aria-label="Periode sebelumnya">
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <div className="flex items-center gap-1">
             <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium whitespace-nowrap">{formattedDate}</span>
+            <span className="text-sm font-medium whitespace-nowrap">
+              {formatDateForPeriod(currentDate, period)}
+            </span>
           </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateDay('next')} aria-label="Hari selanjutnya">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate('next')} aria-label="Periode selanjutnya">
             <ChevronRight className="h-4 w-4" />
           </Button>
           {!isToday && (
@@ -108,9 +113,15 @@ export function Header({ onMenuClick, onSidebarToggle }: HeaderProps) {
         </div>
 
         {/* Mobile date display */}
-        <div className="sm:hidden flex items-center gap-2 px-2 py-1 bg-muted/50 rounded-lg">
+        <div className="sm:hidden flex items-center gap-2 px-2 py-1 bg-muted/50 rounded-lg border border-border">
           <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">{format(currentDate, 'd MMM', { locale: id })}</span>
+          <span className="text-sm font-medium">
+            {period === 'monthly' 
+              ? format(currentDate, 'MMM yyyy', { locale: id })
+              : period === 'weekly'
+              ? format(currentDate, 'd MMM', { locale: id })
+              : format(currentDate, 'd MMM', { locale: id })}
+          </span>
         </div>
 
         {/* Refresh button */}

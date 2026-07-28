@@ -51,36 +51,6 @@ export default function MinumAirPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Droplets className="h-6 w-6 text-primary" />
-            Minum Air
-          </h1>
-          <p className="text-muted-foreground">Target 6 kali sehari</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => navigateDay('prev')}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-lg">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium whitespace-nowrap">
-              {format(currentDate, 'EEEE, d MMMM yyyy', { locale: id })}
-            </span>
-          </div>
-          <Button variant="outline" size="icon" onClick={() => navigateDay('next')}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          {!isToday && (
-            <Button variant="ghost" size="icon" onClick={goToToday}>
-              <RotateCcw className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      </div>
-
       {/* Water Grid */}
       <Card>
         <CardHeader>

@@ -91,25 +91,26 @@ export default function MasalahPage() {
 
   return (
     <div className="space-y-6">
+      {/* Removed duplicate header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <AlertTriangle className="h-6 w-6 text-primary" />
-            Masalah & Solusi
+            Masalah
           </h1>
-          <p className="text-muted-foreground">Catat masalah dan solusi harian</p>
+          <p className="text-muted-foreground">Catat tantangan dan solusi yang dihadapi hari ini</p>
         </div>
         <div className="flex items-center gap-2">
           <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
-                Tambah
+                Tambah Masalah
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>{editingItem ? 'Edit Masalah' : 'Tambah Masalah'}</DialogTitle>
+                <DialogTitle>{editingItem ? 'Edit Masalah' : 'Tambah Masalah Baru'}</DialogTitle>
               </DialogHeader>
               <MasalahForm
                 initialData={editingItem}

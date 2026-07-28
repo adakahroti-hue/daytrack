@@ -1,46 +1,24 @@
 "use client"
 
-import { useState } from 'react'
-import { format, startOfDay, endOfDay, subDays, addDays } from 'date-fns'
+import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { SummaryCards } from '@/components/overview/SummaryCards'
 import { PriorityBreakdown } from '@/components/overview/PriorityBreakdown'
 import { AspectBreakdown } from '@/components/overview/AspectBreakdown'
-import { PeriodNavigator } from '@/components/overview/PeriodNavigator'
+import { useHeaderControls } from '@/components/layout/HeaderControls'
 
 export default function HarianPage() {
-  const [currentDate, setCurrentDate] = useState(new Date())
-
-  const navigateDay = (direction: 'prev' | 'next') => {
-    setCurrentDate(prev => direction === 'prev' ? subDays(prev, 1) : addDays(prev, 1))
-  }
-
-  const goToToday = () => setCurrentDate(new Date())
+  const { currentDate, isToday, title, description, period } = useHeaderControls()
 
   const periodLabel = format(currentDate, 'EEEE, d MMMM yyyy', { locale: id })
-  const isToday = format(currentDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Overview Harian</h1>
-          <p className="text-muted-foreground">Ringkasan tugas hari ini</p>
-        </div>
-        <PeriodNavigator
-          periodLabel={periodLabel}
-          onPrev={() => navigateDay('prev')}
-          onNext={() => navigateDay('next')}
-          onToday={goToToday}
-          isToday={isToday}
-        />
-      </div>
-
+      {/* Summary Cards */}
       <SummaryCards period="harian" />
 
+      {/* Breakdowns */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader>

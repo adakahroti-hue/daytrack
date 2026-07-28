@@ -48,14 +48,22 @@ export function useRealtime({
     }
   }, [table, queryClient, queryKeys, onInsert, onUpdate, onDelete])
 
+  const channelName = useCallback(() => {
+    const filterStr = filter ? encodeURIComponent(filter) : 'all'
+    return `realtime:${table}:${filterStr}`
+  }, [table, filter])
+
+  const subscribedRef = useRef(false)
+
   useEffect(() => {
     const supabase = supabaseRef.current
     
-    // Create channel with unique name
-    const channelName = `realtime:${table}:${filter || 'all'}:${Date.now()}`
-    
+    // Only subscribe once per unique table+filter combination
+    if (subscribedRef.current) return
+
+    const chName = channelName()
     channelRef.current = supabase
-      .channel(channelName)
+      .channel(chName)
       .on(
         'postgres_changes',
         {
@@ -70,13 +78,16 @@ export function useRealtime({
         console.log(`[Realtime] Channel ${table} status:`, status)
       })
 
+    subscribedRef.current = true
+
     return () => {
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current)
         channelRef.current = null
+        subscribedRef.current = false
       }
     }
-  }, [table, filter, handleRealtimeEvent])
+  }, [table, filter, channelName, handleRealtimeEvent])
 
   // Return cleanup function for manual cleanup if needed
   const cleanup = useCallback(() => {

@@ -1,16 +1,14 @@
 "use client"
 
-import { useState } from 'react'
-import { format, startOfMonth, endOfMonth, subMonths, addMonths, subWeeks, addWeeks, subDays, addDays } from 'date-fns'
+import { format, startOfMonth, endOfMonth } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { SummaryCards } from '@/components/overview/SummaryCards'
 import { PriorityBreakdown } from '@/components/overview/PriorityBreakdown'
 import { AspectBreakdown } from '@/components/overview/AspectBreakdown'
 import { PriorityChart } from '@/components/charts/PriorityChart'
 import { AspectChart } from '@/components/charts/AspectChart'
+import { useHeaderControls } from '@/components/layout/HeaderControls'
 
 interface PeriodData {
   summary: {
@@ -24,27 +22,7 @@ interface PeriodData {
 }
 
 export default function OverviewBulananPage() {
-  const [currentMonth, setCurrentMonth] = useState(new Date())
-  const [data, setData] = useState<PeriodData | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-
-  const fetchData = async (month: Date) => {
-    setIsLoading(true)
-    try {
-      const start = format(startOfMonth(month), 'yyyy-MM-dd')
-      const end = format(endOfMonth(month), 'yyyy-MM-dd')
-      
-      const response = await fetch(`/api/overview?start=${start}&end=${end}&period=monthly`)
-      if (response.ok) {
-        const result = await response.json()
-        setData(result)
-      }
-    } catch (error) {
-      console.error('Failed to fetch overview:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const { currentDate, navigate, goToToday, isToday, onRefresh, isLoading, title, description, period } = useHeaderControls()
 
   // Mock data for now
   const mockData: PeriodData = {
@@ -53,32 +31,8 @@ export default function OverviewBulananPage() {
     aspect: { psikis: 8, produktivitas: 22, keuangan: 7, hubungan: 8 },
   }
 
-  const handlePrevMonth = () => setCurrentMonth(subMonths(currentMonth, 1))
-  const handleNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1))
-
   return (
     <div className="space-y-6">
-      {/* Period Navigator */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="icon" onClick={handlePrevMonth}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-muted-foreground" />
-            <span className="text-lg font-semibold">
-              {format(currentMonth, 'MMMM yyyy', { locale: id })}
-            </span>
-          </div>
-          <Button variant="outline" size="icon" onClick={handleNextMonth}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-        <Button variant="outline" onClick={() => fetchData(currentMonth)} disabled={isLoading}>
-          {isLoading ? 'Memuat...' : 'Refresh'}
-        </Button>
-      </div>
-
       {/* Summary Cards */}
       <SummaryCards
         data={{
