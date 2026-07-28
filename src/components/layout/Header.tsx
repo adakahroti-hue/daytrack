@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Loader2, LogOut, User, Menu, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, Clock, LayoutDashboard, CalendarDays, CalendarRange } from 'lucide-react'
+import { Loader2, LogOut, User, Menu, RefreshCw, Calendar, ChevronLeft, ChevronRight, Clock, LayoutDashboard, CalendarDays, CalendarRange } from 'lucide-react'
 import { format, subDays, addDays, isSameDay, startOfDay, subMonths, addMonths, subWeeks, addWeeks, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { useHeaderControls, formatDateForPeriod } from './HeaderControls'
@@ -54,11 +54,6 @@ export function Header({ onMenuClick, onSidebarToggle }: HeaderProps) {
 
   const getPeriodLabel = () => periodLabels[period]?.label || 'Tanggal'
 
-  const PeriodIcon = ({ period }: { period: 'daily' | 'weekly' | 'monthly' }) => {
-    const Icon = periodLabels[period].icon
-    return <Icon className="h-3.5 w-3.5" />
-  }
-
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 lg:px-4">
       {/* Mobile menu button - only on mobile */}
@@ -80,34 +75,21 @@ export function Header({ onMenuClick, onSidebarToggle }: HeaderProps) {
 
       {/* Period selector & Date picker & Refresh - right side */}
       <div className="flex items-center gap-2">
-        {/* Period Selector - Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 px-3 gap-1"
-            >
-              <PeriodIcon period={period} />
-              <span className="hidden sm:inline">{getPeriodLabel()}</span>
-              <ChevronDown className="h-3.5 w-3.5 ml-1" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuLabel className="font-normal">Pilih Periode</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {Object.entries(periodLabels).map(([key, { label, icon: Icon }]) => (
-              <DropdownMenuItem
-                key={key}
-                onSelect={() => setPeriod(key as 'daily' | 'weekly' | 'monthly')}
-                className={period === key ? 'bg-primary/10 text-primary' : ''}
-              >
-                <Icon className="h-4 w-4 mr-2" />
-                {label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* Period Selector */}
+                <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border">
+                  {Object.entries(periodLabels).map(([key, { label, icon: Icon }]) => (
+                    <Button
+                      key={key}
+                      variant={period === key ? 'default' : 'ghost'}
+                      size="sm"
+                      className="h-8 px-3 gap-1"
+                      onClick={() => setPeriod(key as 'daily' | 'weekly' | 'monthly')}
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">{label}</span>
+                    </Button>
+                  ))}
+                </div>
 
         {/* Date navigation */}
         <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border">
