@@ -1,12 +1,8 @@
 "use client"
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useActionState, useState } from 'react'
 import Link from 'next/link'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { createClient } from '@/lib/supabase/client'
+import { registerAction } from '@/app/actions/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -14,50 +10,28 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2 } from 'lucide-react'
 
-const registerSchema = z.object({
-  username: z.string().min(3, 'Username minimal 3 karakter'),
-  password: z.string().min(6, 'Password minimal 6 karakter'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Password tidak cocok',
-  path: ['confirmPassword'],
-})
+type FormState = {
+  error?: string | string[] | { _form?: string[]; username?: string[]; password?: string[]; confirmPassword?: string[] }
+  message?: string
+  success?: boolean
+} | null
 
-type RegisterForm = z.infer<typeof registerSchema>
+const initialState: FormState = null
 
 export default function RegisterPage() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [state, formAction, isPending] = useActionState(registerAction, initialState)
+  const [localError, setLocalError] = useState<string | null>(null)
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<RegisterForm>({
-    resolver: zodResolver(registerSchema),
-  })
+  const handleSubmit = (formData: FormData) => {
+    const password = formData.get('password')
+    const confirmPassword = formData.get('confirmPassword')
 
-  const onSubmit = async (data: RegisterForm) => {
-    setIsLoading(true)
-    setError(null)
-
-    const supabase = createClient()
-    // Map username to email format for Supabase
-    const email = `${data.username}@daytrack.local`
-    const { error } = await supabase.auth.signUp({
-      email,
-      password: data.password,
-    })
-
-    if (error) {
-      setError(error.message)
-      setIsLoading(false)
-      return
+    if (password !== confirmPassword) {
+      setLocalError('Password tidak cocok')
+      return false
     }
-
-    router.push('/login?registered=true')
-    router.refresh()
+    setLocalError(null)
+    return true
   }
 
   return (
@@ -68,57 +42,67 @@ export default function RegisterPage() {
           <CardDescription>Mulai melacak aktivitas harian Anda</CardDescription>
         </CardHeader>
         <CardContent>
-          {error && (
+          {localError && (
             <Alert variant="destructive" className="mb-4">
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>{localError}</AlertDescription>
+            </Alert>
+          )}
+          {state?.error && !localError && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>
+                {typeof state.error === 'string' 
+                  ? state.error 
+                  : Array.isArray(state.error) 
+                    ? state.error[0] 
+                    : state.error._form?.[0] 
+                    ?? state.error.username?.[0] 
+                    ?? state.error.password?.[0] 
+                    ?? state.error.confirmPassword?.[0] 
+                    ?? 'Terjadi kesalahan'}
+              </AlertDescription>
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form action={formAction} className="space-y-4" onSubmit={(e) => {
+            if (!handleSubmit(new FormData(e.currentTarget))) {
+              e.preventDefault()
+            }
+          }}>
             <div className="space-y-2">
               <Label htmlFor="username">Username</Label>
               <Input
                 id="username"
+                name="username"
                 type="text"
                 placeholder="admin"
-                {...register('username')}
-                disabled={isLoading}
+                disabled={isPending}
               />
-              {errors.username && (
-                <p className="text-sm text-destructive">{errors.username.message}</p>
-              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
+                name="password"
                 type="password"
                 placeholder="••••••••"
-                {...register('password')}
-                disabled={isLoading}
+                disabled={isPending}
               />
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password.message}</p>
-              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Konfirmasi Password</Label>
               <Input
                 id="confirmPassword"
+                name="confirmPassword"
                 type="password"
                 placeholder="••••••••"
-                {...register('confirmPassword')}
-                disabled={isLoading}
+                disabled={isPending}
               />
-              {errors.confirmPassword && (
-                <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
-              )}
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Mendaftar...

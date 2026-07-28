@@ -1,12 +1,8 @@
 "use client"
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useActionState } from 'react'
 import Link from 'next/link'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { createClient } from '@/lib/supabase/client'
+import { loginAction } from '@/app/actions/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -14,47 +10,16 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2 } from 'lucide-react'
 
-const loginSchema = z.object({
-  username: z.string().min(1, 'Username wajib diisi'),
-  password: z.string().min(6, 'Password minimal 6 karakter'),
-})
+type FormState = {
+  error?: string | string[] | { _form?: string[]; username?: string[]; password?: string[] }
+  message?: string
+  success?: boolean
+} | null
 
-type LoginForm = z.infer<typeof loginSchema>
+const initialState: FormState = null
 
 export default function LoginPage() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginForm>({
-    resolver: zodResolver(loginSchema),
-  })
-
-  const onSubmit = async (data: LoginForm) => {
-    setIsLoading(true)
-    setError(null)
-
-    const supabase = createClient()
-    // Map username to email format: username@daytrack.local
-    const email = `${data.username}@daytrack.local`
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password: data.password,
-    })
-
-    if (error) {
-      setError(error.message)
-      setIsLoading(false)
-      return
-    }
-
-    router.push('/overview/bulanan')
-    router.refresh()
-  }
+  const [state, formAction, isPending] = useActionState(loginAction, initialState)
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/50 px-4">
@@ -64,43 +29,46 @@ export default function LoginPage() {
           <CardDescription>Masuk untuk melacak aktivitas harian Anda</CardDescription>
         </CardHeader>
         <CardContent>
-          {error && (
+          {state?.error && (
             <Alert variant="destructive" className="mb-4">
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>
+                {typeof state.error === 'string' 
+                  ? state.error 
+                  : Array.isArray(state.error) 
+                    ? state.error[0] 
+                    : state.error._form?.[0] 
+                    ?? state.error.username?.[0] 
+                    ?? state.error.password?.[0] 
+                    ?? 'Terjadi kesalahan'}
+              </AlertDescription>
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form action={formAction} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="username">Username</Label>
               <Input
                 id="username"
+                name="username"
                 type="text"
                 placeholder="admin"
-                {...register('username')}
-                disabled={isLoading}
+                disabled={isPending}
               />
-              {errors.username && (
-                <p className="text-sm text-destructive">{errors.username.message}</p>
-              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
+                name="password"
                 type="password"
                 placeholder="••••••••"
-                {...register('password')}
-                disabled={isLoading}
+                disabled={isPending}
               />
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password.message}</p>
-              )}
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Masuk...
