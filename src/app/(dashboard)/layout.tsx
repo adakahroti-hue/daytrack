@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
+import { useIsMobile } from '@/hooks/useMediaQuery'
 
 export default function DashboardLayout({
   children,
@@ -11,6 +12,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const isMobile = useIsMobile()
 
   const [queryClient] = useState(
     () =>
@@ -28,30 +30,37 @@ export default function DashboardLayout({
     setSidebarOpen(!sidebarOpen)
   }
 
+  // On mobile, sidebar is an overlay controlled by sidebarOpen
+  // On desktop, sidebar is always visible (sidebarOpen controls collapse)
+  const isSidebarVisible = isMobile ? sidebarOpen : true
+
   return (
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen bg-background">
-        {/* Mobile sidebar overlay */}
-        <Sidebar isOpen={sidebarOpen} onToggle={handleSidebarToggle} />
+        {/* Mobile: Sidebar overlay */}
+        {isMobile && (
+          <>
+            {sidebarOpen && (
+              <div
+                className="fixed inset-0 z-40 bg-black/50"
+                onClick={() => setSidebarOpen(false)}
+                aria-hidden="true"
+              />
+            )}
+            <Sidebar isOpen={sidebarOpen} onToggle={handleSidebarToggle} />
+          </>
+        )}
 
-        {/* Desktop layout: sidebar + header/content side by side */}
-        <div className="hidden lg:flex lg:min-h-screen">
-          {/* Desktop sidebar - always visible on lg+ */}
-          <Sidebar isOpen={true} onToggle={handleSidebarToggle} />
+        {/* Desktop: Sidebar + main content side by side */}
+        <div className={isMobile ? '' : (sidebarOpen ? 'lg:pl-64' : 'lg:pl-16')}>
+          {/* Header - always rendered */}
+          <Header
+            onMenuClick={handleSidebarToggle}
+            onSidebarToggle={handleSidebarToggle}
+          />
 
-          {/* Header + main content */}
-          <div className="flex-1 flex flex-col min-w-0">
-            <Header onMenuClick={handleSidebarToggle} onSidebarToggle={handleSidebarToggle} />
-            <main className="flex-1 p-4">
-              {children}
-            </main>
-          </div>
-        </div>
-
-        {/* Mobile layout: header + content (sidebar is overlay) */}
-        <div className="lg:hidden flex flex-col min-h-screen">
-          <Header onMenuClick={handleSidebarToggle} onSidebarToggle={handleSidebarToggle} />
-          <main className="flex-1 p-3">
+          {/* Page content */}
+          <main className="pt-0 pb-4 px-3 lg:px-4">
             {children}
           </main>
         </div>

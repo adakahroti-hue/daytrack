@@ -24,6 +24,7 @@ import {
   X,
   ChevronLeft,
 } from 'lucide-react'
+import { useIsMobile, useIsDesktop } from '@/hooks/useMediaQuery'
 
 interface NavItem {
   title: string
@@ -96,10 +97,21 @@ const navigation: NavSection[] = [
   },
 ]
 
-export function Sidebar({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => void }) {
+interface SidebarProps {
+  isOpen: boolean
+  onToggle: () => void
+}
+
+export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const pathname = usePathname()
   const [collapsedSections, setCollapsedSections] = useState<string[]>(['Overview', 'Ibadah', 'Kesehatan', 'Mental', 'Perbaikan'])
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const isMobile = useIsMobile()
+  const isDesktop = useIsDesktop()
+
+  // On desktop, sidebar is always visible (not an overlay)
+  // On desktop: isOpen controls collapsed state, not visibility
+  const isVisible = isDesktop || isOpen
 
   const toggleSection = (title: string) => {
     setCollapsedSections(prev =>
@@ -107,17 +119,24 @@ export function Sidebar({ isOpen, onToggle }: { isOpen: boolean; onToggle: () =>
     )
   }
 
+  // On mobile, sidebar slides in/out. On desktop, it's always visible
+  const sidebarClasses = cn(
+    'fixed inset-y-0 left-0 z-40 bg-card border-r transition-all duration-300 lg:relative',
+    isDesktop
+      ? isCollapsed
+        ? 'w-16 translate-x-0'
+        : 'w-64 translate-x-0'
+      : isOpen
+      ? isCollapsed
+        ? 'w-16 translate-x-0'
+        : 'w-64 translate-x-0'
+      : 'w-64 -translate-x-full lg:translate-x-0'
+  )
+
+  if (!isVisible) return null
+
   return (
-    <aside
-      className={cn(
-        'fixed inset-y-0 left-0 z-40 bg-card border-r transition-all duration-300 lg:relative',
-        isOpen
-          ? isCollapsed
-            ? 'w-16 translate-x-0'
-            : 'w-64 translate-x-0'
-          : 'w-64 -translate-x-full lg:translate-x-0'
-      )}
-    >
+    <aside className={sidebarClasses}>
       <div className="flex h-full flex-col">
         {/* Logo */}
         <div className={cn('flex h-14 items-center border-b px-3', isCollapsed && 'justify-center')}>
@@ -125,14 +144,17 @@ export function Sidebar({ isOpen, onToggle }: { isOpen: boolean; onToggle: () =>
             <Sparkles className="h-5 w-5 flex-shrink-0" />
             {!isCollapsed && <span className="truncate">Daytrack</span>}
           </Link>
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn('lg:hidden', isCollapsed && 'hidden')}
-            onClick={onToggle}
-          >
-            <X className="h-5 w-5" />
-          </Button>
+          {/* Mobile close button */}
+          {!isMobile && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn('lg:hidden', isCollapsed && 'hidden')}
+              onClick={onToggle}
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          )}
           {!isCollapsed && (
             <Button
               variant="ghost"
@@ -223,13 +245,15 @@ export function Sidebar({ isOpen, onToggle }: { isOpen: boolean; onToggle: () =>
           </ul>
         </nav>
 
-        {/* Mobile close button */}
-        <div className="lg:hidden border-t p-2">
-          <Button variant="outline" className="w-full" onClick={onToggle}>
-            <Menu className="mr-2 h-4 w-4" />
-            Tutup Menu
-          </Button>
-        </div>
+        {/* Mobile close button - only on mobile overlay */}
+        {isMobile && (
+          <div className="lg:hidden border-t p-2">
+            <Button variant="outline" className="w-full" onClick={onToggle}>
+              <Menu className="mr-2 h-4 w-4" />
+              Tutup Menu
+            </Button>
+          </div>
+        )}
       </div>
     </aside>
   )
