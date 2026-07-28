@@ -50,11 +50,7 @@ const navigation: NavSection[] = [
   {
     title: 'Overview',
     icon: LayoutDashboard,
-    items: [
-      { title: 'Harian', href: '/overview/harian', icon: Calendar },
-      { title: 'Mingguan', href: '/overview/mingguan', icon: Calendar },
-      { title: 'Bulanan', href: '/overview/bulanan', icon: Calendar },
-    ],
+    href: '/overview/harian',
   },
   {
     title: 'Jadwal Tugas',

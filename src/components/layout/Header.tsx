@@ -47,9 +47,9 @@ export function Header({ onMenuClick, onSidebarToggle }: HeaderProps) {
   }
 
   const periodLabels = {
-    monthly: { label: 'Bulan', icon: CalendarRange },
-    weekly: { label: 'Minggu', icon: CalendarDays },
-    daily: { label: 'Hari', icon: Clock },
+    daily: { label: 'Harian', icon: Clock },
+    weekly: { label: 'Mingguan', icon: CalendarDays },
+    monthly: { label: 'Bulanan', icon: CalendarRange },
   }
 
   const getPeriodLabel = () => periodLabels[period]?.label || 'Tanggal'
@@ -75,21 +75,34 @@ export function Header({ onMenuClick, onSidebarToggle }: HeaderProps) {
 
       {/* Period selector & Date picker & Refresh - right side */}
       <div className="flex items-center gap-2">
-        {/* Period Selector */}
-        <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border">
-          {Object.entries(periodLabels).map(([key, { label, icon: Icon }]) => (
+        {/* Period Selector - Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
             <Button
-              key={key}
-              variant={period === key ? 'default' : 'ghost'}
+              variant="outline"
               size="sm"
               className="h-8 px-3 gap-1"
-              onClick={() => setPeriod(key as 'monthly' | 'weekly' | 'daily')}
             >
-              <Icon className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{label}</span>
+              <periodLabels[period].icon className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{getPeriodLabel()}</span>
+              <ChevronDown className="h-3.5 w-3.5 ml-1" />
             </Button>
-          ))}
-        </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-40">
+            <DropdownMenuLabel className="font-normal">Pilih Periode</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {Object.entries(periodLabels).map(([key, { label, icon: Icon }]) => (
+              <DropdownMenuItem
+                key={key}
+                onSelect={() => setPeriod(key as 'daily' | 'weekly' | 'monthly')}
+                className={period === key ? 'bg-primary/10 text-primary' : ''}
+              >
+                <Icon className="h-4 w-4 mr-2" />
+                {label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* Date navigation */}
         <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border">

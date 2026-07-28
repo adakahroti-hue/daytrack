@@ -36,11 +36,7 @@ const navigation: NavSection[] = [
   {
     title: 'Overview',
     icon: LayoutDashboard,
-    items: [
-      { title: 'Bulanan', href: '/overview/bulanan', icon: Calendar },
-      { title: 'Mingguan', href: '/overview/mingguan', icon: Calendar },
-      { title: 'Harian', href: '/overview/harian', icon: Calendar },
-    ],
+    href: '/overview/harian',
   },
   {
     title: 'Jadwal Tugas',
