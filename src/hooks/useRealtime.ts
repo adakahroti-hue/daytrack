@@ -14,36 +14,86 @@ interface RealtimeOptions {
   queryKeys?: string[][]
 }
 
-// Global channel registry to prevent duplicate channels per table
-const channelRegistry = new Map<string, { channel: RealtimeChannel; count: number }>()
+// Global channel registry with callback queue
+interface ChannelEntry {
+  channel: RealtimeChannel
+  count: number
+  handlers: Map<string, (payload: any) => void>
+  subscribed: boolean
+  combinedHandler?: (payload: any) => void
+}
 
-function getOrCreateChannel(table: string, filter: string | undefined, supabase: ReturnType<typeof createClient>): RealtimeChannel {
+const channelRegistry = new Map<string, ChannelEntry>()
+
+function getOrCreateChannelEntry(table: string, filter: string | undefined, supabase: ReturnType<typeof createClient>): ChannelEntry {
   const key = `${table}:${filter || 'all'}`
   
   if (channelRegistry.has(key)) {
     const entry = channelRegistry.get(key)!
     entry.count++
-    return entry.channel
+    return entry
   }
   
-  // Create new channel with stable name (no timestamp)
   const channelName = `daytrack:${key}`
   const channel = supabase.channel(channelName)
   
-  channelRegistry.set(key, { channel, count: 1 })
-  return channel
+  const entry: ChannelEntry = {
+    channel,
+    count: 1,
+    handlers: new Map(),
+    subscribed: false,
+  }
+  
+  channelRegistry.set(key, entry)
+  return entry
 }
 
-function releaseChannel(table: string, filter: string | undefined, supabase: ReturnType<typeof createClient>) {
+function releaseChannelEntry(table: string, filter: string | undefined, handlerId: string, supabase: ReturnType<typeof createClient>) {
   const key = `${table}:${filter || 'all'}`
   const entry = channelRegistry.get(key)
   
   if (entry) {
+    entry.handlers.delete(handlerId)
     entry.count--
+    
     if (entry.count === 0) {
-      supabase.removeChannel(entry.channel)
+      if (entry.subscribed) {
+        supabase.removeChannel(entry.channel)
+      }
       channelRegistry.delete(key)
     }
+  }
+}
+
+function subscribeChannel(entry: ChannelEntry, supabase: ReturnType<typeof createClient>) {
+  if (!entry.subscribed) {
+    // Create combined handler that calls all registered handlers
+    entry.combinedHandler = (payload: any) => {
+      entry.handlers.forEach(handler => {
+        try {
+          handler(payload)
+        } catch (e) {
+          console.error('[Realtime] Handler error:', e)
+        }
+      })
+    }
+    
+    // Add the combined handler ONCE
+    entry.channel.on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: entry.channel.topic.split(':')[1] || '', // This won't work, need table name
+        filter: entry.channel.topic.split(':')[2] || undefined,
+      },
+      entry.combinedHandler
+    )
+    
+    entry.channel.subscribe((status) => {
+      console.log(`[Realtime] Channel status:`, status)
+    })
+    entry.subscribed = true
   }
 }
 
@@ -56,19 +106,17 @@ export function useRealtime({
   queryKeys = [],
 }: RealtimeOptions) {
   const queryClient = useQueryClient()
-  const channelRef = useRef<RealtimeChannel | null>(null)
   const supabaseRef = useRef(createClient())
-  const subscribedRef = useRef(false)
+  const handlerIdRef = useRef<string>('')
+  const entryRef = useRef<ChannelEntry | null>(null)
 
   const handleRealtimeEvent = useCallback((payload: any) => {
     console.log(`[Realtime] ${payload.eventType} on ${table}:`, payload)
     
-    // Invalidate all related query keys
     queryKeys.forEach(key => {
       queryClient.invalidateQueries({ queryKey: key })
     })
 
-    // Call custom handlers
     switch (payload.eventType) {
       case 'INSERT':
         onInsert?.(payload)
@@ -85,53 +133,61 @@ export function useRealtime({
   useEffect(() => {
     const supabase = supabaseRef.current
     
-    // Get or create shared channel for this table
-    const channel = getOrCreateChannel(table, filter, supabase)
-    channelRef.current = channel
+    const entry = getOrCreateChannelEntry(table, filter, supabase)
+    entryRef.current = entry
 
-    // Add callback BEFORE subscribe (or if already subscribed, it's fine - same channel)
-    channel.on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table,
-        filter,
-      },
-      handleRealtimeEvent
-    )
+    const handlerId = `${table}:${filter || 'all'}:${Math.random().toString(36).slice(2)}`
+    handlerIdRef.current = handlerId
 
-    // Subscribe only once per channel
-    if (!subscribedRef.current) {
-      channel.subscribe((status) => {
+    entry.handlers.set(handlerId, handleRealtimeEvent)
+
+    // Set up combined handler and subscribe only once
+    if (!entry.subscribed) {
+      entry.combinedHandler = (payload: any) => {
+        entry.handlers.forEach(handler => {
+          try {
+            handler(payload)
+          } catch (e) {
+            console.error('[Realtime] Handler error:', e)
+          }
+        })
+      }
+      
+      entry.channel.on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table,
+          filter,
+        },
+        entry.combinedHandler
+      )
+      
+      entry.channel.subscribe((status) => {
         console.log(`[Realtime] Channel ${table} status:`, status)
       })
-      subscribedRef.current = true
+      entry.subscribed = true
     }
 
     return () => {
-      // Remove this specific callback from channel
-      // Note: supabase-js doesn't support removing single callback easily
-      // So we rely on reference counting
-      releaseChannel(table, filter, supabase)
-      channelRef.current = null
-      subscribedRef.current = false
+      releaseChannelEntry(table, filter, handlerId, supabase)
+      entryRef.current = null
+      handlerIdRef.current = ''
     }
   }, [table, filter, handleRealtimeEvent])
 
   const cleanup = useCallback(() => {
-    if (channelRef.current) {
+    if (entryRef.current && handlerIdRef.current) {
       const supabase = supabaseRef.current
-      releaseChannel(table, filter, supabase)
-      channelRef.current = null
-      subscribedRef.current = false
+      releaseChannelEntry(table, filter, handlerIdRef.current, supabase)
+      entryRef.current = null
+      handlerIdRef.current = ''
     }
   }, [table, filter])
 
   return { cleanup }
 }
-
-// Specific hooks for each table
 export function useTasksRealtime(queryKeys: string[][] = [['tasks']]) {
   return useRealtime({
     table: 'tasks',
