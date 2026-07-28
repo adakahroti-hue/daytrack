@@ -56,10 +56,13 @@ type TaskFormData = {
   status: 'belum' | 'proses' | 'selesai'
 }
 
+// Type for editing task that includes the ID
+type EditingTask = TaskFormData & { id: string }
+
 export default function JadwalTugasPage() {
   const [activeTab, setActiveTab] = useState<'hari-ini' | 'selesai' | 'semua'>('hari-ini')
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const [editingTask, setEditingTask] = useState<TaskFormData | null>(null)
+  const [editingTask, setEditingTask] = useState<EditingTask | null>(null)
 
   const today = new Date()
   const todayStr = format(today, 'yyyy-MM-dd')
@@ -87,10 +90,11 @@ export default function JadwalTugasPage() {
     { id: 'semua', label: `Semua (${allTasks.length})` },
   ]
 
-  const handleEdit = (task: typeof allTasks[0]) => {
+  const handleEdit = (task: Task) => {
     const taskDate = new Date(task.tanggal_jam)
     const deadlineDate = task.deadline ? new Date(task.deadline) : null
-    const formData: TaskFormData = {
+    const formData: EditingTask = {
+      id: task.id,
       nama: task.nama,
       tanggal: format(taskDate, 'yyyy-MM-dd'),
       jam: format(taskDate, 'HH:mm'),
@@ -115,19 +119,23 @@ export default function JadwalTugasPage() {
     toggleTaskStatus.mutate({ id, status })
   }
 
-  const handleSubmit = (data: TaskFormData) => {
+const handleSubmit = (data: TaskFormData) => {
     if (editingTask) {
-      // Update existing task
-      const taskId = allTasks.find(t => t.nama === editingTask.nama && t.tanggal_jam === new Date(`${data.tanggal}T${data.jam}`).toISOString())?.id
-      if (taskId) {
-        updateTask.mutate({ id: taskId, data })
+      // Update existing task using the stored ID
+      const taskData = {
+        ...data,
+        tanggal_jam: new Date(`${data.tanggal}T${data.jam}`).toISOString(),
+        deadline: data.deadline_tanggal && data.deadline_jam
+          ? new Date(`${data.deadline_tanggal}T${data.deadline_jam}`).toISOString()
+          : undefined,
       }
+      updateTask.mutate({ id: editingTask.id, data: taskData })
     } else {
       // Create new task
       const taskData = {
         ...data,
         tanggal_jam: new Date(`${data.tanggal}T${data.jam}`).toISOString(),
-        deadline: data.deadline_tanggal && data.deadline_jam 
+        deadline: data.deadline_tanggal && data.deadline_jam
           ? new Date(`${data.deadline_tanggal}T${data.deadline_jam}`).toISOString()
           : undefined,
       }

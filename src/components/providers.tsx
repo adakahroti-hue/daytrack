@@ -4,5 +4,5 @@ import { ThemeProvider as NextThemesProvider } from 'next-themes'
 import type { ThemeProviderProps } from 'next-themes'
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
-  return <NextThemesProvider {...props} defaultTheme="dark" enableSystem={false} disableTransitionOnChange={true}>{children}</NextThemesProvider>
+  return <NextThemesProvider {...props} defaultTheme="light" enableSystem={false} disableTransitionOnChange={true} themes={["light"]}>{children}</NextThemesProvider>
 }
