@@ -31,16 +31,27 @@ export default function DashboardLayout({
   return (
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen bg-background">
-        {/* Sidebar */}
+        {/* Mobile sidebar overlay */}
         <Sidebar isOpen={sidebarOpen} onToggle={handleSidebarToggle} />
 
-        {/* Main content */}
-        <div className={sidebarOpen ? 'lg:pl-64' : 'lg:pl-0'}>
-          {/* Header */}
-          <Header onMenuClick={handleSidebarToggle} onSidebarToggle={handleSidebarToggle} />
+        {/* Desktop layout: sidebar + header/content side by side */}
+        <div className="hidden lg:flex lg:min-h-screen">
+          {/* Desktop sidebar - always visible on lg+ */}
+          <Sidebar isOpen={true} onToggle={handleSidebarToggle} />
 
-          {/* Page content */}
-          <main className="pt-0 pb-3 lg:pb-4 px-3 lg:px-4">
+          {/* Header + main content */}
+          <div className="flex-1 flex flex-col min-w-0">
+            <Header onMenuClick={handleSidebarToggle} onSidebarToggle={handleSidebarToggle} />
+            <main className="flex-1 p-4">
+              {children}
+            </main>
+          </div>
+        </div>
+
+        {/* Mobile layout: header + content (sidebar is overlay) */}
+        <div className="lg:hidden flex flex-col min-h-screen">
+          <Header onMenuClick={handleSidebarToggle} onSidebarToggle={handleSidebarToggle} />
+          <main className="flex-1 p-3">
             {children}
           </main>
         </div>
