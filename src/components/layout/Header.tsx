@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Loader2, LogOut, User, Menu, RefreshCw, Calendar, ChevronLeft, ChevronRight, Clock, LayoutDashboard, CalendarDays, CalendarRange } from 'lucide-react'
+import { Loader2, LogOut, User, Menu, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, Clock, LayoutDashboard, CalendarDays, CalendarRange } from 'lucide-react'
 import { format, subDays, addDays, isSameDay, startOfDay, subMonths, addMonths, subWeeks, addWeeks, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { useHeaderControls, formatDateForPeriod } from './HeaderControls'
