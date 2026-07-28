@@ -30,10 +30,6 @@ export default function DashboardLayout({
     setSidebarOpen(!sidebarOpen)
   }
 
-  // On mobile, sidebar is an overlay controlled by sidebarOpen
-  // On desktop, sidebar is always visible (sidebarOpen controls collapse)
-  const isSidebarVisible = isMobile ? sidebarOpen : true
-
   return (
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen bg-background">
@@ -52,18 +48,23 @@ export default function DashboardLayout({
         )}
 
         {/* Desktop: Sidebar + main content side by side */}
-        <div className={isMobile ? '' : (sidebarOpen ? 'lg:pl-64' : 'lg:pl-16')}>
-          {/* Header - always rendered */}
-          <Header
-            onMenuClick={handleSidebarToggle}
-            onSidebarToggle={handleSidebarToggle}
-          />
+        {!isMobile && (
+          <div className="hidden lg:flex lg:min-h-screen">
+            <Sidebar isOpen={true} onToggle={handleSidebarToggle} />
+            <div className="flex-1 flex flex-col min-w-0">
+              <Header onMenuClick={handleSidebarToggle} onSidebarToggle={handleSidebarToggle} />
+              <main className="flex-1 p-4">{children}</main>
+            </div>
+          </div>
+        )}
 
-          {/* Page content */}
-          <main className="pt-0 pb-4 px-3 lg:px-4">
-            {children}
-          </main>
-        </div>
+        {/* Mobile: Header + content (sidebar is overlay above) */}
+        {isMobile && (
+          <div className="lg:hidden flex flex-col min-h-screen">
+            <Header onMenuClick={handleSidebarToggle} onSidebarToggle={handleSidebarToggle} />
+            <main className="flex-1 p-3">{children}</main>
+          </div>
+        )}
       </div>
     </QueryClientProvider>
   )
