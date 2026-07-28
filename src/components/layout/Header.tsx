@@ -54,6 +54,11 @@ export function Header({ onMenuClick, onSidebarToggle }: HeaderProps) {
 
   const getPeriodLabel = () => periodLabels[period]?.label || 'Tanggal'
 
+  const PeriodIcon = ({ period }: { period: 'daily' | 'weekly' | 'monthly' }) => {
+    const Icon = periodLabels[period].icon
+    return <Icon className="h-3.5 w-3.5" />
+  }
+
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 lg:px-4">
       {/* Mobile menu button - only on mobile */}
@@ -83,7 +88,7 @@ export function Header({ onMenuClick, onSidebarToggle }: HeaderProps) {
               size="sm"
               className="h-8 px-3 gap-1"
             >
-              <periodLabels[period].icon className="h-3.5 w-3.5" />
+              <PeriodIcon period={period} />
               <span className="hidden sm:inline">{getPeriodLabel()}</span>
               <ChevronDown className="h-3.5 w-3.5 ml-1" />
             </Button>
