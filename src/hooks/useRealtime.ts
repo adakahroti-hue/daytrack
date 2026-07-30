@@ -265,6 +265,84 @@ export function useSaranPerbaikanRealtime(queryKeys: string[][] = [['saran_perba
   })
 }
 
+export function usePrayerLogRealtime(dateKey: string) {
+  return useRealtime({
+    table: 'prayer_logs',
+    filter: `tanggal=eq.${dateKey}`,
+    queryKeys: [['prayer_logs', dateKey], ['prayer_logs', 'range']],
+  })
+}
+
+export function useQuranLogRealtime(dateKey: string) {
+  return useRealtime({
+    table: 'quran_logs',
+    filter: `tanggal=eq.${dateKey}`,
+    queryKeys: [['quran_logs', dateKey], ['quran_logs', 'range']],
+  })
+}
+
+export function useDoaLogRealtime(dateKey: string) {
+  return useRealtime({
+    table: 'doa_logs',
+    filter: `tanggal=eq.${dateKey}`,
+    queryKeys: [['doa_logs', dateKey], ['doa_logs', 'range']],
+  })
+}
+
+export function useSyukurLogRealtime(dateKey: string) {
+  return useRealtime({
+    table: 'syukur_logs',
+    filter: `tanggal=eq.${dateKey}`,
+    queryKeys: [['syukur_logs', dateKey], ['syukur_logs', 'range']],
+  })
+}
+
+export function useTidurLogRealtime(dateKey: string) {
+  return useRealtime({
+    table: 'tidur_logs',
+    filter: `tanggal=eq.${dateKey}`,
+    queryKeys: [['tidur_logs', dateKey], ['tidur_logs', 'range']],
+  })
+}
+
+export function useMinumAirLogRealtime(dateKey: string) {
+  return useRealtime({
+    table: 'minum_air_logs',
+    filter: `tanggal=eq.${dateKey}`,
+    queryKeys: [['minum_air_logs', dateKey], ['minum_air_logs', 'range']],
+  })
+}
+
+export function useMasalahLogRealtime(dateKey: string) {
+  return useRealtime({
+    table: 'masalah_logs',
+    filter: `tanggal=eq.${dateKey}`,
+    queryKeys: [['masalah_logs', dateKey], ['masalah_logs', 'range']],
+  })
+}
+
+export function usePmoLogRealtime(dateKey: string) {
+  return useRealtime({
+    table: 'pmo_logs',
+    filter: `tanggal=eq.${dateKey}`,
+    queryKeys: [['pmo_logs', dateKey], ['pmo_logs', 'range']],
+  })
+}
+
+export function useFunQueueRealtime() {
+  return useRealtime({
+    table: 'fun_queue',
+    queryKeys: [['fun_queue']],
+  })
+}
+
+export function useImprovementBacklogRealtime() {
+  return useRealtime({
+    table: 'improvement_backlog',
+    queryKeys: [['improvement_backlog']],
+  })
+}
+
 // Multi-table realtime hook for overview pages
 export function useOverviewRealtime() {
   const queryClient = useQueryClient()
@@ -274,7 +352,7 @@ export function useOverviewRealtime() {
 
   useEffect(() => {
     const supabase = supabaseRef.current
-    const tables = ['tasks', 'sholat', 'quran', 'doa', 'tidur', 'minum_air', 'masalah', 'pmo', 'syukur', 'kesenangan', 'saran_perbaikan']
+    const tables = ['tasks', 'sholat', 'quran', 'doa', 'tidur_logs', 'minum_air_logs', 'masalah_logs', 'pmo_logs', 'syukur_logs', 'fun_queue', 'improvement_backlog']
     
     // Use stable channel name
     const channelName = `daytrack:overview:all`
