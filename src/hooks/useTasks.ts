@@ -38,7 +38,21 @@ export function useDeleteTask() {
   
   return useMutation({
     mutationFn: (id: string) => deleteTask(id),
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ["tasks"] })
+      const previousTasks = queryClient.getQueriesData({ queryKey: ["tasks"] })
+      queryClient.setQueriesData({ queryKey: ["tasks"] }, (old: any) => {
+        if (!old) return old
+        return old.filter((task: any) => task.id !== id)
+      })
+      return { previousTasks }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousTasks) {
+        context.previousTasks.forEach(([key, data]: any) => queryClient.setQueryData(key, data))
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] })
     },
   })
@@ -49,7 +63,21 @@ export function useToggleTaskStatus() {
   
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: "proses" | "belum" | "selesai" }) => toggleTaskStatus(id, status),
-    onSuccess: () => {
+    onMutate: async ({ id, status }) => {
+      await queryClient.cancelQueries({ queryKey: ["tasks"] })
+      const previousTasks = queryClient.getQueriesData({ queryKey: ["tasks"] })
+      queryClient.setQueriesData({ queryKey: ["tasks"] }, (old: any) => {
+        if (!old) return old
+        return old.map((task: any) => task.id === id ? { ...task, status, updated_at: new Date().toISOString() } : task)
+      })
+      return { previousTasks }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousTasks) {
+        context.previousTasks.forEach(([key, data]: any) => queryClient.setQueryData(key, data))
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] })
     },
   })

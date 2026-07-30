@@ -246,28 +246,6 @@ function DailyFocusCard({ todayTasks }: { todayTasks: Task[] }) {
               </div>
             </div>
           </div>
-          
-          {/* Inline Stats at bottom of card */}
-          <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-slate-200/50 dark:border-slate-700/50">
-            <div className="flex items-center gap-2 px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg min-w-[90px]">
-              <div>
-                <p className="text-[10px] text-slate-500 uppercase tracking-wider">Misi Aktif</p>
-                <p className="text-sm font-bold text-[#2563EB]">{activeMissions}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg min-w-[90px]">
-              <div>
-                <p className="text-[10px] text-slate-500 uppercase tracking-wider">Total Waktu</p>
-                <p className="text-sm font-bold text-[#0F172A]">{getEstimasiText(totalEstimatedMinutes)}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg min-w-[90px]">
-              <div>
-                <p className="text-[10px] text-slate-500 uppercase tracking-wider">Selesai</p>
-                <p className="text-sm font-bold text-green-600">{completedMissions}</p>
-              </div>
-            </div>
-          </div>
         </CardContent>
       </Card>
     )
@@ -299,28 +277,6 @@ function DailyFocusCard({ todayTasks }: { todayTasks: Task[] }) {
                 </div>
               </div>
             )}
-          </div>
-        </div>
-        
-        {/* Inline Stats: Misi Aktif, Total Waktu, Selesai - sebaris dengan judul */}
-        <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-slate-200/50 dark:border-slate-700/50">
-          <div className="flex items-center gap-2 px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg min-w-[90px]">
-            <div>
-              <p className="text-[10px] text-slate-500 uppercase tracking-wider">Misi Aktif</p>
-              <p className="text-sm font-bold text-[#2563EB]">{activeMissions}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg min-w-[90px]">
-            <div>
-              <p className="text-[10px] text-slate-500 uppercase tracking-wider">Total Waktu</p>
-              <p className="text-sm font-bold text-[#0F172A]">{getEstimasiText(totalEstimatedMinutes)}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg min-w-[90px]">
-            <div>
-              <p className="text-[10px] text-slate-500 uppercase tracking-wider">Selesai</p>
-              <p className="text-sm font-bold text-green-600">{completedMissions}</p>
-            </div>
           </div>
         </div>
       </CardContent>
@@ -474,7 +430,12 @@ function HariIniPageClient() {
 
   return (
     <div className="space-y-6 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
-      {/* DailyFocusCard with inline stats */}
+      {/* Stats Header - Centered */}
+      <div className="flex justify-center">
+        <StatsInline todayTasks={todayTasks} />
+      </div>
+
+      {/* DailyFocusCard - without inline stats */}
       <DailyFocusCard todayTasks={todayTasks} />
 
       {/* Mission Board - Priority Groups */}
