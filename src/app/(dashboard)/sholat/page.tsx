@@ -1,51 +1,59 @@
 "use client"
 
 import { useState } from 'react'
-import { format, subDays, addDays, startOfDay, isSameDay } from 'date-fns'
+import { format, subDays, addDays, isSameDay, startOfWeek, endOfWeek } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, Calendar, Check, X, RotateCcw } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar, Check, X, RotateCcw, Clock, Flame, Target, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
-import { useSholat, useUpsertSholat, useToggleSholat } from '@/hooks/useSholat'
-import { useSholatRealtime } from '@/hooks/useRealtime'
+import { usePrayerLog, usePrayerLogRange, useUpsertPrayerLog, useTogglePrayer } from '@/hooks/usePrayerLogs'
+import { usePrayerLogRealtime } from '@/hooks/useRealtime'
 
-const SHOLAT_TIMES = [
-  { key: 'subuh', label: 'Subuh', icon: '🌅' },
-  { key: 'dhuha', label: 'Dhuha', icon: '☀️' },
-  { key: 'dzuhur', label: 'Dzuhur', icon: '🌤️' },
-  { key: 'ashar', label: 'Ashar', icon: '🌥️' },
-  { key: 'maghrib', label: 'Maghrib', icon: '🌅' },
-  { key: 'isya', label: 'Isya', icon: '🌙' },
+const PRAYER_TIMES = [
+  { key: 'subuh', label: 'Subuh', short: 'Su', time: '04:30 - 05:45', arabic: 'صَلَاةُ الفَجْرِ' },
+  { key: 'dzuhur', label: 'Dzuhur', short: 'Dz', time: '11:45 - 13:15', arabic: 'صَلَاةُ الظُّهْرِ' },
+  { key: 'ashar', label: 'Ashar', short: 'As', time: '15:00 - 16:30', arabic: 'صَلَاةُ العَصْرِ' },
+  { key: 'maghrib', label: 'Maghrib', short: 'Ma', time: '18:00 - 19:15', arabic: 'صَلَاةُ المَغْرِبِ' },
+  { key: 'isya', label: 'Isya', short: 'Is', time: '19:30 - 21:00', arabic: 'صَلَاةُ العِشَاءِ' },
 ] as const
 
-const ALASAN_OPTIONS = [
-  { value: 'malas', label: 'Malas' },
-  { value: 'lupa', label: 'Lupa' },
-  { value: 'sibuk', label: 'Sibuk' },
-  { value: 'sakit', label: 'Sakit' },
-  { value: 'perjalanan', label: 'Perjalanan' },
-  { value: 'tak_ada_tempat', label: 'Tak Ada Tempat Sholat' },
-  { value: 'bersama_teman', label: 'Bersama Teman' },
-  { value: 'lainnya', label: 'Lainnya' },
+const REASON_OPTIONS = [
+  { value: 'lupa', label: 'Lupa', icon: '🤷' },
+  { value: 'ketiduran', label: 'Ketiduran', icon: '😴' },
+  { value: 'sibuk', label: 'Sibuk', icon: '💼' },
+  { value: 'sakit', label: 'Sakit', icon: '🤒' },
+  { value: 'perjalanan', label: 'Perjalanan', icon: '🚗' },
+  { value: 'lainnya', label: 'Lainnya', icon: '📝' },
 ] as const
 
-type SholatKey = typeof SHOLAT_TIMES[number]['key']
-type AlasanKey = typeof ALASAN_OPTIONS[number]['value']
+const QUALITY_OPTIONS = [
+  { value: 1, label: 'Kurang fokus', icon: '😔', color: 'text-red-500' },
+  { value: 2, label: 'Cukup baik', icon: '🙂', color: 'text-yellow-500' },
+  { value: 3, label: 'Sangat baik', icon: '🤍', color: 'text-green-500' },
+] as const
+
+type PrayerKey = typeof PRAYER_TIMES[number]['key']
+type ReasonKey = typeof REASON_OPTIONS[number]['value']
+type QualityKey = typeof QUALITY_OPTIONS[number]['value']
 
 export default function SholatPage() {
   const [currentDate, setCurrentDate] = useState(new Date())
+  const [reasonDialog, setReasonDialog] = useState<{ open: boolean; prayerKey: PrayerKey; currentStatus: boolean } | null>(null)
+  const [qualityDialog, setQualityDialog] = useState<{ open: boolean; prayerKey: PrayerKey } | null>(null)
   const dateKey = format(currentDate, 'yyyy-MM-dd')
   const isToday = isSameDay(currentDate, new Date())
 
-  const { data: sholatData, isLoading, error, refetch } = useSholat(dateKey)
-  const upsertSholat = useUpsertSholat()
-  const toggleSholat = useToggleSholat()
+  const { data: prayerData, isLoading, error, refetch } = usePrayerLog(dateKey)
+  const upsertPrayerLog = useUpsertPrayerLog()
+  const togglePrayer = useTogglePrayer()
 
-  // Subscribe to realtime updates
-  useSholatRealtime([['sholat', dateKey]])
+  usePrayerLogRealtime(dateKey)
 
   const navigateDay = (direction: 'prev' | 'next') => {
     setCurrentDate(prev => direction === 'prev' ? subDays(prev, 1) : addDays(prev, 1))
@@ -53,167 +61,423 @@ export default function SholatPage() {
 
   const goToToday = () => setCurrentDate(new Date())
 
-  const handleSholatChange = async (key: SholatKey, checked: boolean) => {
-    if (!sholatData) return
-    const newAlasan = checked ? undefined : (sholatData[`alasan_${key}` as keyof typeof sholatData] as AlasanKey | undefined)
+  const handlePrayerChange = async (key: PrayerKey, checked: boolean) => {
+    if (!prayerData && !checked) return
     
-    await toggleSholat.mutateAsync({
+    const currentReason = prayerData ? prayerData[`alasan_${key}`] as ReasonKey | null : null
+
+    if (!checked && !currentReason) {
+      setReasonDialog({ open: true, prayerKey: key, currentStatus: checked })
+      return
+    }
+
+    await togglePrayer.mutateAsync({
       tanggal: dateKey,
-      sholatTime: key,
+      prayerTime: key,
       value: checked,
-      alasan: newAlasan,
+      reason: checked ? undefined : (currentReason || 'lainnya'),
     })
     
+    if (checked) {
+      setQualityDialog({ open: true, prayerKey: key })
+    }
+    
     refetch()
   }
 
-  const handleAlasanChange = async (key: SholatKey, alasan: AlasanKey) => {
-    if (!sholatData) return
+  const handleReasonSubmit = async (reason: ReasonKey) => {
+    if (!reasonDialog) return
     
-    await upsertSholat.mutateAsync({
+    await togglePrayer.mutateAsync({
       tanggal: dateKey,
-      hari: format(currentDate, 'EEEE', { locale: id }),
-      [key]: sholatData[key],
-      ...SHOLAT_TIMES.reduce((acc, t) => ({ ...acc, [t.key]: sholatData?.[t.key as SholatKey] ?? false }), {}),
-      [`alasan_${key}`]: alasan,
-    } as any)
+      prayerTime: reasonDialog.prayerKey,
+      value: false,
+      reason,
+    })
     
+    setReasonDialog(null)
     refetch()
   }
+
+  const handleQualitySubmit = async (quality: QualityKey) => {
+    if (!qualityDialog) return
+    
+    const prayerName = PRAYER_TIMES.find(p => p.key === qualityDialog.prayerKey)?.label
+    const refleksi = `Kualitas ${prayerName}: ${QUALITY_OPTIONS.find(q => q.value === quality)?.label}`
+    
+    if (prayerData) {
+      await upsertPrayerLog.mutateAsync({
+        ...prayerData,
+        refleksi: prayerData.refleksi 
+          ? `${prayerData.refleksi}\n${refleksi}`
+          : refleksi
+      })
+    }
+    
+    setQualityDialog(null)
+    refetch()
+  }
+
+  const getCompletedCount = () => {
+    if (!prayerData) return 0
+    return PRAYER_TIMES.filter(t => prayerData[`sholat_${t.key}`]).length
+  }
+
+  const getProgress = () => {
+    return Math.round((getCompletedCount() / PRAYER_TIMES.length) * 100)
+  }
+
+  const calculateStreak = (logs: any[]) => {
+    let streak = 0
+    const sortedDates = [...new Set(logs.map(log => log.tanggal))].sort((a, b) => b.localeCompare(a))
+    for (const date of sortedDates) {
+      const dayLogs = logs.filter(log => log.tanggal === date)
+      const dayData = dayLogs[0]
+      if (dayData) {
+        const allDone = PRAYER_TIMES.every(t => dayData[`sholat_${t.key}`])
+        if (allDone) streak++
+        else break
+      } else break
+    }
+    return streak
+  }
+
+  const { data: weeklyLogs = [] } = usePrayerLogRange(
+    format(startOfWeek(currentDate, { weekStartsOn: 1 }), 'yyyy-MM-dd'),
+    format(endOfWeek(currentDate, { weekStartsOn: 1 }), 'yyyy-MM-dd')
+  )
+
+  const currentStreak = calculateStreak(weeklyLogs)
+  const bestStreak = Math.max(currentStreak, 0)
+  const completedCount = getCompletedCount()
+  const progress = getProgress()
 
   return (
-    <div className="space-y-6">
-      {/* Sholat Grid */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            Jadwal Sholat
-            {sholatData && (
-              <span className="text-sm font-normal text-muted-foreground">
-                {SHOLAT_TIMES.filter(t => sholatData[t.key as SholatKey]).length} / {SHOLAT_TIMES.length} sholat
-              </span>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+    <div className="space-y-5 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-5">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-semibold flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-emerald-500" />
+            Sholat
+          </h1>
+          <p className="text-sm text-muted-foreground">Catat dan pantau sholat harian Anda</p>
+        </div>
+        <div className="flex items-center gap-2 sm:ml-auto">
+          <Button variant="outline" size="icon" onClick={() => navigateDay('prev')} aria-label="Hari sebelumnya" className="h-9 w-9">
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" onClick={goToToday} className="px-3 h-9" disabled={isToday}>
+            <Calendar className="h-4 w-4 mr-2" /> {format(currentDate, 'd MMM yyyy', { locale: id })}
+          </Button>
+          <Button variant="outline" size="icon" onClick={() => navigateDay('next')} aria-label="Hari berikutnya" className="h-9 w-9">
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Summary Compact Card */}
+      <Card className="border-[#E5E7EB] dark:border-[#374151] rounded-xl">
+        <CardContent className="p-4 sm:p-5 space-y-3">
+          {/* Row 1: Count + Progress */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                <Clock className="h-5 w-5 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Perjalanan Hari Ini</p>
+                <p className="text-xl font-bold">{completedCount} / 5 sholat selesai</p>
+              </div>
+            </div>
+            <div className="w-full sm:w-48">
+              <div className="flex items-center justify-between text-xs mb-1">
+                <span className="text-muted-foreground">Progress</span>
+                <span className="font-semibold text-emerald-600">{progress}%</span>
+              </div>
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-emerald-500 rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
+              </div>
+            </div>
+          </div>
+
+          {/* Row 2: Prayer Chips */}
+          <div className="flex items-center justify-center gap-1.5 flex-wrap">
+            {PRAYER_TIMES.map((prayer) => {
+              const isDone = prayerData?.[`sholat_${prayer.key}`] === true
+              return (
+                <div
+                  key={prayer.key}
+                  className={cn(
+                    'w-10 h-10 rounded-lg flex items-center justify-center text-xs font-medium transition-all',
+                    isDone
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-muted text-muted-foreground'
+                  )}
+                >
+                  {prayer.short}
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Row 3: Streaks */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-2 border-t border-border/50">
+            <div className="flex items-center gap-3 text-sm">
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-500/10 rounded-lg border border-emerald-200/50">
+                <Flame className="h-3.5 w-3.5 text-emerald-600" />
+                <span className="font-semibold text-emerald-600">{currentStreak}</span>
+                <span className="text-muted-foreground">hari streak</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-500/10 rounded-lg border border-amber-200/50">
+                <Target className="h-3.5 w-3.5 text-amber-600" />
+                <span className="font-semibold text-amber-600">{bestStreak}</span>
+                <span className="text-muted-foreground">hari terbaik</span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Sholat Hari Ini - Compact List */}
+      <Card className="border-[#E5E7EB] dark:border-[#374151] rounded-xl">
+        <CardContent className="p-0">
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
+            <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
             </div>
           ) : error ? (
-            <div className="text-center text-destructive py-8">
+            <div className="text-center text-destructive py-8 px-4">
               <p>Gagal memuat data: {error.message}</p>
               <Button variant="outline" onClick={() => refetch()} className="mt-2">
-                Coba Lagi
+                <RotateCcw className="h-4 w-4 mr-2" /> Coba Lagi
               </Button>
             </div>
-          ) : sholatData ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {SHOLAT_TIMES.map((sholat) => {
-                const isDone = sholatData[sholat.key as SholatKey]
-                const alasanKey = `alasan_${sholat.key}` as keyof typeof sholatData
-                const alasan = sholatData[alasanKey] as AlasanKey | null
-                const alasanLabel = ALASAN_OPTIONS.find(a => a.value === alasan)?.label
+          ) : (
+            <div className="divide-y divide-[#E5E7EB] dark:divide-[#374151]">
+              {PRAYER_TIMES.map((prayer) => {
+                const isDone = prayerData?.[`sholat_${prayer.key}`] === true
+                const reason = prayerData?.[`alasan_${prayer.key}`] as ReasonKey | null
+                const reasonLabel = REASON_OPTIONS.find(r => r.value === reason)?.label
 
                 return (
                   <div
-                    key={sholat.key}
-                    className={cn(
-                      'relative p-4 rounded-xl border-2 transition-all',
-                      isDone
-                        ? 'border-green-500/50 bg-green-500/5 dark:bg-green-500/10'
-                        : 'border-muted/50 bg-muted/30'
-                    )}
+                    key={prayer.key}
+                    className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-muted/30 transition-colors"
+                    style={{ minHeight: '60px' }}
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">{sholat.icon}</span>
-                        <div>
-                          <p className="font-semibold text-lg">{sholat.label}</p>
-                          <p className="text-sm text-muted-foreground capitalize">
-                            {isDone ? 'Sudah' : 'Belum'}
-                          </p>
-                        </div>
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className={cn(
+                        'w-9 h-9 rounded-lg flex items-center justify-center shrink-0',
+                        isDone ? 'bg-emerald-500/10 text-emerald-600' : 'bg-muted text-muted-foreground'
+                      )}>
+                        <span className="text-sm font-medium">{prayer.short}</span>
                       </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm truncate">{prayer.label}</p>
+                        <p className="text-xs text-muted-foreground">{prayer.time}</p>
+                        {reason && !isDone && (
+                          <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5 flex items-center gap-1">
+                            <X className="h-2.5 w-2.5" /> {reasonLabel}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {!isDone && (
+                        <Badge variant="outline" className="text-xs px-2 py-1 bg-muted text-muted-foreground border-border">
+                          Belum
+                        </Badge>
+                      )}
                       <Button
                         variant={isDone ? 'default' : 'outline'}
                         size="icon"
-                        className={cn('h-10 w-10', isDone ? 'bg-green-500' : '')}
-                        onClick={() => handleSholatChange(sholat.key, !isDone)}
+                        className={cn('h-9 w-9 rounded-lg', isDone && 'bg-emerald-500 hover:bg-emerald-600')}
+                        onClick={() => handlePrayerChange(prayer.key, !isDone)}
+                        aria-label={isDone ? `Batalkan ${prayer.label}` : `Tandai ${prayer.label} selesai`}
                       >
-                        {isDone ? <Check className="h-5 w-5" /> : <X className="h-5 w-5" />}
+                        {isDone ? <Check className="h-5 w-5" /> : <Check className="h-5 w-5" />}
                       </Button>
                     </div>
-
-                    {!isDone && (
-                      <div className="mt-3 pt-3 border-t">
-                        <Label className="text-xs text-muted-foreground mb-1 block">Alasan</Label>
-                        <Select
-                          value={alasan || ''}
-                          onValueChange={(value) => handleAlasanChange(sholat.key, value as AlasanKey)}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Pilih alasan..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {ALASAN_OPTIONS.map((opt) => (
-                              <SelectItem key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-
-                    {isDone && alasan && (
-                      <div className="mt-3 pt-3 border-t">
-                        <p className="text-xs text-muted-foreground">Alasan tadi: {alasanLabel}</p>
-                      </div>
-                    )}
                   </div>
                 )
               })}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">Belum ada catatan sholat untuk hari ini</p>
-              <p className="text-sm text-muted-foreground mt-1">Klik tombol di atas untuk mulai mencatat</p>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Stats */}
-      {sholatData && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Statistik Hari Ini</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="text-center p-4 bg-green-500/10 rounded-xl">
-                <p className="text-3xl font-bold text-green-600 dark:text-green-400">
-                  {SHOLAT_TIMES.filter(t => sholatData[t.key as SholatKey]).length}
-                </p>
-                <p className="text-sm text-muted-foreground">Sholat Selesai</p>
-              </div>
-              <div className="text-center p-4 bg-yellow-500/10 rounded-xl">
-                <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
-                  {SHOLAT_TIMES.filter(t => !sholatData[t.key as SholatKey]).length}
-                </p>
-                <p className="text-sm text-muted-foreground">Belum Sholat</p>
-              </div>
-              <div className="text-center p-4 bg-blue-500/10 rounded-xl">
-                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                  {Math.round((SHOLAT_TIMES.filter(t => sholatData[t.key as SholatKey]).length / SHOLAT_TIMES.length) * 100)}%
-                </p>
-                <p className="text-sm text-muted-foreground">Persentase</p>
-              </div>
+      {/* Kualitas Sholat - Conditional Compact */}
+      {completedCount > 0 && (
+        <Card className="border-emerald-200/50 dark:border-emerald-800/50 rounded-xl">
+          <CardContent className="p-4 space-y-2">
+            <p className="text-sm font-medium flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-emerald-500" />
+              Kualitas Sholat Hari Ini
+            </p>
+            <div className="space-y-1.5">
+              {PRAYER_TIMES.map((prayer) => {
+                const isDone = prayerData?.[`sholat_${prayer.key}`] === true
+                if (!isDone) return null
+
+                return (
+                  <div key={prayer.key} className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-200/50">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                        <Clock className="h-3.5 w-3.5 text-emerald-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{prayer.label}</p>
+                        <p className="text-xs text-muted-foreground">{prayer.time}</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setQualityDialog({ open: true, prayerKey: prayer.key })}
+                      className="gap-1.5 text-xs"
+                    >
+                      <Sparkles className="h-3 w-3" /> Refleksi
+                    </Button>
+                  </div>
+                )
+              })}
             </div>
           </CardContent>
         </Card>
       )}
+
+      {completedCount === 0 && (
+        <div className="text-center py-4 px-4 text-sm text-muted-foreground bg-muted/30 rounded-xl border border-[#E5E7EB] dark:border-[#374151]">
+          Belum ada sholat yang selesai hari ini. Kualitas akan muncul setelah menandai sholat selesai.
+        </div>
+      )}
+
+      {/* Perjalanan Minggu Ini - Compact Strip */}
+      <Card className="border-[#E5E7EB] dark:border-[#374151] rounded-xl">
+        <CardContent className="p-4 space-y-2">
+          <p className="text-sm font-medium flex items-center gap-2">
+            <Target className="h-4 w-4 text-emerald-500" />
+            Perjalanan Minggu Ini
+          </p>
+          <div className="space-y-1.5">
+            {Array.from({ length: 7 }, (_, i) => {
+              const date = subDays(endOfWeek(currentDate, { weekStartsOn: 1 }), i)
+              const dateStr = format(date, 'yyyy-MM-dd')
+              const dayLogs = weeklyLogs.filter(log => log.tanggal === dateStr)
+              const dayData = dayLogs[0]
+              const isTodayWeek = isSameDay(date, new Date())
+              
+              if (dayData) {
+                const completed = PRAYER_TIMES.filter(t => dayData[`sholat_${t.key}`]).length
+                const total = PRAYER_TIMES.length
+                const progressPercent = Math.round((completed / total) * 100)
+                const isComplete = completed === total
+
+                return (
+                  <div key={dateStr} className={cn(
+                    'flex items-center gap-3 px-3 py-2 rounded-lg transition-all',
+                    isComplete ? 'bg-emerald-500/5 border border-emerald-200/50' : 'bg-muted/30 border border-[#E5E7EB] dark:border-[#374151]',
+                    isTodayWeek && 'ring-1 ring-primary/30'
+                  )}>
+                    <div className="w-20 shrink-0">
+                      <p className="font-medium text-sm">{format(date, 'd MMM', { locale: id })}</p>
+                      <p className="text-xs text-muted-foreground">{format(date, 'EEE', { locale: id })}</p>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div 
+                          className="h-full rounded-full transition-all duration-300" 
+                          style={{ 
+                            width: `${progressPercent}%`,
+                            backgroundColor: isComplete ? '#10B981' : '#6366F1'
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="w-16 text-right shrink-0">
+                      <span className={cn(
+                        'text-sm font-semibold',
+                        isComplete ? 'text-emerald-600' : 'text-muted-foreground'
+                      )}>
+                        {completed}/{total}
+                      </span>
+                    </div>
+                  </div>
+                )
+              } else {
+                return (
+                  <div key={dateStr} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-muted/30 border border-[#E5E7EB] dark:border-[#374151]">
+                    <div className="w-20 shrink-0">
+                      <p className="font-medium text-sm">{format(date, 'd MMM', { locale: id })}</p>
+                      <p className="text-xs text-muted-foreground">{format(date, 'EEE', { locale: id })}</p>
+                    </div>
+                    <div className="flex-1">
+                      <div className="h-2 bg-muted/50 rounded-full overflow-hidden">
+                        <div className="h-full bg-muted rounded-full" style={{ width: '0%' }} />
+                      </div>
+                    </div>
+                    <div className="w-16 text-right shrink-0 text-muted-foreground">
+                      <span className="text-sm">—</span>
+                    </div>
+                  </div>
+                )
+              }
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Reason Dialog */}
+      <Dialog open={!!reasonDialog} onOpenChange={(open) => !open && setReasonDialog(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Alasan Tidak Sholat</DialogTitle>
+            <DialogDescription>
+              Pilih alasan mengapa {reasonDialog ? PRAYER_TIMES.find(p => p.key === reasonDialog.prayerKey)?.label : 'sholat'} tidak dilakukan
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-2 py-4">
+            {REASON_OPTIONS.map((opt) => (
+              <Button
+                key={opt.value}
+                variant="outline"
+                className="w-full justify-start gap-3"
+                onClick={() => handleReasonSubmit(opt.value)}
+              >
+                <span className="text-xl">{opt.icon}</span>
+                {opt.label}
+              </Button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Quality Dialog */}
+      <Dialog open={!!qualityDialog} onOpenChange={(open) => !open && setQualityDialog(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Kualitas Sholat</DialogTitle>
+            <DialogDescription>
+              Bagaimana kualitas {qualityDialog ? PRAYER_TIMES.find(p => p.key === qualityDialog.prayerKey)?.label : 'sholat'} Anda?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-3 py-4">
+            {QUALITY_OPTIONS.map((opt) => (
+              <Button
+                key={opt.value}
+                variant="outline"
+                className="w-full justify-start gap-3"
+                onClick={() => handleQualitySubmit(opt.value)}
+              >
+                <span className="text-xl" style={{ fontSize: '1.5rem' }}>{opt.icon}</span>
+                <span className="flex-1 text-left font-medium">{opt.label}</span>
+              </Button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

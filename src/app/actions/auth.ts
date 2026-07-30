@@ -52,7 +52,7 @@ export async function loginAction(prevState: FormState | null, formData: FormDat
     return { error: error.message }
   }
 
-  redirect('/overview/bulanan')
+  redirect('/overview')
 }
 
 export async function registerAction(prevState: FormState | null, formData: FormData): Promise<FormState> {
@@ -87,7 +87,7 @@ export async function registerAction(prevState: FormState | null, formData: Form
     return { error: error.message }
   }
 
-  redirect('/overview/bulanan')
+  redirect('/overview')
 }
 
 export async function logoutAction() {

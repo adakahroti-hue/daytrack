@@ -42,26 +42,235 @@ export function getMonthName(month: number): string {
   return months[month]
 }
 
-export function getPriorityLabel(priority: string): string {
+// ============================================
+// NEW COLOR SYSTEM - Navy as primary brand
+// ============================================
+
+// Navy/Dark Blue - Primary Brand Color
+export const BRAND_COLORS = {
+  primary: 'bg-[#0F172A] text-white',           // Navy 900
+  primaryHover: 'hover:bg-[#1E293B]',           // Navy 800
+  primaryLight: 'bg-[#1E293B] text-white',      // Navy 800
+  primaryOutline: 'border-[#0F172A] text-[#0F172A] dark:border-[#1E293B] dark:text-[#E2E8F0]',
+  primarySoft: 'bg-[#0F172A]/10 text-[#0F172A] dark:bg-[#1E293B]/30 dark:text-[#E2E8F0]',
+  primaryRing: 'focus-visible:ring-[#0F172A]/50',
+}
+
+// Status Colors - ONLY for status elements
+export const STATUS_COLORS = {
+  belum: {
+    bg: 'bg-slate-100 dark:bg-slate-800',
+    text: 'text-slate-700 dark:text-slate-300',
+    border: 'border-slate-200 dark:border-slate-700',
+    ring: 'focus-visible:ring-slate-400/50',
+    soft: 'bg-slate-50 dark:bg-slate-900/50',
+  },
+  proses: {
+    bg: 'bg-amber-100 dark:bg-amber-900/30',
+    text: 'text-amber-700 dark:text-amber-300',
+    border: 'border-amber-200 dark:border-amber-800',
+    ring: 'focus-visible:ring-amber-400/50',
+    soft: 'bg-amber-50 dark:bg-amber-900/20',
+  },
+  selesai: {
+    bg: 'bg-green-100 dark:bg-green-900/30',
+    text: 'text-green-700 dark:text-green-300',
+    border: 'border-green-200 dark:border-green-800',
+    ring: 'focus-visible:ring-green-400/50',
+    soft: 'bg-green-50 dark:bg-green-900/20',
+  },
+  terlambat: {
+    bg: 'bg-red-100 dark:bg-red-900/30',
+    text: 'text-red-700 dark:text-red-300',
+    border: 'border-red-200 dark:border-red-800',
+    ring: 'focus-visible:ring-red-400/50',
+    soft: 'bg-red-50 dark:bg-red-900/20',
+  },
+}
+
+// Priority Colors - Soft tones for badges
+export const PRIORITY_COLORS = {
+  p1: {
+    bg: 'bg-red-100 dark:bg-red-900/30',
+    text: 'text-red-700 dark:text-red-300',
+    border: 'border-red-200 dark:border-red-800',
+    icon: 'text-red-600 dark:text-red-400',
+  },
+  p2: {
+    bg: 'bg-amber-100 dark:bg-amber-900/30',
+    text: 'text-amber-700 dark:text-amber-300',
+    border: 'border-amber-200 dark:border-amber-800',
+    icon: 'text-amber-600 dark:text-amber-400',
+  },
+  p3: {
+    bg: 'bg-sky-100 dark:bg-sky-900/30',
+    text: 'text-sky-700 dark:text-sky-300',
+    border: 'border-sky-200 dark:border-sky-800',
+    icon: 'text-sky-600 dark:text-sky-400',
+  },
+  p4: {
+    bg: 'bg-green-100 dark:bg-green-900/30',
+    text: 'text-green-700 dark:text-green-300',
+    border: 'border-green-200 dark:border-green-800',
+    icon: 'text-green-600 dark:text-green-400',
+  },
+}
+
+// Neutral card border
+export const CARD_BORDER = 'border-[#E5E7EB] dark:border-[#374151]'
+export const CARD_BORDER_HOVER = 'hover:border-[#D1D5DB] dark:hover:border-[#4B5563]'
+
+// ============================================
+// Status helpers
+// ============================================
+export function getStatusLabel(status: string): string {
   const labels: Record<string, string> = {
-    p1: 'P1 - Mendesak',
-    p2: 'P2 - Tinggi',
-    p3: 'P3 - Sedang',
-    p4: 'P4 - Rendah',
+    proses: 'Proses',
+    belum: 'Belum',
+    selesai: 'Selesai',
   }
-  return labels[priority] || priority
+  return labels[status] || status
 }
 
-export function getPriorityColor(priority: string): string {
-  const colors: Record<string, string> = {
-    p1: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-    p2: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
-    p3: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-    p4: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400',
+export function getStatusShortLabel(status: string): string {
+  const labels: Record<string, string> = {
+    proses: 'Proses',
+    belum: 'Belum',
+    selesai: 'Selesai',
   }
-  return colors[priority] || colors.p3
+  return labels[status] || status
 }
 
+// Status color for badges (uses STATUS_COLORS)
+export function getStatusColor(status: string): string {
+  const colors = STATUS_COLORS[status as keyof typeof STATUS_COLORS] || STATUS_COLORS.belum
+  return `${colors.bg} ${colors.text} ${colors.border}`
+}
+
+// Status color for outline badges
+export function getStatusOutlineColor(status: string): string {
+  const colors = STATUS_COLORS[status as keyof typeof STATUS_COLORS] || STATUS_COLORS.belum
+  return `${colors.text} ${colors.border} hover:${colors.soft} hover:${colors.text}`
+}
+
+// ============================================
+// Priority helpers
+// ============================================
+export function getMissionPriorityIcon(priority: string): string {
+  const icons: Record<string, string> = {
+    p1: '🔥',
+    p2: '⚡',
+    p3: '📌',
+    p4: '🌱',
+  }
+  return icons[priority] || icons.p3
+}
+
+export function getMissionGroupName(priority: string): string {
+  const names: Record<string, string> = {
+    p1: 'Misi Mendesak',
+    p2: 'Misi Penting',
+    p3: 'Misi Harian',
+    p4: 'Misi Ringan',
+  }
+  return names[priority] || names.p3
+}
+
+export function getMissionPriorityLabel(priority: string): string {
+  const labels: Record<string, string> = {
+    p1: 'P1 – Mendesak',
+    p2: 'P2 – Tinggi',
+    p3: 'P3 – Sedang',
+    p4: 'P4 – Rendah',
+  }
+  return labels[priority] || labels.p3
+}
+
+export function getMissionPriorityShortLabel(priority: string): string {
+  const labels: Record<string, string> = {
+    p1: 'P1',
+    p2: 'P2',
+    p3: 'P3',
+    p4: 'P4',
+  }
+  return labels[priority] || labels.p3
+}
+
+// Priority color for badges (uses PRIORITY_COLORS)
+export function getMissionPriorityColor(priority: string): string {
+  const colors = PRIORITY_COLORS[priority as keyof typeof PRIORITY_COLORS] || PRIORITY_COLORS.p3
+  return `${colors.bg} ${colors.text} ${colors.border}`
+}
+
+// Priority border for cards (subtle left border)
+export function getMissionPriorityBorder(priority: string): string {
+  const borders: Record<string, string> = {
+    p1: 'border-l-3 border-red-400 dark:border-l-red-500',
+    p2: 'border-l-3 border-amber-400 dark:border-l-amber-500',
+    p3: 'border-l-3 border-sky-400 dark:border-l-sky-500',
+    p4: 'border-l-3 border-green-400 dark:border-l-green-500',
+  }
+  return borders[priority] || borders.p3
+}
+
+export function getMissionGroupDescription(priority: string): string {
+  const descriptions: Record<string, string> = {
+    p1: 'Prioritas Mendesak',
+    p2: 'Prioritas Tinggi',
+    p3: 'Prioritas Sedang',
+    p4: 'Prioritas Rendah',
+  }
+  return descriptions[priority] || descriptions.p3
+}
+
+export function getMissionGroupDescriptionWithCount(priority: string, count: number): string {
+  return `${getMissionGroupDescription(priority)} • ${count} tugas`
+}
+
+// ============================================
+// Card styles (shared)
+// ============================================
+export const CARD_BASE = `${CARD_BORDER} ${CARD_BORDER_HOVER} rounded-xl transition-colors duration-200`
+export const CARD_HOVER = 'hover:shadow-sm hover:-translate-y-0.5'
+
+// Stats card icon containers
+export const STAT_ICON_CONTAINERS = {
+  total: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300',
+  overdue: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300',
+  inProgress: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
+  completed: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
+}
+
+// ============================================
+// Utility helpers
+// ============================================
+export function formatTime(date: Date | string): string {
+  return new Date(date).toLocaleTimeString('id-ID', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+export function getEstimasiText(menit: number): string {
+  if (menit >= 60) {
+    const jam = Math.floor(menit / 60)
+    const sisa = menit % 60
+    if (sisa > 0) {
+      return `${jam} jam ${sisa} menit`
+    }
+    return `${jam} jam`
+  }
+  return `${menit} menit`
+}
+
+export function isOverdue(deadline: string | null, status: string): boolean {
+  if (!deadline || status === 'selesai') return false
+  return new Date(deadline) < new Date()
+}
+
+// ============================================
+// Legacy exports for backward compatibility
+// ============================================
 export function getAspectLabel(aspect: string): string {
   const labels: Record<string, string> = {
     psikis: 'Psikis',
@@ -82,41 +291,27 @@ export function getAspectColor(aspect: string): string {
   return colors[aspect] || colors.produktivitas
 }
 
-export function getStatusLabel(status: string): string {
-  const labels: Record<string, string> = {
-    proses: 'Proses',
-    belum: 'Belum',
-    selesai: 'Selesai',
-  }
-  return labels[status] || status
-}
-
-export function getStatusColor(status: string): string {
+export function getPriorityColor(priority: string): string {
   const colors: Record<string, string> = {
-    proses: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-    belum: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400',
-    selesai: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+    p1: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+    p2: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+    p3: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+    p4: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
   }
-  return colors[status] || colors.belum
+  return colors[priority] || colors.p3
 }
 
-export function formatTime(date: Date | string): string {
-  return new Date(date).toLocaleTimeString('id-ID', {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-export function getEstimasiText(menit: number): string {
-  if (menit >= 60) {
-    const jam = Math.floor(menit / 60)
-    const sisa = menit % 60
-    return sisa > 0 ? `${jam}j ${sisa}m` : `${jam}j`
+export function getPriorityLabel(priority: string): string {
+  const labels: Record<string, string> = {
+    p1: 'P1 - Mendesak',
+    p2: 'P2 - Tinggi',
+    p3: 'P3 - Sedang',
+    p4: 'P4 - Rendah',
   }
-  return `${menit}m`
+  return labels[priority] || priority
 }
 
-export function isOverdue(deadline: string | null, status: string): boolean {
-  if (!deadline || status === 'selesai') return false
-  return new Date(deadline) < new Date()
+// For backward compatibility - alias
+export function getMissionStatusColor(status: string): string {
+  return getStatusColor(status)
 }
