@@ -27,7 +27,21 @@ export function useUpdateTask() {
   
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<TaskFormData> }) => updateTask(id, data),
-    onSuccess: () => {
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ["tasks"] })
+      const previousTasks = queryClient.getQueriesData({ queryKey: ["tasks"] })
+      queryClient.setQueriesData({ queryKey: ["tasks"] }, (old: any) => {
+        if (!old) return old
+        return old.map((task: any) => task.id === id ? { ...task, ...data, updated_at: new Date().toISOString() } : task)
+      })
+      return { previousTasks }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousTasks) {
+        context.previousTasks.forEach(([key, data]: any) => queryClient.setQueryData(key, data))
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] })
     },
   })

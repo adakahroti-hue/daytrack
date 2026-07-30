@@ -1,15 +1,46 @@
-"use client"
+'use client'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, Clock, CalendarDays, CalendarRange } from 'lucide-react'
+import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, Clock, CalendarDays, CalendarRange, Target, Zap, CheckCircle2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
 import { useHeaderControls, formatDateForPeriod, formatIndonesianDate } from './HeaderControls'
+import { useTasks } from '@/hooks/useTasks'
+import { getEstimasiText } from '@/lib/utils'
 
 interface HeaderProps {
   onMenuClick: () => void
+}
+
+// Inline stats for Hari Ini tab - shown next to date navigation
+function HariIniHeaderStats() {
+  const today = format(new Date(), 'yyyy-MM-dd')
+  const { data: todayTasks = [] } = useTasks(today)
+  
+  const activeMissions = todayTasks.filter((t: any) => t.status === 'belum' || t.status === 'proses').length
+  const totalEstimatedMinutes = todayTasks.reduce((sum: number, t: any) => sum + t.estimasi_menit, 0)
+  const completedMissions = todayTasks.filter((t: any) => t.status === 'selesai').length
+
+  return (
+    <div className="hidden md:flex items-center gap-2">
+      <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#EFF6FF] border border-[#DBEAFE] rounded-lg">
+        <Target className="h-3.5 w-3.5 text-[#2563EB]" />
+        <span className="text-xs font-semibold text-[#2563EB]">{activeMissions}</span>
+        <span className="text-[10px] text-[#2563EB]/70">Aktif</span>
+      </div>
+      <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg">
+        <Clock className="h-3.5 w-3.5 text-slate-500" />
+        <span className="text-xs font-semibold text-slate-700">{getEstimasiText(totalEstimatedMinutes)}</span>
+      </div>
+      <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-green-50 border border-green-200 rounded-lg">
+        <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+        <span className="text-xs font-semibold text-green-700">{completedMissions}</span>
+        <span className="text-[10px] text-green-600/70">Selesai</span>
+      </div>
+    </div>
+  )
 }
 
 export function Header({ onMenuClick }: HeaderProps) {
@@ -27,6 +58,8 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   // Show period toggle only on Overview page
   const isOverviewPage = pathname === '/overview'
+  // Show stats only on Hari Ini tab
+  const isHariIni = pathname === '/tugas/hari-ini'
 
   const periodLabels = {
     daily: { label: 'Harian', icon: Clock },
@@ -58,8 +91,11 @@ export function Header({ onMenuClick }: HeaderProps) {
       </div>
 
       {/* Right side controls */}
-      <div className="flex items-center gap-4">
-        {/* Date Navigation — left part of right side */}
+      <div className="flex items-center gap-3">
+        {/* Hari Ini Stats — only on tugas/hari-ini */}
+        {isHariIni && <HariIniHeaderStats />}
+
+        {/* Date Navigation */}
         <div className="flex-1 flex items-center justify-start gap-2 min-w-0">
           {/* Desktop date navigation */}
           <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border">

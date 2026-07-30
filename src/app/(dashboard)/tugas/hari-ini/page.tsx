@@ -105,7 +105,7 @@ function TaskCard({
   )
 
   return (
-    <Card className={cardBorderClass}>
+    <Card className={cn('group', cardBorderClass)}>
       <CardContent className="p-4 space-y-3">
         {/* Top Row: Priority Badge + Dropdown Menu */}
         <div className="flex items-start justify-between gap-2">
@@ -430,11 +430,6 @@ function HariIniPageClient() {
 
   return (
     <div className="space-y-6 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
-      {/* Stats Header - Centered */}
-      <div className="flex justify-center">
-        <StatsInline todayTasks={todayTasks} />
-      </div>
-
       {/* DailyFocusCard - without inline stats */}
       <DailyFocusCard todayTasks={todayTasks} />
 
