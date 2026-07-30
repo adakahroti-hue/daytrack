@@ -538,7 +538,7 @@ function HariIniPageClient() {
       {/* Add Task Dialog */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogTrigger asChild>
-          <Button className="hidden" /> {/* Hidden - FAB triggers dialog programmatically */}
+          <span className="hidden" />
         </DialogTrigger>
         <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>{editingTask ? 'Edit Tugas' : 'Tambah Tugas Baru'}</DialogTitle></DialogHeader>
