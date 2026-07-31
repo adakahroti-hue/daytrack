@@ -1,9 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { 
-  getPrayerLog, 
-  getPrayerLogRange, 
+  getPrayerLog,
+  getPrayerLogRange,
   upsertPrayerLog,
-  togglePrayer 
+  togglePrayer,
+  updatePrayerQuality
 } from "@/app/actions/prayer-logs"
 import type { PrayerLogFormData } from "@/app/actions/prayer-logs"
 export function usePrayerLog(tanggal: string) {
@@ -50,6 +51,23 @@ export function useTogglePrayer() {
     },
     onError: (error) => {
       console.error("Failed to toggle prayer:", error)
+    },
+  })
+}
+export function useUpdatePrayerQuality() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ tanggal, prayerTime, quality }: {
+      tanggal: string;
+      prayerTime: "subuh" | "dzuhur" | "ashar" | "maghrib" | "isya";
+      quality: number;
+    }) => updatePrayerQuality(tanggal, prayerTime, quality),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["prayer_logs"] })
+    },
+    onError: (error) => {
+      console.error("Failed to update prayer quality:", error)
     },
   })
 }

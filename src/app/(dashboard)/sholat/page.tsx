@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { format, subDays, addDays, isSameDay, startOfWeek, endOfWeek } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, Calendar, Check, X, RotateCcw, Clock, Flame, Target, Sparkles } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar, Check, X, RotateCcw, Clock, Flame, Target, Sparkles, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
-import { usePrayerLog, usePrayerLogRange, useUpsertPrayerLog, useTogglePrayer } from '@/hooks/usePrayerLogs'
+import { usePrayerLog, usePrayerLogRange, useUpsertPrayerLog, useTogglePrayer, useUpdatePrayerQuality } from '@/hooks/usePrayerLogs'
 import { usePrayerLogRealtime } from '@/hooks/useRealtime'
 
 const PRAYER_TIMES = [
@@ -50,7 +50,7 @@ export default function SholatPage() {
   const isToday = isSameDay(currentDate, new Date())
 
   const { data: prayerData, isLoading, error, refetch } = usePrayerLog(dateKey)
-  const upsertPrayerLog = useUpsertPrayerLog()
+  const qualityUpdate = useUpdatePrayerQuality()
   const togglePrayer = useTogglePrayer()
 
   usePrayerLogRealtime(dateKey)
@@ -101,16 +101,11 @@ export default function SholatPage() {
 
   const handleQualitySubmit = async (quality: QualityKey) => {
     if (!qualityDialog) return
-    if (!prayerData) return
 
-    const prayerName = PRAYER_TIMES.find(p => p.key === qualityDialog.prayerKey)?.label
-    const refleksi = `Kualitas ${prayerName}: ${QUALITY_OPTIONS.find(q => q.value === quality)?.label}`
-
-    await upsertPrayerLog.mutateAsync({
-      ...prayerData,
-      refleksi: prayerData.refleksi
-        ? `${prayerData.refleksi}\n${refleksi}`
-        : refleksi
+    await qualityUpdate.mutateAsync({
+      tanggal: dateKey,
+      prayerTime: qualityDialog.prayerKey,
+      quality,
     })
 
     setQualityDialog(null)
@@ -244,12 +239,12 @@ export default function SholatPage() {
         </CardContent>
       </Card>
 
-      {/* Kualitas Sholat - Conditional Compact */}
+      {/* Kualitas Sholat - Compact with Badge */}
       {completedCount > 0 && (
         <Card className="border-emerald-200/50 dark:border-emerald-800/50 rounded-xl">
           <CardContent className="p-4 space-y-2">
             <p className="text-sm font-medium flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-emerald-500" />
+              <Star className="h-4 w-4 text-emerald-500" />
               Kualitas Sholat Hari Ini
             </p>
             <div className="space-y-1.5">
@@ -257,8 +252,19 @@ export default function SholatPage() {
                 const isDone = prayerData?.[`sholat_${prayer.key}`] === true
                 if (!isDone) return null
 
+                const quality = prayerData?.[`kualitas_${prayer.key}`] as QualityKey | null
+                const qualityOption = QUALITY_OPTIONS.find(q => q.value === quality)
+
                 return (
-                  <div key={prayer.key} className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-200/50">
+                  <div
+                    key={prayer.key}
+                    className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-200/50 cursor-pointer hover:bg-emerald-500/10 transition-colors"
+                    onClick={() => setQualityDialog({ open: true, prayerKey: prayer.key })}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === 'Enter' && setQualityDialog({ open: true, prayerKey: prayer.key })}
+                    aria-label={`Ubah kualitas ${prayer.label}: ${qualityOption ? qualityOption.label : 'Belum diisi'}`}
+                  >
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center">
                         <Clock className="h-3.5 w-3.5 text-emerald-600" />
@@ -268,14 +274,23 @@ export default function SholatPage() {
                         <p className="text-xs text-muted-foreground">{prayer.time}</p>
                       </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setQualityDialog({ open: true, prayerKey: prayer.key })}
-                      className="gap-1.5 text-xs"
-                    >
-                      <Sparkles className="h-3 w-3" /> Refleksi
-                    </Button>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {qualityOption ? (
+                        <Badge variant="outline" className={cn(
+                          'text-xs px-2 py-1',
+                          quality === 1 && 'border-red-300 text-red-600 bg-red-50 dark:border-red-800 dark:text-red-400 dark:bg-red-950/30',
+                          quality === 2 && 'border-yellow-300 text-yellow-700 bg-yellow-50 dark:border-yellow-800 dark:text-yellow-400 dark:bg-yellow-950/30',
+                          quality === 3 && 'border-green-300 text-green-700 bg-green-50 dark:border-green-800 dark:text-green-400 dark:bg-green-950/30',
+                        )}>
+                          {qualityOption.icon} {qualityOption.label}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-xs px-2 py-1 bg-muted text-muted-foreground border-border">
+                          Belum
+                        </Badge>
+                      )}
+                      <Sparkles className="h-3 w-3 text-muted-foreground" />
+                    </div>
                   </div>
                 )
               })}
@@ -325,17 +340,21 @@ export default function SholatPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-3 py-4">
-            {QUALITY_OPTIONS.map((opt) => (
-              <Button
-                key={opt.value}
-                variant="outline"
-                className="w-full justify-start gap-3"
-                onClick={() => handleQualitySubmit(opt.value)}
-              >
-                <span className="text-xl" style={{ fontSize: '1.5rem' }}>{opt.icon}</span>
-                <span className="flex-1 text-left font-medium">{opt.label}</span>
-              </Button>
-            ))}
+            {QUALITY_OPTIONS.map((opt) => {
+              const currentQuality = prayerData?.[`kualitas_${qualityDialog?.prayerKey}`] as QualityKey | null
+              return (
+                <Button
+                  key={opt.value}
+                  variant={currentQuality === opt.value ? 'default' : 'outline'}
+                  className="w-full justify-start gap-3"
+                  onClick={() => handleQualitySubmit(opt.value)}
+                >
+                  <span className="text-xl" style={{ fontSize: '1.5rem' }}>{opt.icon}</span>
+                  <span className="flex-1 text-left font-medium">{opt.label}</span>
+                  {currentQuality === opt.value && <Check className="h-4 w-4 text-primary-foreground" />}
+                </Button>
+              )
+            })}
           </div>
         </DialogContent>
       </Dialog>

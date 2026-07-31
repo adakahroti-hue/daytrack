@@ -218,3 +218,65 @@ export async function getPrayerLogRange(startDate: string, endDate: string) {
   if (error) throw new Error(error.message)
   return data || []
 }
+
+export async function updatePrayerQuality(
+  tanggal: string,
+  prayerTime: typeof PRAYER_TIMES[number],
+  quality: number
+) {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  const qualityColumnMap: Record<string, string> = {
+    subuh: "kualitas_subuh",
+    dzuhur: "kualitas_dzuhur",
+    ashar: "kualitas_ashar",
+    maghrib: "kualitas_maghrib",
+    isya: "kualitas_isya",
+  }
+
+  const column = qualityColumnMap[prayerTime]
+  if (!column) throw new Error("Invalid prayer time")
+
+  const { data: existing } = await supabase
+    .from("prayer_logs")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("tanggal", tanggal)
+    .single()
+
+  const updates = { [column]: quality }
+
+  let data, error
+  if (existing) {
+    const result = await supabase
+      .from("prayer_logs")
+      .update(updates)
+      .eq("id", existing.id)
+      .eq("user_id", user.id)
+      .select()
+      .single()
+    data = result.data
+    error = result.error
+  } else {
+    const result = await supabase
+      .from("prayer_logs")
+      .insert({
+        user_id: user.id,
+        tanggal,
+        ...updates,
+      })
+      .select()
+      .single()
+    data = result.data
+    error = result.error
+  }
+
+  if (error) throw new Error(error.message)
+
+  revalidatePath("/sholat")
+
+  return { data, error: null }
+}
