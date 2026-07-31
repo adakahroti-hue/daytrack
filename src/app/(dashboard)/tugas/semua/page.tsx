@@ -475,43 +475,8 @@ function SemuaPageClient() {
 
   // Main render - all hooks already executed above
   return (
-    <div className="space-y-6 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      {/* Page Header - Compact stats inline with Add button */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-        <div className="flex-1 min-w-0">
-          <StatsInline todayTasks={allTasks} />
-        </div>
-        <div className="flex-shrink-0 sm:ml-auto">
-          <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2" variant="default">
-                <Plus className="h-4 w-4" />
-                Tambah Tugas
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>{editingTask ? 'Edit Tugas' : 'Tambah Tugas Baru'}</DialogTitle>
-              </DialogHeader>
-              <TaskForm initialData={editingTask} onSubmit={handleSubmit} onCancel={() => { setIsFormOpen(false); setEditingTask(null) }} />
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
-
-      {/* Subtle Today Focus Context - small info line */}
-      {todayFocusTask && (
-        <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-[#E5E7EB] dark:border-[#374151]">
-          <Target className="h-4 w-4 text-slate-500 shrink-0" />
-          <span className="text-sm text-slate-600 dark:text-slate-400">
-            Fokus hari ini: <span className="font-medium text-foreground">{todayFocusTask.nama}</span>
-          </span>
-          <span className="text-slate-400 mx-2">|</span>
-          <a href="/tugas/hari-ini" className="text-sm text-primary hover:underline font-medium">
-            Lihat di Hari Ini →
-          </a>
-        </div>
-      )}
+    <div className="space-y-6 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
+      {/* Stats are now shown in the header — no inline stats here */}
 
       {/* Search & Filter Bar - Single Row */}
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
@@ -532,7 +497,7 @@ function SemuaPageClient() {
 
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as FilterStatusType)}>
-            <SelectTrigger className="w-[140px]"><SelectValue placeholder="Semua Status" /></SelectTrigger>
+            <SelectTrigger className="w-auto min-w-[140px] max-w-[180px]"><SelectValue placeholder="Semua Status" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Semua Status</SelectItem>
               <SelectItem value="belum">Belum</SelectItem>
@@ -542,7 +507,7 @@ function SemuaPageClient() {
           </Select>
 
           <Select value={priorityFilter} onValueChange={(v) => setPriorityFilter(v as 'all' | Task['prioritas'])}>
-            <SelectTrigger className="w-[140px]"><SelectValue placeholder="Semua Kategori" /></SelectTrigger>
+            <SelectTrigger className="w-auto min-w-[140px] max-w-[180px]"><SelectValue placeholder="Semua Kategori" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Semua Kategori</SelectItem>
               <SelectItem value="p1">P1 Mendesak</SelectItem>
@@ -553,7 +518,7 @@ function SemuaPageClient() {
           </Select>
 
           <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-            <SelectTrigger className="w-[160px]"><SelectValue placeholder="Prioritas Tertinggi" /></SelectTrigger>
+            <SelectTrigger className="w-auto min-w-[160px] max-w-[200px]"><SelectValue placeholder="Prioritas Tertinggi" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="priority">Prioritas Tertinggi</SelectItem>
               <SelectItem value="newest">Terbaru</SelectItem>
@@ -572,9 +537,9 @@ function SemuaPageClient() {
       </div>
 
       {/* Task List - Responsive Grid */}
-      <Card className={cn(CARD_BASE, 'overflow-hidden')}>
+      <div>
         {filteredAndSortedTasks.length === 0 ? (
-          <CardContent className="py-16 text-center">
+          <div className="py-16 text-center">
             {hasActiveFilters ? (
               <>
                 <Search className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
@@ -588,26 +553,13 @@ function SemuaPageClient() {
               <>
                 <Target className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
                 <p className="text-muted-foreground text-lg">Belum ada tugas sama sekali</p>
-                <p className="text-sm text-muted-foreground mt-1">Mulai dengan menambahkan tugas pertama Anda</p>
-                <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="mt-4 gap-1.5">
-                      <Plus className="h-4 w-4" /> Tambah Tugas Pertama
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                      <DialogTitle>Tambah Tugas Baru</DialogTitle>
-                    </DialogHeader>
-                    <TaskForm initialData={null} onSubmit={handleSubmit} onCancel={() => { setIsFormOpen(false); setEditingTask(null) }} />
-                  </DialogContent>
-                </Dialog>
+                <p className="text-sm text-muted-foreground mt-1">Klik tombol + di kanan bawah untuk menambah tugas</p>
               </>
             )}
-          </CardContent>
+          </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredAndSortedTasks.map((task) => (
                 <TaskCard
                   key={task.id}
@@ -620,7 +572,27 @@ function SemuaPageClient() {
             </div>
           </>
         )}
-      </Card>
+      </div>
+
+      {/* Floating Action Button - Fixed bottom right */}
+      <Button
+        onClick={() => { setEditingTask(null); setIsFormOpen(true) }}
+        className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95"
+        aria-label="Tambah tugas baru"
+        size="icon"
+      >
+        <Plus className="h-6 w-6" />
+      </Button>
+
+      {/* Add/Edit Task Dialog */}
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{editingTask ? 'Edit Tugas' : 'Tambah Tugas Baru'}</DialogTitle>
+          </DialogHeader>
+          <TaskForm initialData={editingTask} onSubmit={handleSubmit} onCancel={() => { setIsFormOpen(false); setEditingTask(null) }} />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

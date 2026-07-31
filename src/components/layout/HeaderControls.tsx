@@ -63,7 +63,7 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
   if (category === 'tugas' && tugasView) {
     switch (tugasView) {
       case 'hari-ini': return 'Hari Ini'
-      case 'semua': return 'Semua Tugas'
+      case 'semua': return 'Semua'
     }
   }
 
@@ -197,7 +197,11 @@ export function HeaderControlsProvider({
   useEffect(() => {
     if (pathname) {
       setCategory(getCategoryFromPath(pathname))
-      setSubPage(getSubPageFromPath(pathname))
+      const sp = getSubPageFromPath(pathname)
+      setSubPage(sp)
+      // Sync tugasView from URL so header title/description matches the active tab
+      if (sp === 'semua') setTugasView('semua')
+      else if (sp === 'hari-ini') setTugasView('hari-ini')
     }
   }, [pathname])
 

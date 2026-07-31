@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, Clock, CalendarDays, CalendarRange, Target, Zap, CheckCircle2 } from 'lucide-react'
+import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, Clock, CalendarDays, CalendarRange, Target, Zap, CheckCircle2, AlertTriangle } from 'lucide-react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
@@ -43,6 +43,45 @@ function HariIniHeaderStats() {
   )
 }
 
+// Inline stats for Semua tab - Total, Terlambat, Proses, Selesai
+import { isBefore, startOfDay } from 'date-fns'
+function SemuaHeaderStats() {
+  const { data: allTasks = [] } = useTasks()
+  
+  const total = allTasks.length
+  const overdue = allTasks.filter((t: any) => {
+    const taskDate = new Date(t.tanggal)
+    return isBefore(taskDate, startOfDay(new Date())) && t.status !== 'selesai'
+  }).length
+  const inProgress = allTasks.filter((t: any) => t.status === 'proses').length
+  const completed = allTasks.filter((t: any) => t.status === 'selesai').length
+
+  return (
+    <div className="hidden md:flex items-center gap-2">
+      <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg">
+        <Calendar className="h-3.5 w-3.5 text-slate-600" />
+        <span className="text-xs font-semibold text-slate-700">{total}</span>
+        <span className="text-[10px] text-slate-500/70">Total</span>
+      </div>
+      <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-red-50 border border-red-200 rounded-lg">
+        <AlertTriangle className="h-3.5 w-3.5 text-red-600" />
+        <span className="text-xs font-semibold text-red-700">{overdue}</span>
+        <span className="text-[10px] text-red-600/70">Terlambat</span>
+      </div>
+      <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-50 border border-amber-200 rounded-lg">
+        <Clock className="h-3.5 w-3.5 text-amber-600" />
+        <span className="text-xs font-semibold text-amber-700">{inProgress}</span>
+        <span className="text-[10px] text-amber-600/70">Proses</span>
+      </div>
+      <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-green-50 border border-green-200 rounded-lg">
+        <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+        <span className="text-xs font-semibold text-green-700">{completed}</span>
+        <span className="text-[10px] text-green-600/70">Selesai</span>
+      </div>
+    </div>
+  )
+}
+
 export function Header({ onMenuClick }: HeaderProps) {
   const pathname = usePathname()
   const {
@@ -58,8 +97,9 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   // Show period toggle only on Overview page
   const isOverviewPage = pathname === '/overview'
-  // Show stats only on Hari Ini tab
+  // Show stats only on Hari Ini and Semua tabs
   const isHariIni = pathname === '/tugas/hari-ini'
+  const isSemua = pathname === '/tugas/semua'
 
   const periodLabels = {
     daily: { label: 'Harian', icon: Clock },
@@ -94,6 +134,9 @@ export function Header({ onMenuClick }: HeaderProps) {
       <div className="flex items-center gap-3">
         {/* Hari Ini Stats — only on tugas/hari-ini */}
         {isHariIni && <HariIniHeaderStats />}
+
+        {/* Semua Stats — only on tugas/semua */}
+        {isSemua && <SemuaHeaderStats />}
 
         {/* Date Navigation */}
         <div className="flex-1 flex items-center justify-start gap-2 min-w-0">
