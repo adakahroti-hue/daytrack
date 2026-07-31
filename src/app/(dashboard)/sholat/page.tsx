@@ -109,7 +109,6 @@ export default function SholatPage() {
     })
 
     setQualityDialog(null)
-    refetch()
   }
 
   const getCompletedCount = () => {

@@ -63,7 +63,15 @@ export function useUpdatePrayerQuality() {
       prayerTime: "subuh" | "dzuhur" | "ashar" | "maghrib" | "isya";
       quality: number;
     }) => updatePrayerQuality(tanggal, prayerTime, quality),
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      // Optimistically update the cache so the UI responds instantly
+      queryClient.setQueryData(["prayer_logs", variables.tanggal], (old: any) => {
+        if (!old) return old
+        return {
+          ...old,
+          [`kualitas_${variables.prayerTime}`]: variables.quality,
+        }
+      })
       queryClient.invalidateQueries({ queryKey: ["prayer_logs"] })
     },
     onError: (error) => {
