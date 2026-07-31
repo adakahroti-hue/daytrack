@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
-import { usePrayerLog, usePrayerLogRange, useUpsertPrayerLog, useTogglePrayer, useUpdatePrayerQuality } from '@/hooks/usePrayerLogs'
+import { usePrayerLog, usePrayerLogRange, useUpsertPrayerLog, useTogglePrayer, useUpdatePrayerQuality, useQueryClient } from '@/hooks/usePrayerLogs'
 import { usePrayerLogRealtime } from '@/hooks/useRealtime'
 
 const PRAYER_TIMES = [
@@ -49,11 +49,42 @@ export default function SholatPage() {
   const dateKey = format(currentDate, 'yyyy-MM-dd')
   const isToday = isSameDay(currentDate, new Date())
 
+  const queryClient = useQueryClient()
   const { data: prayerData, isLoading, error, refetch } = usePrayerLog(dateKey)
   const qualityUpdate = useUpdatePrayerQuality()
   const togglePrayer = useTogglePrayer()
 
   usePrayerLogRealtime(dateKey)
+
+  // Optimistic quality update for instant UI response
+  const handleQualitySelect = async (quality: QualityKey) => {
+    if (!qualityDialog) return
+    const prayerKey = qualityDialog.prayerKey
+
+    // Optimistic update: update local cache immediately
+    const prevData = prayerData
+    if (prevData) {
+      queryClient.setQueryData(["prayer_logs", dateKey], {
+        ...prevData,
+        [`kualitas_${prayerKey}`]: quality,
+      })
+    }
+
+    setQualityDialog(null)
+
+    try {
+      await qualityUpdate.mutateAsync({
+        tanggal: dateKey,
+        prayerTime: prayerKey,
+        quality,
+      })
+    } catch {
+      // Rollback on failure
+      if (prevData) {
+        queryClient.setQueryData(["prayer_logs", dateKey], prevData)
+      }
+    }
+  }
 
   const navigateDay = (direction: 'prev' | 'next') => {
     setCurrentDate(prev => direction === 'prev' ? subDays(prev, 1) : addDays(prev, 1))
@@ -346,7 +377,7 @@ export default function SholatPage() {
                   key={opt.value}
                   variant={currentQuality === opt.value ? 'default' : 'outline'}
                   className="w-full justify-start gap-3"
-                  onClick={() => handleQualitySubmit(opt.value)}
+                  onClick={() => handleQualitySelect(opt.value)}
                 >
                   <span className="text-xl" style={{ fontSize: '1.5rem' }}>{opt.icon}</span>
                   <span className="flex-1 text-left font-medium">{opt.label}</span>

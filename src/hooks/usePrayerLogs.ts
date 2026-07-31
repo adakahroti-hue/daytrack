@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+export { useQueryClient }
 import { 
   getPrayerLog,
   getPrayerLogRange,
@@ -12,6 +13,7 @@ export function usePrayerLog(tanggal: string) {
     queryKey: ["prayer_logs", tanggal],
     queryFn: () => getPrayerLog(tanggal),
     enabled: !!tanggal,
+    staleTime: 30_000, // 30 detik — tidak fetch ulang kalau data masih fresh
   })
 }
 export function usePrayerLogRange(startDate: string, endDate: string) {
