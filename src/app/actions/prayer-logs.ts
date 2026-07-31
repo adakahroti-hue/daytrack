@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
-const prayerReasonSchema = z.enum(["malas", "lupa", "sibuk", "sakit", "perjalanan", "tak_ada_tempat", "bersama_teman", "lainnya"])
+const prayerReasonSchema = z.enum(["malas", "lupa", "ketiduran", "sibuk", "sakit", "perjalanan", "tak_ada_tempat", "bersama_teman", "lainnya"])
 
 const prayerLogSchema = z.object({
   tanggal: z.string().min(1, "Tanggal wajib diisi"),
@@ -14,11 +14,11 @@ const prayerLogSchema = z.object({
   sholat_ashar: z.boolean().default(false),
   sholat_maghrib: z.boolean().default(false),
   sholat_isya: z.boolean().default(false),
-  alasan_subuh: prayerReasonSchema.optional(),
-  alasan_dzuhur: prayerReasonSchema.optional(),
-  alasan_ashar: prayerReasonSchema.optional(),
-  alasan_maghrib: prayerReasonSchema.optional(),
-  alasan_isya: prayerReasonSchema.optional(),
+  alasan_subuh: prayerReasonSchema.nullable().optional(),
+  alasan_dzuhur: prayerReasonSchema.nullable().optional(),
+  alasan_ashar: prayerReasonSchema.nullable().optional(),
+  alasan_maghrib: prayerReasonSchema.nullable().optional(),
+  alasan_isya: prayerReasonSchema.nullable().optional(),
   refleksi: z.string().optional(),
 })
 

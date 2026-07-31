@@ -101,19 +101,18 @@ export default function SholatPage() {
 
   const handleQualitySubmit = async (quality: QualityKey) => {
     if (!qualityDialog) return
-    
+    if (!prayerData) return
+
     const prayerName = PRAYER_TIMES.find(p => p.key === qualityDialog.prayerKey)?.label
     const refleksi = `Kualitas ${prayerName}: ${QUALITY_OPTIONS.find(q => q.value === quality)?.label}`
-    
-    if (prayerData) {
-      await upsertPrayerLog.mutateAsync({
-        ...prayerData,
-        refleksi: prayerData.refleksi 
-          ? `${prayerData.refleksi}\n${refleksi}`
-          : refleksi
-      })
-    }
-    
+
+    await upsertPrayerLog.mutateAsync({
+      ...prayerData,
+      refleksi: prayerData.refleksi
+        ? `${prayerData.refleksi}\n${refleksi}`
+        : refleksi
+    })
+
     setQualityDialog(null)
     refetch()
   }

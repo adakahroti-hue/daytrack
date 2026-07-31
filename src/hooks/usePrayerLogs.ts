@@ -29,6 +29,9 @@ export function useUpsertPrayerLog() {
       queryClient.invalidateQueries({ queryKey: ["prayer_logs"] })
       queryClient.invalidateQueries({ queryKey: ["overview"] })
     },
+    onError: (error) => {
+      console.error("Failed to upsert prayer log:", error)
+    },
   })
 }
 export function useTogglePrayer() {
@@ -44,6 +47,9 @@ export function useTogglePrayer() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["prayer_logs"] })
       queryClient.invalidateQueries({ queryKey: ["overview"] })
+    },
+    onError: (error) => {
+      console.error("Failed to toggle prayer:", error)
     },
   })
 }
