@@ -185,107 +185,7 @@ function TaskCard({
 }
 
 // ============================================
-// DailyFocusCard - Hero card, white with blue left border
-// Now includes inline stats (Misi Aktif, Total Waktu, Selesai) next to title
-// ============================================
-function DailyFocusCard({ todayTasks }: { todayTasks: Task[] }) {
-  const pendingToday = todayTasks.filter(t => t.status === 'belum')
-  const inProgressToday = todayTasks.filter(t => t.status === 'proses')
-  const completedToday = todayTasks.filter(t => t.status === 'selesai')
-  const totalToday = todayTasks.length
-  const doneToday = completedToday.length + inProgressToday.length
-
-  // Stats for inline display
-  const activeMissions = todayTasks.filter(t => t.status === 'belum' || t.status === 'proses').length
-  const totalEstimatedMinutes = todayTasks.reduce((sum, t) => sum + t.estimasi_menit, 0)
-  const completedMissions = todayTasks.filter(t => t.status === 'selesai').length
-
-  if (totalToday === 0) {
-    return (
-      <Card className="border-dashed border-[#E2E8F0] dark:border-dashed dark:border-[#374151] bg-white">
-        <CardContent className="p-6 text-center">
-          <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 mx-auto mb-3 flex items-center justify-center">
-            <Target className="h-6 w-6 text-slate-400" />
-          </div>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">Belum ada tugas untuk hari ini</p>
-          {/* Note: Empty state no longer has add button here - FAB handles it */}
-        </CardContent>
-      </Card>
-    )
-  }
-
-  // If all tasks are completed, show completion state
-  const focusTask = inProgressToday[0] || pendingToday[0]
-  const progressPercent = totalToday > 0 ? Math.round((doneToday / totalToday) * 100) : 0
-  const allCompleted = pendingToday.length === 0 && inProgressToday.length === 0 && completedToday.length > 0
-
-  if (allCompleted) {
-    return (
-      <Card className="bg-white border border-[#DDE3EC] border-l-3 border-l-green-500 rounded-xl">
-        <CardContent className="p-5">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs text-slate-500 uppercase tracking-wider">Fokus Hari Ini</p>
-                <p className="font-semibold text-base truncate text-slate-900 dark:text-white">Semua tugas selesai! 🎉</p>
-                <p className="text-xs text-slate-500 mt-0.5">{completedToday.length} tugas diselesaikan</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 shrink-0">
-              <div className="hidden sm:block w-32">
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-slate-500">Progress</span>
-                  <span className="font-semibold text-green-600">{doneToday}/{totalToday}</span>
-                </div>
-                <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-green-500 rounded-full transition-all duration-300" style={{ width: '100%' }} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  return (
-    <Card className="bg-white border border-[#DDE3EC] border-l-3 border-l-[#2563EB] rounded-xl">
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-[#EFF6FF] flex items-center justify-center shrink-0">
-              <Target className="h-5 w-5 text-[#2563EB]" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs text-slate-500 uppercase tracking-wider">Fokus Hari Ini</p>
-              <p className="font-semibold text-base truncate text-slate-900 dark:text-white">{focusTask.nama}</p>
-              <p className="text-xs text-slate-500 mt-0.5">{getEstimasiText(focusTask.estimasi_menit)}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
-            {totalToday > 0 && (
-              <div className="hidden sm:block w-32">
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-slate-500">Progress</span>
-                  <span className="font-semibold text-slate-900 dark:text-white">{doneToday}/{totalToday}</span>
-                </div>
-                <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-[#2563EB] rounded-full transition-all duration-300" style={{ width: `${progressPercent}%` }} />
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-// ============================================
-// Compact SummaryCard - smaller for inline header (no icon)
+// TaskCard Component - Clean, consistent height, neutral by default
 // ============================================
 function CompactSummaryCard({ label, value, numberColor }: { 
   label: string
@@ -428,45 +328,8 @@ function HariIniPageClient() {
   const completedMissions = todayTasks.filter(t => t.status === 'selesai').length
   const hasAnyTasks = todayTasks.length > 0
 
-  // Derived values for header (extracted from DailyFocusCard logic)
-  const pendingToday = todayTasks.filter(t => t.status === 'belum')
-  const inProgressToday = todayTasks.filter(t => t.status === 'proses')
-  const completedToday = todayTasks.filter(t => t.status === 'selesai')
-  const totalToday = todayTasks.length
-  const doneToday = completedToday.length + inProgressToday.length
-  const focusTask = inProgressToday[0] || pendingToday[0]
-  const progressPercent = totalToday > 0 ? Math.round((doneToday / totalToday) * 100) : 0
-
   return (
     <div className="space-y-6 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
-      {/* Header with active task info + progress */}
-      {hasAnyTasks && (
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#EFF6FF] flex items-center justify-center shrink-0">
-              <Target className="h-5 w-5 text-[#2563EB]" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs text-slate-500 uppercase tracking-wider">Fokus Hari Ini</p>
-              <p className="font-semibold text-base truncate text-slate-900 dark:text-white">
-                {focusTask.nama}
-              </p>
-              <p className="text-xs text-slate-500 mt-0.5">{getEstimasiText(focusTask.estimasi_menit)}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <span className="text-xs text-slate-500">{doneToday}/{totalToday} selesai</span>
-            <div className="w-24 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-[#2563EB] rounded-full transition-all duration-300"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-            <span className="text-xs font-semibold text-slate-900 dark:text-white">{progressPercent}%</span>
-          </div>
-        </div>
-      )}
-
       {/* Mission Board - Priority Groups */}
       {hasAnyTasks ? (
         <div className="space-y-8">
