@@ -3,10 +3,15 @@
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import TugasHariIniPage from './hari-ini/page'
+import TugasSelesaiPage from './selesai/page'
 
 function TugasContent() {
   const searchParams = useSearchParams()
   const view = searchParams.get('view') || 'hari-ini'
+
+  if (view === 'selesai') {
+    return <TugasSelesaiPage />
+  }
 
   if (view === 'semua') {
     return (
