@@ -92,9 +92,25 @@ export async function toggleTaskStatus(id: string, status: "proses" | "belum" | 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
 
+  const now = new Date().toISOString()
+
+  let updateData: { status: string; started_at?: string | null; completed_at?: string | null } = { status }
+
+  if (status === 'proses') {
+    // Capture start time when task is picked up
+    updateData.started_at = now
+  } else if (status === 'selesai') {
+    // Capture completion time when task is marked done
+    updateData.completed_at = now
+  } else if (status === 'belum') {
+    // Reset times when going back to belum
+    updateData.started_at = null
+    updateData.completed_at = null
+  }
+
   const { data, error } = await supabase
     .from("tasks")
-    .update({ status })
+    .update(updateData)
     .eq("id", id)
     .eq("user_id", user.id)
     .select()
