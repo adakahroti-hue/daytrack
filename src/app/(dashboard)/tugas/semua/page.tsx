@@ -333,7 +333,7 @@ function SemuaPageClient() {
   }, [])
 
   // Fetch ALL tasks - ALWAYS called
-  const { data: allTasks = [], isLoading, error } = useTasks(undefined, 'selesai')
+  const { data: allTasks = [], isLoading, error } = useTasks(undefined, 'belum')
 
   // Subscribe to realtime - ALWAYS called
   useTasksRealtime([['tasks']])

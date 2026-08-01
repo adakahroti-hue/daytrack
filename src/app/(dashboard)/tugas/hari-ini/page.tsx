@@ -241,7 +241,7 @@ function HariIniPageClient() {
   const today = new Date()
   const todayStr = format(today, 'yyyy-MM-dd')
 
-  const { data: todayTasks = [], isLoading: todayLoading, error: todayError } = useTasks(todayStr, 'selesai')
+  const { data: todayTasks = [], isLoading: todayLoading, error: todayError } = useTasks(todayStr, 'belum')
 
   useTasksRealtime([
     ['tasks', todayStr],
