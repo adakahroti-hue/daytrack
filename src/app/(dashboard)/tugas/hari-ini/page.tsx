@@ -428,10 +428,44 @@ function HariIniPageClient() {
   const completedMissions = todayTasks.filter(t => t.status === 'selesai').length
   const hasAnyTasks = todayTasks.length > 0
 
+  // Derived values for header (extracted from DailyFocusCard logic)
+  const pendingToday = todayTasks.filter(t => t.status === 'belum')
+  const inProgressToday = todayTasks.filter(t => t.status === 'proses')
+  const completedToday = todayTasks.filter(t => t.status === 'selesai')
+  const totalToday = todayTasks.length
+  const doneToday = completedToday.length + inProgressToday.length
+  const focusTask = inProgressToday[0] || pendingToday[0]
+  const progressPercent = totalToday > 0 ? Math.round((doneToday / totalToday) * 100) : 0
+
   return (
     <div className="space-y-6 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
-      {/* DailyFocusCard - without inline stats */}
-      <DailyFocusCard todayTasks={todayTasks} />
+      {/* Header with active task info + progress */}
+      {hasAnyTasks && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#EFF6FF] flex items-center justify-center shrink-0">
+              <Target className="h-5 w-5 text-[#2563EB]" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-slate-500 uppercase tracking-wider">Fokus Hari Ini</p>
+              <p className="font-semibold text-base truncate text-slate-900 dark:text-white">
+                {focusTask.nama}
+              </p>
+              <p className="text-xs text-slate-500 mt-0.5">{getEstimasiText(focusTask.estimasi_menit)}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="text-xs text-slate-500">{doneToday}/{totalToday} selesai</span>
+            <div className="w-24 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-[#2563EB] rounded-full transition-all duration-300"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+            <span className="text-xs font-semibold text-slate-900 dark:text-white">{progressPercent}%</span>
+          </div>
+        </div>
+      )}
 
       {/* Mission Board - Priority Groups */}
       {hasAnyTasks ? (
