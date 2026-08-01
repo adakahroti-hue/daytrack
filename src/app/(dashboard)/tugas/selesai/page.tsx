@@ -340,28 +340,27 @@ function SelesaiPageClient() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Tugas Selesai</h1>
-          <p className="text-sm text-muted-foreground">{totalSelesai} tugas diselesaikan</p>
+          <p className="text-sm text-muted-foreground">Tugas yang sudah kamu selesaikan akan muncul di sini.</p>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-2 px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg min-w-[90px]">
-          <div>
-            <p className="text-[10px] text-slate-500 uppercase tracking-wider">Total Selesai</p>
-            <p className="text-sm font-bold text-slate-900">{totalSelesai}</p>
+      {/* Stats + Search in one row */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg min-w-[90px]">
+            <div>
+              <p className="text-[10px] text-slate-500 uppercase tracking-wider">Total Selesai</p>
+              <p className="text-sm font-bold text-slate-900">{totalSelesai}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg min-w-[90px]">
+            <div>
+              <p className="text-[10px] text-slate-500 uppercase tracking-wider">Total Waktu</p>
+              <p className="text-sm font-bold text-slate-900">{getEstimasiText(totalEstimatedMinutes)}</p>
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-2 px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg min-w-[90px]">
-          <div>
-            <p className="text-[10px] text-slate-500 uppercase tracking-wider">Total Waktu</p>
-            <p className="text-sm font-bold text-slate-900">{getEstimasiText(totalEstimatedMinutes)}</p>
-          </div>
-        </div>
-      </div>
 
-      {/* Search & Filter Bar */}
-      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div className="relative w-full sm:max-w-xs flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -376,6 +375,7 @@ function SelesaiPageClient() {
             </Button>
           )}
         </div>
+      </div>
 
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <Select value={priorityFilter} onValueChange={(v) => setPriorityFilter(v as 'all' | Task['prioritas'])}>
