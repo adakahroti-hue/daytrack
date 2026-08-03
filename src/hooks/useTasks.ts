@@ -7,7 +7,7 @@ import { TaskFormData } from "@/app/actions/tasks"
 export function useTasks(date?: string, status?: string) {
   return useQuery({
     queryKey: ["tasks", date, status],
-    queryFn: () => getTasks(date, status),
+    queryFn: () => getTasks(date, status, date ? undefined : 200),
     staleTime: 60_000, // 1 menit — tidak fetch ulang kalau data masih fresh
     placeholderData: (previousData) => previousData, // keep previous data saat refetch
   })

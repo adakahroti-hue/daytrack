@@ -169,7 +169,7 @@ export async function toggleTaskStatus(id: string, status: "proses" | "belum" | 
   return { data, error: null }
 }
 
-export async function getTasks(date?: string, status?: string) {
+export async function getTasks(date?: string, status?: string, limit?: number) {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -179,11 +179,18 @@ export async function getTasks(date?: string, status?: string) {
     .from("tasks")
     .select("*")
     .eq("user_id", user.id)
-    .order("tanggal", { ascending: true })
 
   if (date) {
     // Filter by date only (tanggal is DATE type)
     query = query.eq("tanggal", date)
+    // When filtering by specific date, order by created_at (more meaningful than tanggal which is same)
+    query = query.order("created_at", { ascending: true })
+  } else {
+    // No date filter: fetch most recent tasks first, apply limit
+    query = query.order("created_at", { ascending: false })
+    if (limit) {
+      query = query.limit(limit)
+    }
   }
 
   if (status) {
