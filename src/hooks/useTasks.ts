@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { getTasks, createTask, updateTask, deleteTask, toggleTaskStatus } from "@/app/actions/tasks"
+import { getTasks, createTask, updateTask, deleteTask, toggleTaskStatus, bulkDeleteTasks, bulkResetTasks } from "@/app/actions/tasks"
 import { TaskFormData } from "@/app/actions/tasks"
 
 export function useTasks(date?: string, status?: string) {
@@ -82,9 +82,17 @@ export function useToggleTaskStatus() {
     onMutate: async ({ id, status }) => {
       await queryClient.cancelQueries({ queryKey: ["tasks"] })
       const previousTasks = queryClient.getQueriesData({ queryKey: ["tasks"] })
+      const now = new Date().toISOString()
       queryClient.setQueriesData({ queryKey: ["tasks"] }, (old: any) => {
         if (!old) return old
-        return old.map((task: any) => task.id === id ? { ...task, status, updated_at: new Date().toISOString() } : task)
+        return old.map((task: any) => {
+          if (task.id !== id) return task
+          const updated: any = { ...task, status, updated_at: now }
+          if (status === 'proses') updated.started_at = now
+          else if (status === 'selesai') updated.completed_at = now
+          else if (status === 'belum') { updated.started_at = null; updated.completed_at = null }
+          return updated
+        })
       })
       return { previousTasks }
     },
@@ -104,6 +112,28 @@ export function useTaskById(id: string) {
     queryKey: ["tasks", id],
     queryFn: () => getTaskById(id),
     enabled: !!id,
+  })
+}
+
+export function useBulkDeleteTasks() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: (ids: string[]) => bulkDeleteTasks(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] })
+    },
+  })
+}
+
+export function useBulkResetTasks() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: (ids: string[]) => bulkResetTasks(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] })
+    },
   })
 }
 

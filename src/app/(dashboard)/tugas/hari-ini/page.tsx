@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useMemo, useEffect } from 'react'
-import { format, isToday, isWithinInterval, startOfWeek, endOfWeek, isBefore, startOfDay, differenceInDays, differenceInMinutes } from 'date-fns'
+import { format, isToday, isWithinInterval, startOfWeek, endOfWeek, isBefore, startOfDay, differenceInDays } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Plus, Edit, Trash2, Search, X, Clock, Calendar, Play, Check, CheckCircle2, MoreHorizontal, Flag, Filter, Zap, Target, TrendingUp, AlertTriangle, Timer } from 'lucide-react'
+import { Plus, Edit, Trash2, Search, X, Clock, Calendar, Play, Check, CheckCircle2, MoreHorizontal, Flag, Filter, Zap, Target, TrendingUp, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
-import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, getMissionPriorityIcon, getMissionGroupName, getMissionPriorityShortLabel, getMissionPriorityBorder, getMissionGroupDescriptionWithCount, CARD_BASE, CARD_HOVER, STAT_ICON_CONTAINERS, BRAND_COLORS } from '@/lib/utils'
+import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, getMissionPriorityIcon, getMissionGroupName, getMissionPriorityShortLabel, getMissionPriorityBorder, getMissionGroupDescriptionWithCount, CARD_BASE, CARD_HOVER, STAT_ICON_CONTAINERS, BRAND_COLORS, getActualDurationText, compareEstimasiVsActual, getLiveDurationText } from '@/lib/utils'
 import { TaskForm } from '@/components/tasks/TaskForm'
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus } from '@/hooks/useTasks'
 import { useTasksRealtime } from '@/hooks/useRealtime'
@@ -94,18 +94,6 @@ function TaskCard({
   const isInProgress = task.status === 'proses'
   const isPending = task.status === 'belum'
 
-  // Hitung durasi aktual jika tugas sudah selesai
-  const actualDuration = useMemo(() => {
-    if (!isCompleted || !task.completed_at) return null
-    const start = task.started_at ? new Date(task.started_at) : new Date(task.created_at)
-    const end = new Date(task.completed_at)
-    return differenceInMinutes(end, start)
-  }, [isCompleted, task.completed_at, task.started_at, task.created_at])
-
-  const estimasiMenit = task.estimasi_menit
-  const durasiSesuai = actualDuration !== null ? actualDuration <= estimasiMenit : null
-  const durasiLebih = actualDuration !== null && actualDuration > estimasiMenit
-
   const handlePrimaryAction = () => {
     if (isPending) {
       onStatusChange(task.id, 'proses')
@@ -133,14 +121,23 @@ function TaskCard({
     getMissionPriorityColor(task.prioritas)
   )
 
-  // Card styling: blue for active (in progress), neutral for others
+  // Card styling: blue glow for active (in progress), neutral for others
   const isActiveFocus = isInProgress
   const cardBorderClass = cn(
     CARD_BASE,
     CARD_HOVER,
     isCompleted && 'opacity-60',
-    isActiveFocus && 'border-[#2563EB] shadow-[0_0_0_2px_rgba(37,99,235,0.08)]',
+    isActiveFocus && 'border-[#2563EB] shadow-[0_0_0_3px_rgba(37,99,235,0.15)] bg-[#EFF6FF]/40 dark:bg-[#2563EB]/5',
   )
+
+  // Use utility functions for duration comparison
+  const actualDurationText = task.status === 'selesai' && task.started_at && task.completed_at 
+    ? getActualDurationText(task.started_at, task.completed_at)
+    : null
+  
+  const comparison = task.status === 'selesai' && task.started_at && task.completed_at
+    ? compareEstimasiVsActual(task.estimasi_menit, task.started_at, task.completed_at)
+    : null
 
   return (
     <Card className={cn('group', cardBorderClass)}>
@@ -158,7 +155,7 @@ function TaskCard({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 opacity-70 group-hover:opacity-100 transition-opacity"
+                className="h-7 w-7 opacity-70"
                 aria-label="Menu tugas"
               >
                 <MoreHorizontal className="h-3.5 w-3.5" />
@@ -187,28 +184,39 @@ function TaskCard({
         {/* Task Title - Most Prominent */}
         <h3 className="font-medium text-base leading-tight truncate pr-8 capitalize">{task.nama}</h3>
 
-        {/* Estimated Duration */}
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Clock className="h-3.5 w-3.5" />
-          <span>{getEstimasiText(task.estimasi_menit)}</span>
-        </div>
-
-        {/* Actual Duration (for completed tasks) */}
-        {actualDuration !== null && (
-          <div className={cn(
-            'flex items-center gap-1 text-xs px-2 py-1 rounded-md',
-            durasiSesuai
-              ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-              : durasiLebih
-                ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400'
-                : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-          )}>
-            <Timer className="h-3 w-3" />
-            <span>
-              {actualDuration} menit {durasiSesuai ? '(sesuai)' : durasiLebih ? '(melebihi)' : ''}
-            </span>
+        {/* Duration Info */}
+        <div className="space-y-1">
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Clock className="h-3.5 w-3.5" />
+            <span>Estimasi: {getEstimasiText(task.estimasi_menit)}</span>
           </div>
-        )}
+          
+          {/* Real duration for completed tasks */}
+          {actualDurationText && comparison && (
+            <>
+              <div className="flex items-center gap-1 text-sm text-slate-700 dark:text-slate-300">
+                <Clock className="h-3.5 w-3.5" />
+                <span>Real: {actualDurationText}</span>
+              </div>
+              <div className="flex items-center gap-1 text-xs">
+                {comparison.status !== 'unknown' && (
+                  <span className={`flex items-center gap-1 px-2 py-0.5 rounded ${comparison.status === 'lebih-cepat' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : comparison.status === 'lebih-lama' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'}`}>
+                    {comparison.status === 'lebih-cepat' ? '🟢' : comparison.status === 'lebih-lama' ? '🔴' : '⚪'} 
+                    {comparison.status === 'lebih-cepat' ? 'Lebih cepat' : comparison.status === 'lebih-lama' ? 'Lebih lama' : 'Pas'} {comparison.selisihText}
+                  </span>
+                )}
+              </div>
+            </>
+          )}
+          
+          {/* Live duration for in-progress tasks */}
+          {task.status === 'proses' && task.started_at && (
+            <div className="flex items-center gap-1 text-sm text-amber-700 dark:text-amber-300 animate-pulse">
+              <Clock className="h-3.5 w-3.5" />
+              <span>Sedang: {getLiveDurationText(task.started_at)}</span>
+            </div>
+          )}
+        </div>
 
         {/* Bottom Row: Status Badge + Primary Action */}
         <div className="flex items-center justify-between pt-2 border-t border-border/50">
@@ -219,7 +227,7 @@ function TaskCard({
             variant={isCompleted ? 'outline' : 'default'}
             size="sm"
             className={cn(
-              'w-full sm:w-auto',
+              'w-auto sm:w-auto',
               isCompleted && 'bg-muted text-muted-foreground hover:bg-muted/80 border-border',
               isPending && 'bg-[#0F172A] hover:bg-[#1E293B] text-white',
               isInProgress && 'bg-green-600 hover:bg-green-700 text-white'
@@ -230,7 +238,8 @@ function TaskCard({
           >
             <span className="flex items-center gap-1.5">
               <PrimaryButtonIcon />
-              <span>{primaryButtonText}</span>
+              <span className="hidden sm:inline">{primaryButtonText}</span>
+              <span className="sm:hidden">{isPending ? 'Ambil' : isInProgress ? 'Selesai' : 'Selesai'}</span>
             </span>
           </Button>
         </div>
@@ -270,10 +279,10 @@ function HariIniPageClient() {
   const today = new Date()
   const todayStr = format(today, 'yyyy-MM-dd')
 
-  // Fetch only 'belum' tasks for today
-  const { data: todayTasks = [], isLoading: todayLoading, error: todayError } = useTasks(todayStr, 'belum')
+  // Fetch ALL tasks for today (no status filter) — include 'belum' and 'proses'
+  const { data: todayTasks = [], isLoading: todayLoading, error: todayError } = useTasks(todayStr)
 
-  useTasksRealtime([['tasks', todayStr]])
+  useTasksRealtime([['tasks', todayStr]], `tanggal=eq.${todayStr}`)
 
   const isLoading = todayLoading
   const error = todayError
@@ -340,7 +349,8 @@ function HariIniPageClient() {
 
   // Group tasks by priority
   const tasksByPriority = PRIORITY_ORDER.map(priority => {
-    const tasks = todayTasks.filter(t => t.prioritas === priority)
+    const tasks = todayTasks
+      .filter(t => t.prioritas === priority && t.status !== 'selesai')
     const sortedTasks = [...tasks].sort((a, b) => {
       const aStatus = a.status as Task['status']
       const bStatus = b.status as Task['status']
@@ -353,34 +363,19 @@ function HariIniPageClient() {
 
   // Stats for header: only count belum tasks (not completed)
   const activeMissions = todayTasks.filter(t => t.status === 'belum' || t.status === 'proses').length
-  const totalEstimatedMinutes = todayTasks.reduce((sum, t) => sum + t.estimasi_menit, 0)
+  const totalEstimatedMinutes = todayTasks
+    .filter((t: Task) => t.status !== 'selesai')
+    .reduce((sum, t) => sum + t.estimasi_menit, 0)
   const completedMissions = todayTasks.filter(t => t.status === 'selesai').length
   const totalToday = todayTasks.length
   const hasAnyTasks = todayTasks.length > 0
+  // Has active (non-completed) tasks
+  const hasActiveTasks = activeMissions > 0
 
   return (
     <div className="space-y-6 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#EFF6FF] flex items-center justify-center shrink-0">
-            <Target className="h-5 w-5 text-[#2563EB]" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold">Misi Hari Ini</h1>
-            <p className="text-sm text-muted-foreground">{activeMissions} tugas belum dikerjakan</p>
-          </div>
-        </div>
-        {hasAnyTasks && (
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">Selesai:</span>
-            <ProgressBar completed={completedMissions} total={totalToday} />
-          </div>
-        )}
-      </div>
-
       {/* Mission Board - Priority Groups */}
-      {hasAnyTasks ? (
+      {hasActiveTasks ? (
         <div className="space-y-8">
           {tasksByPriority.map(({ priority, tasks }) => {
             if (tasks.length === 0) return null
@@ -394,7 +389,6 @@ function HariIniPageClient() {
                     <h2 className="text-lg font-semibold leading-tight text-slate-900 dark:text-white">{getMissionGroupName(priority)}</h2>
                     <p className="text-sm text-slate-500 mt-0.5">{getMissionGroupDescriptionWithCount(priority, tasks.length)}</p>
                   </div>
-                  <div className="flex-1 border-t border-slate-200/50 dark:border-slate-700/50 mt-1.5" />
                 </div>
 
                 {/* Task Cards Grid */}
@@ -418,9 +412,19 @@ function HariIniPageClient() {
         <div className="py-16 text-center">
           <Card className="border-dashed border-slate-200/50 dark:border-dashed dark:border-slate-700/50 bg-white">
             <CardContent className="py-12">
-              <span className="text-4xl mb-4 block" aria-hidden="true">📋</span>
-              <p className="text-lg font-medium text-slate-900 dark:text-white mb-2">Belum ada misi untuk hari ini</p>
-              <p className="text-sm text-slate-500 mb-6">Tambahkan tugas baru untuk mulai menyusun rencana hari ini.</p>
+              {hasAnyTasks ? (
+                <>
+                  <span className="text-4xl mb-4 block" aria-hidden="true">✅</span>
+                  <p className="text-lg font-medium text-slate-900 dark:text-white mb-2">Semua misi hari ini sudah selesai!</p>
+                  <p className="text-sm text-slate-500 mb-6">Kerja bagus! Tidak ada tugas yang belum dikerjakan.</p>
+                </>
+              ) : (
+                <>
+                  <span className="text-4xl mb-4 block" aria-hidden="true">📋</span>
+                  <p className="text-lg font-medium text-slate-900 dark:text-white mb-2">Belum ada misi untuk hari ini</p>
+                  <p className="text-sm text-slate-500 mb-6">Tambahkan tugas baru untuk mulai menyusun rencana hari ini.</p>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>

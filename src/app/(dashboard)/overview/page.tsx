@@ -4,6 +4,7 @@ import { SummaryCards } from '@/components/overview/SummaryCards'
 import { PriorityBreakdown } from '@/components/overview/PriorityBreakdown'
 import { AspectBreakdown } from '@/components/overview/AspectBreakdown'
 import { SholatJourney } from '@/components/overview/SholatJourney'
+import { CategorySummaryCards } from '@/components/overview/CategorySummaryCards'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
 
 export default function OverviewPage() {
@@ -16,6 +17,7 @@ export default function OverviewPage() {
   return (
     <div className="space-y-6">
       <SummaryCards period={summaryPeriod} />
+      <CategorySummaryCards period={summaryPeriod} />
 
       {/* Sholat Journey - only on harian and mingguan */}
       {(summaryPeriod === 'harian' || summaryPeriod === 'mingguan') && (

@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -14,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { DurationStepper } from './DurationStepper'
 
 const taskSchema = z.object({
   nama: z.string().min(1, 'Nama tugas wajib diisi'),
@@ -49,6 +51,8 @@ export function TaskForm({ initialData, onSubmit, onCancel }: TaskFormProps) {
     register,
     handleSubmit,
     control,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
@@ -61,6 +65,31 @@ export function TaskForm({ initialData, onSubmit, onCancel }: TaskFormProps) {
       ...initialData,
     },
   })
+
+  // Sync jam & menit dari estimasi_menit
+  const estimasiMenit = watch('estimasi_menit') || 0
+  const [jam, setJam] = useState(Math.floor(estimasiMenit / 60))
+  const [menit, setMenit] = useState(estimasiMenit % 60)
+
+  // Update jam/menit saat initialData berubah (misal edit)
+  useEffect(() => {
+    if (initialData?.estimasi_menit !== undefined) {
+      const m = initialData.estimasi_menit
+      setJam(Math.floor(m / 60))
+      setMenit(m % 60)
+    }
+  }, [initialData?.estimasi_menit])
+
+  // Update estimasi_menit saat jam/menit berubah via stepper
+  const handleJamChange = (h: number) => {
+    setJam(h)
+    setValue('estimasi_menit', h * 60 + menit, { shouldValidate: true })
+  }
+
+  const handleMenitChange = (m: number) => {
+    setMenit(m)
+    setValue('estimasi_menit', jam * 60 + m, { shouldValidate: true })
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4">
@@ -83,15 +112,17 @@ export function TaskForm({ initialData, onSubmit, onCancel }: TaskFormProps) {
         />
       </div>
 
+      {/* Estimasi Pengerjaan — Timer Picker (stepper) */}
       <div className="space-y-2">
-        <Label htmlFor="estimasi_menit">Estimasi Pengerjaan (menit)</Label>
-        <Input
-          id="estimasi_menit"
-          type="number"
-          min="0"
-          step="15"
-          {...register('estimasi_menit', { valueAsNumber: true })}
+        <Label>Estimasi Pengerjaan</Label>
+        <DurationStepper
+          hours={jam}
+          minutes={menit}
+          onHoursChange={handleJamChange}
+          onMinutesChange={handleMenitChange}
         />
+        {/* Hidden input untuk menyimpan nilai numerik ke form */}
+        <input type="hidden" {...register('estimasi_menit', { valueAsNumber: true })} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">

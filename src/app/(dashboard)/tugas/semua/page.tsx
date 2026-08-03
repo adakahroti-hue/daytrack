@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
-import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, getMissionPriorityIcon, getMissionGroupName, getMissionPriorityShortLabel, getMissionPriorityBorder, getMissionGroupDescriptionWithCount, CARD_BASE, CARD_HOVER, STAT_ICON_CONTAINERS, BRAND_COLORS } from '@/lib/utils'
+import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, getMissionPriorityIcon, getMissionGroupName, getMissionPriorityShortLabel, getMissionPriorityBorder, getMissionGroupDescriptionWithCount, CARD_BASE, CARD_HOVER, STAT_ICON_CONTAINERS, BRAND_COLORS, getActualDurationText, compareEstimasiVsActual, getLiveDurationText } from '@/lib/utils'
 import { TaskForm } from '@/components/tasks/TaskForm'
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus } from '@/hooks/useTasks'
 import { useTasksRealtime } from '@/hooks/useRealtime'
@@ -27,6 +27,8 @@ type Task = {
   status: 'belum' | 'proses' | 'selesai'
   created_at: string
   updated_at: string
+  started_at: string | null
+  completed_at: string | null
 }
 
 type TaskFormData = {
@@ -173,7 +175,7 @@ function TaskCard({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
+                className="h-8 w-8 opacity-70"
                 aria-label="Menu tugas"
               >
                 <MoreHorizontal className="h-4 w-4" />
@@ -200,26 +202,59 @@ function TaskCard({
         </div>
 
         {/* Task Title - Most Prominent */}
-        <h3 className="font-semibold text-base leading-snug truncate pr-8 capitalize flex-1">{task.nama}</h3>
+        <h3 className="font-semibold text-base leading-snug pr-8 capitalize flex-1 break-words">{task.nama}</h3>
 
         {/* Meta Info: Duration + Date */}
-        <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <Clock className="h-4 w-4 shrink-0" />
-            <span className="whitespace-nowrap">{getEstimasiText(task.estimasi_menit)}</span>
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <Clock className="h-4 w-4 shrink-0" />
+              <span className="whitespace-nowrap">Estimasi: {getEstimasiText(task.estimasi_menit)}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Calendar className="h-4 w-4 shrink-0" />
+              <span className={cn('whitespace-nowrap', isOverdue && 'text-destructive font-medium')}>
+                {format(taskDate, 'd MMM yyyy', { locale: id })}
+                {isOverdue && !isCompleted && (
+                  <Badge variant="outline" className="ml-1.5 text-xs px-2 py-0.5 gap-1 h-5 text-destructive border-destructive/30 bg-destructive/10">
+                    <AlertTriangle className="h-3 w-3" />
+                    Terlambat {daysOverdue} hari
+                  </Badge>
+                )}
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Calendar className="h-4 w-4 shrink-0" />
-            <span className={cn('whitespace-nowrap', isOverdue && 'text-destructive font-medium')}>
-              {format(taskDate, 'd MMM yyyy', { locale: id })}
-              {isOverdue && !isCompleted && (
-                <Badge variant="outline" className="ml-1.5 text-xs px-2 py-0.5 gap-1 h-5 text-destructive border-destructive/30 bg-destructive/10">
-                  <AlertTriangle className="h-3 w-3" />
-                  Terlambat {daysOverdue} hari
-                </Badge>
-              )}
-            </span>
-          </div>
+          
+          {/* Real duration for completed tasks */}
+          {task.status === 'selesai' && task.started_at && task.completed_at && (
+            <div className="space-y-1 pl-6 border-l border-border/50">
+              <div className="flex items-center gap-1 text-sm text-slate-700 dark:text-slate-300">
+                <Clock className="h-3.5 w-3.5" />
+                <span>Real: {getActualDurationText(task.started_at, task.completed_at)}</span>
+              </div>
+              <div className="flex items-center gap-1 text-xs">
+                {(() => {
+                  const cmp = compareEstimasiVsActual(task.estimasi_menit, task.started_at, task.completed_at)
+                  if (cmp.status === 'unknown') return <span className="text-muted-foreground">Belum ada data</span>
+                  const icon = cmp.status === 'lebih-cepat' ? '🟢' : cmp.status === 'lebih-lama' ? '🔴' : '⚪'
+                  const label = cmp.status === 'lebih-cepat' ? 'Lebih cepat' : cmp.status === 'lebih-lama' ? 'Lebih lama' : 'Pas'
+                  return (
+                    <span className={`flex items-center gap-1 px-2 py-0.5 rounded ${cmp.status === 'lebih-cepat' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : cmp.status === 'lebih-lama' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'}`}>
+                      {icon} {label} {cmp.selisihText}
+                    </span>
+                  )
+                })()}
+              </div>
+            </div>
+          )}
+          
+          {/* Live duration for in-progress tasks */}
+          {task.status === 'proses' && task.started_at && (
+            <div className="flex items-center gap-1 text-sm text-amber-700 dark:text-amber-300 animate-pulse pl-6 border-l border-amber-400/50">
+              <Clock className="h-3.5 w-3.5" />
+              <span>Sedang: {getLiveDurationText(task.started_at)}</span>
+            </div>
+          )}
         </div>
 
         {/* Bottom Row: Status Badge + Primary Action - Fixed at bottom */}
@@ -231,7 +266,7 @@ function TaskCard({
             variant={isCompleted ? 'outline' : 'default'}
             size="sm"
             className={cn(
-              'w-full sm:w-auto',
+              'w-auto sm:w-auto',
               isCompleted && 'bg-muted text-muted-foreground hover:bg-muted/80 border-border',
               isPending && `${BRAND_COLORS.primary} ${BRAND_COLORS.primaryHover} shadow-sm`,
               isInProgress && 'bg-green-600 hover:bg-green-700 text-white shadow-sm'
@@ -242,7 +277,8 @@ function TaskCard({
           >
             <span className="flex items-center gap-1.5">
               <PrimaryButtonIcon />
-              <span>{primaryButtonText}</span>
+              <span className="hidden sm:inline">{primaryButtonText}</span>
+              <span className="sm:hidden">{isPending ? 'Mulai' : 'Selesai'}</span>
             </span>
           </Button>
         </div>
@@ -278,7 +314,7 @@ function StatsCard({ label, value, icon: Icon, iconContainerClass }: {
 }
 
 // ============================================
-// Compact StatsInline - 4 small cards inline with button
+// Compact StatsInline - 2 small cards inline with button
 // ============================================
 function StatsInline({ todayTasks }: { todayTasks: Task[] }) {
   const total = todayTasks.length
@@ -287,8 +323,6 @@ function StatsInline({ todayTasks }: { todayTasks: Task[] }) {
     const today = startOfDay(new Date())
     return isBefore(taskDate, today) && t.status !== 'selesai'
   }).length
-  const inProgress = todayTasks.filter(t => t.status === 'proses').length
-  const completed = todayTasks.filter(t => t.status === 'selesai').length
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -301,16 +335,6 @@ function StatsInline({ todayTasks }: { todayTasks: Task[] }) {
         label="Terlambat"
         value={overdue}
         valueColor="text-red-600"
-      />
-      <CompactStatCard
-        label="Sedang Dikerjakan"
-        value={inProgress}
-        valueColor="text-amber-600"
-      />
-      <CompactStatCard
-        label="Selesai"
-        value={completed}
-        valueColor="text-green-600"
       />
     </div>
   )
@@ -325,15 +349,20 @@ function SemuaPageClient() {
   const [searchQuery, setSearchQuery] = useState('')
   const [priorityFilter, setPriorityFilter] = useState<'all' | Task['prioritas']>('all')
   const [statusFilter, setStatusFilter] = useState<FilterStatusType>('all')
-  const [sortBy, setSortBy] = useState<SortOption>('priority')
+  const [sortBy, setSortBy] = useState<SortOption>('dueDate')
   const [isMounted, setIsMounted] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     setIsMounted(true)
+    const checkMobile = () => setIsMobile(window.innerWidth < 640)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
   // Fetch ALL tasks - ALWAYS called
-  const { data: allTasks = [], isLoading, error } = useTasks(undefined, 'belum')
+  const { data: allTasks = [], isLoading, error } = useTasks(undefined)
 
   // Subscribe to realtime - ALWAYS called
   useTasksRealtime([['tasks']])
@@ -408,6 +437,9 @@ function SemuaPageClient() {
   const filteredAndSortedTasks = useMemo(() => {
     let tasks = [...allTasks]
 
+    // Exclude completed tasks - they only appear in Selesai tab
+    tasks = tasks.filter(t => t.status !== 'selesai')
+
     // Search
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim()
@@ -424,8 +456,13 @@ function SemuaPageClient() {
       tasks = tasks.filter(t => t.status === statusFilter)
     }
 
-    // Sort
+    // Sort - Always prioritize "proses" status first, then apply selected sort
     tasks.sort((a, b) => {
+      // Status "proses" always comes first
+      const aProses = a.status === 'proses' ? 0 : 1
+      const bProses = b.status === 'proses' ? 0 : 1
+      if (aProses !== bProses) return aProses - bProses
+
       switch (sortBy) {
         case 'priority': {
           const priorityDiff = PRIORITY_ORDER.indexOf(a.prioritas) - PRIORITY_ORDER.indexOf(b.prioritas)
@@ -495,9 +532,9 @@ function SemuaPageClient() {
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+        <div className="grid grid-cols-3 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
           <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as FilterStatusType)}>
-            <SelectTrigger className="w-auto min-w-[140px] max-w-[180px]"><SelectValue placeholder="Semua Status" /></SelectTrigger>
+            <SelectTrigger className="w-full sm:w-auto sm:min-w-[140px] sm:max-w-[180px]"><SelectValue placeholder={isMobile ? 'Status' : 'Semua Status'} /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Semua Status</SelectItem>
               <SelectItem value="belum">Belum</SelectItem>
@@ -507,7 +544,7 @@ function SemuaPageClient() {
           </Select>
 
           <Select value={priorityFilter} onValueChange={(v) => setPriorityFilter(v as 'all' | Task['prioritas'])}>
-            <SelectTrigger className="w-auto min-w-[140px] max-w-[180px]"><SelectValue placeholder="Semua Kategori" /></SelectTrigger>
+            <SelectTrigger className="w-full sm:w-auto sm:min-w-[140px] sm:max-w-[180px]"><SelectValue placeholder={isMobile ? 'Kategori' : 'Semua Kategori'} /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Semua Kategori</SelectItem>
               <SelectItem value="p1">P1 Mendesak</SelectItem>
@@ -518,7 +555,7 @@ function SemuaPageClient() {
           </Select>
 
           <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-            <SelectTrigger className="w-auto min-w-[160px] max-w-[200px]"><SelectValue placeholder="Prioritas Tertinggi" /></SelectTrigger>
+            <SelectTrigger className="w-full sm:w-auto sm:min-w-[160px] sm:max-w-[200px]"><SelectValue placeholder={isMobile ? 'Urutkan' : 'Prioritas Tertinggi'} /></SelectTrigger>
             <SelectContent>
               <SelectItem value="priority">Prioritas Tertinggi</SelectItem>
               <SelectItem value="newest">Terbaru</SelectItem>
@@ -528,7 +565,7 @@ function SemuaPageClient() {
           </Select>
 
           {hasActiveFilters && (
-            <Button variant="ghost" size="sm" onClick={handleClearFilters} className="gap-1.5 text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" size="sm" onClick={handleClearFilters} className="hidden sm:inline-flex gap-1.5 text-muted-foreground hover:text-foreground">
               <Filter className="h-3.5 w-3.5" />
               Bersihkan
             </Button>

@@ -20,8 +20,11 @@ function HariIniHeaderStats() {
   const { data: todayTasks = [] } = useTasks(today)
   
   const activeMissions = todayTasks.filter((t: any) => t.status === 'belum' || t.status === 'proses').length
-  const totalEstimatedMinutes = todayTasks.reduce((sum: number, t: any) => sum + t.estimasi_menit, 0)
+  const totalEstimatedMinutes = todayTasks
+    .filter((t: any) => t.status !== 'selesai')
+    .reduce((sum: number, t: any) => sum + t.estimasi_menit, 0)
   const completedMissions = todayTasks.filter((t: any) => t.status === 'selesai').length
+  const totalToday = todayTasks.length
 
   return (
     <div className="hidden md:flex items-center gap-2">
@@ -34,27 +37,35 @@ function HariIniHeaderStats() {
         <Clock className="h-3.5 w-3.5 text-slate-500" />
         <span className="text-xs font-semibold text-slate-700">{getEstimasiText(totalEstimatedMinutes)}</span>
       </div>
-      <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-green-50 border border-green-200 rounded-lg">
-        <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
-        <span className="text-xs font-semibold text-green-700">{completedMissions}</span>
-        <span className="text-[10px] text-green-600/70">Selesai</span>
-      </div>
+      {totalToday > 0 && (
+        <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-green-50 border border-green-200 rounded-lg">
+          <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+          <div className="flex items-center gap-1.5">
+            <div className="w-16 h-1.5 bg-green-100 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-green-500 rounded-full transition-all duration-500"
+                style={{ width: `${Math.round((completedMissions / totalToday) * 100)}%` }}
+              />
+            </div>
+            <span className="text-xs font-semibold text-green-700">{completedMissions}/{totalToday}</span>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
-// Inline stats for Semua tab - Total, Terlambat, Proses, Selesai
+// Inline stats for Semua tab - Total (excluding completed), Terlambat, Proses
 import { isBefore, startOfDay } from 'date-fns'
 function SemuaHeaderStats() {
   const { data: allTasks = [] } = useTasks()
   
-  const total = allTasks.length
+  const total = allTasks.filter((t: any) => t.status !== 'selesai').length
   const overdue = allTasks.filter((t: any) => {
     const taskDate = new Date(t.tanggal)
     return isBefore(taskDate, startOfDay(new Date())) && t.status !== 'selesai'
   }).length
   const inProgress = allTasks.filter((t: any) => t.status === 'proses').length
-  const completed = allTasks.filter((t: any) => t.status === 'selesai').length
 
   return (
     <div className="hidden md:flex items-center gap-2">
@@ -73,10 +84,29 @@ function SemuaHeaderStats() {
         <span className="text-xs font-semibold text-amber-700">{inProgress}</span>
         <span className="text-[10px] text-amber-600/70">Proses</span>
       </div>
+    </div>
+  )
+}
+
+// Inline stats for Selesai tab - Total Selesai & Total Waktu
+function SelesaiHeaderStats() {
+  const { data: allTasks = [] } = useTasks()
+  
+  const totalSelesai = allTasks.filter((t: any) => t.status === 'selesai').length
+  const totalEstimatedMinutes = allTasks
+    .filter((t: any) => t.status === 'selesai')
+    .reduce((sum: number, t: any) => sum + t.estimasi_menit, 0)
+
+  return (
+    <div className="hidden md:flex items-center gap-2">
       <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-green-50 border border-green-200 rounded-lg">
         <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
-        <span className="text-xs font-semibold text-green-700">{completed}</span>
+        <span className="text-xs font-semibold text-green-700">{totalSelesai}</span>
         <span className="text-[10px] text-green-600/70">Selesai</span>
+      </div>
+      <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg">
+        <Clock className="h-3.5 w-3.5 text-slate-500" />
+        <span className="text-xs font-semibold text-slate-700">{getEstimasiText(totalEstimatedMinutes)}</span>
       </div>
     </div>
   )
@@ -100,6 +130,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   // Show stats only on Hari Ini and Semua tabs
   const isHariIni = pathname === '/tugas/hari-ini'
   const isSemua = pathname === '/tugas/semua'
+  const isSelesai = pathname === '/tugas/selesai'
 
   const periodLabels = {
     daily: { label: 'Harian', icon: Clock },
@@ -138,7 +169,11 @@ export function Header({ onMenuClick }: HeaderProps) {
         {/* Semua Stats — only on tugas/semua */}
         {isSemua && <SemuaHeaderStats />}
 
-        {/* Date Navigation */}
+        {/* Selesai Stats — only on tugas/selesai */}
+        {isSelesai && <SelesaiHeaderStats />}
+
+        {/* Date Navigation — hidden on Hari Ini, Semua, and Selesai tabs */}
+        {!isHariIni && !isSemua && !isSelesai && (
         <div className="flex-1 flex items-center justify-start gap-2 min-w-0">
           {/* Desktop date navigation */}
           <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border">
@@ -173,6 +208,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             </span>
           </div>
         </div>
+        )}
 
         {/* Period Toggle Group — only on Overview page */}
         {isOverviewPage && (

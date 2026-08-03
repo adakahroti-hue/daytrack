@@ -24,8 +24,8 @@ interface HeaderControls {
   category: string
   subPage: string | null
   setSubPage: (subPage: string | null) => void
-  tugasView: 'hari-ini' | 'semua'
-  setTugasView: (view: 'hari-ini' | 'semua') => void
+  tugasView: 'hari-ini' | 'semua' | 'selesai'
+  setTugasView: (view: 'hari-ini' | 'semua' | 'selesai') => void
 }
 
 const HeaderControlsContext = createContext<HeaderControls | null>(null)
@@ -45,6 +45,7 @@ function getCategoryFromPath(pathname: string): string {
 function getSubPageFromPath(pathname: string): string | null {
   if (pathname.startsWith('/tugas/hari-ini')) return 'hari-ini'
   if (pathname.startsWith('/tugas/semua')) return 'semua'
+  if (pathname.startsWith('/tugas/selesai')) return 'selesai'
   if (pathname.startsWith('/sholat')) return 'sholat'
   if (pathname.startsWith('/quran')) return 'quran'
   if (pathname.startsWith('/doa')) return 'doa'
@@ -58,12 +59,13 @@ function getSubPageFromPath(pathname: string): string | null {
   return null
 }
 
-function getCategoryTitle(category: string, period: Period, subPage: string | null, tugasView?: 'hari-ini' | 'semua'): string {
+function getCategoryTitle(category: string, period: Period, subPage: string | null, tugasView?: 'hari-ini' | 'semua' | 'selesai'): string {
   // Special handling for Tugas category - use internal view state
   if (category === 'tugas' && tugasView) {
     switch (tugasView) {
       case 'hari-ini': return 'Hari Ini'
       case 'semua': return 'Semua'
+      case 'selesai': return 'Tugas Selesai'
     }
   }
 
@@ -112,12 +114,13 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
   }
 }
 
-function getCategoryDescription(category: string, period: Period, subPage: string | null, tugasView?: 'hari-ini' | 'semua'): string {
+function getCategoryDescription(category: string, period: Period, subPage: string | null, tugasView?: 'hari-ini' | 'semua' | 'selesai'): string {
   // Special handling for Tugas category - use internal view state
   if (category === 'tugas' && tugasView) {
     switch (tugasView) {
       case 'hari-ini': return 'Kelola tugas-tugas hari ini'
       case 'semua': return 'Kelola seluruh daftar tugas Anda'
+      case 'selesai': return 'Tugas yang sudah kamu selesaikan akan muncul di sini.'
     }
   }
 
@@ -191,7 +194,7 @@ export function HeaderControlsProvider({
   const pathname = usePathname()
   const [category, setCategory] = useState('overview')
   const [subPage, setSubPage] = useState<string | null>(null)
-  const [tugasView, setTugasView] = useState<'hari-ini' | 'semua'>('hari-ini')
+  const [tugasView, setTugasView] = useState<'hari-ini' | 'semua' | 'selesai'>('hari-ini')
 
   // Update category and sub-page when pathname changes
   useEffect(() => {
@@ -202,6 +205,7 @@ export function HeaderControlsProvider({
       // Sync tugasView from URL so header title/description matches the active tab
       if (sp === 'semua') setTugasView('semua')
       else if (sp === 'hari-ini') setTugasView('hari-ini')
+      else if (sp === 'selesai') setTugasView('selesai')
     }
   }, [pathname])
 

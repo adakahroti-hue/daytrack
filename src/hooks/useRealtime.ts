@@ -188,10 +188,11 @@ export function useRealtime({
 
   return { cleanup }
 }
-export function useTasksRealtime(queryKeys: string[][] = [['tasks']]) {
+export function useTasksRealtime(queryKeys: string[][] = [['tasks']], filter?: string) {
   return useRealtime({
     table: 'tasks',
     queryKeys,
+    filter,
   })
 }
 

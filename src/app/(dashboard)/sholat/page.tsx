@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { format, subDays, addDays, isSameDay, startOfWeek, endOfWeek } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, Calendar, Check, X, RotateCcw, Clock, Flame, Target, Sparkles, Star } from 'lucide-react'
+import { Check, X, RotateCcw, Flame, Target, Sunrise, Sun, Sunset, Moon, CloudSun, Calendar } from 'lucide-react'
+import { CircularProgress } from '@/components/ui/CircularProgress'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -14,13 +15,14 @@ import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { usePrayerLog, usePrayerLogRange, useUpsertPrayerLog, useTogglePrayer, useUpdatePrayerQuality, useQueryClient } from '@/hooks/usePrayerLogs'
 import { usePrayerLogRealtime } from '@/hooks/useRealtime'
+import { startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns'
 
 const PRAYER_TIMES = [
-  { key: 'subuh', label: 'Subuh', short: 'Su', time: '04:30 - 05:45', arabic: 'صَلَاةُ الفَجْرِ' },
-  { key: 'dzuhur', label: 'Dzuhur', short: 'Dz', time: '11:45 - 13:15', arabic: 'صَلَاةُ الظُّهْرِ' },
-  { key: 'ashar', label: 'Ashar', short: 'As', time: '15:00 - 16:30', arabic: 'صَلَاةُ العَصْرِ' },
-  { key: 'maghrib', label: 'Maghrib', short: 'Ma', time: '18:00 - 19:15', arabic: 'صَلَاةُ المَغْرِبِ' },
-  { key: 'isya', label: 'Isya', short: 'Is', time: '19:30 - 21:00', arabic: 'صَلَاةُ العِشَاءِ' },
+  { key: 'subuh', label: 'Subuh', time: '04:30 - 05:45', arabic: 'صَلَاةُ الفَجْرِ', icon: Sunrise },
+  { key: 'dzuhur', label: 'Dzuhur', time: '11:45 - 13:15', arabic: 'صَلَاةُ الظُّهْرِ', icon: Sun },
+  { key: 'ashar', label: 'Ashar', time: '15:00 - 16:30', arabic: 'صَلَاةُ العَصْرِ', icon: CloudSun },
+  { key: 'maghrib', label: 'Maghrib', time: '18:00 - 19:15', arabic: 'صَلَاةُ المَغْرِبِ', icon: Sunset },
+  { key: 'isya', label: 'Isya', time: '19:30 - 21:00', arabic: 'صَلَاةُ العِشَاءِ', icon: Moon },
 ] as const
 
 const REASON_OPTIONS = [
@@ -102,13 +104,15 @@ export default function SholatPage() {
       return
     }
 
-    await togglePrayer.mutateAsync({
+    // Fire mutation in background, don't await
+    togglePrayer.mutate({
       tanggal: dateKey,
       prayerTime: key,
       value: checked,
       reason: checked ? undefined : (currentReason || 'lainnya'),
     })
     
+    // Open quality dialog IMMEDIATELY for better UX
     if (checked) {
       setQualityDialog({ open: true, prayerKey: key })
     }
@@ -171,32 +175,47 @@ export default function SholatPage() {
     format(endOfWeek(currentDate, { weekStartsOn: 1 }), 'yyyy-MM-dd')
   )
 
-  const currentStreak = calculateStreak(weeklyLogs)
-  const bestStreak = Math.max(currentStreak, 0)
+  const { data: monthlyLogs = [] } = usePrayerLogRange(
+    format(startOfMonth(currentDate), 'yyyy-MM-dd'),
+    format(endOfMonth(currentDate), 'yyyy-MM-dd')
+  )
+
+  const { data: yearlyLogs = [] } = usePrayerLogRange(
+    format(startOfYear(currentDate), 'yyyy-MM-dd'),
+    format(endOfYear(currentDate), 'yyyy-MM-dd')
+  )
+
+  // Stats helpers
+  const getRangeStats = (logs: any[]) => {
+    const uniqueDates = [...new Set(logs.map(log => log.tanggal))]
+    let totalDone = 0
+    let totalPrayers = uniqueDates.length * PRAYER_TIMES.length
+    for (const log of logs) {
+      for (const t of PRAYER_TIMES) {
+        if (log[`sholat_${t.key}`]) totalDone++
+      }
+    }
+    const percentage = totalPrayers > 0 ? Math.round((totalDone / totalPrayers) * 100) : 0
+    return { totalDone, totalPrayers, percentage }
+  }
+
   const completedCount = getCompletedCount()
   const progress = getProgress()
+
+  const todayStats = { done: completedCount, total: PRAYER_TIMES.length, percentage: progress }
+  const weekStats = getRangeStats(weeklyLogs)
+  const monthStats = getRangeStats(monthlyLogs)
+  const yearStats = getRangeStats(yearlyLogs)
+
+  const currentStreak = calculateStreak(weeklyLogs)
+  const bestStreak = Math.max(currentStreak, 0)
 
   return (
     <div className="space-y-5 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-5">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-emerald-500" />
-            Sholat
-          </h1>
-          <p className="text-sm text-muted-foreground">Catat dan pantau sholat harian Anda</p>
-        </div>
-        <div className="flex items-center gap-2 sm:ml-auto">
-          <Button variant="outline" size="icon" onClick={() => navigateDay('prev')} aria-label="Hari sebelumnya" className="h-9 w-9">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" onClick={goToToday} className="px-3 h-9" disabled={isToday}>
-            <Calendar className="h-4 w-4 mr-2" /> {format(currentDate, 'd MMM yyyy', { locale: id })}
-          </Button>
-          <Button variant="outline" size="icon" onClick={() => navigateDay('next')} aria-label="Hari berikutnya" className="h-9 w-9">
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+          <h1 className="text-xl font-semibold"></h1>
         </div>
       </div>
 
@@ -219,47 +238,92 @@ export default function SholatPage() {
               {PRAYER_TIMES.map((prayer) => {
                 const isDone = prayerData?.[`sholat_${prayer.key}`] === true
                 const reason = prayerData?.[`alasan_${prayer.key}`] as ReasonKey | null
-                const reasonLabel = REASON_OPTIONS.find(r => r.value === reason)?.label
+                const reasonOption = REASON_OPTIONS.find(r => r.value === reason)
 
                 return (
                   <div
                     key={prayer.key}
-                    className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-muted/30 transition-colors"
+                    className={cn(
+                      'flex items-center justify-between gap-3 px-4 py-3 transition-colors',
+                      isDone
+                        ? 'bg-emerald-50 dark:bg-emerald-950/20'
+                        : reason
+                        ? 'bg-rose-50 dark:bg-rose-950/20'
+                        : 'hover:bg-muted/30'
+                    )}
                     style={{ minHeight: '60px' }}
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <div className={cn(
                         'w-9 h-9 rounded-lg flex items-center justify-center shrink-0',
-                        isDone ? 'bg-emerald-500/10 text-emerald-600' : 'bg-muted text-muted-foreground'
+                        isDone
+                          ? 'bg-emerald-500/10 text-emerald-600'
+                          : reason
+                          ? 'bg-rose-500/10 text-rose-600'
+                          : 'bg-muted text-muted-foreground'
                       )}>
-                        <span className="text-sm font-medium">{prayer.short}</span>
+                        <prayer.icon className="h-5 w-5" />
                       </div>
                       <div className="min-w-0">
-                        <p className="font-medium text-sm truncate">{prayer.label}</p>
-                        <p className="text-xs text-muted-foreground">{prayer.time}</p>
-                        {reason && !isDone && (
-                          <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5 flex items-center gap-1">
-                            <X className="h-2.5 w-2.5" /> {reasonLabel}
-                          </p>
-                        )}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-semibold text-base truncate">{prayer.label}</p>
+                          {isDone && (() => {
+                            const quality = prayerData?.[`kualitas_${prayer.key}`] as QualityKey | null
+                            const qualityOption = QUALITY_OPTIONS.find(q => q.value === quality)
+                            if (!qualityOption) return (
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-muted text-muted-foreground border-border cursor-pointer" onClick={(e) => { e.stopPropagation(); setQualityDialog({ open: true, prayerKey: prayer.key }) }}>
+                                Belum dinilai
+                              </Badge>
+                            )
+                            return (
+                              <Badge variant="outline" className={cn(
+                                'text-[10px] px-1.5 py-0 cursor-pointer',
+                                quality === 1 && 'border-red-300 text-red-600 bg-red-50 dark:border-red-800 dark:text-red-400 dark:bg-red-950/30',
+                                quality === 2 && 'border-yellow-300 text-yellow-700 bg-yellow-50 dark:border-yellow-800 dark:text-yellow-400 dark:bg-yellow-950/30',
+                                quality === 3 && 'border-green-300 text-green-700 bg-green-50 dark:border-green-800 dark:text-green-400 dark:bg-green-950/30'
+                              )} onClick={(e) => { e.stopPropagation(); setQualityDialog({ open: true, prayerKey: prayer.key }) }}>
+                                {qualityOption.icon} {qualityOption.label}
+                              </Badge>
+                            )
+                          })()}
+                          {reason && !isDone && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-300 text-amber-600 bg-amber-50 dark:border-amber-800 dark:text-amber-400 dark:bg-amber-950/30">
+                              {reasonOption?.icon} {reasonOption?.label}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
-                      {!isDone && (
-                        <Badge variant="outline" className="text-xs px-2 py-1 bg-muted text-muted-foreground border-border">
-                          Belum
-                        </Badge>
-                      )}
-                      <Button
-                        variant={isDone ? 'default' : 'outline'}
-                        size="icon"
-                        className={cn('h-9 w-9 rounded-lg', isDone && 'bg-emerald-500 hover:bg-emerald-600')}
-                        onClick={() => handlePrayerChange(prayer.key, !isDone)}
-                        aria-label={isDone ? `Batalkan ${prayer.label}` : `Tandai ${prayer.label} selesai`}
-                      >
-                        {isDone ? <Check className="h-5 w-5" /> : <Check className="h-5 w-5" />}
-                      </Button>
+                      <div className="flex items-center gap-1.5">
+                        {isDone ? (
+                          <Check className="h-5 w-5 text-emerald-500" />
+                        ) : reason ? (
+                          <X className="h-5 w-5 text-rose-500" />
+                        ) : (
+                          <>
+                            <Button
+                              variant="default"
+                              size="sm"
+                              className={cn('h-9 px-3 rounded-lg', 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300 hover:bg-rose-200 dark:hover:bg-rose-900/50')}
+                              onClick={() => handlePrayerChange(prayer.key, false)}
+                              aria-label={`Tandai ${prayer.label} belum`}
+                            >
+                              <span>Belum</span>
+                            </Button>
+                            <Button
+                              variant="default"
+                              size="sm"
+                              className="h-9 px-3 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/50"
+                              onClick={() => handlePrayerChange(prayer.key, true)}
+                              aria-label={`Tandai ${prayer.label} sudah`}
+                            >
+                              <span>Sudah</span>
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )
@@ -269,65 +333,36 @@ export default function SholatPage() {
         </CardContent>
       </Card>
 
-      {/* Kualitas Sholat - Compact with Badge */}
-      {completedCount > 0 && (
-        <Card className="border-emerald-200/50 dark:border-emerald-800/50 rounded-xl">
-          <CardContent className="p-4 space-y-2">
-            <p className="text-sm font-medium flex items-center gap-2">
-              <Star className="h-4 w-4 text-emerald-500" />
-              Kualitas Sholat Hari Ini
-            </p>
-            <div className="space-y-1.5">
-              {PRAYER_TIMES.map((prayer) => {
-                const isDone = prayerData?.[`sholat_${prayer.key}`] === true
-                if (!isDone) return null
-
-                const quality = prayerData?.[`kualitas_${prayer.key}`] as QualityKey | null
-                const qualityOption = QUALITY_OPTIONS.find(q => q.value === quality)
-
-                return (
-                  <div
-                    key={prayer.key}
-                    className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-200/50 cursor-pointer hover:bg-emerald-500/10 transition-colors"
-                    onClick={() => setQualityDialog({ open: true, prayerKey: prayer.key })}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => e.key === 'Enter' && setQualityDialog({ open: true, prayerKey: prayer.key })}
-                    aria-label={`Ubah kualitas ${prayer.label}: ${qualityOption ? qualityOption.label : 'Belum diisi'}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                        <Clock className="h-3.5 w-3.5 text-emerald-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm">{prayer.label}</p>
-                        <p className="text-xs text-muted-foreground">{prayer.time}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {qualityOption ? (
-                        <Badge variant="outline" className={cn(
-                          'text-xs px-2 py-1',
-                          quality === 1 && 'border-red-300 text-red-600 bg-red-50 dark:border-red-800 dark:text-red-400 dark:bg-red-950/30',
-                          quality === 2 && 'border-yellow-300 text-yellow-700 bg-yellow-50 dark:border-yellow-800 dark:text-yellow-400 dark:bg-yellow-950/30',
-                          quality === 3 && 'border-green-300 text-green-700 bg-green-50 dark:border-green-800 dark:text-green-400 dark:bg-green-950/30',
-                        )}>
-                          {qualityOption.icon} {qualityOption.label}
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-xs px-2 py-1 bg-muted text-muted-foreground border-border">
-                          Belum
-                        </Badge>
-                      )}
-                      <Sparkles className="h-3 w-3 text-muted-foreground" />
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Circular Progress Charts - 3 Columns */}
+      <div className="grid grid-cols-3 gap-4">
+        <CircularProgress
+          percentage={weekStats.percentage}
+          size={70}
+          strokeWidth={7}
+          color="#3B82F6"
+          bgColor="#BFDBFE"
+          label="Minggu Ini"
+          value={`${weekStats.totalDone}/${weekStats.totalPrayers}`}
+        />
+        <CircularProgress
+          percentage={monthStats.percentage}
+          size={70}
+          strokeWidth={7}
+          color="#8B5CF6"
+          bgColor="#DDD6FE"
+          label="Bulan Ini"
+          value={`${monthStats.totalDone}/${monthStats.totalPrayers}`}
+        />
+        <CircularProgress
+          percentage={yearStats.percentage}
+          size={70}
+          strokeWidth={7}
+          color="#F59E0B"
+          bgColor="#FDE68A"
+          label="Tahun Ini"
+          value={`${yearStats.totalDone}/${yearStats.totalPrayers}`}
+        />
+      </div>
 
       {completedCount === 0 && (
         <div className="text-center py-4 px-4 text-sm text-muted-foreground bg-muted/30 rounded-xl border border-[#E5E7EB] dark:border-[#374151]">

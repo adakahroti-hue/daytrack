@@ -86,6 +86,50 @@ export async function deleteTask(id: string) {
   return { error: null }
 }
 
+export async function bulkDeleteTasks(ids: string[]) {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  const { error } = await supabase
+    .from("tasks")
+    .delete()
+    .in("id", ids)
+    .eq("user_id", user.id)
+
+  if (error) throw new Error(error.message)
+
+  revalidatePath("/tugas/hari-ini")
+  revalidatePath("/tugas/semua")
+  revalidatePath("/tugas/selesai")
+  revalidatePath("/overview")
+
+  return { error: null }
+}
+
+export async function bulkResetTasks(ids: string[]) {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  const { error } = await supabase
+    .from("tasks")
+    .update({ status: 'belum', started_at: null, completed_at: null })
+    .in("id", ids)
+    .eq("user_id", user.id)
+
+  if (error) throw new Error(error.message)
+
+  revalidatePath("/tugas/hari-ini")
+  revalidatePath("/tugas/semua")
+  revalidatePath("/tugas/selesai")
+  revalidatePath("/overview")
+
+  return { error: null }
+}
+
 export async function toggleTaskStatus(id: string, status: "proses" | "belum" | "selesai") {
   const supabase = await createClient()
 

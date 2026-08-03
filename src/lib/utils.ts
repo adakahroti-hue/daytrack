@@ -269,6 +269,70 @@ export function isOverdue(deadline: string | null, status: string): boolean {
 }
 
 // ============================================
+// Time tracking helpers
+// ============================================
+
+/**
+ * Hitung durasi real (menit) dari started_at ke completed_at
+ */
+export function getActualDurationMinutes(startedAt: string | null, completedAt: string | null): number {
+  if (!startedAt || !completedAt) return 0
+  const start = new Date(startedAt).getTime()
+  const end = new Date(completedAt).getTime()
+  const diffMs = end - start
+  if (diffMs <= 0) return 0
+  return Math.round(diffMs / 60000) // convert to minutes
+}
+
+/**
+ * Format durasi real jadi text (sama style getEstimasiText)
+ */
+export function getActualDurationText(startedAt: string | null, completedAt: string | null): string {
+  const menit = getActualDurationMinutes(startedAt, completedAt)
+  if (menit === 0) return 'Belum ada data'
+  return getEstimasiText(menit)
+}
+
+/**
+ * Bandingin estimasi vs real
+ * Return: { selisihMenit, selisihText, status: 'lebih-cepat' | 'lebih-lama' | 'pas' }
+ */
+export function compareEstimasiVsActual(estimasiMenit: number, startedAt: string | null, completedAt: string | null) {
+  const actual = getActualDurationMinutes(startedAt, completedAt)
+  if (actual === 0) return { selisihMenit: 0, selisihText: '-', status: 'unknown' as const }
+  
+  const selisih = actual - estimasiMenit
+  const absSelisih = Math.abs(selisih)
+  
+  let status: 'lebih-cepat' | 'lebih-lama' | 'pas' = 'pas'
+  if (selisih < 0) status = 'lebih-cepat'
+  else if (selisih > 0) status = 'lebih-lama'
+  
+  const selisihText = getEstimasiText(absSelisih)
+  
+  return { selisihMenit: selisih, selisihText, status }
+}
+
+/**
+ * Hitung live duration (menit) dari started_at sampai sekarang
+ * Untuk tugas yang status 'proses'
+ */
+export function getLiveDurationMinutes(startedAt: string | null): number {
+  if (!startedAt) return 0
+  const start = new Date(startedAt).getTime()
+  const now = Date.now()
+  const diffMs = now - start
+  if (diffMs <= 0) return 0
+  return Math.round(diffMs / 60000)
+}
+
+export function getLiveDurationText(startedAt: string | null): string {
+  const menit = getLiveDurationMinutes(startedAt)
+  if (menit === 0) return 'Baru mulai'
+  return getEstimasiText(menit)
+}
+
+// ============================================
 // Legacy exports for backward compatibility
 // ============================================
 export function getAspectLabel(aspect: string): string {
