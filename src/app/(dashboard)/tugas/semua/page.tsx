@@ -437,8 +437,8 @@ function SemuaPageClient() {
   const filteredAndSortedTasks = useMemo(() => {
     let tasks = [...allTasks]
 
-    // Exclude completed tasks - they only appear in Selesai tab
-    tasks = tasks.filter(t => t.status !== 'selesai')
+    // Exclude completed and in-progress tasks - they only appear in their respective tabs
+    tasks = tasks.filter(t => t.status === 'belum')
 
     // Search
     if (searchQuery.trim()) {
@@ -538,7 +538,6 @@ function SemuaPageClient() {
             <SelectContent>
               <SelectItem value="all">Semua Status</SelectItem>
               <SelectItem value="belum">Belum</SelectItem>
-              <SelectItem value="proses">Sedang Dikerjakan</SelectItem>
               <SelectItem value="selesai">Selesai</SelectItem>
             </SelectContent>
           </Select>
