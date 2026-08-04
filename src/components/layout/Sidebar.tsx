@@ -166,7 +166,7 @@ export function Sidebar({
       {/* Mobile drawer */}
       {mobileOpen && (
         <aside
-          className="fixed inset-y-0 left-0 z-50 w-64 bg-card border-r flex flex-col lg:hidden"
+          className="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r flex flex-col lg:hidden"
           style={{ animation: 'slideInLeft 0.2s ease-out' }}
         >
           <SidebarContent
