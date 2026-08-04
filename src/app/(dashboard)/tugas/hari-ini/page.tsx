@@ -331,9 +331,19 @@ function HariIniPageClient() {
     setIsFormOpen(true)
   }
 
+  // Loading progress bar component
+  function LoadingBar() {
+    return (
+      <div className="fixed top-0 left-0 right-0 z-50 h-1.5 bg-slate-100 dark:bg-slate-800">
+        <div className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500 animate-loading-bar" style={{ width: '100%' }} />
+      </div>
+    )
+  }
+
   if (isLoading) {
     return (
       <div className="space-y-6">
+        <LoadingBar />
         <Card className={CARD_BASE}><CardContent className="py-12 text-center"><p className="text-muted-foreground">Memuat misi...</p></CardContent></Card>
       </div>
     )
