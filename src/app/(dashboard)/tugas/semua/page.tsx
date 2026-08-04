@@ -487,9 +487,22 @@ function SemuaPageClient() {
 
   // Loading progress bar component
   function LoadingBar() {
+    const [progress, setProgress] = useState(0)
+    useEffect(() => {
+      const interval = setInterval(() => {
+        setProgress(prev => {
+          const next = prev + Math.random() * 15
+          return next >= 100 ? 90 : next
+        })
+      }, 300)
+      return () => clearInterval(interval)
+    }, [])
     return (
-      <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-        <div className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500 animate-loading-bar" style={{ width: '100%' }} />
+      <div className="flex flex-col items-center gap-2 w-full max-w-xs mx-auto">
+        <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500 transition-all duration-300 ease-out" style={{ width: `${progress}%` }} />
+        </div>
+        <p className="text-xs text-slate-500 font-mono">{Math.round(progress)}%</p>
       </div>
     )
   }
