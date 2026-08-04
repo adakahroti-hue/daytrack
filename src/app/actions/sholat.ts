@@ -146,9 +146,9 @@ export async function toggleSholat(tanggal: string, sholatTime: typeof SHOLAT_TI
 
 export async function getSholat(tanggal: string) {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Unauthorized")
+  if (!user) return null
 
   const { data, error } = await supabase
     .from("sholat")
