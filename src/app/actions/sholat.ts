@@ -163,9 +163,9 @@ export async function getSholat(tanggal: string) {
 
 export async function getSholatRange(startDate: string, endDate: string) {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Unauthorized")
+  if (!user) return []
 
   const { data, error } = await supabase
     .from("sholat")
