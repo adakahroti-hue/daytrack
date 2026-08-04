@@ -433,6 +433,9 @@ function SemuaPageClient() {
   const pendingToday = todayTasks.filter(t => t.status === 'belum')[0]
   const todayFocusTask = inProgressToday || pendingToday
 
+  // Hide filters when there are no tasks at all — no point showing filter controls on empty list
+  const showFilters = totalTasks > 0
+
   // Filter and sort tasks - ALWAYS memoized
   const filteredAndSortedTasks = useMemo(() => {
     let tasks = [...allTasks]
@@ -483,7 +486,13 @@ function SemuaPageClient() {
     return tasks
   }, [allTasks, searchQuery, priorityFilter, statusFilter, sortBy, today])
 
-  const hasActiveFilters = searchQuery || priorityFilter !== 'all' || statusFilter !== 'all' || sortBy !== 'priority'
+  const hasActiveFilters = searchQuery || priorityFilter !== 'all' || statusFilter !== 'all'
+
+  // Empty state logic: distinguish between "no tasks at all" vs "filtered to empty"
+  // - totalTasks === 0           → user has zero tasks in the database
+  // - filteredAndSortedTasks === 0 but totalTasks > 0 → filters produced zero results
+  const isCompletelyEmpty = totalTasks === 0 && !hasActiveFilters
+  const isFilteredEmpty = filteredAndSortedTasks.length === 0 && (hasActiveFilters || totalTasks > 0)
 
   // Loading progress bar component
   function LoadingBar() {
@@ -547,8 +556,9 @@ function SemuaPageClient() {
     <div className="space-y-6 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
       {/* Stats are now shown in the header — no inline stats here */}
 
-      {/* Search & Filter Bar - Single Row */}
-      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+      {/* Search & Filter Bar - Single Row — only show if there are tasks */}
+      {showFilters && (
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div className="relative w-full sm:max-w-xs flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -603,12 +613,19 @@ function SemuaPageClient() {
           )}
         </div>
       </div>
+      )}
 
       {/* Task List - Responsive Grid */}
       <div>
         {filteredAndSortedTasks.length === 0 ? (
           <div className="py-16 text-center">
-            {hasActiveFilters ? (
+            {isCompletelyEmpty ? (
+              <>
+                <Target className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+                <p className="text-muted-foreground text-lg">Belum ada tugas</p>
+                <p className="text-sm text-muted-foreground mt-1">Tambahkan tugas pertama Anda untuk memulai</p>
+              </>
+            ) : (
               <>
                 <Search className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
                 <p className="text-muted-foreground text-lg">Tidak ada tugas yang cocok</p>
@@ -616,12 +633,6 @@ function SemuaPageClient() {
                 <Button variant="outline" onClick={handleClearFilters} className="mt-4 gap-1.5">
                   <X className="h-4 w-4" /> Reset Filter
                 </Button>
-              </>
-            ) : (
-              <>
-                <Target className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="text-muted-foreground text-lg">Belum ada tugas sama sekali</p>
-                <p className="text-sm text-muted-foreground mt-1">Klik tombol + di kanan bawah untuk menambah tugas</p>
               </>
             )}
           </div>

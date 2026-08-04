@@ -1,428 +1,524 @@
 "use client"
 
-import { useState } from 'react'
-import { format, subDays, addDays, isSameDay, startOfWeek, endOfWeek } from 'date-fns'
+import { useState, useMemo, useRef, useEffect, useCallback, forwardRef } from 'react'
+import { format, subDays, eachDayOfInterval } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Check, X, RotateCcw, Flame, Target, Sunrise, Sun, Sunset, Moon, CloudSun, Calendar } from 'lucide-react'
-import { CircularProgress } from '@/components/ui/CircularProgress'
+import { Check, Sun, CloudSun, Sunset, Moon, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
-import { usePrayerLog, usePrayerLogRange, useUpsertPrayerLog, useTogglePrayer, useUpdatePrayerQuality, useQueryClient } from '@/hooks/usePrayerLogs'
-import { usePrayerLogRealtime } from '@/hooks/useRealtime'
-import { startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns'
+import { useSholatRange, useUpdateSholatCell, useClearSholatCell } from '@/hooks/useSholat'
+import { useQueryClient } from '@tanstack/react-query'
+import { useSholatRealtime } from '@/hooks/useRealtime'
 
-const PRAYER_TIMES = [
-  { key: 'subuh', label: 'Subuh', time: '04:30 - 05:45', arabic: 'صَلَاةُ الفَجْرِ', icon: Sunrise },
-  { key: 'dzuhur', label: 'Dzuhur', time: '11:45 - 13:15', arabic: 'صَلَاةُ الظُّهْرِ', icon: Sun },
-  { key: 'ashar', label: 'Ashar', time: '15:00 - 16:30', arabic: 'صَلَاةُ العَصْرِ', icon: CloudSun },
-  { key: 'maghrib', label: 'Maghrib', time: '18:00 - 19:15', arabic: 'صَلَاةُ المَغْرِبِ', icon: Sunset },
-  { key: 'isya', label: 'Isya', time: '19:30 - 21:00', arabic: 'صَلَاةُ العِشَاءِ', icon: Moon },
-] as const
+// ─── Constants ────────────────────────────────────
 
-const REASON_OPTIONS = [
-  { value: 'lupa', label: 'Lupa', icon: '🤷' },
-  { value: 'ketiduran', label: 'Ketiduran', icon: '😴' },
-  { value: 'sibuk', label: 'Sibuk', icon: '💼' },
-  { value: 'sakit', label: 'Sakit', icon: '🤒' },
-  { value: 'perjalanan', label: 'Perjalanan', icon: '🚗' },
-  { value: 'lainnya', label: 'Lainnya', icon: '📝' },
-] as const
+type SholatKey = 'subuh' | 'dhuha' | 'dzuhur' | 'ashar' | 'maghrib' | 'isya'
 
-const QUALITY_OPTIONS = [
-  { value: 1, label: 'Kurang fokus', icon: '😔', color: 'text-red-500' },
-  { value: 2, label: 'Cukup baik', icon: '🙂', color: 'text-yellow-500' },
-  { value: 3, label: 'Sangat baik', icon: '🤍', color: 'text-green-500' },
-] as const
+const SHOLAT_COLUMNS: { key: SholatKey; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { key: 'subuh', label: 'Subuh', icon: Sun },
+  { key: 'dhuha', label: 'Dhuha', icon: Sun },
+  { key: 'dzuhur', label: 'Dzuhur', icon: Sun },
+  { key: 'ashar', label: 'Ashar', icon: CloudSun },
+  { key: 'maghrib', label: 'Maghrib', icon: Sunset },
+  { key: 'isya', label: 'Isya', icon: Moon },
+]
 
-type PrayerKey = typeof PRAYER_TIMES[number]['key']
-type ReasonKey = typeof REASON_OPTIONS[number]['value']
-type QualityKey = typeof QUALITY_OPTIONS[number]['value']
+type StatusOption = {
+  value: string
+  label: string
+  isDone: boolean
+}
 
-export default function SholatPage() {
-  const [currentDate, setCurrentDate] = useState(new Date())
-  const [reasonDialog, setReasonDialog] = useState<{ open: boolean; prayerKey: PrayerKey; currentStatus: boolean } | null>(null)
-  const [qualityDialog, setQualityDialog] = useState<{ open: boolean; prayerKey: PrayerKey } | null>(null)
-  const dateKey = format(currentDate, 'yyyy-MM-dd')
-  const isToday = isSameDay(currentDate, new Date())
+const STATUS_OPTIONS: StatusOption[] = [
+  { value: 'sudah', label: 'Sudah Sholat', isDone: true },
+  { value: 'malas', label: 'Malas', isDone: false },
+  { value: 'lupa', label: 'Lupa', isDone: false },
+  { value: 'sibuk', label: 'Sibuk', isDone: false },
+  { value: 'sakit', label: 'Sakit', isDone: false },
+  { value: 'perjalanan', label: 'Perjalanan', isDone: false },
+  { value: 'tak_ada_tempat', label: 'Tidak Ada Tempat Sholat', isDone: false },
+  { value: 'bersama_teman', label: 'Bersama Teman', isDone: false },
+  { value: 'lainnya', label: 'Lainnya', isDone: false },
+]
 
-  const queryClient = useQueryClient()
-  const { data: prayerData, isLoading, error, refetch } = usePrayerLog(dateKey)
-  const qualityUpdate = useUpdatePrayerQuality()
-  const togglePrayer = useTogglePrayer()
+const REASON_LABELS: Record<string, string> = {
+  malas: 'Malas',
+  lupa: 'Lupa',
+  sibuk: 'Sibuk',
+  sakit: 'Sakit',
+  perjalanan: 'Perjalanan',
+  tak_ada_tempat: 'Tidak Ada Tempat',
+  bersama_teman: 'Bersama Teman',
+  lainnya: 'Lainnya',
+}
 
-  usePrayerLogRealtime(dateKey)
+// Day badge pastel colors
+const DAY_BADGE_COLORS: Record<string, string> = {
+  Senin: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  Selasa: 'bg-orange-100 text-orange-800 border-orange-200',
+  Rabu: 'bg-purple-100 text-purple-800 border-purple-200',
+  Kamis: 'bg-amber-100 text-amber-800 border-amber-200',
+  Jumat: 'bg-blue-100 text-blue-800 border-blue-200',
+  Sabtu: 'bg-green-100 text-green-800 border-green-200',
+  Minggu: 'bg-rose-100 text-rose-800 border-rose-200',
+}
 
-  // Optimistic quality update for instant UI response
-  const handleQualitySelect = async (quality: QualityKey) => {
-    if (!qualityDialog) return
-    const prayerKey = qualityDialog.prayerKey
+// ─── Types ─────────────────────────────────────────
 
-    // Optimistic update: update local cache immediately
-    const prevData = prayerData
-    if (prevData) {
-      queryClient.setQueryData(["prayer_logs", dateKey], {
-        ...prevData,
-        [`kualitas_${prayerKey}`]: quality,
-      })
+type SholatRow = {
+  id: string
+  tanggal: string
+  hari: string
+  subuh: boolean
+  dhuha: boolean
+  dzuhur: boolean
+  ashar: boolean
+  maghrib: boolean
+  isya: boolean
+  alasan_subuh: string | null
+  alasan_dhuha: string | null
+  alasan_dzuhur: string | null
+  alasan_ashar: string | null
+  alasan_maghrib: string | null
+  alasan_isya: string | null
+}
+
+type CellStatus = 'done' | 'reason' | 'empty'
+
+type DropdownState = {
+  tanggal: string
+  sholatKey: SholatKey
+  rowIndex: number
+  colIndex: number
+} | null
+
+// ─── Helper: get cell status from row data ────────
+
+function getCellStatus(row: SholatRow | undefined, key: SholatKey): { status: CellStatus; reason: string | null } {
+  if (!row) return { status: 'empty', reason: null }
+  const isDone = row[key] as boolean
+  const reason = row[`alasan_${key}` as keyof SholatRow] as string | null
+  if (isDone) return { status: 'done', reason: null }
+  if (reason) return { status: 'reason', reason }
+  return { status: 'empty', reason: null }
+}
+
+// ─── Cell Badge Component ─────────────────────────
+
+function CellBadge({ status, reason }: { status: CellStatus; reason: string | null }) {
+  if (status === 'done') {
+    return (
+      <span className="inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 border border-green-200 text-xs font-medium">
+        <Check className="h-3 w-3" />
+      </span>
+    )
+  }
+  if (status === 'reason' && reason) {
+    const label = REASON_LABELS[reason] || reason
+    return (
+      <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200 text-xs font-medium whitespace-nowrap">
+        {label}
+      </span>
+    )
+  }
+  return null
+}
+
+// ─── Dropdown Menu Component ──────────────────────
+
+const DropdownMenuContent = forwardRef<HTMLDivElement, {
+  tanggal: string
+  sholatKey: SholatKey
+  sholatMap: Record<string, SholatRow>
+  onSelect: (option: StatusOption) => void
+  onClear: () => void
+  onClose: () => void
+}>(({ tanggal, sholatKey, sholatMap, onSelect, onClear, onClose }, ref) => {
+  const menuRef = useRef<HTMLDivElement>(null)
+  const [position, setPosition] = useState<{ top: number; left: number } | null>(null)
+
+  useEffect(() => {
+    // Find the clicked cell element to position dropdown near it
+    const cell = document.querySelector(`[data-dropdown-cell="${tanggal}-${sholatKey}"]`) as HTMLElement
+    if (!cell) return
+
+    const rect = cell.getBoundingClientRect()
+    const menuWidth = 200
+    const menuHeight = 360
+
+    let top = rect.bottom + 4
+    let left = rect.left
+
+    // Flip up if not enough space below
+    if (top + menuHeight > window.innerHeight) {
+      top = rect.top - menuHeight - 4
     }
 
-    setQualityDialog(null)
+    // Shift left if not enough space right
+    if (left + menuWidth > window.innerWidth) {
+      left = window.innerWidth - menuWidth - 8
+    }
 
-    try {
-      await qualityUpdate.mutateAsync({
-        tanggal: dateKey,
-        prayerTime: prayerKey,
-        quality,
-      })
-    } catch {
-      // Rollback on failure
-      if (prevData) {
-        queryClient.setQueryData(["prayer_logs", dateKey], prevData)
+    // Ensure minimum left
+    if (left < 8) left = 8
+
+    setPosition({ top, left })
+  }, [tanggal, sholatKey])
+
+  // Close on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        onClose()
       }
     }
-  }
-
-  const navigateDay = (direction: 'prev' | 'next') => {
-    setCurrentDate(prev => direction === 'prev' ? subDays(prev, 1) : addDays(prev, 1))
-  }
-
-  const goToToday = () => setCurrentDate(new Date())
-
-  const handlePrayerChange = async (key: PrayerKey, checked: boolean) => {
-    if (!prayerData && !checked) return
-    
-    const currentReason = prayerData ? prayerData[`alasan_${key}`] as ReasonKey | null : null
-
-    if (!checked && !currentReason) {
-      setReasonDialog({ open: true, prayerKey: key, currentStatus: checked })
-      return
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
     }
-
-    // Fire mutation in background, don't await
-    togglePrayer.mutate({
-      tanggal: dateKey,
-      prayerTime: key,
-      value: checked,
-      reason: checked ? undefined : (currentReason || 'lainnya'),
-    })
-    
-    // Open quality dialog IMMEDIATELY for better UX
-    if (checked) {
-      setQualityDialog({ open: true, prayerKey: key })
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
     }
-    
-    refetch()
-  }
+  }, [onClose])
 
-  const handleReasonSubmit = async (reason: ReasonKey) => {
-    if (!reasonDialog) return
-    
-    await togglePrayer.mutateAsync({
-      tanggal: dateKey,
-      prayerTime: reasonDialog.prayerKey,
-      value: false,
-      reason,
-    })
-    
-    setReasonDialog(null)
-    refetch()
-  }
+  const currentValue = (() => {
+    const row = sholatMap[tanggal]
+    if (!row) return null
+    const isDone = row[sholatKey] as boolean
+    const reason = row[`alasan_${sholatKey}` as keyof SholatRow] as string | null
+    if (isDone) return 'sudah'
+    if (reason) return reason
+    return null
+  })()
 
-  const handleQualitySubmit = async (quality: QualityKey) => {
-    if (!qualityDialog) return
-
-    await qualityUpdate.mutateAsync({
-      tanggal: dateKey,
-      prayerTime: qualityDialog.prayerKey,
-      quality,
-    })
-
-    setQualityDialog(null)
-  }
-
-  const getCompletedCount = () => {
-    if (!prayerData) return 0
-    return PRAYER_TIMES.filter(t => prayerData[`sholat_${t.key}`]).length
-  }
-
-  const getProgress = () => {
-    return Math.round((getCompletedCount() / PRAYER_TIMES.length) * 100)
-  }
-
-  const calculateStreak = (logs: any[]) => {
-    let streak = 0
-    const sortedDates = [...new Set(logs.map(log => log.tanggal))].sort((a, b) => b.localeCompare(a))
-    for (const date of sortedDates) {
-      const dayLogs = logs.filter(log => log.tanggal === date)
-      const dayData = dayLogs[0]
-      if (dayData) {
-        const allDone = PRAYER_TIMES.every(t => dayData[`sholat_${t.key}`])
-        if (allDone) streak++
-        else break
-      } else break
-    }
-    return streak
-  }
-
-  const { data: weeklyLogs = [] } = usePrayerLogRange(
-    format(startOfWeek(currentDate, { weekStartsOn: 1 }), 'yyyy-MM-dd'),
-    format(endOfWeek(currentDate, { weekStartsOn: 1 }), 'yyyy-MM-dd')
-  )
-
-  const { data: monthlyLogs = [] } = usePrayerLogRange(
-    format(startOfMonth(currentDate), 'yyyy-MM-dd'),
-    format(endOfMonth(currentDate), 'yyyy-MM-dd')
-  )
-
-  const { data: yearlyLogs = [] } = usePrayerLogRange(
-    format(startOfYear(currentDate), 'yyyy-MM-dd'),
-    format(endOfYear(currentDate), 'yyyy-MM-dd')
-  )
-
-  // Stats helpers
-  const getRangeStats = (logs: any[]) => {
-    const uniqueDates = [...new Set(logs.map(log => log.tanggal))]
-    let totalDone = 0
-    let totalPrayers = uniqueDates.length * PRAYER_TIMES.length
-    for (const log of logs) {
-      for (const t of PRAYER_TIMES) {
-        if (log[`sholat_${t.key}`]) totalDone++
-      }
-    }
-    const percentage = totalPrayers > 0 ? Math.round((totalDone / totalPrayers) * 100) : 0
-    return { totalDone, totalPrayers, percentage }
-  }
-
-  const completedCount = getCompletedCount()
-  const progress = getProgress()
-
-  const todayStats = { done: completedCount, total: PRAYER_TIMES.length, percentage: progress }
-  const weekStats = getRangeStats(weeklyLogs)
-  const monthStats = getRangeStats(monthlyLogs)
-  const yearStats = getRangeStats(yearlyLogs)
-
-  const currentStreak = calculateStreak(weeklyLogs)
-  const bestStreak = Math.max(currentStreak, 0)
+  if (!position) return null
 
   return (
-    <div className="space-y-5 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-5">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold"></h1>
-        </div>
-      </div>
-
-      {/* Sholat Hari Ini - Compact List */}
-      <Card className="border-[#E5E7EB] dark:border-[#374151] rounded-xl">
-        <CardContent className="p-0">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-            </div>
-          ) : error ? (
-            <div className="text-center text-destructive py-8 px-4">
-              <p>Gagal memuat data: {error.message}</p>
-              <Button variant="outline" onClick={() => refetch()} className="mt-2">
-                <RotateCcw className="h-4 w-4 mr-2" /> Coba Lagi
-              </Button>
-            </div>
+    <div
+      ref={ref}
+      className="fixed z-50 bg-white rounded-lg shadow-lg border border-slate-200 py-1 min-w-[200px] max-h-[360px] overflow-y-auto"
+      style={{ top: position.top, left: position.left }}
+    >
+      {STATUS_OPTIONS.map(option => (
+        <button
+          key={option.value}
+          onClick={() => onSelect(option)}
+          className={cn(
+            'w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors',
+            'hover:bg-blue-50 text-slate-700',
+            currentValue === option.value && 'bg-blue-50 font-medium text-blue-700'
+          )}
+        >
+          {option.isDone ? (
+            <Check className="h-3.5 w-3.5 text-green-500 shrink-0" />
           ) : (
-            <div className="divide-y divide-[#E5E7EB] dark:divide-[#374151]">
-              {PRAYER_TIMES.map((prayer) => {
-                const isDone = prayerData?.[`sholat_${prayer.key}`] === true
-                const reason = prayerData?.[`alasan_${prayer.key}`] as ReasonKey | null
-                const reasonOption = REASON_OPTIONS.find(r => r.value === reason)
+            <span className="w-3.5 h-3.5 shrink-0" />
+          )}
+          {option.label}
+        </button>
+      ))}
+      {/* Divider */}
+      <div className="border-t border-slate-100 my-1" />
+      {/* Clear status */}
+      <button
+        onClick={onClear}
+        className="w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors hover:bg-slate-50 text-slate-500"
+      >
+        <span className="w-3.5 h-3.5 shrink-0" />
+        Kosongkan Status
+      </button>
+    </div>
+  )
+})
+DropdownMenuContent.displayName = 'DropdownMenuContent'
+
+// ─── Main Component ────────────────────────────────
+
+const DAYS_TO_SHOW_INITIAL = 14
+
+export default function SholatPage() {
+  const queryClient = useQueryClient()
+  const [daysToShow, setDaysToShow] = useState(DAYS_TO_SHOW_INITIAL)
+  const [dropdown, setDropdown] = useState<DropdownState>(null)
+  const [isMobile, setIsMobile] = useState(false)
+  const tableContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Date range: from N days ago to today
+  const endDate = format(new Date(), 'yyyy-MM-dd')
+  const startDate = format(subDays(new Date(), daysToShow - 1), 'yyyy-MM-dd')
+
+  const { data: sholatRows = [], isLoading, error } = useSholatRange(startDate, endDate)
+  useSholatRealtime()
+
+  const updateCell = useUpdateSholatCell()
+  const clearCell = useClearSholatCell()
+
+  // Build a map of tanggal -> row for quick lookup
+  const sholatMap = useMemo(() => {
+    const map: Record<string, SholatRow> = {}
+    for (const row of sholatRows as SholatRow[]) {
+      map[row.tanggal] = row
+    }
+    return map
+  }, [sholatRows])
+
+  // Generate all dates in range (descending — newest first)
+  const dates = useMemo(() => {
+    const allDates = eachDayOfInterval({
+      start: subDays(new Date(), daysToShow - 1),
+      end: new Date(),
+    })
+    return allDates.reverse().map(d => format(d, 'yyyy-MM-dd'))
+  }, [daysToShow])
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (tableContainerRef.current && !tableContainerRef.current.contains(e.target as Node)) {
+        setDropdown(null)
+      }
+    }
+    if (dropdown) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [dropdown])
+
+  // Optimistic update helper
+  const optimisticallyUpdateCell = useCallback(
+    (tanggal: string, key: SholatKey, status: CellStatus, reason: string | null) => {
+      queryClient.setQueryData(['sholat', 'range', startDate, endDate], (old: SholatRow[] | undefined) => {
+        if (!old) return old
+        const existing = old.find(r => r.tanggal === tanggal)
+        if (existing) {
+          return old.map(r => {
+            if (r.tanggal !== tanggal) return r
+            return {
+              ...r,
+              [key]: status === 'done',
+              [`alasan_${key}`]: status === 'reason' ? reason : null,
+            } as SholatRow
+          })
+        }
+        // Row doesn't exist yet — add a new one
+        const newRow: SholatRow = {
+          id: 'temp-' + tanggal,
+          tanggal,
+          hari: new Date(tanggal).toLocaleDateString('id-ID', { weekday: 'long' }),
+          subuh: false, dhuha: false, dzuhur: false,
+          ashar: false, maghrib: false, isya: false,
+          alasan_subuh: null, alasan_dhuha: null, alasan_dzuhur: null,
+          alasan_ashar: null, alasan_maghrib: null, alasan_isya: null,
+          [key]: status === 'done',
+          [`alasan_${key}`]: status === 'reason' ? reason : null,
+        } as SholatRow
+        return [...old, newRow]
+      })
+    },
+    [queryClient, startDate, endDate]
+  )
+
+  const handleSelectStatus = async (option: StatusOption) => {
+    if (!dropdown) return
+    const { tanggal, sholatKey } = dropdown
+    setDropdown(null)
+
+    if (option.value === 'sudah') {
+      optimisticallyUpdateCell(tanggal, sholatKey, 'done', null)
+      try {
+        await updateCell.mutateAsync({ tanggal, sholatTime: sholatKey, value: true })
+      } catch {
+        queryClient.invalidateQueries({ queryKey: ['sholat'] })
+      }
+    } else {
+      const reason = option.value
+      optimisticallyUpdateCell(tanggal, sholatKey, 'reason', reason)
+      try {
+        await updateCell.mutateAsync({ tanggal, sholatTime: sholatKey, value: false, alasan: reason })
+      } catch {
+        queryClient.invalidateQueries({ queryKey: ['sholat'] })
+      }
+    }
+  }
+
+  const handleClearStatus = async () => {
+    if (!dropdown) return
+    const { tanggal, sholatKey } = dropdown
+    setDropdown(null)
+
+    optimisticallyUpdateCell(tanggal, sholatKey, 'empty', null)
+    try {
+      await clearCell.mutateAsync({ tanggal, sholatTime: sholatKey })
+    } catch {
+      queryClient.invalidateQueries({ queryKey: ['sholat'] })
+    }
+  }
+
+  const handleCellClick = (e: React.MouseEvent, tanggal: string, sholatKey: SholatKey, rowIndex: number, colIndex: number) => {
+    e.stopPropagation()
+    if (dropdown?.tanggal === tanggal && dropdown?.sholatKey === sholatKey) {
+      setDropdown(null)
+      return
+    }
+    setDropdown({ tanggal, sholatKey, rowIndex, colIndex })
+  }
+
+  const loadMore = () => setDaysToShow(prev => prev + 30)
+
+  return (
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {/* Title */}
+      <h1 className="text-2xl font-bold mb-4">Sholat</h1>
+
+      {/* Table */}
+      <div
+        ref={tableContainerRef}
+        className="relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-160px)] rounded-lg border border-slate-200 bg-white"
+      >
+        <table className="w-full border-collapse text-sm">
+          <thead className="sticky top-0 z-20 bg-white">
+            <tr className="border-b border-slate-200">
+              {/* Sticky first two columns */}
+              <th className="sticky left-0 z-30 bg-white px-3 py-2 text-center font-medium text-slate-600 border-r border-slate-200 min-w-[100px]">
+                <div className="flex items-center justify-center gap-1">
+                  <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                  Tanggal
+                </div>
+              </th>
+              <th className="sticky left-[100px] z-30 bg-white px-3 py-2 text-center font-medium text-slate-600 border-r border-slate-200 min-w-[90px]">
+                Hari
+              </th>
+              {/* Prayer columns */}
+              {SHOLAT_COLUMNS.map(col => (
+                <th key={col.key} className="px-3 py-2 text-center font-medium text-slate-600 border-r border-slate-200 last:border-r-0 min-w-[110px]">
+                  <div className="flex items-center justify-center gap-1">
+                    <col.icon className="h-3.5 w-3.5 text-slate-400" />
+                    {col.label}
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading ? (
+              <tr>
+                <td colSpan={8} className="text-center py-12 text-slate-400">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" />
+                    <span className="text-sm">Memuat data...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : error ? (
+              <tr>
+                <td colSpan={8} className="text-center py-12 text-red-500">
+                  Gagal memuat data: {error.message}
+                </td>
+              </tr>
+            ) : (
+              dates.map((dateStr, rowIdx) => {
+                const row = sholatMap[dateStr]
+                const date = new Date(dateStr)
+                const dayName = format(date, 'EEEE', { locale: id })
+                const dateDisplay = format(date, 'dd-MM-yyyy')
 
                 return (
-                  <div
-                    key={prayer.key}
+                  <tr
+                    key={dateStr}
                     className={cn(
-                      'flex items-center justify-between gap-3 px-4 py-3 transition-colors',
-                      isDone
-                        ? 'bg-emerald-50 dark:bg-emerald-950/20'
-                        : reason
-                        ? 'bg-rose-50 dark:bg-rose-950/20'
-                        : 'hover:bg-muted/30'
+                      'border-b border-slate-100 transition-colors',
+                      rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30',
+                      'hover:bg-blue-50/40'
                     )}
-                    style={{ minHeight: '60px' }}
                   >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className={cn(
-                        'w-9 h-9 rounded-lg flex items-center justify-center shrink-0',
-                        isDone
-                          ? 'bg-emerald-500/10 text-emerald-600'
-                          : reason
-                          ? 'bg-rose-500/10 text-rose-600'
-                          : 'bg-muted text-muted-foreground'
+                    {/* Tanggal — sticky left */}
+                    <td className="sticky left-0 z-10 bg-inherit px-3 py-2 text-center text-slate-700 border-r border-slate-200 font-medium tabular-nums">
+                      {dateDisplay}
+                    </td>
+                    {/* Hari — sticky, pastel badge */}
+                    <td className="sticky left-[100px] z-10 bg-inherit px-3 py-2 text-center border-r border-slate-200">
+                      <span className={cn(
+                        'inline-block px-2 py-0.5 rounded-full text-xs border font-medium',
+                        DAY_BADGE_COLORS[dayName] || 'bg-slate-100 text-slate-700 border-slate-200'
                       )}>
-                        <prayer.icon className="h-5 w-5" />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-semibold text-base truncate">{prayer.label}</p>
-                          {isDone && (() => {
-                            const quality = prayerData?.[`kualitas_${prayer.key}`] as QualityKey | null
-                            const qualityOption = QUALITY_OPTIONS.find(q => q.value === quality)
-                            if (!qualityOption) return (
-                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-muted text-muted-foreground border-border cursor-pointer" onClick={(e) => { e.stopPropagation(); setQualityDialog({ open: true, prayerKey: prayer.key }) }}>
-                                Belum dinilai
-                              </Badge>
-                            )
-                            return (
-                              <Badge variant="outline" className={cn(
-                                'text-[10px] px-1.5 py-0 cursor-pointer',
-                                quality === 1 && 'border-red-300 text-red-600 bg-red-50 dark:border-red-800 dark:text-red-400 dark:bg-red-950/30',
-                                quality === 2 && 'border-yellow-300 text-yellow-700 bg-yellow-50 dark:border-yellow-800 dark:text-yellow-400 dark:bg-yellow-950/30',
-                                quality === 3 && 'border-green-300 text-green-700 bg-green-50 dark:border-green-800 dark:text-green-400 dark:bg-green-950/30'
-                              )} onClick={(e) => { e.stopPropagation(); setQualityDialog({ open: true, prayerKey: prayer.key }) }}>
-                                {qualityOption.icon} {qualityOption.label}
-                              </Badge>
-                            )
-                          })()}
-                          {reason && !isDone && (
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-300 text-amber-600 bg-amber-50 dark:border-amber-800 dark:text-amber-400 dark:bg-amber-950/30">
-                              {reasonOption?.icon} {reasonOption?.label}
-                            </Badge>
+                        {dayName}
+                      </span>
+                    </td>
+                    {/* Prayer cells */}
+                    {SHOLAT_COLUMNS.map((col, colIdx) => {
+                      const { status, reason } = getCellStatus(row, col.key)
+                      const isDropdownOpen = dropdown?.tanggal === dateStr && dropdown?.sholatKey === col.key
+
+                      return (
+                        <td
+                          key={col.key}
+                          data-dropdown-cell={`${dateStr}-${col.key}`}
+                          className={cn(
+                            'px-3 py-2 text-center border-r border-slate-200 last:border-r-0 cursor-pointer transition-colors relative',
+                            'hover:bg-blue-50/60',
+                            isDropdownOpen && 'bg-blue-50'
                           )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0">
-                      <div className="flex items-center gap-1.5">
-                        {isDone ? (
-                          <Check className="h-5 w-5 text-emerald-500" />
-                        ) : reason ? (
-                          <X className="h-5 w-5 text-rose-500" />
-                        ) : (
-                          <>
-                            <Button
-                              variant="default"
-                              size="sm"
-                              className={cn('h-9 px-3 rounded-lg', 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300 hover:bg-rose-200 dark:hover:bg-rose-900/50')}
-                              onClick={() => handlePrayerChange(prayer.key, false)}
-                              aria-label={`Tandai ${prayer.label} belum`}
-                            >
-                              <span>Belum</span>
-                            </Button>
-                            <Button
-                              variant="default"
-                              size="sm"
-                              className="h-9 px-3 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/50"
-                              onClick={() => handlePrayerChange(prayer.key, true)}
-                              aria-label={`Tandai ${prayer.label} sudah`}
-                            >
-                              <span>Sudah</span>
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                          onClick={(e) => handleCellClick(e, dateStr, col.key, rowIdx, colIdx + 2)}
+                        >
+                          <div className="flex items-center justify-center min-h-[28px]">
+                            {status === 'done' && (
+                              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-600 border border-green-200">
+                                <Check className="h-3.5 w-3.5" />
+                              </span>
+                            )}
+                            {status === 'reason' && reason && (
+                              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200 text-xs font-medium whitespace-nowrap">
+                                {REASON_LABELS[reason] || reason}
+                              </span>
+                            )}
+                            {status === 'empty' && (
+                              <span className="text-slate-300 text-xs">×</span>
+                            )}
+                          </div>
+                        </td>
+                      )
+                    })}
+                  </tr>
                 )
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Circular Progress Charts - 3 Columns */}
-      <div className="grid grid-cols-3 gap-4">
-        <CircularProgress
-          percentage={weekStats.percentage}
-          size={70}
-          strokeWidth={7}
-          color="#3B82F6"
-          bgColor="#BFDBFE"
-          label="Minggu Ini"
-          value={`${weekStats.totalDone}/${weekStats.totalPrayers}`}
-        />
-        <CircularProgress
-          percentage={monthStats.percentage}
-          size={70}
-          strokeWidth={7}
-          color="#8B5CF6"
-          bgColor="#DDD6FE"
-          label="Bulan Ini"
-          value={`${monthStats.totalDone}/${monthStats.totalPrayers}`}
-        />
-        <CircularProgress
-          percentage={yearStats.percentage}
-          size={70}
-          strokeWidth={7}
-          color="#F59E0B"
-          bgColor="#FDE68A"
-          label="Tahun Ini"
-          value={`${yearStats.totalDone}/${yearStats.totalPrayers}`}
-        />
+              })
+            )}
+          </tbody>
+        </table>
       </div>
 
-      {completedCount === 0 && (
-        <div className="text-center py-4 px-4 text-sm text-muted-foreground bg-muted/30 rounded-xl border border-[#E5E7EB] dark:border-[#374151]">
-          Belum ada sholat yang selesai hari ini. Kualitas akan muncul setelah menandai sholat selesai.
-        </div>
+      {/* Load More button */}
+      <div className="flex justify-center mt-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={loadMore}
+          className="text-slate-600"
+        >
+          Tampilkan lebih banyak
+        </Button>
+      </div>
+
+      {/* Dropdown menu */}
+      {dropdown && (
+        <DropdownMenuContent
+          ref={tableContainerRef}
+          tanggal={dropdown.tanggal}
+          sholatKey={dropdown.sholatKey}
+          sholatMap={sholatMap}
+          onSelect={handleSelectStatus}
+          onClear={handleClearStatus}
+          onClose={() => setDropdown(null)}
+        />
       )}
-
-      {/* Reason Dialog */}
-      <Dialog open={!!reasonDialog} onOpenChange={(open) => !open && setReasonDialog(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Alasan Tidak Sholat</DialogTitle>
-            <DialogDescription>
-              Pilih alasan mengapa {reasonDialog ? PRAYER_TIMES.find(p => p.key === reasonDialog.prayerKey)?.label : 'sholat'} tidak dilakukan
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-2 py-4">
-            {REASON_OPTIONS.map((opt) => (
-              <Button
-                key={opt.value}
-                variant="outline"
-                className="w-full justify-start gap-3"
-                onClick={() => handleReasonSubmit(opt.value)}
-              >
-                <span className="text-xl">{opt.icon}</span>
-                {opt.label}
-              </Button>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Quality Dialog */}
-      <Dialog open={!!qualityDialog} onOpenChange={(open) => !open && setQualityDialog(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Kualitas Sholat</DialogTitle>
-            <DialogDescription>
-              Bagaimana kualitas {qualityDialog ? PRAYER_TIMES.find(p => p.key === qualityDialog.prayerKey)?.label : 'sholat'} Anda?
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-3 py-4">
-            {QUALITY_OPTIONS.map((opt) => {
-              const currentQuality = prayerData?.[`kualitas_${qualityDialog?.prayerKey}`] as QualityKey | null
-              return (
-                <Button
-                  key={opt.value}
-                  variant={currentQuality === opt.value ? 'default' : 'outline'}
-                  className="w-full justify-start gap-3"
-                  onClick={() => handleQualitySelect(opt.value)}
-                >
-                  <span className="text-xl" style={{ fontSize: '1.5rem' }}>{opt.icon}</span>
-                  <span className="flex-1 text-left font-medium">{opt.label}</span>
-                  {currentQuality === opt.value && <Check className="h-4 w-4 text-primary-foreground" />}
-                </Button>
-              )
-            })}
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

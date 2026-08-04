@@ -178,3 +178,103 @@ export async function getSholatRange(startDate: string, endDate: string) {
   if (error) throw new Error(error.message)
   return data || []
 }
+
+export async function updateSholatCell(
+  tanggal: string,
+  sholatTime: "subuh" | "dhuha" | "dzuhur" | "ashar" | "maghrib" | "isya",
+  value: boolean,
+  alasan?: string
+) {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  const { data: existing } = await supabase
+    .from("sholat")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("tanggal", tanggal)
+    .single()
+
+  const updateData = {
+    [sholatTime]: value,
+    [`alasan_${sholatTime}`]: value ? null : (alasan || null),
+  }
+
+  let data, error
+  if (existing) {
+    const result = await supabase
+      .from("sholat")
+      .update(updateData)
+      .eq("id", existing.id)
+      .eq("user_id", user.id)
+      .select()
+      .single()
+    data = result.data
+    error = result.error
+  } else {
+    const result = await supabase
+      .from("sholat")
+      .insert({
+        user_id: user.id,
+        tanggal,
+        hari: new Date(tanggal).toLocaleDateString("id-ID", { weekday: "long" }),
+        ...updateData,
+      })
+      .select()
+      .single()
+    data = result.data
+    error = result.error
+  }
+
+  if (error) throw new Error(error.message)
+
+  revalidatePath("/sholat")
+  revalidatePath("/overview/bulanan")
+  revalidatePath("/overview/mingguan")
+  revalidatePath("/overview/harian")
+
+  return { data, error: null }
+}
+
+export async function clearSholatCell(
+  tanggal: string,
+  sholatTime: "subuh" | "dhuha" | "dzuhur" | "ashar" | "maghrib" | "isya"
+) {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  const { data: existing } = await supabase
+    .from("sholat")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("tanggal", tanggal)
+    .single()
+
+  if (!existing) return { data: null, error: null }
+
+  const updateData = {
+    [sholatTime]: false,
+    [`alasan_${sholatTime}`]: null,
+  }
+
+  const { data, error } = await supabase
+    .from("sholat")
+    .update(updateData)
+    .eq("id", existing.id)
+    .eq("user_id", user.id)
+    .select()
+    .single()
+
+  if (error) throw new Error(error.message)
+
+  revalidatePath("/sholat")
+  revalidatePath("/overview/bulanan")
+  revalidatePath("/overview/mingguan")
+  revalidatePath("/overview/harian")
+
+  return { data, error: null }
+}
