@@ -331,6 +331,36 @@ function HariIniPageClient() {
     setIsFormOpen(true)
   }
 
+  // Group tasks by priority — memoized to avoid recompute on every render
+  // MUST be called before any conditional return to keep hook count stable (#310)
+  const tasksByPriority = useMemo(() => {
+    return PRIORITY_ORDER.map(priority => {
+      const tasks = todayTasks
+        .filter(t => t.prioritas === priority && t.status !== 'selesai')
+      const sortedTasks = [...tasks].sort((a, b) => {
+        const aStatus = a.status as Task['status']
+        const bStatus = b.status as Task['status']
+        const statusDiff = STATUS_ORDER.indexOf(aStatus) - STATUS_ORDER.indexOf(bStatus)
+        if (statusDiff !== 0) return statusDiff
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      })
+      return { priority, tasks: sortedTasks }
+    })
+  }, [todayTasks])
+
+  // Stats — memoized
+  const stats = useMemo(() => {
+    const activeMissions = todayTasks.filter(t => t.status === 'belum' || t.status === 'proses').length
+    const totalEstimatedMinutes = todayTasks
+      .filter((t: Task) => t.status !== 'selesai')
+      .reduce((sum, t) => sum + t.estimasi_menit, 0)
+    const completedMissions = todayTasks.filter(t => t.status === 'selesai').length
+    const totalToday = todayTasks.length
+    const hasAnyTasks = todayTasks.length > 0
+    const hasActiveTasks = activeMissions > 0
+    return { activeMissions, totalEstimatedMinutes, completedMissions, totalToday, hasAnyTasks, hasActiveTasks }
+  }, [todayTasks])
+
   // Static skeleton loader — no setInterval, no CPU waste
   function SkeletonLoader() {
     return (
@@ -362,35 +392,6 @@ function HariIniPageClient() {
       </div>
     )
   }
-
-  // Group tasks by priority — memoized to avoid recompute on every render
-  const tasksByPriority = useMemo(() => {
-    return PRIORITY_ORDER.map(priority => {
-      const tasks = todayTasks
-        .filter(t => t.prioritas === priority && t.status !== 'selesai')
-      const sortedTasks = [...tasks].sort((a, b) => {
-        const aStatus = a.status as Task['status']
-        const bStatus = b.status as Task['status']
-        const statusDiff = STATUS_ORDER.indexOf(aStatus) - STATUS_ORDER.indexOf(bStatus)
-        if (statusDiff !== 0) return statusDiff
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-      })
-      return { priority, tasks: sortedTasks }
-    })
-  }, [todayTasks])
-
-  // Stats — memoized
-  const stats = useMemo(() => {
-    const activeMissions = todayTasks.filter(t => t.status === 'belum' || t.status === 'proses').length
-    const totalEstimatedMinutes = todayTasks
-      .filter((t: Task) => t.status !== 'selesai')
-      .reduce((sum, t) => sum + t.estimasi_menit, 0)
-    const completedMissions = todayTasks.filter(t => t.status === 'selesai').length
-    const totalToday = todayTasks.length
-    const hasAnyTasks = todayTasks.length > 0
-    const hasActiveTasks = activeMissions > 0
-    return { activeMissions, totalEstimatedMinutes, completedMissions, totalToday, hasAnyTasks, hasActiveTasks }
-  }, [todayTasks])
 
   return (
     <div className="space-y-6 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
