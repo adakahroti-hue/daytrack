@@ -175,9 +175,12 @@ export async function getTasks(date?: string, status?: string, limit?: number) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
 
+  // Only select fields the client actually needs — reduces payload size
+  const selectFields = "id, user_id, nama, tanggal, estimasi_menit, prioritas, status, created_at, updated_at, started_at, completed_at"
+
   let query = supabase
     .from("tasks")
-    .select("id, user_id, nama, tanggal, estimasi_menit, prioritas, status, created_at, updated_at, started_at, completed_at")
+    .select(selectFields)
     .eq("user_id", user.id)
 
   if (date) {
@@ -188,9 +191,8 @@ export async function getTasks(date?: string, status?: string, limit?: number) {
   } else {
     // No date filter: fetch most recent tasks first, apply limit
     query = query.order("created_at", { ascending: false })
-    if (limit) {
-      query = query.limit(limit)
-    }
+    // Default limit: 50 for Semua page (was unlimited before)
+    query = query.limit(limit ?? 50)
   }
 
   if (status) {

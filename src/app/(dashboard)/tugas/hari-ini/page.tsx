@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, memo } from 'react'
 import { format, isToday, isWithinInterval, startOfWeek, endOfWeek, isBefore, startOfDay, differenceInDays } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { Plus, Edit, Trash2, Search, X, Clock, Calendar, Play, Check, CheckCircle2, MoreHorizontal, Flag, Filter, Zap, Target, TrendingUp, AlertTriangle } from 'lucide-react'
@@ -79,7 +79,7 @@ const PRIORITY_ICONS: Record<Task['prioritas'], React.ReactNode> = {
   p4: <TrendingUp className="h-3.5 w-3.5" />,
 }
 
-function TaskCard({
+const TaskCard = memo(({
   task,
   onEdit,
   onDelete,
@@ -89,7 +89,7 @@ function TaskCard({
   onEdit: (task: Task) => void
   onDelete: (id: string) => void
   onStatusChange: (id: string, status: 'belum' | 'proses' | 'selesai') => void
-}) {
+}) => {
   const isCompleted = task.status === 'selesai'
   const isInProgress = task.status === 'proses'
   const isPending = task.status === 'belum'
@@ -246,7 +246,7 @@ function TaskCard({
       </CardContent>
     </Card>
   )
-}
+})
 
 // ============================================
 // ProgressBar - shows completed/total with percentage
@@ -331,24 +331,14 @@ function HariIniPageClient() {
     setIsFormOpen(true)
   }
 
-  // Loading progress bar component
-  function LoadingBar() {
-    const [progress, setProgress] = useState(0)
-    useEffect(() => {
-      const interval = setInterval(() => {
-        setProgress(prev => {
-          const next = prev + Math.random() * 15
-          return next >= 100 ? 90 : next
-        })
-      }, 300)
-      return () => clearInterval(interval)
-    }, [])
+  // Static skeleton loader — no setInterval, no CPU waste
+  function SkeletonLoader() {
     return (
-      <div className="flex flex-col items-center gap-2 w-full max-w-xs mx-auto">
-        <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500 transition-all duration-300 ease-out" style={{ width: `${progress}%` }} />
-        </div>
-        <p className="text-xs text-slate-500 font-mono">{Math.round(progress)}%</p>
+      <div className="space-y-4 w-full max-w-xs mx-auto">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-20 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse" />
+        ))}
+        <p className="text-xs text-slate-500 font-mono text-center">Memuat misi...</p>
       </div>
     )
   }
@@ -358,8 +348,7 @@ function HariIniPageClient() {
       <div className="space-y-6">
         <Card className={CARD_BASE}>
           <CardContent className="py-12 text-center space-y-4">
-            <LoadingBar />
-            <p className="text-muted-foreground">Memuat misi...</p>
+            <SkeletonLoader />
           </CardContent>
         </Card>
       </div>
@@ -374,35 +363,39 @@ function HariIniPageClient() {
     )
   }
 
-  // Group tasks by priority
-  const tasksByPriority = PRIORITY_ORDER.map(priority => {
-    const tasks = todayTasks
-      .filter(t => t.prioritas === priority && t.status !== 'selesai')
-    const sortedTasks = [...tasks].sort((a, b) => {
-      const aStatus = a.status as Task['status']
-      const bStatus = b.status as Task['status']
-      const statusDiff = STATUS_ORDER.indexOf(aStatus) - STATUS_ORDER.indexOf(bStatus)
-      if (statusDiff !== 0) return statusDiff
-      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  // Group tasks by priority — memoized to avoid recompute on every render
+  const tasksByPriority = useMemo(() => {
+    return PRIORITY_ORDER.map(priority => {
+      const tasks = todayTasks
+        .filter(t => t.prioritas === priority && t.status !== 'selesai')
+      const sortedTasks = [...tasks].sort((a, b) => {
+        const aStatus = a.status as Task['status']
+        const bStatus = b.status as Task['status']
+        const statusDiff = STATUS_ORDER.indexOf(aStatus) - STATUS_ORDER.indexOf(bStatus)
+        if (statusDiff !== 0) return statusDiff
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      })
+      return { priority, tasks: sortedTasks }
     })
-    return { priority, tasks: sortedTasks }
-  })
+  }, [todayTasks])
 
-  // Stats for header: only count belum tasks (not completed)
-  const activeMissions = todayTasks.filter(t => t.status === 'belum' || t.status === 'proses').length
-  const totalEstimatedMinutes = todayTasks
-    .filter((t: Task) => t.status !== 'selesai')
-    .reduce((sum, t) => sum + t.estimasi_menit, 0)
-  const completedMissions = todayTasks.filter(t => t.status === 'selesai').length
-  const totalToday = todayTasks.length
-  const hasAnyTasks = todayTasks.length > 0
-  // Has active (non-completed) tasks
-  const hasActiveTasks = activeMissions > 0
+  // Stats — memoized
+  const stats = useMemo(() => {
+    const activeMissions = todayTasks.filter(t => t.status === 'belum' || t.status === 'proses').length
+    const totalEstimatedMinutes = todayTasks
+      .filter((t: Task) => t.status !== 'selesai')
+      .reduce((sum, t) => sum + t.estimasi_menit, 0)
+    const completedMissions = todayTasks.filter(t => t.status === 'selesai').length
+    const totalToday = todayTasks.length
+    const hasAnyTasks = todayTasks.length > 0
+    const hasActiveTasks = activeMissions > 0
+    return { activeMissions, totalEstimatedMinutes, completedMissions, totalToday, hasAnyTasks, hasActiveTasks }
+  }, [todayTasks])
 
   return (
     <div className="space-y-6 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
       {/* Mission Board - Priority Groups */}
-      {hasActiveTasks ? (
+      {stats.hasActiveTasks ? (
         <div className="space-y-8">
           {tasksByPriority.map(({ priority, tasks }) => {
             if (tasks.length === 0) return null
@@ -439,7 +432,7 @@ function HariIniPageClient() {
         <div className="py-16 text-center">
           <Card className="border-dashed border-slate-200/50 dark:border-dashed dark:border-slate-700/50 bg-white">
             <CardContent className="py-12">
-              {hasAnyTasks ? (
+              {stats.hasAnyTasks ? (
                 <>
                   <span className="text-4xl mb-4 block" aria-hidden="true">✅</span>
                   <p className="text-lg font-medium text-slate-900 dark:text-white mb-2">Semua misi hari ini sudah selesai!</p>

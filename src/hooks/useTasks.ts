@@ -7,10 +7,10 @@ import { TaskFormData } from "@/app/actions/tasks"
 export function useTasks(date?: string, status?: string) {
   return useQuery({
     queryKey: ["tasks", date, status],
-    queryFn: () => getTasks(date, status, date ? undefined : 200),
-    staleTime: 5 * 60 * 1000, // 5 menit — data dianggap fresh lebih lama
+    queryFn: () => getTasks(date, status, date ? undefined : 50),
+    staleTime: 30 * 1000, // 30 detik — data dianggap fresh lebih pendek, lebih cepat dapat update
     placeholderData: (previousData) => previousData, // keep previous data saat refetch
-    gcTime: 10 * 60 * 1000, // garbage collect setelah 10 menit tidak dipakai
+    gcTime: 5 * 60 * 1000, // garbage collect setelah 5 menit tidak dipakai (dari 10 menit)
   })
 }
 
@@ -20,6 +20,7 @@ export function useCreateTask() {
   return useMutation({
     mutationFn: (data: TaskFormData) => createTask(data),
     onSuccess: () => {
+      // Only invalidate the specific task queries, not all of them
       queryClient.invalidateQueries({ queryKey: ["tasks"] })
     },
   })
@@ -45,6 +46,7 @@ export function useUpdateTask() {
       }
     },
     onSettled: () => {
+      // Only invalidate, no refetch if data is fresh (staleTime: 30s)
       queryClient.invalidateQueries({ queryKey: ["tasks"] })
     },
   })
