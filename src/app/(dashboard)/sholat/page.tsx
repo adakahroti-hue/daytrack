@@ -1,14 +1,16 @@
 "use client"
 
+export const dynamic = "force-dynamic"
+
 import { useState, useMemo, useRef, useEffect, useCallback, forwardRef } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { format, subDays, eachDayOfInterval } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { Check, Sun, CloudSun, Sunset, Moon, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useSholatRange, useUpdateSholatCell, useClearSholatCell } from '@/hooks/useSholat'
-import { useQueryClient } from '@tanstack/react-query'
-import { useSholatRealtime } from '@/hooks/useRealtime'
+import { useRealtime } from '@/hooks/useRealtime'
 
 // ─── Constants ────────────────────────────────────
 
@@ -257,7 +259,11 @@ export default function SholatPage() {
   const startDate = format(subDays(new Date(), daysToShow - 1), 'yyyy-MM-dd')
 
   const { data: sholatRows = [], isLoading, error } = useSholatRange(startDate, endDate)
-  useSholatRealtime()
+  useRealtime({
+    table: 'sholat',
+    filter: `tanggal=gte.${startDate}&tanggal=lte.${endDate}`,
+    queryKeys: [['sholat', 'range', startDate, endDate]],
+  })
 
   const updateCell = useUpdateSholatCell()
   const clearCell = useClearSholatCell()
