@@ -8,8 +8,9 @@ export function useTasks(date?: string, status?: string) {
   return useQuery({
     queryKey: ["tasks", date, status],
     queryFn: () => getTasks(date, status, date ? undefined : 200),
-    staleTime: 60_000, // 1 menit — tidak fetch ulang kalau data masih fresh
+    staleTime: 5 * 60 * 1000, // 5 menit — data dianggap fresh lebih lama
     placeholderData: (previousData) => previousData, // keep previous data saat refetch
+    gcTime: 10 * 60 * 1000, // garbage collect setelah 10 menit tidak dipakai
   })
 }
 

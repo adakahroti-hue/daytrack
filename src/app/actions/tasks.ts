@@ -177,7 +177,7 @@ export async function getTasks(date?: string, status?: string, limit?: number) {
 
   let query = supabase
     .from("tasks")
-    .select("*")
+    .select("id, user_id, nama, tanggal, estimasi_menit, prioritas, status, created_at, updated_at, started_at, completed_at")
     .eq("user_id", user.id)
 
   if (date) {
@@ -211,7 +211,7 @@ export async function getTaskById(id: string) {
 
   const { data, error } = await supabase
     .from("tasks")
-    .select("*")
+    .select("id, user_id, nama, tanggal, estimasi_menit, prioritas, status, created_at, updated_at, started_at, completed_at")
     .eq("id", id)
     .eq("user_id", user.id)
     .single()
