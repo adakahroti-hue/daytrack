@@ -72,11 +72,11 @@ const PRIORITY_FULL_LABELS: Record<Task['prioritas'], string> = {
   p4: 'Rendah',
 }
 
-const PRIORITY_ICONS: Record<Task['prioritas'], React.ReactNode> = {
-  p1: <Zap className="h-3.5 w-3.5" />,
-  p2: <Flag className="h-3.5 w-3.5" />,
-  p3: <Target className="h-3.5 w-3.5" />,
-  p4: <TrendingUp className="h-3.5 w-3.5" />,
+const PRIORITY_ICONS: Record<Task['prioritas'], string> = {
+  p1: '🔥',
+  p2: '⚡',
+  p3: '📌',
+  p4: '🌱',
 }
 
 const TaskCard = memo(({
