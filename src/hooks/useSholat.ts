@@ -22,6 +22,9 @@ export function useSholatRange(startDate: string, endDate: string) {
     queryKey: ["sholat", "range", startDate, endDate],
     queryFn: () => getSholatRange(startDate, endDate),
     enabled: !!startDate && !!endDate,
+    staleTime: 30 * 1000,
+    placeholderData: (previousData) => previousData,
+    gcTime: 5 * 60 * 1000,
   })
 }
 
