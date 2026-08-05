@@ -397,8 +397,7 @@ function HariIniPageClient() {
       {/* Mission Board - Priority Groups */}
       {stats.hasActiveTasks ? (
         <div className="space-y-8">
-          {tasksByPriority.map(({ priority, tasks }) => {
-            if (tasks.length === 0) return null
+          {tasksByPriority.filter(({ tasks }) => tasks.length > 0).map(({ priority, tasks }) => {
 
             return (
               <div key={priority} className="space-y-4">
