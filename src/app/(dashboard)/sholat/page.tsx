@@ -261,7 +261,7 @@ export default function SholatPage() {
   const { data: sholatRows = [], isLoading, error } = useSholatRange(startDate, endDate)
   useRealtime({
     table: 'sholat',
-    filter: `tanggal=gte.${startDate}&tanggal=lte.${endDate}`,
+    filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
     queryKeys: [['sholat', 'range', startDate, endDate]],
   })
 
