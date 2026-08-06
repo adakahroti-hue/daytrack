@@ -9,7 +9,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, getMissionPriorityIcon, getMissionGroupName, getMissionPriorityShortLabel, getMissionPriorityBorder, getMissionGroupDescriptionWithCount, CARD_BASE, CARD_HOVER, STAT_ICON_CONTAINERS, BRAND_COLORS, getActualDurationText, compareEstimasiVsActual, getLiveDurationText } from '@/lib/utils'
 import { TaskForm } from '@/components/tasks/TaskForm'
@@ -29,6 +28,7 @@ type Task = {
   updated_at: string
   started_at: string | null
   completed_at: string | null
+  terlewat_tanggal?: string | null
 }
 
 type TaskFormData = {
@@ -202,6 +202,14 @@ const TaskCard = memo(({
         {/* Task Title - Most Prominent */}
         <h3 className="font-semibold text-base leading-snug pr-8 capitalize flex-1 break-words">{task.nama}</h3>
 
+        {/* Terlewat note — tugas dijadwalkan ulang otomatis */}
+        {task.terlewat_tanggal && task.status !== 'selesai' && (
+          <div className="flex items-center gap-1.5 w-fit text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+            <span>Terlewat — dijadwal ulang dari {format(new Date(task.terlewat_tanggal + 'T00:00:00'), 'd MMMM', { locale: id })}</span>
+          </div>
+        )}
+
         {/* Meta Info: Duration + Date */}
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
@@ -345,17 +353,11 @@ function SemuaPageClient() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<EditingTask | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [priorityFilter, setPriorityFilter] = useState<'all' | Task['prioritas']>('all')
   const [groupMode, setGroupMode] = useState<GroupMode>('prioritas')
   const [isMounted, setIsMounted] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     setIsMounted(true)
-    const checkMobile = () => setIsMobile(window.innerWidth < 640)
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
   // Fetch ALL tasks - ALWAYS called
@@ -405,7 +407,6 @@ function SemuaPageClient() {
 
   const handleClearFilters = () => {
     setSearchQuery('')
-    setPriorityFilter('all')
   }
 
   // Hide filters when there are no tasks at all — no point showing filter controls on empty list
@@ -426,13 +427,8 @@ function SemuaPageClient() {
       tasks = tasks.filter(t => t.nama.toLowerCase().includes(query))
     }
 
-    // Priority filter
-    if (priorityFilter !== 'all') {
-      tasks = tasks.filter(t => t.prioritas === priorityFilter)
-    }
-
     return tasks
-  }, [allTasks, searchQuery, priorityFilter])
+  }, [allTasks, searchQuery])
 
   // Group tasks by selected mode — ALWAYS memoized
   const groupedTasks = useMemo(() => {
@@ -494,7 +490,7 @@ function SemuaPageClient() {
     return groups
   }, [filteredTasks, groupMode, today])
 
-  const hasActiveFilters = Boolean(searchQuery) || priorityFilter !== 'all'
+  const hasActiveFilters = Boolean(searchQuery)
 
   // Empty state logic: distinguish between "no tasks at all" vs "filtered to empty"
   // - totalTasks === 0           → user has zero tasks in the database
@@ -591,17 +587,6 @@ function SemuaPageClient() {
               </button>
             ))}
           </div>
-
-          <Select value={priorityFilter} onValueChange={(v) => setPriorityFilter(v as 'all' | Task['prioritas'])}>
-            <SelectTrigger className="w-full sm:w-auto sm:min-w-[140px] sm:max-w-[180px]"><SelectValue placeholder={isMobile ? 'Kategori' : 'Semua Kategori'} /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Kategori</SelectItem>
-              <SelectItem value="p1">P1 Mendesak</SelectItem>
-              <SelectItem value="p2">P2 Tinggi</SelectItem>
-              <SelectItem value="p3">P3 Sedang</SelectItem>
-              <SelectItem value="p4">P4 Rendah</SelectItem>
-            </SelectContent>
-          </Select>
 
           {hasActiveFilters && (
             <Button variant="ghost" size="sm" onClick={handleClearFilters} className="hidden sm:inline-flex gap-1.5 text-muted-foreground hover:text-foreground">

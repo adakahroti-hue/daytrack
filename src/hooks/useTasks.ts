@@ -5,14 +5,12 @@ import { createTask, updateTask, deleteTask, toggleTaskStatus, bulkDeleteTasks, 
 import { createClient } from "@/lib/supabase/client"
 import { TaskFormData } from "@/app/actions/tasks"
 
-const TASK_SELECT_FIELDS =
-  "id, user_id, nama, tanggal, estimasi_menit, prioritas, status, created_at, updated_at, started_at, completed_at"
-
 // Baca langsung browser -> Supabase (RLS membatasi ke user sendiri).
 // Jauh lebih cepat dari server action: satu round-trip, tanpa getUser() + serialisasi action.
 async function fetchTasksDirect(date?: string, status?: string, limit?: number) {
   const supabase = createClient()
-  let query = supabase.from("tasks").select(TASK_SELECT_FIELDS)
+  // select("*"): aman sebelum migrasi & otomatis memuat kolom baru (terlewat_tanggal)
+  let query = supabase.from("tasks").select("*")
   if (date) {
     query = query.eq("tanggal", date).order("created_at", { ascending: true })
   } else {

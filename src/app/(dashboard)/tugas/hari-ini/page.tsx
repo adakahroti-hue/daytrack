@@ -29,6 +29,7 @@ type Task = {
   completed_at: string | null
   created_at: string
   updated_at: string
+  terlewat_tanggal?: string | null
 }
 
 type TaskFormData = {
@@ -183,6 +184,14 @@ const TaskCard = memo(({
 
         {/* Task Title - Most Prominent */}
         <h3 className="font-medium text-base leading-tight truncate pr-8 capitalize">{task.nama}</h3>
+
+        {/* Terlewat note — tugas dijadwalkan ulang otomatis */}
+        {task.terlewat_tanggal && task.status !== 'selesai' && (
+          <div className="flex items-center gap-1.5 w-fit text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+            <span>Terlewat — dijadwal ulang dari {format(new Date(task.terlewat_tanggal + 'T00:00:00'), 'd MMMM', { locale: id })}</span>
+          </div>
+        )}
 
         {/* Duration Info */}
         <div className="space-y-1">

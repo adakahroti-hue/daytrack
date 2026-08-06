@@ -169,6 +169,40 @@ export async function toggleTaskStatus(id: string, status: "proses" | "belum" | 
   return { data, error: null }
 }
 
+// Jadwalkan ulang otomatis tugas yang terlewat (tanggal < hari ini, belum selesai)
+// ke hari ini, dengan catatan tanggal aslinya di kolom terlewat_tanggal.
+export async function rescheduleMissedTasks(today: string) {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  const { data: missed, error } = await supabase
+    .from("tasks")
+    .select("id, tanggal")
+    .eq("user_id", user.id)
+    .neq("status", "selesai")
+    .lt("tanggal", today)
+    .is("terlewat_tanggal", null)
+
+  if (error) throw new Error(error.message)
+  if (!missed || missed.length === 0) return { rescheduled: 0 }
+
+  const results = await Promise.all(
+    missed.map((t) =>
+      supabase
+        .from("tasks")
+        .update({ tanggal: today, terlewat_tanggal: t.tanggal })
+        .eq("id", t.id)
+        .eq("user_id", user.id)
+    )
+  )
+  const failed = results.filter((r) => r.error)
+  if (failed.length > 0) throw new Error(failed[0].error?.message || "Gagal menjadwal ulang")
+
+  return { rescheduled: missed.length }
+}
+
 export async function getTasks(date?: string, status?: string, limit?: number) {
   const supabase = await createClient()
 

@@ -293,7 +293,7 @@ function SidebarContent({
               const isActive = section.items.some(item => matchesPath(pathname, item.href))
 
               return (
-                <Collapsible key={section.title} open={isSectionOpen} onOpenChange={() => toggleSection(section.title)}>
+                <Collapsible key={section.title} open={isSectionOpen} onOpenChange={() => toggleSection(section.title)} className="mt-1.5">
                   <li>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -301,18 +301,18 @@ function SidebarContent({
                           <Button
                             variant="ghost"
                             className={cn(
-                              'w-full justify-between text-left px-2 py-2 h-10',
+                              'w-full justify-between text-left px-2 py-1.5 h-8',
                               isCollapsed && 'justify-center px-0'
                             )}
                             disabled={isCollapsed}
                           >
                             <span className={cn('flex items-center gap-2 min-w-0', isCollapsed && 'justify-center')}>
-                              <section.icon className="h-5 w-5 flex-shrink-0" />
-                              {!isCollapsed && <span className="font-medium truncate">{section.title}</span>}
+                              <section.icon className="h-4 w-4 flex-shrink-0 text-slate-400" />
+                              {!isCollapsed && <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 truncate">{section.title}</span>}
                             </span>
                             {!isCollapsed && (
                               <ChevronDown className={cn(
-                                'h-4 w-4 text-muted-foreground transition-transform duration-200 flex-shrink-0',
+                                'h-3.5 w-3.5 text-slate-400 transition-transform duration-200 flex-shrink-0',
                                 isSectionOpen && 'rotate-180'
                               )} />
                             )}

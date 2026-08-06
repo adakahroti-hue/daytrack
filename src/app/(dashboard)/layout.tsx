@@ -2,11 +2,33 @@
 
 export const dynamic = "force-dynamic"
 
-import { useState } from 'react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useState, useEffect } from 'react'
+import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
 import { HeaderControlsProvider } from '@/components/layout/HeaderControls'
+import { format } from 'date-fns'
+import { rescheduleMissedTasks } from '@/app/actions/tasks'
+
+// Sekali per sesi: tugas yang terlewat otomatis dijadwalkan ke hari ini
+function RescheduleMissedTasks() {
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    const today = format(new Date(), 'yyyy-MM-dd')
+    rescheduleMissedTasks(today)
+      .then((res) => {
+        if (res && res.rescheduled > 0) {
+          queryClient.invalidateQueries({ queryKey: ["tasks"] })
+        }
+      })
+      .catch(() => {
+        // Kolom terlewat_tanggal belum ada — jalankan migrasi SQL terbaru
+      })
+  }, [queryClient])
+
+  return null
+}
 
 export default function DashboardLayout({
   children,
@@ -32,6 +54,7 @@ export default function DashboardLayout({
 
   return (
     <QueryClientProvider client={queryClient}>
+      <RescheduleMissedTasks />
       <HeaderControlsProvider>
         <div className="min-h-screen bg-background">
           {/* Mobile overlay backdrop */}
