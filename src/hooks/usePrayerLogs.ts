@@ -21,6 +21,9 @@ export function usePrayerLogRange(startDate: string, endDate: string) {
     queryKey: ["prayer_logs", "range", startDate, endDate],
     queryFn: () => getPrayerLogRange(startDate, endDate),
     enabled: !!startDate && !!endDate,
+    staleTime: 30 * 1000,
+    placeholderData: (previousData) => previousData,
+    gcTime: 5 * 60 * 1000,
   })
 }
 export function useUpsertPrayerLog() {
@@ -43,7 +46,7 @@ export function useTogglePrayer() {
   return useMutation({
     mutationFn: ({ tanggal, prayerTime, value, reason }: { 
       tanggal: string; 
-      prayerTime: "subuh" | "dzuhur" | "ashar" | "maghrib" | "isya"; 
+      prayerTime: "subuh" | "dhuha" | "dzuhur" | "ashar" | "maghrib" | "isya"; 
       value: boolean; 
       reason?: string 
     }) => togglePrayer(tanggal, prayerTime, value, reason),
@@ -62,7 +65,7 @@ export function useUpdatePrayerQuality() {
   return useMutation({
     mutationFn: ({ tanggal, prayerTime, quality }: {
       tanggal: string;
-      prayerTime: "subuh" | "dzuhur" | "ashar" | "maghrib" | "isya";
+      prayerTime: "subuh" | "dhuha" | "dzuhur" | "ashar" | "maghrib" | "isya";
       quality: number;
     }) => updatePrayerQuality(tanggal, prayerTime, quality),
     onSuccess: (data, variables) => {

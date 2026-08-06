@@ -9,7 +9,7 @@ import { id } from 'date-fns/locale'
 import { Check, Sun, CloudSun, Sunset, Moon, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { useSholatRange, useUpdateSholatCell, useClearSholatCell } from '@/hooks/useSholat'
+import { usePrayerLogRange, useTogglePrayer } from '@/hooks/usePrayerLogs'
 import { useRealtime } from '@/hooks/useRealtime'
 
 // ─── Constants ────────────────────────────────────
@@ -44,6 +44,7 @@ const STATUS_OPTIONS: StatusOption[] = [
 ]
 
 const REASON_LABELS: Record<string, string> = {
+  ketiduran: 'Ketiduran',
   malas: 'Malas',
   lupa: 'Lupa',
   sibuk: 'Sibuk',
@@ -70,13 +71,12 @@ const DAY_BADGE_COLORS: Record<string, string> = {
 type SholatRow = {
   id: string
   tanggal: string
-  hari: string
-  subuh: boolean
-  dhuha: boolean
-  dzuhur: boolean
-  ashar: boolean
-  maghrib: boolean
-  isya: boolean
+  sholat_subuh: boolean
+  sholat_dhuha: boolean
+  sholat_dzuhur: boolean
+  sholat_ashar: boolean
+  sholat_maghrib: boolean
+  sholat_isya: boolean
   alasan_subuh: string | null
   alasan_dhuha: string | null
   alasan_dzuhur: string | null
@@ -98,7 +98,7 @@ type DropdownState = {
 
 function getCellStatus(row: SholatRow | undefined, key: SholatKey): { status: CellStatus; reason: string | null } {
   if (!row) return { status: 'empty', reason: null }
-  const isDone = row[key] as boolean
+  const isDone = row[`sholat_${key}` as keyof SholatRow] as boolean
   const reason = row[`alasan_${key}` as keyof SholatRow] as string | null
   if (isDone) return { status: 'done', reason: null }
   if (reason) return { status: 'reason', reason }
@@ -188,7 +188,7 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
   const currentValue = (() => {
     const row = sholatMap[tanggal]
     if (!row) return null
-    const isDone = row[sholatKey] as boolean
+    const isDone = row[`sholat_${sholatKey}` as keyof SholatRow] as boolean
     const reason = row[`alasan_${sholatKey}` as keyof SholatRow] as string | null
     if (isDone) return 'sudah'
     if (reason) return reason
@@ -258,15 +258,14 @@ export default function SholatPage() {
   const endDate = format(new Date(), 'yyyy-MM-dd')
   const startDate = format(subDays(new Date(), daysToShow - 1), 'yyyy-MM-dd')
 
-  const { data: sholatRows = [], isLoading, error } = useSholatRange(startDate, endDate)
+  const { data: sholatRows = [], isLoading, error } = usePrayerLogRange(startDate, endDate)
   useRealtime({
-    table: 'sholat',
+    table: 'prayer_logs',
     filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
-    queryKeys: [['sholat', 'range', startDate, endDate]],
+    queryKeys: [['prayer_logs', 'range', startDate, endDate]],
   })
 
-  const updateCell = useUpdateSholatCell()
-  const clearCell = useClearSholatCell()
+  const updateCell = useTogglePrayer()
 
   // Build a map of tanggal -> row for quick lookup
   const sholatMap = useMemo(() => {
@@ -302,7 +301,7 @@ export default function SholatPage() {
   // Optimistic update helper
   const optimisticallyUpdateCell = useCallback(
     (tanggal: string, key: SholatKey, status: CellStatus, reason: string | null) => {
-      queryClient.setQueryData(['sholat', 'range', startDate, endDate], (old: SholatRow[] | undefined) => {
+      queryClient.setQueryData(['prayer_logs', 'range', startDate, endDate], (old: SholatRow[] | undefined) => {
         if (!old) return old
         const existing = old.find(r => r.tanggal === tanggal)
         if (existing) {
@@ -310,7 +309,7 @@ export default function SholatPage() {
             if (r.tanggal !== tanggal) return r
             return {
               ...r,
-              [key]: status === 'done',
+              [`sholat_${key}`]: status === 'done',
               [`alasan_${key}`]: status === 'reason' ? reason : null,
             } as SholatRow
           })
@@ -319,12 +318,11 @@ export default function SholatPage() {
         const newRow: SholatRow = {
           id: 'temp-' + tanggal,
           tanggal,
-          hari: new Date(tanggal).toLocaleDateString('id-ID', { weekday: 'long' }),
-          subuh: false, dhuha: false, dzuhur: false,
-          ashar: false, maghrib: false, isya: false,
+          sholat_subuh: false, sholat_dhuha: false, sholat_dzuhur: false,
+          sholat_ashar: false, sholat_maghrib: false, sholat_isya: false,
           alasan_subuh: null, alasan_dhuha: null, alasan_dzuhur: null,
           alasan_ashar: null, alasan_maghrib: null, alasan_isya: null,
-          [key]: status === 'done',
+          [`sholat_${key}`]: status === 'done',
           [`alasan_${key}`]: status === 'reason' ? reason : null,
         } as SholatRow
         return [...old, newRow]
@@ -341,17 +339,17 @@ export default function SholatPage() {
     if (option.value === 'sudah') {
       optimisticallyUpdateCell(tanggal, sholatKey, 'done', null)
       try {
-        await updateCell.mutateAsync({ tanggal, sholatTime: sholatKey, value: true })
+        await updateCell.mutateAsync({ tanggal, prayerTime: sholatKey, value: true })
       } catch {
-        queryClient.invalidateQueries({ queryKey: ['sholat'] })
+        queryClient.invalidateQueries({ queryKey: ['prayer_logs'] })
       }
     } else {
       const reason = option.value
       optimisticallyUpdateCell(tanggal, sholatKey, 'reason', reason)
       try {
-        await updateCell.mutateAsync({ tanggal, sholatTime: sholatKey, value: false, alasan: reason })
+        await updateCell.mutateAsync({ tanggal, prayerTime: sholatKey, value: false, reason })
       } catch {
-        queryClient.invalidateQueries({ queryKey: ['sholat'] })
+        queryClient.invalidateQueries({ queryKey: ['prayer_logs'] })
       }
     }
   }
@@ -363,9 +361,9 @@ export default function SholatPage() {
 
     optimisticallyUpdateCell(tanggal, sholatKey, 'empty', null)
     try {
-      await clearCell.mutateAsync({ tanggal, sholatTime: sholatKey })
+      await updateCell.mutateAsync({ tanggal, prayerTime: sholatKey, value: false })
     } catch {
-      queryClient.invalidateQueries({ queryKey: ['sholat'] })
+      queryClient.invalidateQueries({ queryKey: ['prayer_logs'] })
     }
   }
 

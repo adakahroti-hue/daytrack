@@ -10,11 +10,13 @@ const prayerLogSchema = z.object({
   tanggal: z.string().min(1, "Tanggal wajib diisi"),
   status: z.enum(["sudah", "belum"]).default("belum"),
   sholat_subuh: z.boolean().default(false),
+  sholat_dhuha: z.boolean().default(false),
   sholat_dzuhur: z.boolean().default(false),
   sholat_ashar: z.boolean().default(false),
   sholat_maghrib: z.boolean().default(false),
   sholat_isya: z.boolean().default(false),
   alasan_subuh: prayerReasonSchema.nullable().optional(),
+  alasan_dhuha: prayerReasonSchema.nullable().optional(),
   alasan_dzuhur: prayerReasonSchema.nullable().optional(),
   alasan_ashar: prayerReasonSchema.nullable().optional(),
   alasan_maghrib: prayerReasonSchema.nullable().optional(),
@@ -24,7 +26,7 @@ const prayerLogSchema = z.object({
 
 export type PrayerLogFormData = z.infer<typeof prayerLogSchema>
 
-const PRAYER_TIMES = ["subuh", "dzuhur", "ashar", "maghrib", "isya"] as const
+const PRAYER_TIMES = ["subuh", "dhuha", "dzuhur", "ashar", "maghrib", "isya"] as const
 
 export async function upsertPrayerLog(formData: PrayerLogFormData) {
   const supabase = await createClient()
@@ -41,7 +43,7 @@ export async function upsertPrayerLog(formData: PrayerLogFormData) {
     .eq("tanggal", validated.tanggal)
     .single()
 
-  const allDone = [validated.sholat_subuh, validated.sholat_dzuhur, validated.sholat_ashar, validated.sholat_maghrib, validated.sholat_isya].every(Boolean)
+  const allDone = [validated.sholat_subuh, validated.sholat_dhuha, validated.sholat_dzuhur, validated.sholat_ashar, validated.sholat_maghrib, validated.sholat_isya].every(Boolean)
   const status = allDone ? "sudah" : "belum"
 
   const insertData = {
@@ -49,11 +51,13 @@ export async function upsertPrayerLog(formData: PrayerLogFormData) {
     tanggal: validated.tanggal,
     status,
     sholat_subuh: validated.sholat_subuh,
+    sholat_dhuha: validated.sholat_dhuha,
     sholat_dzuhur: validated.sholat_dzuhur,
     sholat_ashar: validated.sholat_ashar,
     sholat_maghrib: validated.sholat_maghrib,
     sholat_isya: validated.sholat_isya,
     alasan_subuh: validated.alasan_subuh || null,
+    alasan_dhuha: validated.alasan_dhuha || null,
     alasan_dzuhur: validated.alasan_dzuhur || null,
     alasan_ashar: validated.alasan_ashar || null,
     alasan_maghrib: validated.alasan_maghrib || null,
@@ -100,6 +104,7 @@ export async function togglePrayer(tanggal: string, prayerTime: typeof PRAYER_TI
 
   const columnMap: Record<string, string> = {
     subuh: "sholat_subuh",
+    dhuha: "sholat_dhuha",
     dzuhur: "sholat_dzuhur",
     ashar: "sholat_ashar",
     maghrib: "sholat_maghrib",
@@ -107,6 +112,7 @@ export async function togglePrayer(tanggal: string, prayerTime: typeof PRAYER_TI
   }
   const reasonColumnMap: Record<string, string> = {
     subuh: "alasan_subuh",
+    dhuha: "alasan_dhuha",
     dzuhur: "alasan_dzuhur",
     ashar: "alasan_ashar",
     maghrib: "alasan_maghrib",
@@ -126,10 +132,10 @@ export async function togglePrayer(tanggal: string, prayerTime: typeof PRAYER_TI
     .single()
 
   const updates: any = { [column]: value }
-  if (!value && reason) {
-    updates[reasonColumn] = reason
-  } else if (value) {
+  if (value) {
     updates[reasonColumn] = null
+  } else {
+    updates[reasonColumn] = reason ?? null
   }
 
   // Calculate status
@@ -137,6 +143,7 @@ export async function togglePrayer(tanggal: string, prayerTime: typeof PRAYER_TI
   if (existing) {
     const allDone = [
       column === "sholat_subuh" ? value : existing.sholat_subuh,
+      column === "sholat_dhuha" ? value : existing.sholat_dhuha,
       column === "sholat_dzuhur" ? value : existing.sholat_dzuhur,
       column === "sholat_ashar" ? value : existing.sholat_ashar,
       column === "sholat_maghrib" ? value : existing.sholat_maghrib,
@@ -231,6 +238,7 @@ export async function updatePrayerQuality(
 
   const qualityColumnMap: Record<string, string> = {
     subuh: "kualitas_subuh",
+    dhuha: "kualitas_dhuha",
     dzuhur: "kualitas_dzuhur",
     ashar: "kualitas_ashar",
     maghrib: "kualitas_maghrib",
