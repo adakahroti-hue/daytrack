@@ -6,7 +6,7 @@ import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, Clock, Calenda
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
-import { useHeaderControls, formatDateForPeriod, formatIndonesianDate, GROUP_MODES } from './HeaderControls'
+import { useHeaderControls, formatDateForPeriod, formatIndonesianDate } from './HeaderControls'
 import { useTasks } from '@/hooks/useTasks'
 import { getEstimasiText } from '@/lib/utils'
 import Image from 'next/image'
@@ -89,35 +89,6 @@ function SemuaHeaderStats() {
   )
 }
 
-// Group mode toggle for Semua tab — ditampilkan di header, di samping kanan kartu Proses
-function SemuaGroupToggle() {
-  const { groupMode, setGroupMode } = useHeaderControls()
-  const { data: allTasks = [] } = useTasks()
-  const total = allTasks.length
-
-  if (total === 0) return null
-
-  return (
-    <div className="flex items-center gap-0.5 p-0.5 bg-slate-100/70 border border-slate-200 rounded-lg">
-      {GROUP_MODES.map((m) => (
-        <button
-          key={m.value}
-          type="button"
-          onClick={() => setGroupMode(m.value)}
-          className={cn(
-            'flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors',
-            groupMode === m.value
-              ? 'bg-[#0F172A] text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
-          )}
-        >
-          <m.icon className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">{m.label}</span>
-        </button>
-      ))}
-    </div>
-  )
-}
 
 // Inline stats for Selesai tab - Total Selesai & Total Waktu
 function SelesaiHeaderStats() {
@@ -209,9 +180,6 @@ export function Header({ onMenuClick }: HeaderProps) {
 
         {/* Semua Stats — only on tugas/semua */}
         {isSemua && <SemuaHeaderStats />}
-
-        {/* Group mode toggle — di samping kanan kartu Proses */}
-        {isSemua && <SemuaGroupToggle />}
 
         {/* Selesai Stats — only on tugas/selesai */}
         {isSelesai && <SelesaiHeaderStats />}

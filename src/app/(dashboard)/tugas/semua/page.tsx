@@ -13,7 +13,7 @@ import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, ge
 import { TaskForm } from '@/components/tasks/TaskForm'
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus } from '@/hooks/useTasks'
 import { useTasksRealtime } from '@/hooks/useRealtime'
-import { useHeaderControls } from '@/components/layout/HeaderControls'
+import { useHeaderControls, GROUP_MODES } from '@/components/layout/HeaderControls'
 import { Suspense } from 'react'
 
 type Task = {
@@ -343,8 +343,8 @@ function StatsInline({ todayTasks }: { todayTasks: Task[] }) {
 function SemuaPageClient() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<EditingTask | null>(null)
-  // groupMode ditinggikan ke HeaderControls — toggle-nya tampil di header (samping kartu Proses)
-  const { groupMode } = useHeaderControls()
+  // groupMode ditinggikan ke HeaderControls — toggle-nya tampil di baris group pertama (rata kanan)
+  const { groupMode, setGroupMode } = useHeaderControls()
   const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
@@ -542,15 +542,36 @@ function SemuaPageClient() {
           </div>
         ) : (
           <div className="space-y-8">
-            {groupedTasks.map((group) => (
+            {groupedTasks.map((group, idx) => (
               <div key={group.key} className="space-y-4">
                 {/* Group Header */}
-                <div className="flex items-start gap-3 pb-3 border-b border-slate-200/50 dark:border-slate-700/50">
+                <div className="flex items-start gap-3 pb-3 border-b border-slate-200/50 dark:border-slate-700/50 flex-wrap">
                   <group.icon className={cn('h-6 w-6 mt-0.5 flex-shrink-0', group.iconColor)} />
                   <div className="flex-1 min-w-0">
                     <h2 className="text-lg font-semibold leading-tight text-slate-900 dark:text-white capitalize">{group.title}</h2>
                     <p className="text-sm text-slate-500 mt-0.5">{group.description}</p>
                   </div>
+                  {/* Toggle grup — sebaris dengan nama group pertama, rata kanan */}
+                  {idx === 0 && (
+                    <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 gap-0.5 shrink-0 ml-auto">
+                      {GROUP_MODES.map((gm) => (
+                        <button
+                          key={gm.value}
+                          type="button"
+                          onClick={() => setGroupMode(gm.value)}
+                          className={cn(
+                            'flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
+                            groupMode === gm.value
+                              ? 'bg-[#0F172A] text-white shadow-sm'
+                              : 'text-slate-600 hover:bg-slate-100'
+                          )}
+                        >
+                          <gm.icon className="h-3.5 w-3.5" />
+                          <span className="hidden sm:inline">{gm.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Task Cards Grid */}
