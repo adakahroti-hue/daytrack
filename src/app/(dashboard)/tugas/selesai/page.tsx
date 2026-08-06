@@ -464,27 +464,9 @@ function SelesaiPageClient() {
 
   return (
     <div className="space-y-6 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
-      {/* Toolbar: grouping toggle + mode pilih — hanya tampil jika ada tugas */}
+      {/* Toolbar: mode pilih — hanya tampil jika ada tugas */}
       {showToolbar && (
-        <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center justify-end">
-          <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 gap-0.5 w-full sm:w-auto">
-            {GROUP_MODES.map((m) => (
-              <button
-                key={m.value}
-                type="button"
-                onClick={() => setGroupMode(m.value)}
-                className={cn(
-                  'flex flex-1 sm:flex-none items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
-                  groupMode === m.value
-                    ? 'bg-[#0F172A] text-white shadow-sm'
-                    : 'text-slate-600 hover:bg-slate-100'
-                )}
-              >
-                <m.icon className="h-3.5 w-3.5" />
-                {m.label}
-              </button>
-            ))}
-          </div>
+        <div className="flex items-center justify-end">
           <Button
             variant={isSelectionMode ? 'default' : 'outline'}
             size="sm"
@@ -550,13 +532,36 @@ function SelesaiPageClient() {
           </div>
         ) : (
           <div className="space-y-8">
-            {groupedTasks.map((group) => (
+            {groupedTasks.map((group, idx) => (
               <div key={group.key} className="space-y-4">
                 {/* Group Header */}
                 <div className="flex items-start gap-3 pb-3 border-b border-slate-200/50 dark:border-slate-700/50">
                   <group.icon className={cn('h-6 w-6 mt-0.5 flex-shrink-0', group.iconColor)} />
                   <div className="flex-1 min-w-0">
-                    <h2 className="text-lg font-semibold leading-tight text-slate-900 dark:text-white capitalize">{group.title}</h2>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h2 className="text-lg font-semibold leading-tight text-slate-900 dark:text-white capitalize">{group.title}</h2>
+                      {/* Toggle grup — sebaris dengan nama group kategori pertama */}
+                      {idx === 0 && (
+                        <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 gap-0.5">
+                          {GROUP_MODES.map((gm) => (
+                            <button
+                              key={gm.value}
+                              type="button"
+                              onClick={() => setGroupMode(gm.value)}
+                              className={cn(
+                                'flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
+                                groupMode === gm.value
+                                  ? 'bg-[#0F172A] text-white shadow-sm'
+                                  : 'text-slate-600 hover:bg-slate-100'
+                              )}
+                            >
+                              <gm.icon className="h-3.5 w-3.5" />
+                              <span className="hidden sm:inline">{gm.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <p className="text-sm text-slate-500 mt-0.5">{group.description}</p>
                   </div>
                 </div>
