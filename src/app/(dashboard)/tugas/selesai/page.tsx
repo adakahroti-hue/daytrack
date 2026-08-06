@@ -351,9 +351,6 @@ function SelesaiPageClient() {
 
   // Filter hanya tugas selesai
   const selesaiTasks = useMemo(() => allTasks.filter(t => t.status === 'selesai'), [allTasks])
-  const totalSelesai = selesaiTasks.length
-  const showToolbar = totalSelesai > 0
-
   // Today (for relative group labels)
   const today = format(new Date(), 'yyyy-MM-dd')
 
@@ -464,25 +461,6 @@ function SelesaiPageClient() {
 
   return (
     <div className="space-y-6 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
-      {/* Toolbar: mode pilih — hanya tampil jika ada tugas */}
-      {showToolbar && (
-        <div className="flex items-center justify-end">
-          <Button
-            variant={isSelectionMode ? 'default' : 'outline'}
-            size="sm"
-            onClick={handleToggleSelectionMode}
-            className={cn(
-              'gap-1.5',
-              isSelectionMode && 'bg-blue-600 text-white border-blue-600',
-              !isSelectionMode && 'text-slate-700 border-slate-300 hover:bg-slate-50 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-800'
-            )}
-          >
-            <CheckSquare className="h-3.5 w-3.5" />
-            <span>{isSelectionMode ? 'Batal Pilih' : 'Pilih'}</span>
-          </Button>
-        </div>
-      )}
-
       {/* Bulk Action Bar - muncul saat ada tugas dipilih */}
       {selectedIds.length > 0 && (
         <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-900/20 dark:border-blue-800 animate-slide-in">
@@ -535,35 +513,48 @@ function SelesaiPageClient() {
             {groupedTasks.map((group, idx) => (
               <div key={group.key} className="space-y-4">
                 {/* Group Header */}
-                <div className="flex items-start gap-3 pb-3 border-b border-slate-200/50 dark:border-slate-700/50">
+                <div className="flex items-start gap-3 pb-3 border-b border-slate-200/50 dark:border-slate-700/50 flex-wrap">
                   <group.icon className={cn('h-6 w-6 mt-0.5 flex-shrink-0', group.iconColor)} />
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h2 className="text-lg font-semibold leading-tight text-slate-900 dark:text-white capitalize">{group.title}</h2>
-                      {/* Toggle grup — sebaris dengan nama group kategori pertama */}
-                      {idx === 0 && (
-                        <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 gap-0.5">
-                          {GROUP_MODES.map((gm) => (
-                            <button
-                              key={gm.value}
-                              type="button"
-                              onClick={() => setGroupMode(gm.value)}
-                              className={cn(
-                                'flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
-                                groupMode === gm.value
-                                  ? 'bg-[#0F172A] text-white shadow-sm'
-                                  : 'text-slate-600 hover:bg-slate-100'
-                              )}
-                            >
-                              <gm.icon className="h-3.5 w-3.5" />
-                              <span className="hidden sm:inline">{gm.label}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    <h2 className="text-lg font-semibold leading-tight text-slate-900 dark:text-white capitalize">{group.title}</h2>
                     <p className="text-sm text-slate-500 mt-0.5">{group.description}</p>
                   </div>
+                  {/* Toggle grup + tombol Pilih — sebaris dengan nama group pertama, rata kanan */}
+                  {idx === 0 && (
+                    <div className="flex items-center gap-2 shrink-0 ml-auto">
+                      <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 gap-0.5">
+                        {GROUP_MODES.map((gm) => (
+                          <button
+                            key={gm.value}
+                            type="button"
+                            onClick={() => setGroupMode(gm.value)}
+                            className={cn(
+                              'flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors',
+                              groupMode === gm.value
+                                ? 'bg-[#0F172A] text-white shadow-sm'
+                                : 'text-slate-600 hover:bg-slate-100'
+                            )}
+                          >
+                            <gm.icon className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">{gm.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                      <Button
+                        variant={isSelectionMode ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={handleToggleSelectionMode}
+                        className={cn(
+                          'gap-1.5',
+                          isSelectionMode && 'bg-blue-600 text-white border-blue-600',
+                          !isSelectionMode && 'text-slate-700 border-slate-300 hover:bg-slate-50 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-800'
+                        )}
+                      >
+                        <CheckSquare className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">{isSelectionMode ? 'Batal Pilih' : 'Pilih'}</span>
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Task Cards Grid */}
