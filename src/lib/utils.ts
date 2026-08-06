@@ -288,8 +288,9 @@ export function getActualDurationMinutes(startedAt: string | null, completedAt: 
  * Format durasi real jadi text (sama style getEstimasiText)
  */
 export function getActualDurationText(startedAt: string | null, completedAt: string | null): string {
+  if (!startedAt || !completedAt) return 'Belum ada data'
   const menit = getActualDurationMinutes(startedAt, completedAt)
-  if (menit === 0) return 'Belum ada data'
+  if (menit === 0) return '< 1 menit'
   return getEstimasiText(menit)
 }
 
@@ -298,8 +299,8 @@ export function getActualDurationText(startedAt: string | null, completedAt: str
  * Return: { selisihMenit, selisihText, status: 'lebih-cepat' | 'lebih-lama' | 'pas' }
  */
 export function compareEstimasiVsActual(estimasiMenit: number, startedAt: string | null, completedAt: string | null) {
+  if (!startedAt || !completedAt) return { selisihMenit: 0, selisihText: '-', status: 'unknown' as const }
   const actual = getActualDurationMinutes(startedAt, completedAt)
-  if (actual === 0) return { selisihMenit: 0, selisihText: '-', status: 'unknown' as const }
   
   const selisih = actual - estimasiMenit
   const absSelisih = Math.abs(selisih)
@@ -328,7 +329,7 @@ export function getLiveDurationMinutes(startedAt: string | null): number {
 
 export function getLiveDurationText(startedAt: string | null): string {
   const menit = getLiveDurationMinutes(startedAt)
-  if (menit === 0) return 'Baru mulai'
+  if (menit === 0) return '< 1 menit'
   return getEstimasiText(menit)
 }
 

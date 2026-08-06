@@ -16,13 +16,13 @@ import { useRealtime } from '@/hooks/useRealtime'
 
 type SholatKey = 'subuh' | 'dhuha' | 'dzuhur' | 'ashar' | 'maghrib' | 'isya'
 
-const SHOLAT_COLUMNS: { key: SholatKey; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { key: 'subuh', label: 'Subuh', icon: Sun },
-  { key: 'dhuha', label: 'Dhuha', icon: Sun },
-  { key: 'dzuhur', label: 'Dzuhur', icon: Sun },
-  { key: 'ashar', label: 'Ashar', icon: CloudSun },
-  { key: 'maghrib', label: 'Maghrib', icon: Sunset },
-  { key: 'isya', label: 'Isya', icon: Moon },
+const SHOLAT_COLUMNS: { key: SholatKey; label: string; icon: React.ComponentType<{ className?: string }>; color: string }[] = [
+  { key: 'subuh', label: 'Subuh', icon: Sun, color: 'text-amber-500' },
+  { key: 'dhuha', label: 'Dhuha', icon: Sun, color: 'text-orange-400' },
+  { key: 'dzuhur', label: 'Dzuhur', icon: Sun, color: 'text-yellow-500' },
+  { key: 'ashar', label: 'Ashar', icon: CloudSun, color: 'text-sky-500' },
+  { key: 'maghrib', label: 'Maghrib', icon: Sunset, color: 'text-rose-500' },
+  { key: 'isya', label: 'Isya', icon: Moon, color: 'text-indigo-500' },
 ]
 
 type StatusOption = {
@@ -238,7 +238,7 @@ DropdownMenuContent.displayName = 'DropdownMenuContent'
 
 // ─── Main Component ────────────────────────────────
 
-const DAYS_TO_SHOW_INITIAL = 14
+const DAYS_TO_SHOW_INITIAL = 7
 
 export default function SholatPage() {
   const queryClient = useQueryClient()
@@ -391,7 +391,7 @@ export default function SholatPage() {
               {/* Sticky first two columns */}
               <th className="sticky left-0 z-30 bg-white px-3 py-2 text-center font-medium text-slate-600 border-r border-slate-200 min-w-[100px]">
                 <div className="flex items-center justify-center gap-1">
-                  <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                  <Calendar className="h-3.5 w-3.5 text-blue-500" />
                   Tanggal
                 </div>
               </th>
@@ -402,7 +402,7 @@ export default function SholatPage() {
               {SHOLAT_COLUMNS.map(col => (
                 <th key={col.key} className="px-3 py-2 text-center font-medium text-slate-600 border-r border-slate-200 last:border-r-0 min-w-[110px]">
                   <div className="flex items-center justify-center gap-1">
-                    <col.icon className="h-3.5 w-3.5 text-slate-400" />
+                    <col.icon className={cn('h-3.5 w-3.5', col.color)} />
                     {col.label}
                   </div>
                 </th>

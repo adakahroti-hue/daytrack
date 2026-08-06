@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { createClient } from "@/lib/supabase/client"
 export { useQueryClient }
 import { 
   getPrayerLog,
-  getPrayerLogRange,
   upsertPrayerLog,
   togglePrayer,
   updatePrayerQuality
@@ -16,12 +16,31 @@ export function usePrayerLog(tanggal: string) {
     staleTime: 30_000, // 30 detik — tidak fetch ulang kalau data masih fresh
   })
 }
+// Baca langsung browser -> Supabase: satu round-trip, tanpa overhead server action
+// (getUser + serialisasi action) — mempercepat first load tab sholat.
+// getSession() membaca sesi lokal (tanpa network); user_id tetap difilter eksplisit.
+async function fetchPrayerLogRangeDirect(startDate: string, endDate: string) {
+  const supabase = createClient()
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) throw new Error("Unauthorized")
+  const { data, error } = await supabase
+    .from("prayer_logs")
+    .select("*")
+    .eq("user_id", session.user.id)
+    .gte("tanggal", startDate)
+    .lte("tanggal", endDate)
+    .order("tanggal", { ascending: true })
+  if (error) throw new Error(error.message)
+  return data || []
+}
+
 export function usePrayerLogRange(startDate: string, endDate: string) {
   return useQuery({
     queryKey: ["prayer_logs", "range", startDate, endDate],
-    queryFn: () => getPrayerLogRange(startDate, endDate),
+    queryFn: () => fetchPrayerLogRangeDirect(startDate, endDate),
     enabled: !!startDate && !!endDate,
     staleTime: 30 * 1000,
+    refetchOnWindowFocus: false,
     placeholderData: (previousData) => previousData,
     gcTime: 5 * 60 * 1000,
   })

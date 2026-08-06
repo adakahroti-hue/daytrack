@@ -3,14 +3,13 @@
 import { useState, useMemo, useEffect, memo } from 'react'
 import { format, isToday, isWithinInterval, startOfWeek, endOfWeek, isBefore, startOfDay, differenceInDays } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Plus, Edit, Trash2, Search, X, Clock, Calendar, Play, Check, CheckCircle2, MoreHorizontal, Flag, Filter, Zap, Target, TrendingUp, AlertTriangle } from 'lucide-react'
+import { Plus, Edit, Trash2, Clock, Calendar, Play, Check, CheckCircle2, MoreHorizontal, Flag, Target, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
-import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, getMissionPriorityIcon, getMissionGroupName, getMissionPriorityShortLabel, getMissionPriorityBorder, getMissionGroupDescriptionWithCount, CARD_BASE, CARD_HOVER, STAT_ICON_CONTAINERS, BRAND_COLORS, getActualDurationText, compareEstimasiVsActual, getLiveDurationText } from '@/lib/utils'
+import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, getMissionPriorityIcon, getMissionGroupName, getMissionPriorityShortLabel, getMissionPriorityBorder, getMissionGroupDescriptionWithCount, CARD_BASE, CARD_HOVER, STAT_ICON_CONTAINERS, BRAND_COLORS, getActualDurationText, compareEstimasiVsActual, getLiveDurationText, PRIORITY_COLORS } from '@/lib/utils'
 import { TaskForm } from '@/components/tasks/TaskForm'
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus } from '@/hooks/useTasks'
 import { useTasksRealtime } from '@/hooks/useRealtime'
@@ -352,7 +351,6 @@ function StatsInline({ todayTasks }: { todayTasks: Task[] }) {
 function SemuaPageClient() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<EditingTask | null>(null)
-  const [searchQuery, setSearchQuery] = useState('')
   const [groupMode, setGroupMode] = useState<GroupMode>('prioritas')
   const [isMounted, setIsMounted] = useState(false)
 
@@ -405,10 +403,6 @@ function SemuaPageClient() {
     setEditingTask(null)
   }
 
-  const handleClearFilters = () => {
-    setSearchQuery('')
-  }
-
   // Hide filters when there are no tasks at all — no point showing filter controls on empty list
   const totalTasks = allTasks.length
   const showFilters = totalTasks > 0
@@ -416,19 +410,10 @@ function SemuaPageClient() {
   // Today (for relative group labels)
   const today = format(new Date(), 'yyyy-MM-dd')
 
-  // Filter tasks (search + priority) — ALWAYS memoized
+  // Board ini menampilkan belum + proses (selesai punya tab sendiri) — ALWAYS memoized
   const filteredTasks = useMemo(() => {
-    // Selesai punya tab sendiri — board ini menampilkan belum + proses
-    let tasks = allTasks.filter(t => t.status !== 'selesai')
-
-    // Search
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim()
-      tasks = tasks.filter(t => t.nama.toLowerCase().includes(query))
-    }
-
-    return tasks
-  }, [allTasks, searchQuery])
+    return allTasks.filter(t => t.status !== 'selesai')
+  }, [allTasks])
 
   // Group tasks by selected mode — ALWAYS memoized
   const groupedTasks = useMemo(() => {
@@ -440,7 +425,7 @@ function SemuaPageClient() {
       return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     }
 
-    const groups: { key: string; title: string; description: string; icon: React.ComponentType<{ className?: string }>; tasks: Task[] }[] = []
+    const groups: { key: string; title: string; description: string; icon: React.ComponentType<{ className?: string }>; iconColor: string; tasks: Task[] }[] = []
 
     if (groupMode === 'tanggal') {
       // Group by tanggal dikerjakan (newest first)
@@ -453,7 +438,7 @@ function SemuaPageClient() {
       for (const d of dates) {
         const tasks = byDate.get(d)!.sort(byPrioritySort)
         const title = d === today ? 'Hari Ini' : format(new Date(d + 'T00:00:00'), 'EEEE, d MMM yyyy', { locale: id })
-        groups.push({ key: d, title, description: `${tasks.length} tugas`, icon: Calendar, tasks })
+        groups.push({ key: d, title, description: `${tasks.length} tugas`, icon: Calendar, iconColor: 'text-blue-600 dark:text-blue-400', tasks })
       }
     } else if (groupMode === 'durasi') {
       // Group by estimasi durasi
@@ -468,7 +453,7 @@ function SemuaPageClient() {
           .filter(t => t.estimasi_menit >= b.min && t.estimasi_menit <= b.max)
           .sort(byPrioritySort)
         if (tasks.length > 0) {
-          groups.push({ key: b.key, title: b.label, description: `${b.desc} - ${tasks.length} tugas`, icon: Clock, tasks })
+          groups.push({ key: b.key, title: b.label, description: `${b.desc} - ${tasks.length} tugas`, icon: Clock, iconColor: 'text-amber-600 dark:text-amber-400', tasks })
         }
       }
     } else {
@@ -481,6 +466,7 @@ function SemuaPageClient() {
             title: getMissionGroupName(p),
             description: getMissionGroupDescriptionWithCount(p, tasks.length),
             icon: Flag,
+            iconColor: PRIORITY_COLORS[p].icon,
             tasks,
           })
         }
@@ -490,13 +476,9 @@ function SemuaPageClient() {
     return groups
   }, [filteredTasks, groupMode, today])
 
-  const hasActiveFilters = Boolean(searchQuery)
-
-  // Empty state logic: distinguish between "no tasks at all" vs "filtered to empty"
-  // - totalTasks === 0           → user has zero tasks in the database
-  // - filteredTasks === 0 but totalTasks > 0 → filters produced zero results
-  const isCompletelyEmpty = totalTasks === 0 && !hasActiveFilters
-  const isFilteredEmpty = filteredTasks.length === 0 && (hasActiveFilters || totalTasks > 0)
+  // Empty state: totalTasks === 0 → belum ada tugas sama sekali;
+  // filteredTasks kosong padahal ada tugas → semuanya sudah selesai
+  const isCompletelyEmpty = totalTasks === 0
 
   // Loading progress bar component
   // Static skeleton loader — no setInterval, no CPU waste
@@ -549,26 +531,9 @@ function SemuaPageClient() {
     <div className="space-y-6 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
       {/* Stats are now shown in the header — no inline stats here */}
 
-      {/* Search & Filter Bar - Single Row — only show if there are tasks */}
+      {/* Grouping mode toggle — only show if there are tasks */}
       {showFilters && (
-        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-        <div className="relative w-full sm:max-w-xs flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Cari nama tugas..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-10"
-          />
-          {searchQuery && (
-            <Button variant="ghost" size="icon" className="absolute right-3 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => setSearchQuery('')} aria-label="Hapus pencarian">
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-
-        <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 w-full sm:w-auto">
-          {/* Grouping mode toggle */}
+        <div className="flex items-center justify-end">
           <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 gap-0.5 w-full sm:w-auto">
             {GROUP_MODES.map((m) => (
               <button
@@ -587,15 +552,7 @@ function SemuaPageClient() {
               </button>
             ))}
           </div>
-
-          {hasActiveFilters && (
-            <Button variant="ghost" size="sm" onClick={handleClearFilters} className="hidden sm:inline-flex gap-1.5 text-muted-foreground hover:text-foreground">
-              <Filter className="h-3.5 w-3.5" />
-              Bersihkan
-            </Button>
-          )}
         </div>
-      </div>
       )}
 
       {/* Task Board - grouped sections (same look as Hari Ini tab) */}
@@ -610,12 +567,9 @@ function SemuaPageClient() {
               </>
             ) : (
               <>
-                <Search className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="text-muted-foreground text-lg">Tidak ada tugas yang cocok</p>
-                <p className="text-sm text-muted-foreground mt-1">Coba ubah filter atau kata kunci pencarian</p>
-                <Button variant="outline" onClick={handleClearFilters} className="mt-4 gap-1.5">
-                  <X className="h-4 w-4" /> Reset Filter
-                </Button>
+                <CheckCircle2 className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+                <p className="text-muted-foreground text-lg">Semua tugas sudah selesai</p>
+                <p className="text-sm text-muted-foreground mt-1">Tidak ada tugas aktif yang tersisa</p>
               </>
             )}
           </div>
@@ -625,7 +579,7 @@ function SemuaPageClient() {
               <div key={group.key} className="space-y-4">
                 {/* Group Header */}
                 <div className="flex items-start gap-3 pb-3 border-b border-slate-200/50 dark:border-slate-700/50">
-                  <group.icon className="h-6 w-6 mt-0.5 flex-shrink-0 text-slate-500" />
+                  <group.icon className={cn('h-6 w-6 mt-0.5 flex-shrink-0', group.iconColor)} />
                   <div className="flex-1 min-w-0">
                     <h2 className="text-lg font-semibold leading-tight text-slate-900 dark:text-white capitalize">{group.title}</h2>
                     <p className="text-sm text-slate-500 mt-0.5">{group.description}</p>

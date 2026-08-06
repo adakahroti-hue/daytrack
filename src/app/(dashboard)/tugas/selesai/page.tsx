@@ -1,19 +1,17 @@
 "use client"
 
-import { useState, useMemo, useEffect } from 'react'
-import { format, isToday, isWithinInterval, startOfWeek, endOfWeek, isBefore, startOfDay, differenceInDays } from 'date-fns'
+import { useState, useMemo, useEffect, memo } from 'react'
+import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Plus, Edit, Trash2, Search, X, Clock, Calendar, Play, Check, CheckCircle2, MoreHorizontal, Flag, Filter, Zap, Target, TrendingUp, AlertTriangle, RotateCcw, CheckSquare } from 'lucide-react'
+import { Plus, Edit, Trash2, X, Clock, Calendar, Play, Check, CheckCircle2, MoreHorizontal, Flag, RotateCcw, CheckSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
-import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, getMissionPriorityIcon, getMissionGroupName, getMissionPriorityShortLabel, getMissionPriorityBorder, getMissionGroupDescriptionWithCount, CARD_BASE, CARD_HOVER, STAT_ICON_CONTAINERS, BRAND_COLORS, getActualDurationText, compareEstimasiVsActual, getLiveDurationText } from '@/lib/utils'
-import { TaskForm } from '@/components/tasks/TaskForm'
 import { Checkbox } from '@/components/ui/checkbox'
+import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, getMissionGroupName, getMissionPriorityShortLabel, getMissionGroupDescriptionWithCount, CARD_BASE, CARD_HOVER, BRAND_COLORS, PRIORITY_COLORS, getActualDurationText, compareEstimasiVsActual, getLiveDurationText } from '@/lib/utils'
+import { TaskForm } from '@/components/tasks/TaskForm'
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus, useBulkDeleteTasks, useBulkResetTasks } from '@/hooks/useTasks'
 import { useTasksRealtime } from '@/hooks/useRealtime'
 import { Suspense } from 'react'
@@ -30,6 +28,7 @@ type Task = {
   updated_at: string
   started_at: string | null
   completed_at: string | null
+  terlewat_tanggal?: string | null
 }
 
 type TaskFormData = {
@@ -45,20 +44,14 @@ type EditingTask = TaskFormData & { id: string }
 const PRIORITY_ORDER: Task['prioritas'][] = ['p1', 'p2', 'p3', 'p4']
 const STATUS_ORDER: Task['status'][] = ['belum', 'proses', 'selesai']
 
-const SORT_OPTIONS = [
-  { value: 'priority', label: 'Prioritas Tertinggi' },
-  { value: 'newest', label: 'Terbaru' },
-  { value: 'oldest', label: 'Terlama' },
-  { value: 'dueDate', label: 'Deadline Terdekat' },
+// Grouping modes for the task board (sama seperti tab Semua)
+const GROUP_MODES = [
+  { value: 'prioritas', label: 'Prioritas', icon: Flag },
+  { value: 'tanggal', label: 'Tanggal', icon: Calendar },
+  { value: 'durasi', label: 'Durasi', icon: Clock },
 ] as const
 
-type SortOption = typeof SORT_OPTIONS[number]['value']
-
-const STATUS_LABELS: Record<Task['status'], string> = {
-  belum: 'Belum',
-  proses: 'Sedang Dikerjakan',
-  selesai: 'Selesai',
-}
+type GroupMode = typeof GROUP_MODES[number]['value']
 
 const STATUS_SHORT_LABELS: Record<Task['status'], string> = {
   belum: 'Belum',
@@ -66,23 +59,18 @@ const STATUS_SHORT_LABELS: Record<Task['status'], string> = {
   selesai: 'Selesai',
 }
 
-const PRIORITY_FULL_LABELS: Record<Task['prioritas'], string> = {
-  p1: 'Mendesak',
-  p2: 'Tinggi',
-  p3: 'Sedang',
-  p4: 'Rendah',
+const PRIORITY_ICONS: Record<Task['prioritas'], string> = {
+  p1: '🔥',
+  p2: '⚡',
+  p3: '📌',
+  p4: '🌱',
 }
 
-const PRIORITY_ICONS: Record<Task['prioritas'], React.ReactNode> = {
-  p1: <Zap className="h-3.5 w-3.5" />,
-  p2: <Flag className="h-3.5 w-3.5" />,
-  p3: <Target className="h-3.5 w-3.5" />,
-  p4: <TrendingUp className="h-3.5 w-3.5" />,
-}
-
-type FilterStatusType = 'all' | 'belum' | 'proses' | 'selesai'
-
-function TaskCard({
+// ============================================
+// TaskCard — desain sama seperti tab Semua,
+// plus checkbox saat mode pilih aktif
+// ============================================
+const TaskCard = memo(({
   task,
   onEdit,
   onDelete,
@@ -93,10 +81,10 @@ function TaskCard({
   task: Task
   onEdit: (task: Task) => void
   onDelete: (id: string) => void
-  onStatusChange: (id: string, status: 'belum' | 'proses' | 'selesai') => void
+  onStatusChange: (id: string, status: Task['status']) => void
   onSelect?: (id: string, checked: boolean) => void
   isSelected?: boolean
-}) {
+}) => {
   const isCompleted = task.status === 'selesai'
   const isInProgress = task.status === 'proses'
   const isPending = task.status === 'belum'
@@ -118,124 +106,99 @@ function TaskCard({
     return <CheckCircle2 className="h-3.5 w-3.5" />
   }
 
+  const taskDate = new Date(task.tanggal)
+
+  // Status badge style - consistent pill style
   const statusBadgeClass = cn(
     'text-xs font-medium px-2.5 py-1 rounded-lg border',
     getMissionStatusColor(task.status)
   )
 
+  // Priority badge style - consistent pill style
   const priorityBadgeClass = cn(
     'text-xs font-medium px-2.5 py-1 rounded-lg border flex items-center gap-1',
     getMissionPriorityColor(task.prioritas)
   )
 
-  const cardBorderClass = cn(
-    CARD_BASE,
-    CARD_HOVER,
-    isInProgress && 'border-[#2563EB] shadow-[0_0_0_2px_rgba(37,99,235,0.08)]',
-  )
-
   return (
-    <Card className={cn('group', cardBorderClass)}>
-      <CardContent className="p-4 space-y-3">
-        {/* Selection Checkbox */}
-        {onSelect && (
-          <div className="flex items-start justify-between gap-2 -mt-2 -mr-2">
-            <Checkbox
-              checked={isSelected}
-              onCheckedChange={(checked: boolean) => onSelect?.(task.id, checked)}
-              className="mt-1 ml-1"
-            />
-            <div className="flex items-start justify-between gap-2 flex-1">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className={priorityBadgeClass}>
-                    {PRIORITY_ICONS[task.prioritas]}
-                    {getMissionPriorityShortLabel(task.prioritas)}
-                  </Badge>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 opacity-70"
-                      aria-label="Menu tugas"
-                    >
-                      <MoreHorizontal className="h-3.5 w-3.5" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-36">
-                    <DropdownMenuItem
-                      onClick={() => onEdit(task)}
-                      className="flex items-center gap-2"
-                      inset={false}
-                    >
-                      <Edit className="h-3.5 w-3.5" />Edit Tugas
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => onDelete(task.id)}
-                      className="flex items-center gap-2 text-destructive focus:text-destructive"
-                      inset={false}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />Hapus Tugas
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+    <Card
+      className={cn(
+        'group relative overflow-hidden transition-all duration-200',
+        CARD_BASE,
+        CARD_HOVER,
+        isSelected && 'border-[#2563EB] shadow-[0_0_0_3px_rgba(37,99,235,0.15)] bg-[#EFF6FF]/40 dark:bg-[#2563EB]/5'
+      )}
+      style={{ minHeight: '190px', display: 'flex', flexDirection: 'column' }}
+    >
+      <CardContent className="p-5 space-y-4 flex flex-col h-full">
+        {/* Top Row: (Checkbox saat mode pilih) + Priority Badge + Dropdown Menu */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2">
+            {onSelect && (
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={(checked) => onSelect(task.id, checked === true)}
+                className="mt-0.5"
+                aria-label="Pilih tugas"
+              />
+            )}
+            <span className={priorityBadgeClass}>
+              {PRIORITY_ICONS[task.prioritas]}
+              {getMissionPriorityShortLabel(task.prioritas)}
+            </span>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 opacity-70"
+                aria-label="Menu tugas"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem
+                onClick={() => onEdit(task)}
+                className="flex items-center gap-2"
+                inset={false}
+              >
+                <Edit className="h-4 w-4" />Edit Tugas
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => onDelete(task.id)}
+                className="flex items-center gap-2 text-destructive focus:text-destructive"
+                inset={false}
+              >
+                <Trash2 className="h-4 w-4" />Hapus Tugas
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* Task Title - Most Prominent */}
+        <h3 className="font-semibold text-base leading-snug pr-8 capitalize flex-1 break-words">{task.nama}</h3>
+
+        {/* Meta Info: Duration + Date */}
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <Clock className="h-4 w-4 shrink-0" />
+              <span className="whitespace-nowrap">Estimasi: {getEstimasiText(task.estimasi_menit)}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Calendar className="h-4 w-4 shrink-0" />
+              <span className="whitespace-nowrap">
+                {format(taskDate, 'd MMM yyyy', { locale: id })}
+              </span>
             </div>
           </div>
-        )}
-        {!onSelect && (
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className={priorityBadgeClass}>
-                {PRIORITY_ICONS[task.prioritas]}
-                {getMissionPriorityShortLabel(task.prioritas)}
-              </Badge>
-            </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 opacity-70"
-                  aria-label="Menu tugas"
-                >
-                  <MoreHorizontal className="h-3.5 w-3.5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-36">
-                <DropdownMenuItem
-                  onClick={() => onEdit(task)}
-                  className="flex items-center gap-2"
-                  inset={false}
-                >
-                  <Edit className="h-3.5 w-3.5" />Edit Tugas
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => onDelete(task.id)}
-                  className="flex items-center gap-2 text-destructive focus:text-destructive"
-                  inset={false}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />Hapus Tugas
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )}
 
-        <h3 className="font-medium text-base leading-tight truncate pr-8 capitalize">{task.nama}</h3>
-
-        {/* Estimasi vs Real Duration */}
-        <div className="space-y-1">
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Clock className="h-3.5 w-3.5" />
-            <span>Estimasi: {getEstimasiText(task.estimasi_menit)}</span>
-          </div>
+          {/* Real duration for completed tasks */}
           {task.status === 'selesai' && task.started_at && task.completed_at && (
-            <>
+            <div className="space-y-1 pl-6 border-l border-border/50">
               <div className="flex items-center gap-1 text-sm text-slate-700 dark:text-slate-300">
                 <Clock className="h-3.5 w-3.5" />
                 <span>Real: {getActualDurationText(task.started_at, task.completed_at)}</span>
@@ -253,19 +216,22 @@ function TaskCard({
                   )
                 })()}
               </div>
-            </>
+            </div>
           )}
+
+          {/* Live duration for in-progress tasks */}
           {task.status === 'proses' && task.started_at && (
-            <div className="flex items-center gap-1 text-sm text-amber-700 dark:text-amber-300 animate-pulse">
+            <div className="flex items-center gap-1 text-sm text-amber-700 dark:text-amber-300 animate-pulse pl-6 border-l border-amber-400/50">
               <Clock className="h-3.5 w-3.5" />
               <span>Sedang: {getLiveDurationText(task.started_at)}</span>
             </div>
           )}
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-border/50">
+        {/* Bottom Row: Status Badge + Primary Action - Fixed at bottom */}
+        <div className="flex items-center justify-between pt-3 border-t border-border/50 mt-auto">
           <Badge variant="outline" className={statusBadgeClass}>
-            {task.status === 'belum' ? 'Belum' : task.status === 'proses' ? 'Proses' : 'Selesai'}
+            {STATUS_SHORT_LABELS[task.status]}
           </Badge>
           <Button
             variant={isCompleted ? 'outline' : 'default'}
@@ -273,8 +239,8 @@ function TaskCard({
             className={cn(
               'w-auto sm:w-auto',
               isCompleted && 'bg-muted text-muted-foreground hover:bg-muted/80 border-border',
-              isPending && 'bg-[#0F172A] hover:bg-[#1E293B] text-white',
-              isInProgress && 'bg-green-600 hover:bg-green-700 text-white'
+              isPending && `${BRAND_COLORS.primary} ${BRAND_COLORS.primaryHover} shadow-sm`,
+              isInProgress && 'bg-green-600 hover:bg-green-700 text-white shadow-sm'
             )}
             onClick={handlePrimaryAction}
             disabled={primaryButtonDisabled}
@@ -290,7 +256,7 @@ function TaskCard({
       </CardContent>
     </Card>
   )
-}
+})
 
 // ============================================
 // Main Component
@@ -298,18 +264,13 @@ function TaskCard({
 function SelesaiPageClient() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<EditingTask | null>(null)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [priorityFilter, setPriorityFilter] = useState<'all' | Task['prioritas']>('all')
-  const [sortBy, setSortBy] = useState<SortOption>('priority')
+  const [groupMode, setGroupMode] = useState<GroupMode>('prioritas')
   const [isMounted, setIsMounted] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
 
   useEffect(() => {
     setIsMounted(true)
-    const checkMobile = () => setIsMobile(window.innerWidth < 640)
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
   // Fetch ALL tasks - filter selesai di client
@@ -323,9 +284,6 @@ function SelesaiPageClient() {
   const toggleTaskStatus = useToggleTaskStatus()
   const bulkDeleteTasks = useBulkDeleteTasks()
   const bulkResetTasks = useBulkResetTasks()
-  const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [isSelectAll, setIsSelectAll] = useState(false)
-  const [isSelectionMode, setIsSelectionMode] = useState(false)
 
   const handleEdit = (task: Task) => {
     const formData: EditingTask = {
@@ -346,7 +304,7 @@ function SelesaiPageClient() {
     }
   }
 
-  const handleStatusChange = (id: string, status: 'belum' | 'proses' | 'selesai') => {
+  const handleStatusChange = (id: string, status: Task['status']) => {
     toggleTaskStatus.mutate({ id, status })
   }
 
@@ -361,12 +319,6 @@ function SelesaiPageClient() {
     setEditingTask(null)
   }
 
-  const handleClearFilters = () => {
-    setSearchQuery('')
-    setPriorityFilter('all')
-    setSortBy('priority')
-  }
-
   // Selection handlers
   const handleToggleSelectionMode = () => {
     setIsSelectionMode(prev => {
@@ -374,30 +326,13 @@ function SelesaiPageClient() {
       if (!next) {
         // Exit selection mode - clear all selections
         setSelectedIds([])
-        setIsSelectAll(false)
       }
       return next
     })
   }
 
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedIds(filteredAndSortedTasks.map(t => t.id))
-      setIsSelectAll(true)
-    } else {
-      setSelectedIds([])
-      setIsSelectAll(false)
-    }
-  }
-
   const handleSelectTask = (id: string, checked: boolean) => {
-    if (checked) {
-      setSelectedIds(prev => [...prev, id])
-      if (selectedIds.length + 1 === filteredAndSortedTasks.length) setIsSelectAll(true)
-    } else {
-      setSelectedIds(prev => prev.filter(i => i !== id))
-      setIsSelectAll(false)
-    }
+    setSelectedIds(prev => (checked ? [...prev, id] : prev.filter(i => i !== id)))
   }
 
   const handleBulkDelete = async () => {
@@ -405,7 +340,6 @@ function SelesaiPageClient() {
     if (!confirm(`Yakin ingin menghapus ${selectedIds.length} tugas?`)) return
     bulkDeleteTasks.mutate(selectedIds)
     setSelectedIds([])
-    setIsSelectAll(false)
   }
 
   const handleBulkReset = async () => {
@@ -413,54 +347,97 @@ function SelesaiPageClient() {
     if (!confirm(`Yakin ingin mengembalikan ${selectedIds.length} tugas ke status "Belum"?`)) return
     bulkResetTasks.mutate(selectedIds)
     setSelectedIds([])
-    setIsSelectAll(false)
   }
 
-  // Filter only selesai tasks
+  // Filter hanya tugas selesai
   const selesaiTasks = useMemo(() => allTasks.filter(t => t.status === 'selesai'), [allTasks])
-
-  // Search, filter, sort
-  const filteredAndSortedTasks = useMemo(() => {
-    let tasks = [...selesaiTasks]
-
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim()
-      tasks = tasks.filter(t => t.nama.toLowerCase().includes(query))
-    }
-
-    if (priorityFilter !== 'all') {
-      tasks = tasks.filter(t => t.prioritas === priorityFilter)
-    }
-
-    tasks.sort((a, b) => {
-      switch (sortBy) {
-        case 'priority': {
-          const priorityDiff = PRIORITY_ORDER.indexOf(a.prioritas) - PRIORITY_ORDER.indexOf(b.prioritas)
-          if (priorityDiff !== 0) return priorityDiff
-          return STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status)
-        }
-        case 'newest':
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        case 'oldest':
-          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        case 'dueDate':
-          return new Date(a.tanggal).getTime() - new Date(b.tanggal).getTime()
-        default:
-          return 0
-      }
-    })
-
-    return tasks
-  }, [selesaiTasks, searchQuery, priorityFilter, sortBy])
-
   const totalSelesai = selesaiTasks.length
-  const totalEstimatedMinutes = selesaiTasks.reduce((sum, t) => sum + t.estimasi_menit, 0)
-  const hasActiveFilters = searchQuery || priorityFilter !== 'all' || sortBy !== 'priority'
+  const showToolbar = totalSelesai > 0
+
+  // Today (for relative group labels)
+  const today = format(new Date(), 'yyyy-MM-dd')
+
+  // Group tasks by selected mode — sama seperti tab Semua
+  const groupedTasks = useMemo(() => {
+    const byPrioritySort = (a: Task, b: Task) => {
+      const p = PRIORITY_ORDER.indexOf(a.prioritas) - PRIORITY_ORDER.indexOf(b.prioritas)
+      if (p !== 0) return p
+      const s = STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status)
+      if (s !== 0) return s
+      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    }
+
+    const groups: { key: string; title: string; description: string; icon: React.ComponentType<{ className?: string }>; iconColor: string; tasks: Task[] }[] = []
+
+    if (groupMode === 'tanggal') {
+      // Group by tanggal (newest first)
+      const byDate = new Map<string, Task[]>()
+      for (const t of selesaiTasks) {
+        if (!byDate.has(t.tanggal)) byDate.set(t.tanggal, [])
+        byDate.get(t.tanggal)!.push(t)
+      }
+      const dates = [...byDate.keys()].sort((a, b) => b.localeCompare(a))
+      for (const d of dates) {
+        const tasks = byDate.get(d)!.sort(byPrioritySort)
+        const title = d === today ? 'Hari Ini' : format(new Date(d + 'T00:00:00'), 'EEEE, d MMM yyyy', { locale: id })
+        groups.push({ key: d, title, description: `${tasks.length} tugas`, icon: Calendar, iconColor: 'text-blue-600 dark:text-blue-400', tasks })
+      }
+    } else if (groupMode === 'durasi') {
+      // Group by estimasi durasi
+      const buckets = [
+        { key: 'singkat', label: 'Singkat', desc: '< 30 menit', min: 0, max: 29 },
+        { key: 'sedang', label: 'Sedang', desc: '30-60 menit', min: 30, max: 60 },
+        { key: 'panjang', label: 'Panjang', desc: '1-2 jam', min: 61, max: 120 },
+        { key: 'sangat-panjang', label: 'Sangat Panjang', desc: '> 2 jam', min: 121, max: Number.MAX_SAFE_INTEGER },
+      ]
+      for (const b of buckets) {
+        const tasks = selesaiTasks
+          .filter(t => t.estimasi_menit >= b.min && t.estimasi_menit <= b.max)
+          .sort(byPrioritySort)
+        if (tasks.length > 0) {
+          groups.push({ key: b.key, title: b.label, description: `${b.desc} - ${tasks.length} tugas`, icon: Clock, iconColor: 'text-amber-600 dark:text-amber-400', tasks })
+        }
+      }
+    } else {
+      // Group by prioritas (default — same look as Semua tab)
+      for (const p of PRIORITY_ORDER) {
+        const tasks = selesaiTasks.filter(t => t.prioritas === p).sort(byPrioritySort)
+        if (tasks.length > 0) {
+          groups.push({
+            key: p,
+            title: getMissionGroupName(p),
+            description: getMissionGroupDescriptionWithCount(p, tasks.length),
+            icon: Flag,
+            iconColor: PRIORITY_COLORS[p].icon,
+            tasks,
+          })
+        }
+      }
+    }
+
+    return groups
+  }, [selesaiTasks, groupMode, today])
+
+  // Static skeleton loader — no setInterval, no CPU waste
+  function SkeletonLoader() {
+    return (
+      <div className="space-y-4 w-full max-w-xs mx-auto">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-20 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse" />
+        ))}
+        <p className="text-xs text-slate-500 font-mono text-center">Memuat tugas...</p>
+      </div>
+    )
+  }
 
   if (!isMounted) {
     return (
       <div className="space-y-6">
-        <Card className={CARD_BASE}><CardContent className="py-12 text-center"><p className="text-muted-foreground">Memuat tugas...</p></CardContent></Card>
+        <Card className={CARD_BASE}>
+          <CardContent className="py-12 text-center space-y-4">
+            <SkeletonLoader />
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -468,7 +445,11 @@ function SelesaiPageClient() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <Card className={CARD_BASE}><CardContent className="py-12 text-center"><p className="text-muted-foreground">Memuat tugas...</p></CardContent></Card>
+        <Card className={CARD_BASE}>
+          <CardContent className="py-12 text-center space-y-4">
+            <SkeletonLoader />
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -483,98 +464,44 @@ function SelesaiPageClient() {
 
   return (
     <div className="space-y-6 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
-      {/* Search & Filter Bar - 2 columns on mobile (search + select btn), single row on desktop */}
-      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-        {/* Mobile: Search + Select button in one row */}
-        <div className="flex items-center gap-2 w-full sm:hidden">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Cari nama tugas..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-10"
-            />
-            {searchQuery && (
-              <Button variant="ghost" size="icon" className="absolute right-3 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => setSearchQuery('')} aria-label="Hapus pencarian">
-                <X className="h-4 w-4" />
-              </Button>
-            )}
+      {/* Toolbar: grouping toggle + mode pilih — hanya tampil jika ada tugas */}
+      {showToolbar && (
+        <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center justify-end">
+          <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 gap-0.5 w-full sm:w-auto">
+            {GROUP_MODES.map((m) => (
+              <button
+                key={m.value}
+                type="button"
+                onClick={() => setGroupMode(m.value)}
+                className={cn(
+                  'flex flex-1 sm:flex-none items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                  groupMode === m.value
+                    ? 'bg-[#0F172A] text-white shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-100'
+                )}
+              >
+                <m.icon className="h-3.5 w-3.5" />
+                {m.label}
+              </button>
+            ))}
           </div>
           <Button
-            variant={isSelectionMode ? "default" : "outline"}
+            variant={isSelectionMode ? 'default' : 'outline'}
             size="sm"
             onClick={handleToggleSelectionMode}
             className={cn(
-              "gap-1.5 shrink-0",
-              isSelectionMode && "bg-blue-600 text-white border-blue-600",
-              !isSelectionMode && "text-slate-700 border-slate-300 hover:bg-slate-50 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-800"
-            )}
-          >
-            <CheckSquare className="h-3.5 w-3.5" />
-            <span>{isSelectionMode ? 'Batal' : 'Pilih'}</span>
-          </Button>
-        </div>
-
-        {/* Desktop: Search on left */}
-        <div className="relative hidden sm:block sm:max-w-xs flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Cari nama tugas..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-10"
-          />
-          {searchQuery && (
-            <Button variant="ghost" size="icon" className="absolute right-3 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => setSearchQuery('')} aria-label="Hapus pencarian">
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-
-        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
-          <Select value={priorityFilter} onValueChange={(v) => setPriorityFilter(v as 'all' | Task['prioritas'])}>
-            <SelectTrigger className="w-full sm:w-auto sm:min-w-[140px] sm:max-w-[180px]"><SelectValue placeholder={isMobile ? 'Prioritas' : 'Semua Prioritas'} /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Prioritas</SelectItem>
-              <SelectItem value="p1">Mendesak</SelectItem>
-              <SelectItem value="p2">Tinggi</SelectItem>
-              <SelectItem value="p3">Sedang</SelectItem>
-              <SelectItem value="p4">Rendah</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-            <SelectTrigger className="w-full sm:w-auto sm:min-w-[140px] sm:max-w-[180px]"><SelectValue placeholder={isMobile ? 'Urutkan' : 'Urutkan'} /></SelectTrigger>
-            <SelectContent>
-              {SORT_OPTIONS.map(opt => (
-                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {hasActiveFilters && (
-            <Button variant="ghost" size="sm" onClick={handleClearFilters} className="text-xs">
-              <X className="h-3 w-3 mr-1" /> Reset
-            </Button>
-          )}
-          <Button
-            variant={isSelectionMode ? "default" : "outline"}
-            size="sm"
-            onClick={handleToggleSelectionMode}
-            className={cn(
-              "hidden sm:inline-flex gap-1.5",
-              isSelectionMode && "bg-blue-600 text-white border-blue-600",
-              !isSelectionMode && "text-slate-700 border-slate-300 hover:bg-slate-50 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-800"
+              'gap-1.5',
+              isSelectionMode && 'bg-blue-600 text-white border-blue-600',
+              !isSelectionMode && 'text-slate-700 border-slate-300 hover:bg-slate-50 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-800'
             )}
           >
             <CheckSquare className="h-3.5 w-3.5" />
             <span>{isSelectionMode ? 'Batal Pilih' : 'Pilih'}</span>
           </Button>
         </div>
-      </div>
+      )}
 
-      {/* Bulk Action Bar - appears when items selected */}
+      {/* Bulk Action Bar - muncul saat ada tugas dipilih */}
       {selectedIds.length > 0 && (
         <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-900/20 dark:border-blue-800 animate-slide-in">
           <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
@@ -603,7 +530,7 @@ function SelesaiPageClient() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => { setSelectedIds([]); setIsSelectAll(false) }}
+              onClick={() => setSelectedIds([])}
               className="text-slate-600 dark:text-slate-400"
             >
               <X className="h-3.5 w-3.5 mr-1" />
@@ -613,34 +540,48 @@ function SelesaiPageClient() {
         </div>
       )}
 
-      {/* Task Cards */}
-      {filteredAndSortedTasks.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredAndSortedTasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onStatusChange={handleStatusChange}
-              onSelect={isSelectionMode ? handleSelectTask : undefined}
-              isSelected={selectedIds.includes(task.id)}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="py-16 text-center">
-          <Card className="border-dashed border-slate-200/50 dark:border-dashed dark:border-slate-700/50 bg-white">
-            <CardContent className="py-12">
-              <span className="text-4xl mb-4 block" aria-hidden="true">✅</span>
-              <p className="text-lg font-medium text-slate-900 dark:text-white mb-2">Belum ada tugas selesai</p>
-              <p className="text-sm text-slate-500 mb-6">Tugas yang diselesaikan akan muncul di sini.</p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      {/* Task Board - grouped sections (same look as Semua tab) */}
+      <div>
+        {selesaiTasks.length === 0 ? (
+          <div className="py-16 text-center">
+            <CheckCircle2 className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+            <p className="text-muted-foreground text-lg">Belum ada tugas selesai</p>
+            <p className="text-sm text-muted-foreground mt-1">Tugas yang diselesaikan akan muncul di sini</p>
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {groupedTasks.map((group) => (
+              <div key={group.key} className="space-y-4">
+                {/* Group Header */}
+                <div className="flex items-start gap-3 pb-3 border-b border-slate-200/50 dark:border-slate-700/50">
+                  <group.icon className={cn('h-6 w-6 mt-0.5 flex-shrink-0', group.iconColor)} />
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-lg font-semibold leading-tight text-slate-900 dark:text-white capitalize">{group.title}</h2>
+                    <p className="text-sm text-slate-500 mt-0.5">{group.description}</p>
+                  </div>
+                </div>
 
-      {/* Floating Action Button */}
+                {/* Task Cards Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {group.tasks.map((task) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                      onStatusChange={handleStatusChange}
+                      onSelect={isSelectionMode ? handleSelectTask : undefined}
+                      isSelected={selectedIds.includes(task.id)}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Floating Action Button - Fixed bottom right */}
       <Button
         onClick={() => { setEditingTask({ id: '', nama: '', tanggal: format(new Date(), 'yyyy-MM-dd'), estimasi_menit: 30, prioritas: 'p3', status: 'belum' }); setIsFormOpen(true) }}
         className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95"
@@ -650,13 +591,12 @@ function SelesaiPageClient() {
         <Plus className="h-6 w-6" />
       </Button>
 
-      {/* Add Task Dialog */}
+      {/* Add/Edit Task Dialog */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogTrigger asChild>
-          <span className="hidden" />
-        </DialogTrigger>
         <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>{editingTask ? 'Edit Tugas' : 'Tambah Tugas Baru'}</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>{editingTask ? 'Edit Tugas' : 'Tambah Tugas Baru'}</DialogTitle>
+          </DialogHeader>
           <TaskForm initialData={editingTask} onSubmit={handleSubmit} onCancel={() => { setIsFormOpen(false); setEditingTask(null) }} />
         </DialogContent>
       </Dialog>
