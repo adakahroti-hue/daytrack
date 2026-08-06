@@ -132,6 +132,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const isHariIni = pathname === '/tugas/hari-ini'
   const isSemua = pathname === '/tugas/semua'
   const isSelesai = pathname === '/tugas/selesai'
+  const isSholat = pathname === '/sholat'
 
   const periodLabels = {
     daily: { label: 'Harian', icon: Clock },
@@ -182,8 +183,8 @@ export function Header({ onMenuClick }: HeaderProps) {
         {/* Selesai Stats — only on tugas/selesai */}
         {isSelesai && <SelesaiHeaderStats />}
 
-        {/* Date Navigation — hidden on Hari Ini, Semua, and Selesai tabs */}
-        {!isHariIni && !isSemua && !isSelesai && (
+        {/* Date Navigation — hidden on Hari Ini, Semua, Selesai, and Sholat tabs */}
+        {!isHariIni && !isSemua && !isSelesai && !isSholat && (
         <div className="flex-1 flex items-center justify-start gap-2 min-w-0">
           {/* Desktop date navigation */}
           <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border">

@@ -430,7 +430,7 @@ export default function SholatPage() {
                 const row = sholatMap[dateStr]
                 const date = new Date(dateStr)
                 const dayName = format(date, 'EEEE', { locale: id })
-                const dateDisplay = format(date, 'dd-MM-yyyy')
+                const dateDisplay = format(date, 'd MMMM', { locale: id })
 
                 return (
                   <tr
