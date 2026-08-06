@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -239,7 +240,13 @@ function SidebarContent({
           className="flex items-center gap-2 font-bold text-lg text-primary flex-1 min-w-0"
           onClick={onNavClick}
         >
-          <Clock className="h-5 w-5 flex-shrink-0" />
+          <Image
+            src="/daytrack-logo.png"
+            alt="Daytrack logo"
+            width={24}
+            height={24}
+            className="h-6 w-6 flex-shrink-0 rounded-md"
+          />
           {!isCollapsed && <span className="truncate">Daytrack</span>}
         </Link>
 

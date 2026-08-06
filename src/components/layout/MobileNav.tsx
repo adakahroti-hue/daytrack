@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { X, LayoutDashboard, Calendar, Mosque, BookOpen, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, ChevronDown, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -96,7 +97,13 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
           {/* Header */}
           <div className="flex h-16 items-center justify-between border-b p-4">
             <Link href="/overview/bulanan" className="flex items-center gap-2 font-bold text-xl text-primary" onClick={onClose}>
-              <Sparkles className="h-6 w-6" />
+              <Image
+                src="/daytrack-logo.png"
+                alt="Daytrack logo"
+                width={24}
+                height={24}
+                className="h-6 w-6 rounded-md"
+              />
               <span>Daytrack</span>
             </Link>
             <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close menu">

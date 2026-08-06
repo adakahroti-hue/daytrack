@@ -9,6 +9,7 @@ import { usePathname } from 'next/navigation'
 import { useHeaderControls, formatDateForPeriod, formatIndonesianDate } from './HeaderControls'
 import { useTasks } from '@/hooks/useTasks'
 import { getEstimasiText } from '@/lib/utils'
+import Image from 'next/image'
 
 interface HeaderProps {
   onMenuClick: () => void
@@ -157,7 +158,16 @@ export function Header({ onMenuClick }: HeaderProps) {
 
       {/* Page title & description — left side */}
       <div className="flex-1 min-w-0">
-        <h1 className="text-lg font-semibold truncate">{title}</h1>
+        <h1 className="flex items-center gap-2 text-lg font-semibold truncate">
+          <Image
+            src="/daytrack-logo.png"
+            alt="Daytrack logo"
+            width={22}
+            height={22}
+            className="h-[22px] w-[22px] shrink-0 rounded-md"
+          />
+          <span className="truncate">{title}</span>
+        </h1>
         <p className="text-xs text-muted-foreground truncate">{description}</p>
       </div>
 
