@@ -44,14 +44,14 @@ type EditingTask = TaskFormData & { id: string }
 const PRIORITY_ORDER: Task['prioritas'][] = ['p1', 'p2', 'p3', 'p4']
 const STATUS_ORDER: Task['status'][] = ['belum', 'proses', 'selesai']
 
-const SORT_OPTIONS = [
-  { value: 'priority', label: 'Prioritas Tertinggi' },
-  { value: 'newest', label: 'Terbaru' },
-  { value: 'oldest', label: 'Terlama' },
-  { value: 'dueDate', label: 'Deadline Terdekat' },
+// Grouping modes for the task board (like Hari Ini tab)
+const GROUP_MODES = [
+  { value: 'prioritas', label: 'Prioritas', icon: Flag },
+  { value: 'tanggal', label: 'Tanggal', icon: Calendar },
+  { value: 'durasi', label: 'Durasi', icon: Clock },
 ] as const
 
-type SortOption = typeof SORT_OPTIONS[number]['value']
+type GroupMode = typeof GROUP_MODES[number]['value']
 
 const STATUS_LABELS: Record<Task['status'], string> = {
   belum: 'Belum',
@@ -78,8 +78,6 @@ const PRIORITY_ICONS: Record<Task['prioritas'], string> = {
   p3: '📌',
   p4: '🌱',
 }
-
-type FilterStatusType = 'all' | 'belum' | 'proses' | 'selesai'
 
 // ============================================
 // CompactStatCard - small stat card for inline header
@@ -348,8 +346,7 @@ function SemuaPageClient() {
   const [editingTask, setEditingTask] = useState<EditingTask | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [priorityFilter, setPriorityFilter] = useState<'all' | Task['prioritas']>('all')
-  const [statusFilter, setStatusFilter] = useState<FilterStatusType>('all')
-  const [sortBy, setSortBy] = useState<SortOption>('dueDate')
+  const [groupMode, setGroupMode] = useState<GroupMode>('prioritas')
   const [isMounted, setIsMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 
@@ -409,39 +406,19 @@ function SemuaPageClient() {
   const handleClearFilters = () => {
     setSearchQuery('')
     setPriorityFilter('all')
-    setStatusFilter('all')
-    setSortBy('priority')
   }
 
-  // Calculate summary stats - ALWAYS calculated
-  const totalTasks = allTasks.length
-  const belumTasks = allTasks.filter(t => t.status === 'belum').length
-  const prosesTasks = allTasks.filter(t => t.status === 'proses').length
-  const selesaiTasks = allTasks.filter(t => t.status === 'selesai').length
-
-  // Overdue tasks
-  const today = format(new Date(), 'yyyy-MM-dd')
-  const todayStart = startOfDay(new Date())
-  const overdueTasks = useMemo(() => allTasks.filter(t => 
-    isBefore(new Date(t.tanggal), todayStart) && t.status !== 'selesai'
-  ), [allTasks])
-  const overdueCount = overdueTasks.length
-
-  // Today's tasks for subtle context link
-  const todayTasks = useMemo(() => allTasks.filter(t => t.tanggal === today), [allTasks])
-  const inProgressToday = todayTasks.filter(t => t.status === 'proses')[0]
-  const pendingToday = todayTasks.filter(t => t.status === 'belum')[0]
-  const todayFocusTask = inProgressToday || pendingToday
-
   // Hide filters when there are no tasks at all — no point showing filter controls on empty list
+  const totalTasks = allTasks.length
   const showFilters = totalTasks > 0
 
-  // Filter and sort tasks - ALWAYS memoized
-  const filteredAndSortedTasks = useMemo(() => {
-    let tasks = [...allTasks]
+  // Today (for relative group labels)
+  const today = format(new Date(), 'yyyy-MM-dd')
 
-    // Exclude completed and in-progress tasks - they only appear in their respective tabs
-    tasks = tasks.filter(t => t.status === 'belum')
+  // Filter tasks (search + priority) — ALWAYS memoized
+  const filteredTasks = useMemo(() => {
+    // Selesai punya tab sendiri — board ini menampilkan belum + proses
+    let tasks = allTasks.filter(t => t.status !== 'selesai')
 
     // Search
     if (searchQuery.trim()) {
@@ -454,45 +431,76 @@ function SemuaPageClient() {
       tasks = tasks.filter(t => t.prioritas === priorityFilter)
     }
 
-    // Status filter
-    if (statusFilter !== 'all') {
-      tasks = tasks.filter(t => t.status === statusFilter)
+    return tasks
+  }, [allTasks, searchQuery, priorityFilter])
+
+  // Group tasks by selected mode — ALWAYS memoized
+  const groupedTasks = useMemo(() => {
+    const byPrioritySort = (a: Task, b: Task) => {
+      const p = PRIORITY_ORDER.indexOf(a.prioritas) - PRIORITY_ORDER.indexOf(b.prioritas)
+      if (p !== 0) return p
+      const s = STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status)
+      if (s !== 0) return s
+      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     }
 
-    // Sort - Always prioritize "proses" status first, then apply selected sort
-    tasks.sort((a, b) => {
-      // Status "proses" always comes first
-      const aProses = a.status === 'proses' ? 0 : 1
-      const bProses = b.status === 'proses' ? 0 : 1
-      if (aProses !== bProses) return aProses - bProses
+    const groups: { key: string; title: string; description: string; icon: React.ComponentType<{ className?: string }>; tasks: Task[] }[] = []
 
-      switch (sortBy) {
-        case 'priority': {
-          const priorityDiff = PRIORITY_ORDER.indexOf(a.prioritas) - PRIORITY_ORDER.indexOf(b.prioritas)
-          if (priorityDiff !== 0) return priorityDiff
-          return STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status)
-        }
-        case 'newest':
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        case 'oldest':
-          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        case 'dueDate':
-          return new Date(a.tanggal).getTime() - new Date(b.tanggal).getTime()
-        default:
-          return 0
+    if (groupMode === 'tanggal') {
+      // Group by tanggal dikerjakan (newest first)
+      const byDate = new Map<string, Task[]>()
+      for (const t of filteredTasks) {
+        if (!byDate.has(t.tanggal)) byDate.set(t.tanggal, [])
+        byDate.get(t.tanggal)!.push(t)
       }
-    })
+      const dates = [...byDate.keys()].sort((a, b) => b.localeCompare(a))
+      for (const d of dates) {
+        const tasks = byDate.get(d)!.sort(byPrioritySort)
+        const title = d === today ? 'Hari Ini' : format(new Date(d + 'T00:00:00'), 'EEEE, d MMM yyyy', { locale: id })
+        groups.push({ key: d, title, description: `${tasks.length} tugas`, icon: Calendar, tasks })
+      }
+    } else if (groupMode === 'durasi') {
+      // Group by estimasi durasi
+      const buckets = [
+        { key: 'singkat', label: 'Singkat', desc: '< 30 menit', min: 0, max: 29 },
+        { key: 'sedang', label: 'Sedang', desc: '30-60 menit', min: 30, max: 60 },
+        { key: 'panjang', label: 'Panjang', desc: '1-2 jam', min: 61, max: 120 },
+        { key: 'sangat-panjang', label: 'Sangat Panjang', desc: '> 2 jam', min: 121, max: Number.MAX_SAFE_INTEGER },
+      ]
+      for (const b of buckets) {
+        const tasks = filteredTasks
+          .filter(t => t.estimasi_menit >= b.min && t.estimasi_menit <= b.max)
+          .sort(byPrioritySort)
+        if (tasks.length > 0) {
+          groups.push({ key: b.key, title: b.label, description: `${b.desc} - ${tasks.length} tugas`, icon: Clock, tasks })
+        }
+      }
+    } else {
+      // Group by prioritas (default — same look as Hari Ini tab)
+      for (const p of PRIORITY_ORDER) {
+        const tasks = filteredTasks.filter(t => t.prioritas === p).sort(byPrioritySort)
+        if (tasks.length > 0) {
+          groups.push({
+            key: p,
+            title: getMissionGroupName(p),
+            description: getMissionGroupDescriptionWithCount(p, tasks.length),
+            icon: Flag,
+            tasks,
+          })
+        }
+      }
+    }
 
-    return tasks
-  }, [allTasks, searchQuery, priorityFilter, statusFilter, sortBy, today])
+    return groups
+  }, [filteredTasks, groupMode, today])
 
-  const hasActiveFilters = searchQuery || priorityFilter !== 'all' || statusFilter !== 'all'
+  const hasActiveFilters = Boolean(searchQuery) || priorityFilter !== 'all'
 
   // Empty state logic: distinguish between "no tasks at all" vs "filtered to empty"
   // - totalTasks === 0           → user has zero tasks in the database
-  // - filteredAndSortedTasks === 0 but totalTasks > 0 → filters produced zero results
+  // - filteredTasks === 0 but totalTasks > 0 → filters produced zero results
   const isCompletelyEmpty = totalTasks === 0 && !hasActiveFilters
-  const isFilteredEmpty = filteredAndSortedTasks.length === 0 && (hasActiveFilters || totalTasks > 0)
+  const isFilteredEmpty = filteredTasks.length === 0 && (hasActiveFilters || totalTasks > 0)
 
   // Loading progress bar component
   // Static skeleton loader — no setInterval, no CPU waste
@@ -563,15 +571,26 @@ function SemuaPageClient() {
           )}
         </div>
 
-        <div className="grid grid-cols-3 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
-          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as FilterStatusType)}>
-            <SelectTrigger className="w-full sm:w-auto sm:min-w-[140px] sm:max-w-[180px]"><SelectValue placeholder={isMobile ? 'Status' : 'Semua Status'} /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Status</SelectItem>
-              <SelectItem value="belum">Belum</SelectItem>
-              <SelectItem value="selesai">Selesai</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 w-full sm:w-auto">
+          {/* Grouping mode toggle */}
+          <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 gap-0.5 w-full sm:w-auto">
+            {GROUP_MODES.map((m) => (
+              <button
+                key={m.value}
+                type="button"
+                onClick={() => setGroupMode(m.value)}
+                className={cn(
+                  'flex flex-1 sm:flex-none items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                  groupMode === m.value
+                    ? 'bg-[#0F172A] text-white shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-100'
+                )}
+              >
+                <m.icon className="h-3.5 w-3.5" />
+                {m.label}
+              </button>
+            ))}
+          </div>
 
           <Select value={priorityFilter} onValueChange={(v) => setPriorityFilter(v as 'all' | Task['prioritas'])}>
             <SelectTrigger className="w-full sm:w-auto sm:min-w-[140px] sm:max-w-[180px]"><SelectValue placeholder={isMobile ? 'Kategori' : 'Semua Kategori'} /></SelectTrigger>
@@ -581,16 +600,6 @@ function SemuaPageClient() {
               <SelectItem value="p2">P2 Tinggi</SelectItem>
               <SelectItem value="p3">P3 Sedang</SelectItem>
               <SelectItem value="p4">P4 Rendah</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-            <SelectTrigger className="w-full sm:w-auto sm:min-w-[160px] sm:max-w-[200px]"><SelectValue placeholder={isMobile ? 'Urutkan' : 'Prioritas Tertinggi'} /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="priority">Prioritas Tertinggi</SelectItem>
-              <SelectItem value="newest">Terbaru</SelectItem>
-              <SelectItem value="oldest">Terlama</SelectItem>
-              <SelectItem value="dueDate">Deadline Terdekat</SelectItem>
             </SelectContent>
           </Select>
 
@@ -604,9 +613,9 @@ function SemuaPageClient() {
       </div>
       )}
 
-      {/* Task List - Responsive Grid */}
+      {/* Task Board - grouped sections (same look as Hari Ini tab) */}
       <div>
-        {filteredAndSortedTasks.length === 0 ? (
+        {filteredTasks.length === 0 ? (
           <div className="py-16 text-center">
             {isCompletelyEmpty ? (
               <>
@@ -626,19 +635,33 @@ function SemuaPageClient() {
             )}
           </div>
         ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filteredAndSortedTasks.map((task) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  onStatusChange={handleStatusChange}
-                />
-              ))}
-            </div>
-          </>
+          <div className="space-y-8">
+            {groupedTasks.map((group) => (
+              <div key={group.key} className="space-y-4">
+                {/* Group Header */}
+                <div className="flex items-start gap-3 pb-3 border-b border-slate-200/50 dark:border-slate-700/50">
+                  <group.icon className="h-6 w-6 mt-0.5 flex-shrink-0 text-slate-500" />
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-lg font-semibold leading-tight text-slate-900 dark:text-white capitalize">{group.title}</h2>
+                    <p className="text-sm text-slate-500 mt-0.5">{group.description}</p>
+                  </div>
+                </div>
+
+                {/* Task Cards Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {group.tasks.map((task) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                      onStatusChange={handleStatusChange}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
