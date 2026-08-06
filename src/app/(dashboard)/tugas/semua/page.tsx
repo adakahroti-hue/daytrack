@@ -13,6 +13,7 @@ import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, ge
 import { TaskForm } from '@/components/tasks/TaskForm'
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus } from '@/hooks/useTasks'
 import { useTasksRealtime } from '@/hooks/useRealtime'
+import { useHeaderControls } from '@/components/layout/HeaderControls'
 import { Suspense } from 'react'
 
 type Task = {
@@ -42,15 +43,6 @@ type EditingTask = TaskFormData & { id: string }
 
 const PRIORITY_ORDER: Task['prioritas'][] = ['p1', 'p2', 'p3', 'p4']
 const STATUS_ORDER: Task['status'][] = ['belum', 'proses', 'selesai']
-
-// Grouping modes for the task board (like Hari Ini tab)
-const GROUP_MODES = [
-  { value: 'prioritas', label: 'Prioritas', icon: Flag },
-  { value: 'tanggal', label: 'Tanggal', icon: Calendar },
-  { value: 'durasi', label: 'Durasi', icon: Clock },
-] as const
-
-type GroupMode = typeof GROUP_MODES[number]['value']
 
 const STATUS_LABELS: Record<Task['status'], string> = {
   belum: 'Belum',
@@ -351,7 +343,8 @@ function StatsInline({ todayTasks }: { todayTasks: Task[] }) {
 function SemuaPageClient() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<EditingTask | null>(null)
-  const [groupMode, setGroupMode] = useState<GroupMode>('prioritas')
+  // groupMode ditinggikan ke HeaderControls — toggle-nya tampil di header (samping kartu Proses)
+  const { groupMode } = useHeaderControls()
   const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
@@ -403,9 +396,7 @@ function SemuaPageClient() {
     setEditingTask(null)
   }
 
-  // Hide filters when there are no tasks at all — no point showing filter controls on empty list
   const totalTasks = allTasks.length
-  const showFilters = totalTasks > 0
 
   // Today (for relative group labels)
   const today = format(new Date(), 'yyyy-MM-dd')
@@ -530,30 +521,6 @@ function SemuaPageClient() {
   return (
     <div className="space-y-6 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
       {/* Stats are now shown in the header — no inline stats here */}
-
-      {/* Grouping mode toggle — only show if there are tasks */}
-      {showFilters && (
-        <div className="flex items-center justify-end">
-          <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 gap-0.5 w-full sm:w-auto">
-            {GROUP_MODES.map((m) => (
-              <button
-                key={m.value}
-                type="button"
-                onClick={() => setGroupMode(m.value)}
-                className={cn(
-                  'flex flex-1 sm:flex-none items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
-                  groupMode === m.value
-                    ? 'bg-[#0F172A] text-white shadow-sm'
-                    : 'text-slate-600 hover:bg-slate-100'
-                )}
-              >
-                <m.icon className="h-3.5 w-3.5" />
-                {m.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Task Board - grouped sections (same look as Hari Ini tab) */}
       <div>

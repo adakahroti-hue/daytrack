@@ -4,8 +4,19 @@ import { createContext, useContext, useState, ReactNode, useCallback, useMemo, u
 import { format, isSameDay, subDays, addDays, subWeeks, addWeeks, subMonths, addMonths, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
+import { Flag, Calendar, Clock, type LucideIcon } from 'lucide-react'
 
 type Period = 'monthly' | 'weekly' | 'daily'
+
+// Group mode untuk board tugas tab Semua — state-nya dipakai bersama:
+// Header merender toggle-nya (di samping kartu Proses), halaman semua memakai nilainya untuk grouping
+export type GroupMode = 'prioritas' | 'tanggal' | 'durasi'
+
+export const GROUP_MODES: { value: GroupMode; label: string; icon: LucideIcon }[] = [
+  { value: 'prioritas', label: 'Prioritas', icon: Flag },
+  { value: 'tanggal', label: 'Tanggal', icon: Calendar },
+  { value: 'durasi', label: 'Durasi', icon: Clock },
+]
 
 interface HeaderControls {
   title: string
@@ -26,6 +37,8 @@ interface HeaderControls {
   setSubPage: (subPage: string | null) => void
   tugasView: 'hari-ini' | 'semua' | 'selesai'
   setTugasView: (view: 'hari-ini' | 'semua' | 'selesai') => void
+  groupMode: GroupMode
+  setGroupMode: (mode: GroupMode) => void
 }
 
 const HeaderControlsContext = createContext<HeaderControls | null>(null)
@@ -195,6 +208,8 @@ export function HeaderControlsProvider({
   const [category, setCategory] = useState('overview')
   const [subPage, setSubPage] = useState<string | null>(null)
   const [tugasView, setTugasView] = useState<'hari-ini' | 'semua' | 'selesai'>('hari-ini')
+  // Group mode board tugas tab Semua (prioritas/tanggal/durasi)
+  const [groupMode, setGroupMode] = useState<GroupMode>('prioritas')
 
   // Update category and sub-page when pathname changes
   useEffect(() => {
@@ -266,7 +281,9 @@ export function HeaderControlsProvider({
     setSubPage,
     tugasView,
     setTugasView,
-  }), [dynamicTitle, dynamicDescription, currentDate, period, setPeriod, page, setPage, navigate, goToToday, onRefresh, isLoading, isToday, navigateToPeriodStart, category, subPage, setSubPage, tugasView, setTugasView])
+    groupMode,
+    setGroupMode,
+  }), [dynamicTitle, dynamicDescription, currentDate, period, setPeriod, page, setPage, navigate, goToToday, onRefresh, isLoading, isToday, navigateToPeriodStart, category, subPage, setSubPage, tugasView, setTugasView, groupMode])
 
   return (
     <HeaderControlsContext.Provider value={value}>
