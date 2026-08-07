@@ -7,15 +7,19 @@ import { Button } from '@/components/ui/button'
 import { cn, getEstimasiText, getTaskActiveSeconds, getMissionPriorityLabel, getMissionPriorityColor } from '@/lib/utils'
 import { useTasks, useToggleTaskStatus, usePauseTask, useResumeTask } from '@/hooks/useTasks'
 
-// ─── Revisi batch 9 & 11: section "Fokus" untuk tab Overview (harian/mingguan/bulanan) ───
+// ─── Revisi batch 9, 11 & 13: section "Fokus" untuk tab Overview ───
 
-export type OverviewPeriod = 'harian' | 'mingguan' | 'bulanan'
+export type OverviewPeriod = 'harian' | 'mingguan' | 'bulanan' | 'tahunan'
 
 export const PERIOD_LABEL: Record<OverviewPeriod, string> = {
   harian: 'Hari Ini',
   mingguan: 'Minggu Ini',
   bulanan: 'Bulan Ini',
+  tahunan: 'Tahun Ini',
 }
+
+// Revisi batch 13: maksimal kartu misi yang ditampilkan (termasuk "Sedang Dikerjakan")
+const MAX_MISSION_CARDS = 3
 
 type OverviewTask = {
   id: string
@@ -61,6 +65,11 @@ export function FocusTodaySection({ startStr, endStr, period }: { startStr: stri
     .filter(t => t.status !== 'selesai' && t.id !== featured?.id)
     .sort((a, b) => (PRIORITY_ORDER[a.prioritas] ?? 9) - (PRIORITY_ORDER[b.prioritas] ?? 9))
 
+  // Revisi batch 13: tampilkan maksimal MAX_MISSION_CARDS misi (featured ikut dihitung)
+  const missions = featured ? [featured, ...backlog] : backlog
+  const visibleMissions = missions.slice(0, MAX_MISSION_CARDS)
+  const hiddenCount = missions.length - visibleMissions.length
+
   const total = tasks.length
   const belum = tasks.filter(t => t.status === 'belum').length
   const progressPct = total > 0 ? Math.round(((total - belum) / total) * 100) : 0
@@ -86,7 +95,7 @@ export function FocusTodaySection({ startStr, endStr, period }: { startStr: stri
 
       <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 snap-x">
         {/* Kartu statistik tugas */}
-        <div className="snap-start shrink-0 w-52 rounded-xl border border-slate-200 bg-white p-4">
+        <div className="snap-start shrink-0 w-52 rounded-xl border border-slate-200 bg-white p-4 flex flex-col">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-slate-600">Tugas {label}</p>
             <div className="p-1.5 rounded-lg bg-blue-50">
@@ -99,53 +108,55 @@ export function FocusTodaySection({ startStr, endStr, period }: { startStr: stri
           <div className="h-2 rounded-full bg-slate-100 mt-1.5 overflow-hidden">
             <div className="h-full rounded-full bg-blue-500 transition-all" style={{ width: `${progressPct}%` }} />
           </div>
+          {/* Revisi batch 13: tombol Selengkapnya */}
+          <Link
+            href="/tugas/hari-ini"
+            className="mt-auto pt-3 inline-flex items-center gap-1 justify-end text-xs font-medium text-blue-600 hover:text-blue-700"
+          >
+            Selengkapnya <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
 
-        {/* Kartu tugas yang sedang dikerjakan */}
-        <div className="snap-start shrink-0 w-[300px] sm:w-[340px] rounded-xl border border-slate-200 bg-white p-4 flex flex-col">
-          <p className="text-sm font-medium text-slate-600">Sedang Dikerjakan</p>
-          {featured ? (
-            <>
-              <p className="font-semibold text-slate-900 mt-2 line-clamp-2">{featured.nama}</p>
-              <span className={cn(
-                'mt-1.5 w-fit inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium',
-                featured.is_paused ? 'bg-slate-100 text-slate-600' : 'bg-yellow-100 text-yellow-700'
-              )}>
-                {featured.is_paused ? 'Dijeda' : 'Proses'}
-              </span>
-              <div className="mt-2.5 space-y-1 text-xs text-slate-500">
-                <p className="flex items-center gap-1.5">
-                  <Clock className="h-3.5 w-3.5" /> Estimasi: {getEstimasiText(featured.estimasi_menit)}
-                </p>
-                <p className="flex items-center gap-1.5">
-                  <Timer className="h-3.5 w-3.5" /> Sedang: {formatSedang(featured)}
-                </p>
-              </div>
-              <div className="mt-auto pt-3 flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => featured.is_paused ? resumeTask.mutate(featured.id) : pauseTask.mutate(featured.id)}
-                >
-                  {featured.is_paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-                  {featured.is_paused ? 'Lanjutkan' : 'Pause'}
-                </Button>
-                <Button
-                  size="sm"
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                  onClick={() => toggleStatus.mutate({ id: featured.id, status: 'selesai' })}
-                >
-                  <Check className="h-4 w-4" /> Tandai Selesai
-                </Button>
-              </div>
-            </>
-          ) : (
-            <p className="text-sm text-slate-400 mt-3">Tidak ada tugas yang sedang dikerjakan.</p>
-          )}
-        </div>
-
-        {/* Kartu-kartu tugas belum selesai, diurutkan per prioritas */}
-        {backlog.map(t => (
+        {/* Kartu-kartu misi — maksimal MAX_MISSION_CARDS (revisi batch 13) */}
+        {visibleMissions.map(t => t.id === featured?.id ? (
+          // Kartu tugas yang sedang dikerjakan
+          <div key={t.id} className="snap-start shrink-0 w-[300px] sm:w-[340px] rounded-xl border border-slate-200 bg-white p-4 flex flex-col">
+            <p className="text-sm font-medium text-slate-600">Sedang Dikerjakan</p>
+            <p className="font-semibold text-slate-900 mt-2 line-clamp-2">{t.nama}</p>
+            <span className={cn(
+              'mt-1.5 w-fit inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium',
+              t.is_paused ? 'bg-slate-100 text-slate-600' : 'bg-yellow-100 text-yellow-700'
+            )}>
+              {t.is_paused ? 'Dijeda' : 'Proses'}
+            </span>
+            <div className="mt-2.5 space-y-1 text-xs text-slate-500">
+              <p className="flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5" /> Estimasi: {getEstimasiText(t.estimasi_menit)}
+              </p>
+              <p className="flex items-center gap-1.5">
+                <Timer className="h-3.5 w-3.5" /> Sedang: {formatSedang(t)}
+              </p>
+            </div>
+            <div className="mt-auto pt-3 flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => t.is_paused ? resumeTask.mutate(t.id) : pauseTask.mutate(t.id)}
+              >
+                {t.is_paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+                {t.is_paused ? 'Lanjutkan' : 'Pause'}
+              </Button>
+              <Button
+                size="sm"
+                className="bg-green-600 hover:bg-green-700 text-white"
+                onClick={() => toggleStatus.mutate({ id: t.id, status: 'selesai' })}
+              >
+                <Check className="h-4 w-4" /> Tandai Selesai
+              </Button>
+            </div>
+          </div>
+        ) : (
+          // Kartu tugas backlog per prioritas
           <div
             key={t.id}
             className={cn('snap-start shrink-0 w-60 rounded-xl border p-4 flex flex-col', PRIORITY_CARD_TINT[t.prioritas] ?? 'bg-white border-slate-200')}
@@ -181,6 +192,19 @@ export function FocusTodaySection({ startStr, endStr, period }: { startStr: stri
             </div>
           </div>
         ))}
+
+        {/* Revisi batch 13: kartu "Selengkapnya" bila misi melebihi batas tampil */}
+        {hiddenCount > 0 && (
+          <Link
+            href="/tugas/hari-ini"
+            className="snap-start shrink-0 w-44 rounded-xl border border-dashed border-slate-300 bg-slate-50/50 p-4 flex flex-col items-center justify-center text-center gap-2 hover:bg-slate-100/70 transition-colors"
+          >
+            <span className="text-sm font-semibold text-slate-700">+{hiddenCount} misi lainnya</span>
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600">
+              Selengkapnya <ArrowRight className="h-3.5 w-3.5" />
+            </span>
+          </Link>
+        )}
 
         {/* Empty state bila benar-benar tidak ada tugas */}
         {total === 0 && (

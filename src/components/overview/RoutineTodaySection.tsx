@@ -1,6 +1,7 @@
 'use client'
 
-import { Check, Minus, Mosque, BookOpen, GlassWater, ClipboardCheck, Droplet, Repeat } from 'lucide-react'
+import Link from 'next/link'
+import { Check, Minus, Mosque, BookOpen, GlassWater, ClipboardCheck, Droplet, Repeat, Heart, Sparkles, Shield, Moon, ArrowRight } from 'lucide-react'
 import { format, differenceInCalendarDays } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { usePrayerLogRange } from '@/hooks/usePrayerLogs'
@@ -12,7 +13,7 @@ import { usePmoLogRange } from '@/hooks/usePmoLogs'
 import { useTidurLogRange } from '@/hooks/useTidurLogs'
 import { PERIOD_LABEL, type OverviewPeriod } from './FocusTodaySection'
 
-// ─── Revisi batch 9 & 11: section "Rutinitas" untuk tab Overview (harian/mingguan/bulanan) ───
+// ─── Revisi batch 9, 11 & 13: section "Rutinitas" untuk tab Overview (harian/mingguan/bulanan) ───
 
 const SHOLAT_5 = [
   { key: 'subuh', label: 'Subuh' },
@@ -38,16 +39,20 @@ function RoutineCard({
   icon: Icon,
   iconColor,
   title,
+  href,
+  linkColor,
   children,
 }: {
   tint: string
   icon: React.ComponentType<{ className?: string }>
   iconColor: string
   title: string
+  href?: string
+  linkColor?: string
   children: React.ReactNode
 }) {
   return (
-    <div className={cn('rounded-xl border p-4', tint)}>
+    <div className={cn('rounded-xl border p-4 flex flex-col', tint)}>
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-slate-700">{title}</p>
         <div className="p-1.5 rounded-lg bg-white/70">
@@ -55,6 +60,37 @@ function RoutineCard({
         </div>
       </div>
       {children}
+      {/* Revisi batch 13: tombol Selengkapnya → tab terkait */}
+      {href && (
+        <Link
+          href={href}
+          className={cn('mt-auto pt-3 inline-flex items-center gap-1 justify-end text-xs font-medium', linkColor ?? 'text-slate-500 hover:text-slate-700')}
+        >
+          Selengkapnya <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      )}
+    </div>
+  )
+}
+
+// Donut lingkaran simpel (SVG) — revisi batch 13
+function MiniDonut({ value, total, strokeClass }: { value: number; total: number; strokeClass: string }) {
+  const pct = total > 0 ? Math.min(1, value / total) : 0
+  const r = 26
+  const c = 2 * Math.PI * r
+  return (
+    <div className="relative h-16 w-16 shrink-0">
+      <svg viewBox="0 0 64 64" className="h-16 w-16 -rotate-90">
+        <circle cx="32" cy="32" r={r} fill="none" strokeWidth="8" stroke="currentColor" className="text-slate-200" />
+        <circle
+          cx="32" cy="32" r={r} fill="none" strokeWidth="8" strokeLinecap="round"
+          stroke="currentColor" className={strokeClass}
+          strokeDasharray={`${c * pct} ${c}`}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-xs font-bold text-slate-700 tabular-nums">{value}/{total}</span>
+      </div>
     </div>
   )
 }
@@ -81,8 +117,6 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
   // Baca Quran per sesi (agregat rentang)
   const { data: quranEntries = [] } = useQuranLogRange(startStr, endStr)
   const quranRows = quranEntries as any[]
-  const quranDoneFor = (tanggal: string, key: string) =>
-    quranRows.some(e => e.tanggal === tanggal && e.waktu_baca === key && !(e.catatan || '').startsWith('Tidak membaca'))
   const quranPerSesi = QURAN_SESSIONS.map(s =>
     quranRows.filter(e => e.waktu_baca === s.key && !(e.catatan || '').startsWith('Tidak membaca')).length
   )
@@ -114,6 +148,14 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
   const checklistWithDone = checklist.map(c => ({ ...c, done: c.days >= daysElapsed }))
   const checklistDone = checklistWithDone.filter(c => c.done).length
 
+  // Revisi batch 13: 4 kartu donut untuk mingguan/bulanan (Syukur, Doa, PMO, Tidur)
+  const donutCards = [
+    { key: 'syukur', title: 'Syukur', days: checklist[0].days, tint: 'bg-violet-50/70 border-violet-200', icon: Heart, iconColor: 'text-violet-500', stroke: 'text-violet-500', linkColor: 'text-violet-600 hover:text-violet-700', href: '/syukur' },
+    { key: 'doa', title: 'Doa', days: checklist[1].days, tint: 'bg-rose-50/70 border-rose-200', icon: Sparkles, iconColor: 'text-rose-500', stroke: 'text-rose-500', linkColor: 'text-rose-600 hover:text-rose-700', href: '/doa' },
+    { key: 'pmo', title: 'PMO', days: checklist[2].days, tint: 'bg-red-50/70 border-red-200', icon: Shield, iconColor: 'text-red-500', stroke: 'text-red-500', linkColor: 'text-red-600 hover:text-red-700', href: '/pmo' },
+    { key: 'tidur', title: 'Tidur', days: checklist[3].days, tint: 'bg-indigo-50/70 border-indigo-200', icon: Moon, iconColor: 'text-indigo-500', stroke: 'text-indigo-500', linkColor: 'text-indigo-600 hover:text-indigo-700', href: '/tidur' },
+  ]
+
   const label = PERIOD_LABEL[period]
 
   return (
@@ -125,7 +167,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {/* Sholat 5 waktu */}
-        <RoutineCard tint="bg-emerald-50/70 border-emerald-200" icon={Mosque} iconColor="text-emerald-500" title="Sholat 5 Waktu">
+        <RoutineCard tint="bg-emerald-50/70 border-emerald-200" icon={Mosque} iconColor="text-emerald-500" title="Sholat 5 Waktu" href="/sholat" linkColor="text-emerald-600 hover:text-emerald-700">
           <p className="text-2xl font-bold text-slate-900 mt-1.5">
             {sholatCount}/{sholatTarget} <span className="text-sm font-medium text-slate-500">sholat</span>
           </p>
@@ -158,7 +200,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
         </RoutineCard>
 
         {/* Baca Quran */}
-        <RoutineCard tint="bg-teal-50/70 border-teal-200" icon={BookOpen} iconColor="text-teal-500" title="Baca Quran">
+        <RoutineCard tint="bg-teal-50/70 border-teal-200" icon={BookOpen} iconColor="text-teal-500" title="Baca Quran" href="/quran" linkColor="text-teal-600 hover:text-teal-700">
           <p className="text-2xl font-bold text-slate-900 mt-1.5">
             {quranCount}/{quranTarget} <span className="text-sm font-medium text-slate-500">sesi</span>
           </p>
@@ -191,7 +233,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
         </RoutineCard>
 
         {/* Minum Air */}
-        <RoutineCard tint="bg-sky-50/70 border-sky-200" icon={GlassWater} iconColor="text-sky-500" title="Minum Air">
+        <RoutineCard tint="bg-sky-50/70 border-sky-200" icon={GlassWater} iconColor="text-sky-500" title="Minum Air" href="/minum-air" linkColor="text-sky-600 hover:text-sky-700">
           <p className="text-2xl font-bold text-slate-900 mt-1.5">
             {gelas}/{targetGelasPeriod} <span className="text-sm font-medium text-slate-500">gelas</span>
           </p>
@@ -210,28 +252,42 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
           </div>
         </RoutineCard>
 
-        {/* Checklist */}
-        <RoutineCard tint="bg-violet-50/70 border-violet-200" icon={ClipboardCheck} iconColor="text-violet-500" title={isHarian ? 'Checklist Harian' : 'Checklist'}>
-          <p className="text-2xl font-bold text-slate-900 mt-1.5">
-            {checklistDone}/4 <span className="text-sm font-medium text-slate-500">selesai</span>
-          </p>
-          <p className="text-xs text-slate-500">
-            {isHarian ? 'Selesaikan hal-hal penting hari ini' : 'Tercentang bila dikerjakan setiap hari'}
-          </p>
-          <div className="mt-3 space-y-2">
-            {checklistWithDone.map(c => (
-              <div key={c.label} className="flex items-center gap-2.5">
-                <span className={cn(
-                  'flex h-4 w-4 items-center justify-center rounded border shrink-0',
-                  c.done ? 'bg-green-500 border-green-500' : 'bg-white border-slate-300'
-                )}>
-                  {c.done && <Check className="h-3 w-3 text-white" />}
-                </span>
-                <span className={cn('text-sm', c.done ? 'text-slate-700' : 'text-slate-500')}>{c.label}</span>
+        {/* Checklist: harian = 1 kartu agregat; mingguan/bulanan = 4 kartu donut (revisi batch 13) */}
+        {isHarian ? (
+          <RoutineCard tint="bg-violet-50/70 border-violet-200" icon={ClipboardCheck} iconColor="text-violet-500" title="Checklist Harian">
+            <p className="text-2xl font-bold text-slate-900 mt-1.5">
+              {checklistDone}/4 <span className="text-sm font-medium text-slate-500">selesai</span>
+            </p>
+            <p className="text-xs text-slate-500">Selesaikan hal-hal penting hari ini</p>
+            <div className="mt-3 space-y-2">
+              {checklistWithDone.map(c => (
+                <div key={c.label} className="flex items-center gap-2.5">
+                  <span className={cn(
+                    'flex h-4 w-4 items-center justify-center rounded border shrink-0',
+                    c.done ? 'bg-green-500 border-green-500' : 'bg-white border-slate-300'
+                  )}>
+                    {c.done && <Check className="h-3 w-3 text-white" />}
+                  </span>
+                  <span className={cn('text-sm', c.done ? 'text-slate-700' : 'text-slate-500')}>{c.label}</span>
+                </div>
+              ))}
+            </div>
+          </RoutineCard>
+        ) : (
+          donutCards.map(d => (
+            <RoutineCard key={d.key} tint={d.tint} icon={d.icon} iconColor={d.iconColor} title={d.title} href={d.href} linkColor={d.linkColor}>
+              <div className="flex items-center gap-3 mt-2">
+                <MiniDonut value={d.days} total={daysElapsed} strokeClass={d.stroke} />
+                <div>
+                  <p className="text-2xl font-bold text-slate-900">
+                    {d.days}<span className="text-sm font-medium text-slate-500">/{daysElapsed} hari</span>
+                  </p>
+                  <p className="text-xs text-slate-500">{d.days} hari dilakukan • {Math.max(0, daysElapsed - d.days)} tidak</p>
+                </div>
               </div>
-            ))}
-          </div>
-        </RoutineCard>
+            </RoutineCard>
+          ))
+        )}
       </div>
     </section>
   )
