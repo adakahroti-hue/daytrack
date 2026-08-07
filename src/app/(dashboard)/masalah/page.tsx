@@ -148,11 +148,6 @@ export default function MasalahPage() {
 
   return (
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
-      <div className="flex justify-end">
-        <Button onClick={openAdd} className="bg-[#0F172A] hover:bg-[#1E293B] text-white">
-          <Plus className="h-4 w-4 mr-1.5" /> Tambah Masalah
-        </Button>
-      </div>
 
       {/* Tabel gaya Quran: Tanggal | Hari | Masalah | Status | Solusi */}
       <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-280px)] rounded-lg border bg-white', TABLE_BORDER)}>
@@ -210,7 +205,7 @@ export default function MasalahPage() {
                 return (
                   <tr
                     key={entry.id}
-                    className={cn('border-b transition-colors', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30', 'hover:bg-blue-50/40')}
+                    className={cn('border-b transition-colors', TABLE_BORDER, entry.tanggal === todayStr ? 'row-today-pulse' : (rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'), 'hover:bg-blue-50/40')}
                   >
                     <td className={cn('sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
                       <span className="sm:hidden">{format(date, 'd MMM', { locale: id })}</span>
@@ -273,6 +268,16 @@ export default function MasalahPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Revisi 8: tombol tambah floating seperti tab Semua */}
+      <Button
+        onClick={openAdd}
+        size="icon"
+        aria-label="Tambah Masalah"
+        className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-white shadow-lg"
+      >
+        <Plus className="h-6 w-6" />
+      </Button>
 
       {/* Dialog tambah/edit masalah */}
       <Dialog open={!!editState} onOpenChange={(open) => !open && setEditState(null)}>

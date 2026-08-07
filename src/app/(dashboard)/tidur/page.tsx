@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils'
 import { useTidurLogRange, useUpsertTidurLog, useDeleteTidurLog } from '@/hooks/useTidurLogs'
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
+import { StatusAnalytics } from '@/components/analytics/StatusAnalytics'
 
 // ─── Constants ────────────────────────────────────
 
@@ -62,6 +63,7 @@ function startOfDaySafe(d: Date): Date {
 export default function TidurPage() {
   // Periode & tanggal dari HeaderControls (toolbar di header)
   const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
+  const todayStr = format(new Date(), 'yyyy-MM-dd')
 
   const { rangeStart, rangeEnd } = useMemo(() => {
     const today = new Date()
@@ -117,6 +119,17 @@ export default function TidurPage() {
       catatan: status === 'begadang' && reason ? `Begadang: ${reason}` : undefined,
     })
   }
+
+  // Revisi 6: data untuk Analytics & Insight
+  const analyticsEntries = useMemo(() => {
+    return (logs as TidurLogEntry[]).map(l => ({
+      tanggal: l.tanggal,
+      missed: l.status === 'begadang',
+      reason: l.status === 'begadang' && l.catatan?.startsWith('Begadang:')
+        ? l.catatan.replace('Begadang: ', '')
+        : (l.status === 'begadang' ? 'Begadang' : null),
+    }))
+  }, [logs])
 
   const handleClear = async (tanggal: string) => {
     const entry = logMap[tanggal]
@@ -176,7 +189,7 @@ export default function TidurPage() {
                 return (
                   <tr
                     key={dateStr}
-                    className={cn('border-b transition-colors', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30', 'hover:bg-blue-50/40')}
+                    className={cn('border-b transition-colors', TABLE_BORDER, dateStr === todayStr ? 'row-today-pulse' : (rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'), 'hover:bg-blue-50/40')}
                   >
                     <td className={cn('sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
                       <span className="sm:hidden">{format(date, 'd MMM', { locale: id })}</span>
@@ -234,6 +247,16 @@ export default function TidurPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Revisi 6: Analytics & Insight */}
+      <StatusAnalytics
+        entries={analyticsEntries}
+        difficultyTitle="Tingkat Kesulitan Tidur"
+        difficultySubtitle="Berdasarkan frekuensi begadang per hari"
+        reasonTitle="Alasan Terbanyak Begadang"
+        reasonSubtitle="Berdasarkan alasan yang dipilih saat begadang"
+        missedNoun="begadang"
+      />
     </div>
   )
 }

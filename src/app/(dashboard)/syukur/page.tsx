@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils'
 import { useSyukurLogRange, useUpsertSyukurLog, useDeleteSyukurLog } from '@/hooks/useSyukurLogs'
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
+import { StatusAnalytics } from '@/components/analytics/StatusAnalytics'
 
 // ─── Constants ────────────────────────────────────
 
@@ -75,6 +76,7 @@ function startOfDaySafe(d: Date): Date {
 export default function SyukurPage() {
   // Periode & tanggal dari HeaderControls (toolbar di header)
   const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
+  const todayStr = format(new Date(), 'yyyy-MM-dd')
 
   const { rangeStart, rangeEnd } = useMemo(() => {
     const today = new Date()
@@ -130,6 +132,17 @@ export default function SyukurPage() {
       alasan_tidak: status === 'belum' ? reasonValue : undefined,
     })
   }
+
+  // Revisi 5: data untuk Analytics & Insight
+  const analyticsEntries = useMemo(() => {
+    return (logs as SyukurLogEntry[]).map(l => ({
+      tanggal: l.tanggal,
+      missed: l.status === 'belum',
+      reason: l.status === 'belum' && l.alasan_tidak
+        ? (ALASAN_LABELS[l.alasan_tidak] ?? 'Tidak')
+        : (l.status === 'belum' ? 'Tidak' : null),
+    }))
+  }, [logs])
 
   const handleClear = async (tanggal: string) => {
     const entry = logMap[tanggal]
@@ -189,7 +202,7 @@ export default function SyukurPage() {
                 return (
                   <tr
                     key={dateStr}
-                    className={cn('border-b transition-colors', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30', 'hover:bg-blue-50/40')}
+                    className={cn('border-b transition-colors', TABLE_BORDER, dateStr === todayStr ? 'row-today-pulse' : (rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'), 'hover:bg-blue-50/40')}
                   >
                     <td className={cn('sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
                       <span className="sm:hidden">{format(date, 'd MMM', { locale: id })}</span>
@@ -247,6 +260,16 @@ export default function SyukurPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Revisi 5: Analytics & Insight */}
+      <StatusAnalytics
+        entries={analyticsEntries}
+        difficultyTitle="Tingkat Kesulitan Bersyukur"
+        difficultySubtitle="Berdasarkan frekuensi tidak bersyukur per hari"
+        reasonTitle="Alasan Terbanyak Tidak Bersyukur"
+        reasonSubtitle="Berdasarkan alasan yang dipilih saat tidak bersyukur"
+        missedNoun="terlewat"
+      />
     </div>
   )
 }

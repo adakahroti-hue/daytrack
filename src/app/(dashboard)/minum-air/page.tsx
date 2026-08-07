@@ -84,6 +84,7 @@ function startOfDaySafe(d: Date): Date {
 export default function MinumAirPage() {
   // ── Rev 6: periode & tanggal dari HeaderControls (toolbar pindah ke header) ──
   const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
+  const todayStr = format(new Date(), 'yyyy-MM-dd')
 
   const { rangeStart, rangeEnd, periodLabel, isCurrentPeriod } = useMemo(() => {
     const today = new Date()
@@ -214,7 +215,7 @@ export default function MinumAirPage() {
                 return (
                   <tr
                     key={dateStr}
-                    className={cn('border-b transition-colors', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30', 'hover:bg-blue-50/40')}
+                    className={cn('border-b transition-colors', TABLE_BORDER, dateStr === todayStr ? 'row-today-pulse' : (rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'), 'hover:bg-blue-50/40')}
                   >
                     <td className={cn('sticky left-0 z-10 bg-inherit px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
                       <span className="sm:hidden">{format(date, 'd MMM', { locale: id })}</span>

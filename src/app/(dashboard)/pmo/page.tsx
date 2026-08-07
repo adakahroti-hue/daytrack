@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils'
 import { usePmoLogRange, useUpsertPmoLog, useDeletePmoLog } from '@/hooks/usePmoLogs'
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
+import { StatusAnalytics } from '@/components/analytics/StatusAnalytics'
 
 // ─── Constants ────────────────────────────────────
 
@@ -152,6 +153,17 @@ export default function PmoPage() {
     })
   }
 
+  // Revisi 7: data untuk Analytics & Insight
+  const analyticsEntries = useMemo(() => {
+    return (logs as PmoLogEntry[]).map(l => ({
+      tanggal: l.tanggal,
+      missed: l.status === 'relapse',
+      reason: l.status === 'relapse' && l.catatan?.startsWith('Relapse:')
+        ? l.catatan.replace('Relapse: ', '')
+        : (l.status === 'relapse' ? 'Relapse' : null),
+    }))
+  }, [logs])
+
   const handleClear = async (tanggal: string) => {
     const entry = logMap[tanggal]
     if (entry) await deletePmoLog.mutateAsync(entry.id)
@@ -232,7 +244,7 @@ export default function PmoPage() {
                 return (
                   <tr
                     key={dateStr}
-                    className={cn('border-b transition-colors', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30', 'hover:bg-blue-50/40')}
+                    className={cn('border-b transition-colors', TABLE_BORDER, dateStr === todayStr ? 'row-today-pulse' : (rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'), 'hover:bg-blue-50/40')}
                   >
                     <td className={cn('sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
                       <span className="sm:hidden">{format(date, 'd MMM', { locale: id })}</span>
@@ -290,6 +302,16 @@ export default function PmoPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Revisi 7: Analytics & Insight */}
+      <StatusAnalytics
+        entries={analyticsEntries}
+        difficultyTitle="Tingkat Kesulitan Bertahan PMO"
+        difficultySubtitle="Berdasarkan frekuensi relapse per hari"
+        reasonTitle="Alasan Terbanyak Relapse PMO"
+        reasonSubtitle="Berdasarkan alasan yang dipilih saat relapse"
+        missedNoun="relapse"
+      />
     </div>
   )
 }

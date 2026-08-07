@@ -12,7 +12,7 @@ import {
   endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, Smile, Check, X, Trash2, Pencil } from 'lucide-react'
+import { Calendar, Smile, Check, X, Trash2, Pencil, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -58,6 +58,7 @@ function startOfDaySafe(d: Date): Date {
 export default function KesenanganPage() {
   // Periode & tanggal dari HeaderControls (toolbar di header)
   const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
+  const todayStr = format(new Date(), 'yyyy-MM-dd')
 
   const { rangeStart, rangeEnd } = useMemo(() => {
     const today = new Date()
@@ -194,7 +195,7 @@ export default function KesenanganPage() {
                 return (
                   <tr
                     key={dateStr}
-                    className={cn('border-b transition-colors', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30', 'hover:bg-blue-50/40')}
+                    className={cn('border-b transition-colors', TABLE_BORDER, dateStr === todayStr ? 'row-today-pulse' : (rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'), 'hover:bg-blue-50/40')}
                   >
                     <td className={cn('sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
                       <span className="sm:hidden">{format(date, 'd MMM', { locale: id })}</span>
@@ -260,6 +261,16 @@ export default function KesenanganPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Revisi 8: tombol tambah floating seperti tab Semua */}
+      <Button
+        onClick={() => openEdit(format(new Date(), 'yyyy-MM-dd'))}
+        size="icon"
+        aria-label="Tambah Kesenangan"
+        className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-white shadow-lg"
+      >
+        <Plus className="h-6 w-6" />
+      </Button>
 
       {/* Dialog edit kesenangan */}
       <Dialog open={!!editDate} onOpenChange={(open) => !open && setEditDate(null)}>

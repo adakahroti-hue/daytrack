@@ -12,7 +12,7 @@ import {
   endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, Lightbulb, Check, X, Trash2, Pencil } from 'lucide-react'
+import { Calendar, Lightbulb, Check, X, Trash2, Pencil, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -282,6 +282,16 @@ export default function SaranPerbaikanPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Revisi 8: tombol tambah floating seperti tab Semua */}
+      <Button
+        onClick={() => openEdit(format(new Date(), 'yyyy-MM-dd'))}
+        size="icon"
+        aria-label="Tambah Masukan"
+        className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-white shadow-lg"
+      >
+        <Plus className="h-6 w-6" />
+      </Button>
 
       {/* Dialog edit masukan */}
       <Dialog open={!!editState} onOpenChange={(open) => !open && setEditState(null)}>
