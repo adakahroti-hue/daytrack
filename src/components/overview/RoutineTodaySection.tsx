@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { Check, Minus, Mosque, BookOpen, GlassWater, ClipboardCheck, Droplet, Repeat, Heart, Sparkles, Shield, Moon, ArrowRight } from 'lucide-react'
-import { format, differenceInCalendarDays } from 'date-fns'
+import { format, startOfWeek, differenceInCalendarDays } from 'date-fns'
+import { id } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 import { usePrayerLogRange } from '@/hooks/usePrayerLogs'
 import { useQuranLogRange } from '@/hooks/useQuranLogs'
@@ -295,14 +296,14 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                   {c.days}<span className="text-sm font-medium text-slate-500">/{daysElapsed} hari</span>
                 </p>
                 <p className="text-xs text-slate-500">{c.days} hari dilakukan • {Math.max(0, daysElapsed - c.days)} tidak</p>
-                <div className="grid grid-cols-7 gap-1.5 mt-3">
+                <div className="flex flex-wrap gap-1.5 mt-3">
                   {tiles.map(t => {
                     const done = t.total > 0 && t.done === t.total
                     return (
                       <div
                         key={t.key}
                         className={cn(
-                          'rounded-lg border py-1.5 px-0.5 flex flex-col items-center gap-0.5',
+                          'rounded-lg border py-1.5 px-0.5 flex flex-col items-center gap-0.5 flex-1 min-w-[30px]',
                           done ? c.tileDone : 'bg-white/60 border-slate-200'
                         )}
                       >

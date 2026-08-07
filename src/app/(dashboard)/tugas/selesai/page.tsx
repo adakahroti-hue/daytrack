@@ -195,7 +195,7 @@ const TaskCard = memo(({
         </div>
 
         {/* Task Title - Most Prominent */}
-        <h3 className="font-semibold text-base leading-snug pr-8 capitalize flex-1 break-words">{task.nama}</h3>
+        <h3 className={cn("font-semibold text-base leading-snug pr-8 capitalize flex-1 break-words", task.group_id && "pl-7")}>{task.nama}</h3>
 
         {/* Meta Info: Duration + Date */}
         <div className="space-y-2">
