@@ -9,10 +9,11 @@ import { useTasks, useToggleTaskStatus, usePauseTask, useResumeTask } from '@/ho
 
 // ─── Revisi batch 9, 11 & 13: section "Fokus" untuk tab Overview ───
 
-export type OverviewPeriod = 'harian' | 'mingguan' | 'bulanan' | 'tahunan'
+export type OverviewPeriod = 'harian' | 'kemarin' | 'mingguan' | 'bulanan' | 'tahunan'
 
 export const PERIOD_LABEL: Record<OverviewPeriod, string> = {
   harian: 'Hari Ini',
+  kemarin: 'Kemarin',
   mingguan: 'Minggu Ini',
   bulanan: 'Bulan Ini',
   tahunan: 'Tahun Ini',

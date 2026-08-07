@@ -73,30 +73,8 @@ function RoutineCard({
   )
 }
 
-// Donut lingkaran simpel (SVG) — revisi batch 13
-function MiniDonut({ value, total, strokeClass }: { value: number; total: number; strokeClass: string }) {
-  const pct = total > 0 ? Math.min(1, value / total) : 0
-  const r = 26
-  const c = 2 * Math.PI * r
-  return (
-    <div className="relative h-16 w-16 shrink-0">
-      <svg viewBox="0 0 64 64" className="h-16 w-16 -rotate-90">
-        <circle cx="32" cy="32" r={r} fill="none" strokeWidth="8" stroke="currentColor" className="text-slate-200" />
-        <circle
-          cx="32" cy="32" r={r} fill="none" strokeWidth="8" strokeLinecap="round"
-          stroke="currentColor" className={strokeClass}
-          strokeDasharray={`${c * pct} ${c}`}
-        />
-      </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-xs font-bold text-slate-700 tabular-nums">{value}/{total}</span>
-      </div>
-    </div>
-  )
-}
-
 export function RoutineTodaySection({ startStr, endStr, period }: { startStr: string; endStr: string; period: OverviewPeriod }) {
-  const isHarian = period === 'harian'
+  const isHarian = period === 'harian' || period === 'kemarin'
 
   // Jumlah hari berjalan dalam periode (masa depan tidak dihitung sebagai penyebut)
   const todayStr = format(new Date(), 'yyyy-MM-dd')
@@ -148,13 +126,48 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
   const checklistWithDone = checklist.map(c => ({ ...c, done: c.days >= daysElapsed }))
   const checklistDone = checklistWithDone.filter(c => c.done).length
 
-  // Revisi batch 13: 4 kartu donut untuk mingguan/bulanan (Syukur, Doa, PMO, Tidur)
-  const donutCards = [
-    { key: 'syukur', title: 'Syukur', days: checklist[0].days, tint: 'bg-violet-50/70 border-violet-200', icon: Heart, iconColor: 'text-violet-500', stroke: 'text-violet-500', linkColor: 'text-violet-600 hover:text-violet-700', href: '/syukur' },
-    { key: 'doa', title: 'Doa', days: checklist[1].days, tint: 'bg-rose-50/70 border-rose-200', icon: Sparkles, iconColor: 'text-rose-500', stroke: 'text-rose-500', linkColor: 'text-rose-600 hover:text-rose-700', href: '/doa' },
-    { key: 'pmo', title: 'PMO', days: checklist[2].days, tint: 'bg-red-50/70 border-red-200', icon: Shield, iconColor: 'text-red-500', stroke: 'text-red-500', linkColor: 'text-red-600 hover:text-red-700', href: '/pmo' },
-    { key: 'tidur', title: 'Tidur', days: checklist[3].days, tint: 'bg-indigo-50/70 border-indigo-200', icon: Moon, iconColor: 'text-indigo-500', stroke: 'text-indigo-500', linkColor: 'text-indigo-600 hover:text-indigo-700', href: '/tidur' },
+  // Revisi batch 13 & 14: kartu checklist gaya Baca Quran (tanpa diagram lingkaran)
+  const doneDateSets = [
+    new Set((syukurEntries as any[]).filter(e => e.status === 'sudah').map(e => e.tanggal)),
+    new Set((doaEntries as any[]).filter(e => e.status === 'sudah').map(e => e.tanggal)),
+    new Set((pmoEntries as any[]).filter(e => e.status === 'berhasil').map(e => e.tanggal)),
+    new Set((tidurEntries as any[]).filter(e => e.status === 'tepat').map(e => e.tanggal)),
   ]
+  const checklistCards = [
+    { key: 'syukur', title: 'Syukur', days: checklist[0].days, doneDates: doneDateSets[0], tint: 'bg-violet-50/70 border-violet-200', icon: Heart, iconColor: 'text-violet-500', tileDone: 'bg-violet-100/70 border-violet-200', tileText: 'text-violet-600', linkColor: 'text-violet-600 hover:text-violet-700', href: '/syukur' },
+    { key: 'doa', title: 'Doa', days: checklist[1].days, doneDates: doneDateSets[1], tint: 'bg-rose-50/70 border-rose-200', icon: Sparkles, iconColor: 'text-rose-500', tileDone: 'bg-rose-100/70 border-rose-200', tileText: 'text-rose-600', linkColor: 'text-rose-600 hover:text-rose-700', href: '/doa' },
+    { key: 'pmo', title: 'PMO', days: checklist[2].days, doneDates: doneDateSets[2], tint: 'bg-orange-50/70 border-orange-200', icon: Shield, iconColor: 'text-orange-500', tileDone: 'bg-orange-100/70 border-orange-200', tileText: 'text-orange-600', linkColor: 'text-orange-600 hover:text-orange-700', href: '/pmo' },
+    { key: 'tidur', title: 'Tidur', days: checklist[3].days, doneDates: doneDateSets[3], tint: 'bg-indigo-50/70 border-indigo-200', icon: Moon, iconColor: 'text-indigo-500', tileDone: 'bg-indigo-100/70 border-indigo-200', tileText: 'text-indigo-600', linkColor: 'text-indigo-600 hover:text-indigo-700', href: '/tidur' },
+  ]
+  const bucketType = period === 'mingguan' ? 'day' : period === 'bulanan' ? 'week' : 'month'
+  const bucketTiles = (doneDates: Set<string>) => {
+    const map = new Map<string, { label: string; done: number; total: number }>()
+    const start = new Date(startStr + 'T00:00:00')
+    const end = new Date(cappedEnd + 'T00:00:00')
+    const cur = new Date(start)
+    let weekIdx = 1
+    while (cur <= end) {
+      let key: string, label: string
+      if (bucketType === 'day') {
+        key = format(cur, 'yyyy-MM-dd')
+        label = format(cur, 'EEE', { locale: id })
+      } else if (bucketType === 'week') {
+        const ws = startOfWeek(cur, { weekStartsOn: 1 })
+        key = format(ws, 'yyyy-MM-dd')
+        label = `P${weekIdx}`
+        if (format(cur, 'yyyy-MM-dd') === key) weekIdx++
+      } else {
+        key = format(cur, 'yyyy-MM')
+        label = format(cur, 'MMM', { locale: id })
+      }
+      const b = map.get(key) ?? { label, done: 0, total: 0 }
+      b.total++
+      if (doneDates.has(format(cur, 'yyyy-MM-dd'))) b.done++
+      map.set(key, b)
+      cur.setDate(cur.getDate() + 1)
+    }
+    return [...map.values()]
+  }
 
   const label = PERIOD_LABEL[period]
 
@@ -274,19 +287,36 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
             </div>
           </RoutineCard>
         ) : (
-          donutCards.map(d => (
-            <RoutineCard key={d.key} tint={d.tint} icon={d.icon} iconColor={d.iconColor} title={d.title} href={d.href} linkColor={d.linkColor}>
-              <div className="flex items-center gap-3 mt-2">
-                <MiniDonut value={d.days} total={daysElapsed} strokeClass={d.stroke} />
-                <div>
-                  <p className="text-2xl font-bold text-slate-900">
-                    {d.days}<span className="text-sm font-medium text-slate-500">/{daysElapsed} hari</span>
-                  </p>
-                  <p className="text-xs text-slate-500">{d.days} hari dilakukan • {Math.max(0, daysElapsed - d.days)} tidak</p>
+          checklistCards.map(c => {
+            const tiles = bucketTiles(c.doneDates)
+            return (
+              <RoutineCard key={c.key} tint={c.tint} icon={c.icon} iconColor={c.iconColor} title={c.title} href={c.href} linkColor={c.linkColor}>
+                <p className="text-2xl font-bold text-slate-900 mt-1.5">
+                  {c.days}<span className="text-sm font-medium text-slate-500">/{daysElapsed} hari</span>
+                </p>
+                <p className="text-xs text-slate-500">{c.days} hari dilakukan • {Math.max(0, daysElapsed - c.days)} tidak</p>
+                <div className="grid grid-cols-7 gap-1.5 mt-3">
+                  {tiles.map(t => {
+                    const done = t.total > 0 && t.done === t.total
+                    return (
+                      <div
+                        key={t.key}
+                        className={cn(
+                          'rounded-lg border py-1.5 px-0.5 flex flex-col items-center gap-0.5',
+                          done ? c.tileDone : 'bg-white/60 border-slate-200'
+                        )}
+                      >
+                        <span className="text-[10px] leading-tight text-center text-slate-600">{t.label}</span>
+                        {done
+                          ? <Check className="h-3 w-3 text-slate-700" />
+                          : <span className={cn('text-[10px] font-semibold tabular-nums', c.tileText)}>{t.done}/{t.total}</span>}
+                      </div>
+                    )
+                  })}
                 </div>
-              </div>
-            </RoutineCard>
-          ))
+              </RoutineCard>
+            )
+          })
         )}
       </div>
     </section>

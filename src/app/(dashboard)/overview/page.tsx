@@ -14,7 +14,7 @@ export default function OverviewPage() {
 
   const periodMap: Record<string, OverviewPeriod> = {
     daily: 'harian',
-    yesterday: 'harian',
+    yesterday: 'kemarin',
     weekly: 'mingguan',
     monthly: 'bulanan',
     yearly: 'tahunan',

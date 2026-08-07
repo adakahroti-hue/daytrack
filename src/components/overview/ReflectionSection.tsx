@@ -78,7 +78,7 @@ export function ReflectionSection({ startStr, endStr, period }: { startStr: stri
     .slice(0, 3)
 
   // Saran perbaikan — harian: 30 hari terakhir; mingguan/bulanan: rentang periode
-  const saranStart = period === 'harian'
+  const saranStart = period === 'harian' || period === 'kemarin'
     ? format(subDays(new Date(endStr + 'T00:00:00'), 30), 'yyyy-MM-dd')
     : startStr
   const { data: saranEntries = [] } = useSaranPerbaikanRange(saranStart, endStr)

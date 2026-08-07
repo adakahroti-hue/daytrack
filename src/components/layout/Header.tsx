@@ -227,7 +227,11 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   const handlePeriodChange = (key: 'yesterday' | 'daily' | 'weekly' | 'monthly' | 'yearly') => {
     if (key === 'yesterday') selectYesterday()
-    else setPeriod(key)
+    else {
+      // Revisi batch 14: klik Harian → tanggal navigasi kembali ke hari ini
+      if (key === 'daily') goToToday()
+      setPeriod(key)
+    }
   }
 
   return (
