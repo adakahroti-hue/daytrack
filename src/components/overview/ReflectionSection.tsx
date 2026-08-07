@@ -7,8 +7,9 @@ import { cn } from '@/lib/utils'
 import { useMasalahLogRange } from '@/hooks/useMasalahLogs'
 import { useFunQueue } from '@/hooks/useFunQueue'
 import { useSaranPerbaikanRange } from '@/hooks/useSaranPerbaikan'
+import { type OverviewPeriod } from './FocusTodaySection'
 
-// ─── Revisi batch 9: section "Catatan & Refleksi" untuk tab Overview (mengikuti mockup) ───
+// ─── Revisi batch 9 & 11: section "Catatan & Refleksi" untuk tab Overview ───
 
 function ReflectionCard({
   tint,
@@ -61,9 +62,9 @@ function ReflectionCard({
   )
 }
 
-export function ReflectionSection({ dateStr }: { dateStr: string }) {
-  // Masalah hari ini
-  const { data: masalahEntries = [] } = useMasalahLogRange(dateStr, dateStr)
+export function ReflectionSection({ startStr, endStr, period }: { startStr: string; endStr: string; period: OverviewPeriod }) {
+  // Masalah dalam rentang periode
+  const { data: masalahEntries = [] } = useMasalahLogRange(startStr, endStr)
   const masalahList = (masalahEntries as any[])
     .map(e => e.masalah as string)
     .filter(Boolean)
@@ -76,9 +77,11 @@ export function ReflectionSection({ dateStr }: { dateStr: string }) {
     .filter(Boolean)
     .slice(0, 3)
 
-  // Saran perbaikan — 3 saran terbaru dalam 30 hari terakhir sampai tanggal terpilih
-  const saranStart = format(subDays(new Date(dateStr + 'T00:00:00'), 30), 'yyyy-MM-dd')
-  const { data: saranEntries = [] } = useSaranPerbaikanRange(saranStart, dateStr)
+  // Saran perbaikan — harian: 30 hari terakhir; mingguan/bulanan: rentang periode
+  const saranStart = period === 'harian'
+    ? format(subDays(new Date(endStr + 'T00:00:00'), 30), 'yyyy-MM-dd')
+    : startStr
+  const { data: saranEntries = [] } = useSaranPerbaikanRange(saranStart, endStr)
   const saranList = [...(saranEntries as any[])]
     .sort((a, b) => (a.tanggal < b.tanggal ? 1 : -1))
     .map(e => (e.saran || '') as string)
@@ -101,7 +104,7 @@ export function ReflectionSection({ dateStr }: { dateStr: string }) {
           linkColor="text-purple-600 hover:text-purple-700"
           title="Masalah"
           items={masalahList}
-          emptyText="Tidak ada masalah tercatat hari ini."
+          emptyText="Tidak ada masalah tercatat pada periode ini."
           href="/masalah"
         />
         <ReflectionCard

@@ -7,11 +7,20 @@ import { Button } from '@/components/ui/button'
 import { cn, getEstimasiText, getTaskActiveSeconds, getMissionPriorityLabel, getMissionPriorityColor } from '@/lib/utils'
 import { useTasks, useToggleTaskStatus, usePauseTask, useResumeTask } from '@/hooks/useTasks'
 
-// ─── Revisi batch 9: section "Fokus Hari Ini" untuk tab Overview (mengikuti mockup) ───
+// ─── Revisi batch 9 & 11: section "Fokus" untuk tab Overview (harian/mingguan/bulanan) ───
+
+export type OverviewPeriod = 'harian' | 'mingguan' | 'bulanan'
+
+export const PERIOD_LABEL: Record<OverviewPeriod, string> = {
+  harian: 'Hari Ini',
+  mingguan: 'Minggu Ini',
+  bulanan: 'Bulan Ini',
+}
 
 type OverviewTask = {
   id: string
   nama: string
+  tanggal: string
   prioritas: 'p1' | 'p2' | 'p3' | 'p4'
   status: 'belum' | 'proses' | 'selesai'
   estimasi_menit: number
@@ -38,9 +47,11 @@ function formatSedang(task: OverviewTask): string {
   return 'baru mulai'
 }
 
-export function FocusTodaySection({ dateStr }: { dateStr: string }) {
-  const { data } = useTasks(dateStr)
-  const tasks = (data ?? []) as OverviewTask[]
+export function FocusTodaySection({ startStr, endStr, period }: { startStr: string; endStr: string; period: OverviewPeriod }) {
+  const { data } = useTasks()
+  const allTasks = (data ?? []) as OverviewTask[]
+  // Filter tugas ke rentang periode terpilih (harian = 1 tanggal)
+  const tasks = allTasks.filter(t => t.tanggal >= startStr && t.tanggal <= endStr)
   const toggleStatus = useToggleTaskStatus()
   const pauseTask = usePauseTask()
   const resumeTask = useResumeTask()
@@ -64,18 +75,20 @@ export function FocusTodaySection({ dateStr }: { dateStr: string }) {
     return () => clearInterval(t)
   }, [featuredId, featuredPaused])
 
+  const label = PERIOD_LABEL[period]
+
   return (
     <section>
       <div className="flex items-center gap-2 mb-3">
         <Target className="h-4 w-4 text-slate-400" />
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Fokus Hari Ini</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Fokus {label}</h2>
       </div>
 
       <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 snap-x">
         {/* Kartu statistik tugas */}
         <div className="snap-start shrink-0 w-52 rounded-xl border border-slate-200 bg-white p-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-slate-600">Tugas Hari Ini</p>
+            <p className="text-sm font-medium text-slate-600">Tugas {label}</p>
             <div className="p-1.5 rounded-lg bg-blue-50">
               <FileText className="h-4 w-4 text-blue-500" />
             </div>
@@ -172,7 +185,7 @@ export function FocusTodaySection({ dateStr }: { dateStr: string }) {
         {/* Empty state bila benar-benar tidak ada tugas */}
         {total === 0 && (
           <div className="snap-start shrink-0 w-72 rounded-xl border border-dashed border-slate-300 bg-slate-50/50 p-4 flex flex-col justify-center">
-            <p className="text-sm text-slate-500">Belum ada tugas untuk tanggal ini.</p>
+            <p className="text-sm text-slate-500">Belum ada tugas untuk periode ini.</p>
             <Link href="/tugas/hari-ini" className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700">
               Kelola tugas <ArrowRight className="h-3.5 w-3.5" />
             </Link>
