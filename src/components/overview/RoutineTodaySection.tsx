@@ -161,7 +161,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
         key = format(cur, 'yyyy-MM')
         label = format(cur, 'MMM', { locale: id })
       }
-      const b = map.get(key) ?? { label, done: 0, total: 0 }
+      const b = map.get(key) ?? { key, label, done: 0, total: 0 }
       b.total++
       if (doneDates.has(format(cur, 'yyyy-MM-dd'))) b.done++
       map.set(key, b)
