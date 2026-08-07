@@ -130,6 +130,7 @@ export default function MasalahPage() {
         masalah: editState.masalah.trim(),
         solusi: editState.solusi.trim() || undefined,
         status: 'belum',
+        prioritas: 'sedang',
       })
     }
     setEditState(null)
