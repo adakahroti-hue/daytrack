@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, memo } from 'react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Plus, Edit, Trash2, X, Clock, Calendar, Play, Check, CheckCircle2, MoreHorizontal, Flag, RotateCcw, CheckSquare } from 'lucide-react'
+import { Plus, Edit, Trash2, X, Clock, Calendar, Play, Check, CheckCircle2, MoreHorizontal, Flag, RotateCcw, CheckSquare, Layers } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -30,6 +30,8 @@ type Task = {
   started_at: string | null
   completed_at: string | null
   terlewat_tanggal?: string | null
+  group_id?: string | null
+  group_order?: number | null
 }
 
 type TaskFormData = {
@@ -78,6 +80,7 @@ const TaskCard = memo(({
   onStatusChange,
   onSelect,
   isSelected,
+  onSetGroup,
 }: {
   task: Task
   onEdit: (task: Task) => void
@@ -85,6 +88,7 @@ const TaskCard = memo(({
   onStatusChange: (id: string, status: Task['status']) => void
   onSelect?: (id: string, checked: boolean) => void
   isSelected?: boolean
+  onSetGroup?: (task: Task) => void
 }) => {
   const isCompleted = task.status === 'selesai'
   const isInProgress = task.status === 'proses'
@@ -132,6 +136,10 @@ const TaskCard = memo(({
       style={{ minHeight: '190px', display: 'flex', flexDirection: 'column' }}
     >
       <CardContent className="p-5 space-y-4 flex flex-col h-full">
+        {/* Revisi batch 12: pita penanda paket */}
+        {task.group_id && task.group_order != null && (
+          <TaskGroupRibbon groupId={task.group_id} order={task.group_order} />
+        )}
         {/* Top Row: (Checkbox saat mode pilih) + Priority Badge + Dropdown Menu */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -166,6 +174,13 @@ const TaskCard = memo(({
                 inset={false}
               >
                 <Edit className="h-4 w-4" />Edit Tugas
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onSetGroup?.(task)}
+                className="flex items-center gap-2"
+                inset={false}
+              >
+                <Layers className="h-4 w-4" />Penanda Paket
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -606,7 +621,7 @@ function SelesaiPageClient() {
         open={!!groupTask}
         onOpenChange={(open) => !open && setGroupTask(null)}
         task={groupTask}
-        allTasks={completedTasks}
+        allTasks={selesaiTasks}
         isSaving={updateTask.isPending}
         onSave={(data) => {
           if (!groupTask) return

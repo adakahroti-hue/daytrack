@@ -3,7 +3,7 @@
 import { useMemo } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, Clock, CalendarDays, CalendarRange, CheckCircle2, AlertTriangle, Droplets, LayoutDashboard, BookOpen, Mosque, Heart, Moon, GlassWater, Shield, Brain, Smile, Lightbulb, Sparkles } from 'lucide-react'
+import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, Clock, CalendarDays, CalendarRange, CheckCircle2, AlertTriangle, Droplets, LayoutDashboard, BookOpen, Mosque, Heart, Moon, GlassWater, Shield, Brain, Smile, Lightbulb, Sparkles, History } from 'lucide-react'
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
@@ -181,6 +181,7 @@ export function Header({ onMenuClick }: HeaderProps) {
     navigate,
     goToToday,
     setPeriod,
+    selectYesterday,
     isToday,
     ibadahPeriod,
     ibadahDate,
@@ -210,9 +211,11 @@ export function Header({ onMenuClick }: HeaderProps) {
   const isTableTab = isSholat || isQuran || isMinumAir || isDoa || isSyukur || isTidur || isPmo || isMasalah || isKesenangan || isSaranPerbaikan
 
   const periodLabels = {
+    yesterday: { label: 'Kemarin', icon: History },
     daily: { label: 'Harian', icon: Clock },
     weekly: { label: 'Mingguan', icon: CalendarDays },
     monthly: { label: 'Bulanan', icon: CalendarRange },
+    yearly: { label: 'Tahunan', icon: Calendar },
   }
 
   const ibadahPeriodOptions = [
@@ -222,8 +225,9 @@ export function Header({ onMenuClick }: HeaderProps) {
     { value: 'yearly', label: 'Tahunan' },
   ] as const
 
-  const handlePeriodChange = (key: 'daily' | 'weekly' | 'monthly') => {
-    setPeriod(key)
+  const handlePeriodChange = (key: 'yesterday' | 'daily' | 'weekly' | 'monthly' | 'yearly') => {
+    if (key === 'yesterday') selectYesterday()
+    else setPeriod(key)
   }
 
   return (
@@ -324,6 +328,8 @@ export function Header({ onMenuClick }: HeaderProps) {
             <span className="text-sm font-medium">
               {period === 'monthly'
                 ? format(currentDate, 'MMM yyyy', { locale: id })
+                : period === 'yearly'
+                ? format(currentDate, 'yyyy', { locale: id })
                 : period === 'weekly'
                 ? format(currentDate, 'd MMM', { locale: id })
                 : format(currentDate, 'd MMM', { locale: id })}
@@ -334,15 +340,15 @@ export function Header({ onMenuClick }: HeaderProps) {
 
         {/* Period Toggle Group — only on Overview page */}
         {isOverviewPage && (
-          <div className="w-[300px] hidden sm:flex flex-shrink-0">
+          <div className="hidden sm:flex flex-shrink-0">
             <div className="flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border w-full justify-center">
               {Object.entries(periodLabels).map(([key, { label, icon: Icon }]) => (
                 <Button
                   key={key}
                   variant={period === key ? 'default' : 'ghost'}
                   size="sm"
-                  className="h-8 w-28 px-2 gap-1 justify-center"
-                  onClick={() => handlePeriodChange(key as 'daily' | 'weekly' | 'monthly')}
+                  className="h-8 px-2 gap-1 justify-center"
+                  onClick={() => handlePeriodChange(key as 'yesterday' | 'daily' | 'weekly' | 'monthly' | 'yearly')}
                 >
                   <Icon className="h-3.5 w-3.5 flex-shrink-0" />
                   <span className="hidden sm:inline truncate">{label}</span>
@@ -395,8 +401,44 @@ export function Header({ onMenuClick }: HeaderProps) {
       </div>
 
       {/* Revisi mobile (batch 8): toolbar dipindah ke bawah header, full width — khusus mobile portrait; desktop & landscape tidak berubah */}
-      {(isSemua || isTableTab) && (
+      {(isSemua || isTableTab || isOverviewPage) && (
         <div className="hidden max-md:portrait:flex flex-col gap-2 px-3 pb-3">
+          {/* Tab Overview: toggle periode 5 opsi (atas) + navigasi tanggal (bawah), full width — khusus mobile portrait */}
+          {isOverviewPage && (
+            <>
+              <div className="flex items-center gap-0.5 p-0.5 bg-muted/50 rounded-lg border border-border w-full">
+                {Object.entries(periodLabels).map(([key, { label }]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => handlePeriodChange(key as 'yesterday' | 'daily' | 'weekly' | 'monthly' | 'yearly')}
+                    className={cn(
+                      'flex-1 px-1 py-1.5 rounded-md text-[11px] font-medium transition-colors whitespace-nowrap',
+                      period === key
+                        ? 'bg-[#0F172A] text-white shadow-sm'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center justify-between gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border w-full">
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => navigate('prev')} aria-label="Periode sebelumnya">
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="text-sm font-medium truncate">
+                    {formatDateForPeriod(currentDate, period)}
+                  </span>
+                </div>
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => navigate('next')} aria-label="Periode selanjutnya">
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </>
+          )}
           {/* Tab Semua (rev 2): toggle group Prioritas/Tanggal/Durasi/Lambat */}
           {isSemua && (
             <div className="flex items-center gap-0.5 p-0.5 bg-muted/50 rounded-lg border border-border w-full">

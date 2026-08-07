@@ -252,7 +252,10 @@ export function HeaderControlsProvider({
           return addMonths(prev, amount)
         case 'weekly':
           return addWeeks(prev, amount)
+        case 'yearly':
+          return amount === -1 ? subYears(prev, 1) : addYears(prev, 1)
         case 'daily':
+        case 'yesterday':
         default:
           return addDays(prev, amount)
       }
@@ -310,6 +313,7 @@ export function HeaderControlsProvider({
     currentDate,
     period,
     setPeriod,
+    selectYesterday,
     page,
     setPage,
     navigate,
@@ -329,7 +333,7 @@ export function HeaderControlsProvider({
     ibadahDate,
     setIbadahPeriod,
     navigateIbadah,
-  }), [dynamicTitle, dynamicDescription, currentDate, period, setPeriod, page, setPage, navigate, goToToday, onRefresh, isLoading, isToday, navigateToPeriodStart, category, subPage, setSubPage, tugasView, setTugasView, groupMode, ibadahPeriod, ibadahDate, setIbadahPeriod, navigateIbadah])
+  }), [dynamicTitle, dynamicDescription, currentDate, period, setPeriod, selectYesterday, page, setPage, navigate, goToToday, onRefresh, isLoading, isToday, navigateToPeriodStart, category, subPage, setSubPage, tugasView, setTugasView, groupMode, ibadahPeriod, ibadahDate, setIbadahPeriod, navigateIbadah])
 
   return (
     <HeaderControlsContext.Provider value={value}>
@@ -364,7 +368,10 @@ export function formatDateForPeriod(date: Date, period: Period) {
       const weekStart = startOfWeek(date, { weekStartsOn: 1 })
       const weekEnd = endOfWeek(date, { weekStartsOn: 1 })
       return `${format(weekStart, 'd MMM', { locale: id })} - ${format(weekEnd, 'd MMM yyyy', { locale: id })}`
+    case 'yearly':
+      return format(date, 'yyyy', { locale: id })
     case 'daily':
+    case 'yesterday':
     default:
       return formatIndonesianDate(date)
   }

@@ -10,11 +10,14 @@ const taskSchema = z.object({
   estimasi_menit: z.number().int().min(0).default(0),
   prioritas: z.enum(["p1", "p2", "p3", "p4"]).default("p3"),
   status: z.enum(["proses", "belum", "selesai"]).default("belum"),
+  // Revisi batch 12: penanda paket tugas (parent/child/single)
+  group_id: z.string().uuid().nullable().optional(),
+  group_order: z.number().int().nullable().optional(),
 })
 
 export type TaskFormData = z.infer<typeof taskSchema>
 
-const TASK_SELECT = "id, user_id, nama, tanggal, estimasi_menit, prioritas, status, created_at, updated_at, started_at, completed_at, accumulated_seconds, is_paused, last_resumed_at"
+const TASK_SELECT = "id, user_id, nama, tanggal, estimasi_menit, prioritas, status, created_at, updated_at, started_at, completed_at, accumulated_seconds, is_paused, last_resumed_at, group_id, group_order"
 
 export async function createTask(formData: TaskFormData) {
   const supabase = await createClient()
@@ -205,7 +208,7 @@ export async function toggleTaskStatus(id: string, status: "proses" | "belum" | 
     // Ambil data lama dulu agar accumulated_seconds akurat
     const { data: existing } = await supabase
       .from("tasks")
-      .select("accumulated_seconds, is_paused, last_resumed_at")
+      .select("accumulated_seconds, is_paused, last_resumed_at, group_id, group_order")
       .eq("id", id)
       .eq("user_id", user.id)
       .single()
@@ -248,7 +251,7 @@ export async function pauseTask(id: string) {
 
   const { data: existing, error: fetchError } = await supabase
     .from("tasks")
-    .select("status, accumulated_seconds, is_paused, last_resumed_at")
+    .select("status, accumulated_seconds, is_paused, last_resumed_at, group_id, group_order")
     .eq("id", id)
     .eq("user_id", user.id)
     .single()
