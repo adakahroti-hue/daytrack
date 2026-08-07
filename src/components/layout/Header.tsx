@@ -129,6 +129,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const isSelesai = pathname === '/tugas/selesai'
   const isSholat = pathname === '/sholat'
   const isQuran = pathname === '/quran'
+  const isMinumAir = pathname === '/minum-air'
 
   const periodLabels = {
     daily: { label: 'Harian', icon: Clock },
@@ -252,25 +253,9 @@ export function Header({ onMenuClick }: HeaderProps) {
             </div>
           </div>
         )}
-        {/* Sholat & Quran toolbar — toggle + navigasi di header, rata kanan (rev 10) */}
-        {(isSholat || isQuran) && (
+        {/* Sholat, Quran & Minum Air toolbar — navigasi tanggal (kiri) + toggle group (kanan) di header */}
+        {(isSholat || isQuran || isMinumAir) && (
           <div className="flex items-center gap-1 sm:gap-2">
-            <div className="hidden sm:inline-flex items-center gap-0.5 p-0.5 bg-muted/50 rounded-lg border border-border">
-              {ibadahPeriodOptions.map(opt => (
-                <button
-                  key={opt.value}
-                  onClick={() => setIbadahPeriod(opt.value)}
-                  className={cn(
-                    'px-2.5 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap',
-                    ibadahPeriod === opt.value
-                      ? 'bg-[#0F172A] text-white shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                  )}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
             <div className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 bg-muted/50 rounded-lg border border-border">
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateIbadah('prev')} aria-label="Periode sebelumnya">
                 <ChevronLeft className="h-4 w-4" />
@@ -287,6 +272,22 @@ export function Header({ onMenuClick }: HeaderProps) {
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateIbadah('next')} aria-label="Periode selanjutnya">
                 <ChevronRight className="h-4 w-4" />
               </Button>
+            </div>
+            <div className="hidden sm:inline-flex items-center gap-0.5 p-0.5 bg-muted/50 rounded-lg border border-border">
+              {ibadahPeriodOptions.map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => setIbadahPeriod(opt.value)}
+                  className={cn(
+                    'px-2.5 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap',
+                    ibadahPeriod === opt.value
+                      ? 'bg-[#0F172A] text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                  )}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
           </div>
         )}

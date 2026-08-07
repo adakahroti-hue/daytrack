@@ -14,17 +14,15 @@ import {
   subWeeks,
   addMonths,
   subMonths,
-  addYears,
-  subYears,
-  addDays,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, Calendar, Droplets, Check, X, Trash2 } from 'lucide-react'
+import { Calendar, Droplets, Check, X, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { useWaterLogRange, useUpsertWaterLog, useDeleteWaterLog } from '@/hooks/useMinumAirLogs'
 import { useRealtime } from '@/hooks/useRealtime'
+import { useHeaderControls } from '@/components/layout/HeaderControls'
 
 // ─── Constants ────────────────────────────────────
 
@@ -81,8 +79,8 @@ function startOfDaySafe(d: Date): Date {
 
 export default function MinumAirPage() {
   const [mounted, setMounted] = useState(false)
-  const [period, setPeriod] = useState<PeriodMode>('weekly')
-  const [anchorDate, setAnchorDate] = useState<Date>(new Date())
+  // ── Rev 6: periode & tanggal dari HeaderControls (toolbar pindah ke header) ──
+  const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
 
   useEffect(() => setMounted(true), [])
 
@@ -153,17 +151,6 @@ export default function MinumAirPage() {
     [waterLogs]
   )
 
-  const navigatePeriod = (direction: 'prev' | 'next') => {
-    setAnchorDate(prev => {
-      if (period === 'daily') return addDays(prev, direction === 'prev' ? -1 : 1)
-      if (period === 'weekly') return direction === 'prev' ? subWeeks(prev, 1) : addWeeks(prev, 1)
-      if (period === 'monthly') return direction === 'prev' ? subMonths(prev, 1) : addMonths(prev, 1)
-      return direction === 'prev' ? subYears(prev, 1) : addYears(prev, 1)
-    })
-  }
-  const goToToday = () => setAnchorDate(new Date())
-  const changePeriod = (p: PeriodMode) => { setPeriod(p); setAnchorDate(new Date()) }
-
   const handleSetStatus = async (tanggal: string, key: WaterKey, status: 'sudah' | 'lupa') => {
     await upsertWaterLog.mutateAsync({ tanggal, waktu_baca: key, jumlah_ml: status === 'sudah' ? GLASS_ML : 0, status })
     refetch()
@@ -182,43 +169,11 @@ export default function MinumAirPage() {
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
-      {/* Toolbar — toggle periode + navigasi rentang */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="inline-flex items-center gap-1 p-1 bg-muted/50 rounded-lg border border-border w-fit">
-          {PERIOD_OPTIONS.map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => changePeriod(opt.value)}
-              className={cn(
-                'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
-                period === opt.value ? 'bg-[#0F172A] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-              )}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 border border-blue-200 rounded-lg">
-            <Droplets className="h-3.5 w-3.5 text-blue-600" />
-            <span className="text-xs font-semibold text-blue-700">{totalGelas}</span>
-            <span className="text-[10px] text-blue-600/70">gelas</span>
-          </div>
-          <Button variant="outline" size="icon" onClick={() => navigatePeriod('prev')} aria-label="Periode sebelumnya" className="h-9 w-9">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-lg border border-border min-w-[180px] justify-center">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium whitespace-nowrap">{periodLabel}</span>
-          </div>
-          <Button variant="outline" size="icon" onClick={() => navigatePeriod('next')} aria-label="Periode berikutnya" className="h-9 w-9" disabled={isCurrentPeriod}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          {!isCurrentPeriod && (
-            <Button variant="outline" onClick={goToToday} className="h-9 px-3">Hari Ini</Button>
-          )}
-        </div>
+      {/* Total gelas — dipindah dari toolbar (rev 6) */}
+      <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 border border-blue-200 rounded-lg w-fit">
+        <Droplets className="h-3.5 w-3.5 text-blue-600" />
+        <span className="text-xs font-semibold text-blue-700">{totalGelas}</span>
+        <span className="text-[10px] text-blue-600/70">gelas</span>
       </div>
 
       {/* Table — gaya seperti tab sholat */}

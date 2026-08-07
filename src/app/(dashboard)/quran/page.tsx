@@ -452,13 +452,6 @@ export default function QuranPage() {
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
-      {/* Total halaman dibaca — dipindah dari toolbar (rev 10) */}
-      <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 bg-green-50 border border-green-200 rounded-lg w-fit">
-        <BookOpen className="h-3.5 w-3.5 text-green-600" />
-        <span className="text-xs font-semibold text-green-700">{totalHalaman}</span>
-        <span className="text-[10px] text-green-600/70">halaman</span>
-      </div>
-
       {/* Table — gaya seperti tab sholat */}
       <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)] rounded-lg border bg-white', TABLE_BORDER)}>
         <div ref={tableContainerRef}>

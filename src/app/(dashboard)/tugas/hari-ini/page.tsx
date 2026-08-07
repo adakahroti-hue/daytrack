@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
-import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, getMissionPriorityIcon, getMissionGroupName, getMissionPriorityShortLabel, getMissionGroupDescriptionWithCount, CARD_BASE, CARD_HOVER, getTaskActualDurationText, compareTaskEstimasiVsActual, getTaskLiveDurationText } from '@/lib/utils'
+import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, getMissionPriorityIcon, getMissionGroupName, CARD_BASE, CARD_HOVER, getTaskActualDurationText, compareTaskEstimasiVsActual, getTaskLiveDurationText } from '@/lib/utils'
 import { TaskForm } from '@/components/tasks/TaskForm'
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus, usePauseTask, useResumeTask } from '@/hooks/useTasks'
 import { useTasksRealtime } from '@/hooks/useRealtime'
@@ -50,6 +50,14 @@ const PRIORITY_ICONS: Record<Task['prioritas'], string> = {
   p2: '⚡',
   p3: '📌',
   p4: '🌱',
+}
+
+// Rev 3: warna card ala sticky note per prioritas (tugas 'belum')
+const PRIORITY_CARD_COLORS: Record<Task['prioritas'], string> = {
+  p1: 'bg-rose-50 border-rose-300 hover:border-rose-400 dark:bg-rose-950/40 dark:border-rose-800',
+  p2: 'bg-amber-50 border-amber-300 hover:border-amber-400 dark:bg-amber-950/40 dark:border-amber-800',
+  p3: 'bg-green-50 border-green-300 hover:border-green-400 dark:bg-green-950/40 dark:border-green-800',
+  p4: 'bg-purple-50 border-purple-300 hover:border-purple-400 dark:bg-purple-950/40 dark:border-purple-800',
 }
 
 const TaskCard = memo(({
@@ -115,11 +123,19 @@ const TaskCard = memo(({
   )
 
   const isActiveFocus = isInProgress
+  // Rev 3: warna card ala sticky note — sedang dikerjakan = biru muda; P1 merah muda, P2 kuning muda, P3 hijau muda, P4 ungu muda; selesai tetap netral
   const cardBorderClass = cn(
-    CARD_BASE,
     CARD_HOVER,
+    isCompleted
+      ? CARD_BASE
+      : cn(
+          'rounded-xl transition-colors duration-200',
+          isInProgress
+            ? 'bg-blue-50 border-blue-300 hover:border-blue-400 dark:bg-blue-950/40 dark:border-blue-800'
+            : PRIORITY_CARD_COLORS[task.prioritas]
+        ),
     isCompleted && 'opacity-60',
-    isActiveFocus && 'border-[#2563EB] shadow-[0_0_0_3px_rgba(37,99,235,0.15)] bg-[#EFF6FF]/40 dark:bg-[#2563EB]/5',
+    isActiveFocus && 'shadow-[0_0_0_3px_rgba(37,99,235,0.15)]',
   )
 
   // Pause-aware durations
@@ -136,12 +152,7 @@ const TaskCard = memo(({
       <CardContent className="p-4 space-y-3">
         {/* Top Row: Priority Badge + Dropdown Menu */}
         <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className={priorityBadgeClass}>
-              {PRIORITY_ICONS[task.prioritas]}
-              {getMissionPriorityShortLabel(task.prioritas)}
-            </Badge>
-          </div>
+          <div className="flex items-center gap-2" />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -387,10 +398,10 @@ function HariIniPageClient() {
             <div className="space-y-4">
               <div className="flex items-start gap-3 pb-3 border-b border-slate-200/50 dark:border-slate-700/50">
                 <span className="text-2xl mt-0.5 flex-shrink-0">🛠️</span>
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-lg font-semibold leading-tight text-slate-900 dark:text-white">Sedang Dikerjakan</h2>
-                  <p className="text-sm text-slate-500 mt-0.5">{inProgressTasks.length} misi sedang dikerjakan — timer hanya berjalan saat aktif</p>
-                </div>
+                <h2 className="text-lg font-semibold leading-tight text-slate-900 dark:text-white">
+                  Sedang Dikerjakan
+                  <span className="ml-1.5 text-sm font-semibold text-slate-500">({inProgressTasks.length})</span>
+                </h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {inProgressTasks.map((task: Task) => (
@@ -415,10 +426,10 @@ function HariIniPageClient() {
                 <div key={priority} className="space-y-4">
                   <div className="flex items-start gap-3 pb-3 border-b border-slate-200/50 dark:border-slate-700/50">
                     <span className="text-2xl mt-0.5 flex-shrink-0">{getMissionPriorityIcon(priority)}</span>
-                    <div className="flex-1 min-w-0">
-                      <h2 className="text-lg font-semibold leading-tight text-slate-900 dark:text-white">{getMissionGroupName(priority)}</h2>
-                      <p className="text-sm text-slate-500 mt-0.5">{getMissionGroupDescriptionWithCount(priority, tasks.length)}</p>
-                    </div>
+                    <h2 className="text-lg font-semibold leading-tight text-slate-900 dark:text-white">
+                      {getMissionGroupName(priority)}
+                      <span className="ml-1.5 text-sm font-semibold text-slate-500">({tasks.length})</span>
+                    </h2>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {tasks.map((task: Task) => (
