@@ -152,7 +152,6 @@ export default function SaranPerbaikanPage() {
   return (
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
       {/* Tabel gaya Quran: Tanggal | Hari | Saran Perbaikan | Tujuan | Status — hanya entri yang ada */}
-      {lockControl}
       <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)] landscape:max-lg:max-h-none rounded-lg border bg-white', TABLE_BORDER)}>
         <table className="w-full border-collapse text-xs sm:text-sm">
           <thead className="sticky top-0 z-20 bg-white">
@@ -275,6 +274,7 @@ export default function SaranPerbaikanPage() {
           </tbody>
         </table>
       </div>
+      {lockControl}
 
       {/* Revisi 8 (batch 6): tombol tambah floating seperti tab Semua */}
       <Button

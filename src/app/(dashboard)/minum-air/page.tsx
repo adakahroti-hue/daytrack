@@ -172,7 +172,6 @@ export default function MinumAirPage() {
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
       {/* Table — gaya seperti tab sholat */}
-      {lockControl}
       <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)] landscape:max-lg:max-h-none rounded-lg border bg-white', TABLE_BORDER)}>
         <table className="w-full border-collapse text-sm">
           <thead className="sticky top-0 z-20 bg-white">
@@ -290,6 +289,7 @@ export default function MinumAirPage() {
           </tbody>
         </table>
       </div>
+      {lockControl}
 
       {/* Revisi 6: Analytics & Insight — tingkat kesulitan + alasan terbanyak tidak minum */}
       <MinumAirAnalytics logMap={logMap} columns={WATER_TIMES} />

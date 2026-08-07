@@ -421,20 +421,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           {/* Tab tabel (rev 3 & 4): card navigasi tanggal + toggle periode, masing-masing full width */}
           {isTableTab && (
             <>
-              <div className="flex items-center justify-between gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border w-full">
-                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => navigateIbadah('prev')} aria-label="Periode sebelumnya">
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span className="text-sm font-medium truncate">
-                    {formatIbadahPeriodLabel(ibadahDate, ibadahPeriod)}
-                  </span>
-                </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => navigateIbadah('next')} aria-label="Periode selanjutnya">
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
+              {/* Revisi batch 10: toggle periode di ATAS, navigasi tanggal di BAWAH (khusus mobile) */}
               <div className="flex items-center gap-0.5 p-0.5 bg-muted/50 rounded-lg border border-border w-full">
                 {ibadahPeriodOptions.map(opt => (
                   <button
@@ -450,6 +437,20 @@ export function Header({ onMenuClick }: HeaderProps) {
                     {opt.label}
                   </button>
                 ))}
+              </div>
+              <div className="flex items-center justify-between gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border w-full">
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => navigateIbadah('prev')} aria-label="Periode sebelumnya">
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="text-sm font-medium truncate">
+                    {formatIbadahPeriodLabel(ibadahDate, ibadahPeriod)}
+                  </span>
+                </div>
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => navigateIbadah('next')} aria-label="Periode selanjutnya">
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
               </div>
             </>
           )}

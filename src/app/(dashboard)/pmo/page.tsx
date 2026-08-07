@@ -197,7 +197,6 @@ export default function PmoPage() {
       </div>
 
       {/* Tabel gaya Quran: Tanggal | Hari | Status */}
-      {lockControl}
       <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-320px)] landscape:max-lg:max-h-none rounded-lg border bg-white', TABLE_BORDER)}>
         <table className="w-full border-collapse text-xs sm:text-sm">
           <thead className="sticky top-0 z-20 bg-white">
@@ -306,6 +305,7 @@ export default function PmoPage() {
           </tbody>
         </table>
       </div>
+      {lockControl}
 
       {/* Revisi 7: Analytics & Insight */}
       <StatusAnalytics

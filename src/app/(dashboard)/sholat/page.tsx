@@ -515,7 +515,6 @@ export default function SholatPage() {
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
       {/* ── Rev 3: Table dengan garis hitam (daytrack style) ── */}
-      {lockControl}
       <div
         ref={tableContainerRef}
         className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)] landscape:max-lg:max-h-none rounded-lg border bg-white', TABLE_BORDER)}
@@ -631,6 +630,7 @@ export default function SholatPage() {
           </tbody>
         </table>
       </div>
+      {lockControl}
 
       {/* ── Analytics & Insight — tepat di bawah tabel (dinamis per periode aktif) ── */}
       <SholatAnalytics
