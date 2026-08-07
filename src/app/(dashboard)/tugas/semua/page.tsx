@@ -626,7 +626,7 @@ function SemuaPageClient() {
               </Button>
             </div>
           )}
-            {groupedTasks.map((group, idx) => (
+            {groupedTasks.map((group) => (
               <div key={group.key} className="space-y-4">
                 {/* Group Header */}
                 <div className="flex items-start gap-3 pb-3 border-b border-slate-200/50 dark:border-slate-700/50 flex-wrap">
@@ -635,13 +635,6 @@ function SemuaPageClient() {
                     <h2 className="text-lg font-semibold leading-tight text-slate-900 dark:text-white capitalize">{group.title}</h2>
                     <p className="text-sm text-slate-500 mt-0.5">{group.description}</p>
                   </div>
-                        >
-                          <gm.icon className="h-3.5 w-3.5" />
-                          <span className="hidden sm:inline">{gm.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
                 </div>
 
                 {/* Task Cards Grid */}
