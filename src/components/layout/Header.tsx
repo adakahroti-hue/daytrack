@@ -199,6 +199,15 @@ export function Header({ onMenuClick }: HeaderProps) {
   const isSholat = pathname === '/sholat'
   const isQuran = pathname === '/quran'
   const isMinumAir = pathname === '/minum-air'
+  const isDoa = pathname === '/doa'
+  const isSyukur = pathname === '/syukur'
+  const isTidur = pathname === '/tidur'
+  const isPmo = pathname === '/pmo'
+  const isMasalah = pathname === '/masalah'
+  const isKesenangan = pathname === '/kesenangan'
+  const isSaranPerbaikan = pathname === '/saran-perbaikan'
+  // Semua tab bergaya tabel Quran memakai toolbar navigasi tanggal + toggle periode di header
+  const isTableTab = isSholat || isQuran || isMinumAir || isDoa || isSyukur || isTidur || isPmo || isMasalah || isKesenangan || isSaranPerbaikan
 
   const periodLabels = {
     daily: { label: 'Harian', icon: Clock },
@@ -252,7 +261,7 @@ export function Header({ onMenuClick }: HeaderProps) {
       )}
 
       {/* Right side controls */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 overflow-x-auto scrollbar-none">
         {/* Hari Ini Stats — only on tugas/hari-ini */}
         {isHariIni && <HariIniHeaderStats />}
 
@@ -342,7 +351,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           </div>
         )}
         {/* Sholat, Quran & Minum Air toolbar — navigasi tanggal (kiri) + toggle group (kanan) di header */}
-        {(isSholat || isQuran || isMinumAir) && (
+        {isTableTab && (
           <div className="flex items-center gap-1 sm:gap-2">
             {/* Revisi 4: jumlah gelas di kiri navigasi tanggal (tab Minum Air) */}
             {isMinumAir && <MinumAirHeaderStats />}

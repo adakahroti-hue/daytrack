@@ -6,7 +6,7 @@ import { z } from "zod"
 
 const pmoLogSchema = z.object({
   tanggal: z.string().min(1, "Tanggal wajib diisi"),
-  hari_ke: z.number().int().min(1).max(100),
+  hari_ke: z.number().int().min(1).max(10000),
   status: z.enum(['berhasil', 'relapse']),
   trigger: z.enum(['stres', 'kebosanan', 'media', 'perasaan', 'lingkungan', 'lainnya']).optional(),
   strategi: z.string().optional(),

@@ -1,31 +1,40 @@
 "use client"
 
-import { useState, useEffect } from 'react'
-import { format, subDays, addDays, isSameDay, startOfWeek, endOfWeek } from 'date-fns'
+import { useMemo } from 'react'
+import {
+  format,
+  eachDayOfInterval,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  startOfYear,
+  endOfYear,
+} from 'date-fns'
 import { id } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, Calendar, Shield, CheckCircle2, AlertTriangle, Flame, Zap, Plus, Edit2, Trash2, Trophy, Target, Brain } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { Calendar, Brain, Check, X, Trash2, Flame, Trophy } from 'lucide-react'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
-import { usePmoLog, usePmoLogRange, useUpsertPmoLog, useDeletePmoLog } from '@/hooks/usePmoLogs'
-import { usePmoLogRealtime } from '@/hooks/useRealtime'
+import { usePmoLogRange, useUpsertPmoLog, useDeletePmoLog } from '@/hooks/usePmoLogs'
+import { useRealtime } from '@/hooks/useRealtime'
+import { useHeaderControls } from '@/components/layout/HeaderControls'
 
-const TRIGGER_OPTIONS = [
-  { value: 'stres', label: 'Stres', icon: '😰' },
-  { value: 'kebosanan', label: 'Kebosanan', icon: '😴' },
-  { value: 'media', label: 'Media/Ponsel', icon: '📱' },
-  { value: 'perasaan', label: 'Perasaan Negatif', icon: '😔' },
-  { value: 'lingkungan', label: 'Lingkungan', icon: '🏠' },
-  { value: 'lainnya', label: 'Lainnya', icon: '❓' },
-] as const
+// ─── Constants ────────────────────────────────────
 
-type TriggerKey = typeof TRIGGER_OPTIONS[number]['value']
+// Revisi 3 (batch 5): alasan relapse
+const RELAPSE_REASONS = ['Tak Bisa Tidur', 'Trigger HP', 'Melamun Jorok', 'Bosan', 'Duduk Terlalu Lama']
+
+const DAY_BADGE_COLORS: Record<string, string> = {
+  Senin: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  Selasa: 'bg-orange-100 text-orange-800 border-orange-200',
+  Rabu: 'bg-purple-100 text-purple-800 border-purple-200',
+  Kamis: 'bg-amber-100 text-amber-800 border-amber-200',
+  Jumat: 'bg-blue-100 text-blue-800 border-blue-200',
+  Sabtu: 'bg-green-100 text-green-800 border-green-200',
+  Minggu: 'bg-rose-100 text-rose-800 border-rose-200',
+}
+
+const TABLE_BORDER = 'border-slate-900'
 
 interface PmoLogEntry {
   id: string
@@ -33,457 +42,254 @@ interface PmoLogEntry {
   tanggal: string
   hari_ke: number
   status: 'berhasil' | 'relapse'
-  trigger: TriggerKey | null
+  trigger: string | null
   strategi: string | null
   catatan: string | null
   created_at: string
   updated_at: string
 }
 
-export default function PMOPage() {
-  const [currentDate, setCurrentDate] = useState(new Date())
-  const [editDialog, setEditDialog] = useState<{ open: boolean; entry: PmoLogEntry | null }>({ open: false, entry: null })
-  const [mounted, setMounted] = useState(false)
-  
-  const dateKey = format(currentDate, 'yyyy-MM-dd')
-  const isToday = isSameDay(currentDate, new Date())
+function startOfDaySafe(d: Date): Date {
+  const x = new Date(d)
+  x.setHours(0, 0, 0, 0)
+  return x
+}
 
-  useEffect(() => setMounted(true), [])
+// ─── Main Component ────────────────────────────────
 
-  const { data: pmoLog, isLoading, error, refetch } = usePmoLog(dateKey)
-  const { data: weeklyLogs = [] } = usePmoLogRange(
-    format(startOfWeek(currentDate, { weekStartsOn: 1 }), 'yyyy-MM-dd'),
-    format(endOfWeek(currentDate, { weekStartsOn: 1 }), 'yyyy-MM-dd')
-  )
+export default function PmoPage() {
+  // Periode & tanggal dari HeaderControls (toolbar di header)
+  const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
+  const todayStr = format(new Date(), 'yyyy-MM-dd')
+
+  const { rangeStart, rangeEnd } = useMemo(() => {
+    const today = new Date()
+    let start: Date
+    let end: Date
+    if (period === 'daily') {
+      start = startOfDaySafe(anchorDate)
+      end = anchorDate
+    } else if (period === 'weekly') {
+      start = startOfWeek(anchorDate, { weekStartsOn: 1 })
+      end = endOfWeek(anchorDate, { weekStartsOn: 1 })
+    } else if (period === 'monthly') {
+      start = startOfMonth(anchorDate)
+      end = endOfMonth(anchorDate)
+    } else {
+      start = startOfYear(anchorDate)
+      end = endOfYear(anchorDate)
+    }
+    const cappedEnd = end > today ? today : end
+    return { rangeStart: start, rangeEnd: cappedEnd }
+  }, [period, anchorDate])
+
+  const startDate = format(rangeStart, 'yyyy-MM-dd')
+  const endDate = format(rangeEnd, 'yyyy-MM-dd')
+
+  const { data: logs = [], isLoading, error } = usePmoLogRange(startDate, endDate)
+  useRealtime({
+    table: 'pmo_logs',
+    filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
+    queryKeys: [['pmo_logs', 'range', startDate, endDate]],
+  })
+
+  // Data sepanjang waktu — untuk card rekor streak & perhitungan hari_ke
+  const { data: allLogs = [] } = usePmoLogRange('2000-01-01', todayStr)
+
   const upsertPmoLog = useUpsertPmoLog()
   const deletePmoLog = useDeletePmoLog()
 
-  usePmoLogRealtime(dateKey)
+  // Map tanggal -> entry (rentang tampilan)
+  const logMap = useMemo(() => {
+    const map: Record<string, PmoLogEntry> = {}
+    for (const l of logs as PmoLogEntry[]) map[l.tanggal] = l
+    return map
+  }, [logs])
 
-  const navigateDay = (direction: 'prev' | 'next') => {
-    setCurrentDate(prev => direction === 'prev' ? subDays(prev, 1) : addDays(prev, 1))
-  }
+  // Map tanggal -> entry (sepanjang waktu)
+  const allLogMap = useMemo(() => {
+    const map: Record<string, PmoLogEntry> = {}
+    for (const l of allLogs as PmoLogEntry[]) map[l.tanggal] = l
+    return map
+  }, [allLogs])
 
-  const goToToday = () => setCurrentDate(new Date())
-
-  const handleOpenEdit = (entry: PmoLogEntry | null) => {
-    if (entry) {
-      setEditDialog({ open: true, entry })
-    } else {
-      const lastLog = weeklyLogs[weeklyLogs.length - 1]
-      const nextHariKe = lastLog ? lastLog.hari_ke + 1 : 1
-      setEditDialog({ 
-        open: true, 
-        entry: {
-          id: '',
-          user_id: '',
-          tanggal: dateKey,
-          hari_ke: nextHariKe,
-          status: 'berhasil',
-          trigger: null,
-          strategi: '',
-          catatan: '',
-          created_at: '',
-          updated_at: '',
-        } as PmoLogEntry
-      })
+  // Revisi 3: rekor streak — hari berturut-turut tanpa PMO (status 'berhasil')
+  const { currentStreak, bestStreak } = useMemo(() => {
+    const sorted = [...(allLogs as PmoLogEntry[])].sort((a, b) => a.tanggal.localeCompare(b.tanggal))
+    let cur = 0
+    let best = 0
+    for (const e of sorted) {
+      if (e.status === 'berhasil') {
+        cur += 1
+        if (cur > best) best = cur
+      } else if (e.status === 'relapse') {
+        cur = 0
+      }
     }
-  }
+    return { currentStreak: cur, bestStreak: best }
+  }, [allLogs])
 
-  const handleEditSubmit = async (data: any) => {
+  // Daftar tanggal dalam rentang (ascending — terbaru paling bawah)
+  const dates = useMemo(() => {
+    if (rangeEnd < rangeStart) return []
+    return eachDayOfInterval({ start: rangeStart, end: rangeEnd }).map(d => format(d, 'yyyy-MM-dd'))
+  }, [rangeStart, rangeEnd])
+
+  const handleSetStatus = async (tanggal: string, status: 'berhasil' | 'relapse', reason?: string) => {
+    // hari_ke: lanjutkan streak dari hari sebelumnya bila berhasil
+    let hariKe = 1
+    if (status === 'berhasil') {
+      const prev = new Date(tanggal + 'T00:00:00')
+      prev.setDate(prev.getDate() - 1)
+      const prevEntry = allLogMap[format(prev, 'yyyy-MM-dd')]
+      hariKe = prevEntry?.status === 'berhasil' ? (prevEntry.hari_ke || 0) + 1 : 1
+    }
     await upsertPmoLog.mutateAsync({
-      tanggal: dateKey,
-      hari_ke: data.hari_ke,
-      status: data.status,
-      trigger: data.trigger || undefined,
-      strategi: data.strategi || undefined,
-      catatan: data.catatan || undefined,
+      tanggal,
+      hari_ke: hariKe,
+      status,
+      catatan: status === 'relapse' && reason ? `Relapse: ${reason}` : undefined,
     })
-    setEditDialog({ open: false, entry: null })
-    refetch()
   }
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Yakin ingin menghapus catatan PMO ini?')) {
-      await deletePmoLog.mutateAsync(id)
-      refetch()
-    }
+  const handleClear = async (tanggal: string) => {
+    const entry = logMap[tanggal]
+    if (entry) await deletePmoLog.mutateAsync(entry.id)
   }
-
-  if (!mounted) {
-    return <div className="space-y-6"><div className="h-8 bg-muted animate-pulse rounded w-1/4" /></div>
-  }
-
-  const isDone = !!pmoLog
-
-  // Calculate streak
-  const calculateStreak = () => {
-    let streak = 0
-    for (let i = weeklyLogs.length - 1; i >= 0; i--) {
-      if (weeklyLogs[i].status === 'berhasil') streak++
-      else break
-    }
-    return streak
-  }
-
-  const currentStreak = calculateStreak()
-  const maxStreak = Math.max(...weeklyLogs.filter(l => l.status === 'berhasil').map(l => l.hari_ke), 0)
-  const totalBerhasil = weeklyLogs.filter(l => l.status === 'berhasil').length
-  const totalRelapse = weeklyLogs.filter(l => l.status === 'relapse').length
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold">PMO</h1>
-          <p className="text-sm text-muted-foreground">Pantau progres dan bangun konsistensi diri</p>
+    <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
+      {/* Revisi 3: card rekor hari berturut-turut tanpa PMO */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-4 flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
+            <Flame className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[11px] sm:text-xs text-slate-500 truncate">Streak Saat Ini</p>
+            <p className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">{currentStreak} <span className="text-xs sm:text-sm font-medium text-slate-500">hari</span></p>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => navigateDay('prev')} aria-label="Hari sebelumnya">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" onClick={goToToday} className="px-3" disabled={isToday}>
-            <Calendar className="h-4 w-4 mr-2" /> {format(currentDate, 'd MMMM yyyy', { locale: id })}
-          </Button>
-          <Button variant="outline" size="icon" onClick={() => navigateDay('next')} aria-label="Hari berikutnya">
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+        <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-4 flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+            <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-amber-600" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[11px] sm:text-xs text-slate-500 truncate">Rekor Terbaik</p>
+            <p className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">{bestStreak} <span className="text-xs sm:text-sm font-medium text-slate-500">hari</span></p>
+          </div>
         </div>
       </div>
 
-      {/* Recovery Summary Card */}
-      <Card>
-        <CardContent className="p-6">
-          {isDone && pmoLog ? (
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <div className={cn(
-                  'w-16 h-16 rounded-2xl flex items-center justify-center',
-                  pmoLog.status === 'berhasil' ? 'bg-green-500/10' : 'bg-red-500/10'
-                )}>
-                  {pmoLog.status === 'berhasil' ? (
-                    <CheckCircle2 className="h-8 w-8 text-green-600" />
-                  ) : (
-                    <AlertTriangle className="h-8 w-8 text-red-600" />
-                  )}
+      {/* Tabel gaya Quran: Tanggal | Hari | Status */}
+      <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-320px)] rounded-lg border bg-white', TABLE_BORDER)}>
+        <table className="w-full border-collapse text-xs sm:text-sm">
+          <thead className="sticky top-0 z-20 bg-white">
+            <tr className={cn('border-b', TABLE_BORDER)}>
+              <th className={cn('sticky left-0 z-30 bg-white px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[72px] sm:min-w-[100px]', TABLE_BORDER)}>
+                <div className="flex items-center justify-center gap-1">
+                  <Calendar className="h-3.5 w-3.5 text-blue-500" />
+                  Tanggal
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Hari ke-{pmoLog.hari_ke}</p>
-                  <p className="text-3xl font-bold capitalize">
-                    {pmoLog.status === 'berhasil' ? 'Berhasil' : 'Relapse'}
-                  </p>
+              </th>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[64px] sm:min-w-[90px] sm:sticky sm:left-[100px] sm:z-30 sm:bg-white', TABLE_BORDER)}>
+                Hari
+              </th>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[130px] sm:min-w-[170px]', TABLE_BORDER)}>
+                <div className="flex items-center justify-center gap-1">
+                  <Brain className="h-3.5 w-3.5 text-violet-500" />
+                  Status
                 </div>
-              </div>
-              <div className="w-full sm:w-80 space-y-4">
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="text-center p-3 bg-green-500/10 rounded-xl">
-                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">{totalBerhasil}</p>
-                    <p className="text-xs text-muted-foreground">Hari Berhasil</p>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading ? (
+              <tr>
+                <td colSpan={3} className="text-center py-12 text-slate-400">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" />
+                    <span className="text-sm">Memuat data...</span>
                   </div>
-                  <div className="text-center p-3 bg-red-500/10 rounded-xl">
-                    <p className="text-2xl font-bold text-red-600 dark:text-red-400">{totalRelapse}</p>
-                    <p className="text-xs text-muted-foreground">Relapse</p>
-                  </div>
-                  <div className="text-center p-3 bg-purple-500/10 rounded-xl">
-                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{currentStreak}</p>
-                    <p className="text-xs text-muted-foreground">Streak Saat Ini</p>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="text-muted-foreground">Streak Terbaik</span>
-                    <span className="font-semibold">{maxStreak} hari</span>
-                  </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-purple-500 rounded-full transition-all" style={{ width: `${maxStreak > 0 ? Math.min(Math.round((currentStreak / maxStreak) * 100), 100) : 0}%` }} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-4">
-                <Shield className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <p className="text-lg font-medium text-muted-foreground">Belum ada catatan PMO hari ini</p>
-              <p className="text-sm text-muted-foreground mt-1">Mulai catat status hari ini untuk membangun streak</p>
-              <Button 
-                variant="default" 
-                className="mt-4 gap-2"
-                onClick={() => handleOpenEdit(null)}
-              >
-                <Plus className="h-4 w-4" />
-                Mulai Mencatat
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                </td>
+              </tr>
+            ) : error ? (
+              <tr>
+                <td colSpan={3} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td>
+              </tr>
+            ) : (
+              dates.map((dateStr, rowIdx) => {
+                const date = new Date(dateStr + 'T00:00:00')
+                const dayName = format(date, 'EEEE', { locale: id })
+                const dateDisplay = format(date, 'd MMMM', { locale: id })
+                const entry = logMap[dateStr]
+                const isDone = entry?.status === 'berhasil'
+                const isRelapse = entry?.status === 'relapse'
+                const relapseLabel = isRelapse && entry?.catatan?.startsWith('Relapse:')
+                  ? entry.catatan.replace('Relapse: ', '')
+                  : 'Relapse'
 
-      {/* Calendar Streak View */}
-      {weeklyLogs.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              Kalender Streak 7 Hari
-              <span className="text-sm font-normal text-muted-foreground">
-                {format(currentDate, 'MMMM yyyy', { locale: id })}
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-2 overflow-x-auto pb-2">
-              {Array.from({ length: 7 }, (_, i) => {
-                const date = subDays(endOfWeek(currentDate, { weekStartsOn: 1 }), i)
-                const dateStr = format(date, 'yyyy-MM-dd')
-                const dayLog = weeklyLogs.find(log => log.tanggal === dateStr)
-                const dayNum = format(date, 'd')
-                const dayName = format(date, 'E', { locale: id })
-                
-                let colorClass = 'bg-muted'
-                let icon = null
-                if (dayLog) {
-                  if (dayLog.status === 'berhasil') {
-                    colorClass = 'bg-green-500'
-                    icon = <CheckCircle2 className="h-4 w-4" />
-                  } else {
-                    colorClass = 'bg-red-500'
-                    icon = <AlertTriangle className="h-4 w-4" />
-                  }
-                }
-                
                 return (
-                  <div key={dateStr} className="flex-shrink-0 flex flex-col items-center gap-1 w-16">
-                    <span className="text-xs text-muted-foreground">{dayName}</span>
-                    <div className={cn(
-                      'w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm text-white transition-all',
-                      colorClass
-                    )}>
-                      {icon || dayNum}
-                    </div>
-                    {dayLog?.hari_ke && (
-                      <span className="text-xs text-muted-foreground">Hari {dayLog.hari_ke}</span>
-                    )}
-                  </div>
+                  <tr
+                    key={dateStr}
+                    className={cn('border-b transition-colors', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30', 'hover:bg-blue-50/40')}
+                  >
+                    <td className={cn('sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
+                      <span className="sm:hidden">{format(date, 'd MMM', { locale: id })}</span>
+                      <span className="hidden sm:inline">{dateDisplay}</span>
+                    </td>
+                    <td className={cn('px-2 sm:px-3 py-2 text-center border-r sm:sticky sm:left-[100px] sm:z-10 sm:bg-inherit', TABLE_BORDER)}>
+                      <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs border font-medium', DAY_BADGE_COLORS[dayName] || 'bg-slate-100 text-slate-700 border-slate-200')}>
+                        {dayName}
+                      </span>
+                    </td>
+                    <td className={cn('px-2 sm:px-3 py-2 text-center', TABLE_BORDER)}>
+                      <div className="flex items-center justify-center min-h-[36px]">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              className={cn(
+                                'inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium border transition-colors cursor-pointer whitespace-normal leading-tight text-center',
+                                isRelapse
+                                  ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'
+                                  : isDone
+                                    ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200'
+                                    : 'text-slate-400 border-dashed border-slate-300 hover:bg-slate-50 hover:text-slate-600'
+                              )}
+                            >
+                              {isDone && <Check className="h-3.5 w-3.5 shrink-0" />}
+                              {isDone ? `Berhasil${entry?.hari_ke ? ` (H${entry.hari_ke})` : ''}` : isRelapse ? relapseLabel : 'Belum'}
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="center" className="w-48">
+                            <DropdownMenuItem onClick={() => handleSetStatus(dateStr, 'berhasil')} className="flex items-center gap-2">
+                              <Check className="h-4 w-4 text-green-600" /> Berhasil
+                            </DropdownMenuItem>
+                            {RELAPSE_REASONS.map(r => (
+                              <DropdownMenuItem key={r} onClick={() => handleSetStatus(dateStr, 'relapse', r)} className="flex items-center gap-2">
+                                <X className="h-4 w-4 text-red-500" /> {r}
+                              </DropdownMenuItem>
+                            ))}
+                            {entry && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => handleClear(dateStr)} className="flex items-center gap-2 text-destructive focus:text-destructive">
+                                  <Trash2 className="h-4 w-4" /> Batalkan
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </td>
+                  </tr>
                 )
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Today Detail Card */}
-      {isDone && pmoLog && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              Detail Hari Ini
-              <span className="text-sm font-normal text-muted-foreground capitalize">
-                {format(currentDate, 'EEEE', { locale: id })}
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-2">
-              <Button
-                variant={pmoLog.status === 'berhasil' ? 'default' : 'outline'}
-                className="flex-1"
-                onClick={() => handleEditSubmit({ ...pmoLog, status: 'berhasil' })}
-              >
-                <CheckCircle2 className="mr-2 h-4 w-4" />
-                Berhasil
-              </Button>
-              <Button
-                variant={pmoLog.status === 'relapse' ? 'destructive' : 'outline'}
-                className="flex-1"
-                onClick={() => handleEditSubmit({ ...pmoLog, status: 'relapse' })}
-              >
-                <AlertTriangle className="mr-2 h-4 w-4" />
-                Relapse
-              </Button>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Hari ke-</Label>
-              <Select value={pmoLog.hari_ke.toString()} onValueChange={(v) => handleEditSubmit({ ...pmoLog, hari_ke: parseInt(v) })}>
-                <SelectTrigger className="w-[150px]"><SelectValue placeholder="Hari ke" /></SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 30 }, (_, i) => i + 1).map(n => (
-                    <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {pmoLog.status === 'relapse' && (
-              <div>
-                <Label>Trigger / Penyebab</Label>
-                <Select value={pmoLog.trigger || 'stres'} onValueChange={(v) => handleEditSubmit({ ...pmoLog, trigger: v as TriggerKey })}>
-                  <SelectTrigger className="w-full"><SelectValue placeholder="Pilih trigger" /></SelectTrigger>
-                  <SelectContent>
-                    {TRIGGER_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.icon} {opt.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+              })
             )}
-
-            <div className="space-y-2">
-              <Label>Strategi Perbaikan</Label>
-              <Textarea
-                value={pmoLog.strategi || ''}
-                onChange={(e) => handleEditSubmit({ ...pmoLog, strategi: e.target.value })}
-                placeholder="Apa yang akan dilakukan berbeda besok? (misal: taruh HP jauh dari tempat tidur, baca buku sebelum tidur...)"
-                rows={3}
-                className="w-full"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Catatan</Label>
-              <Textarea
-                value={pmoLog.catatan || ''}
-                onChange={(e) => handleEditSubmit({ ...pmoLog, catatan: e.target.value })}
-                placeholder="Perasaan, tantangan, motivasi..."
-                rows={2}
-                className="w-full"
-              />
-            </div>
-
-            <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => handleDelete(pmoLog.id)} className="text-destructive hover:bg-destructive/10">
-                <Trash2 className="mr-2 h-4 w-4" /> Hapus
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Add New Entry Card (when not done) */}
-      {!isDone && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Tambah Catatan PMO</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button 
-              variant="default" 
-              className="w-full gap-2 py-4"
-              onClick={() => handleOpenEdit(null)}
-            >
-              <Plus className="h-5 w-5" />
-              <span>Mulai Mencatat Hari Ini</span>
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Edit Dialog */}
-      <Dialog open={editDialog.open} onOpenChange={(open) => !open && setEditDialog({ open: false, entry: null })}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{editDialog.entry?.id ? 'Edit Catatan PMO' : 'Tambah Catatan PMO'}</DialogTitle>
-            <DialogDescription>
-              Catat status hari ini untuk membangun konsistensi
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div>
-              <Label>Hari ke-</Label>
-              <Select
-                value={editDialog.entry?.hari_ke?.toString() || '1'}
-                onValueChange={(value) => setEditDialog({ open: true, entry: editDialog.entry ? { ...editDialog.entry, hari_ke: parseInt(value) } : null })}
-              >
-                <SelectTrigger className="w-[150px]"><SelectValue placeholder="Hari ke" /></SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 100 }, (_, i) => i + 1).map(n => <SelectItem key={n} value={n.toString()}>{n}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex gap-2">
-              <Button
-                variant={editDialog.entry?.status === 'berhasil' ? 'default' : 'outline'}
-                className="flex-1"
-                onClick={() => setEditDialog({ open: true, entry: editDialog.entry ? { ...editDialog.entry, status: 'berhasil' } : null })}
-              >
-                <CheckCircle2 className="mr-2 h-4 w-4" /> Berhasil
-              </Button>
-              <Button
-                variant={editDialog.entry?.status === 'relapse' ? 'destructive' : 'outline'}
-                className="flex-1"
-                onClick={() => setEditDialog({ open: true, entry: editDialog.entry ? { ...editDialog.entry, status: 'relapse' } : null })}
-              >
-                <AlertTriangle className="mr-2 h-4 w-4" /> Relapse
-              </Button>
-            </div>
-
-            {(editDialog.entry?.status || 'berhasil') === 'relapse' && (
-              <Select
-                value={editDialog.entry?.trigger || 'stres'}
-                onValueChange={(value) => setEditDialog({ open: true, entry: editDialog.entry ? { ...editDialog.entry, trigger: value as TriggerKey } : null })}
-              >
-                <SelectTrigger className="w-full"><SelectValue placeholder="Trigger / Penyebab" /></SelectTrigger>
-                <SelectContent>
-                  {TRIGGER_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.icon} {opt.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            )}
-
-            <div className="space-y-2">
-              <Label>Strategi Perbaikan</Label>
-              <Textarea
-                value={editDialog.entry?.strategi || ''}
-                onChange={(e) => setEditDialog({ open: true, entry: editDialog.entry ? { ...editDialog.entry, strategi: e.target.value } : null })}
-                placeholder="Apa yang akan dilakukan berbeda besok?"
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Catatan</Label>
-              <Textarea
-                value={editDialog.entry?.catatan || ''}
-                onChange={(e) => setEditDialog({ open: true, entry: editDialog.entry ? { ...editDialog.entry, catatan: e.target.value } : null })}
-                placeholder="Perasaan, motivasi, tantangan..."
-                rows={2}
-              />
-            </div>
-
-            <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" onClick={() => setEditDialog({ open: false, entry: null })}>Batal</Button>
-              <Button onClick={() => handleEditSubmit(editDialog.entry)}>Simpan</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Weekly Stats */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Statistik Minggu Ini</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-4">
-            <div className="text-center p-4 bg-green-500/10 rounded-xl">
-              <p className="text-3xl font-bold text-green-600 dark:text-green-400">{totalBerhasil}</p>
-              <p className="text-sm text-muted-foreground">Berhasil</p>
-            </div>
-            <div className="text-center p-4 bg-red-500/10 rounded-xl">
-              <p className="text-3xl font-bold text-red-600 dark:text-red-400">{totalRelapse}</p>
-              <p className="text-sm text-muted-foreground">Relapse</p>
-            </div>
-            <div className="text-center p-4 bg-purple-500/10 rounded-xl">
-              <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{currentStreak}</p>
-              <p className="text-sm text-muted-foreground">Streak Sekarang</p>
-            </div>
-            <div className="text-center p-4 bg-amber-500/10 rounded-xl">
-              <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">{maxStreak}</p>
-              <p className="text-sm text-muted-foreground">Streak Terbaik</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }

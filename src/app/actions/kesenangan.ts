@@ -7,7 +7,8 @@ import { z } from "zod"
 const kesenanganSchema = z.object({
   tanggal: z.string().min(1, "Tanggal wajib diisi"),
   hari: z.string().min(1, "Hari wajib diisi"),
-  kesenangan: z.string().min(1, "Kesenangan wajib diisi"),
+  kesenangan: z.string().optional(),
+  status: z.enum(["belum", "sudah"]).optional(),
 })
 
 export type KesenanganFormData = z.infer<typeof kesenanganSchema>
@@ -31,7 +32,8 @@ export async function upsertKesenangan(formData: KesenanganFormData) {
     user_id: user.id,
     tanggal: validated.tanggal,
     hari: validated.hari,
-    kesenangan: validated.kesenangan,
+    kesenangan: validated.kesenangan ?? "",
+    status: validated.status ?? "belum",
   }
 
   let data, error
@@ -53,6 +55,18 @@ export async function upsertKesenangan(formData: KesenanganFormData) {
       .single()
     data = result.data
     error = result.error
+  }
+
+  // Fallback: kolom status belum ada (migrasi 20260807000005 belum dijalankan) — simpan tanpa status
+  if (error && /status/i.test(error.message)) {
+    const { status: _ignored, ...withoutStatus } = insertData as Record<string, unknown>
+    if (existing) {
+      const result = await supabase.from("kesenangan").update(withoutStatus).eq("id", existing.id).eq("user_id", user.id).select().single()
+      data = result.data; error = result.error
+    } else {
+      const result = await supabase.from("kesenangan").insert(withoutStatus).select().single()
+      data = result.data; error = result.error
+    }
   }
 
   if (error) throw new Error(error.message)
@@ -98,4 +112,14 @@ export async function getKesenanganRange(startDate: string, endDate: string) {
 
   if (error) throw new Error(error.message)
   return data || []
+}
+
+export async function deleteKesenangan(id: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+  const { error } = await supabase.from("kesenangan").delete().eq("id", id).eq("user_id", user.id)
+  if (error) throw new Error(error.message)
+  revalidatePath("/kesenangan")
+  return { error: null }
 }

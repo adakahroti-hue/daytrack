@@ -2,7 +2,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { 
   getKesenangan, 
   getKesenanganRange, 
-  upsertKesenangan 
+  upsertKesenangan,
+  deleteKesenangan 
 } from "@/app/actions/kesenangan"
 import type { KesenanganFormData } from "@/app/actions/kesenangan"
 
@@ -27,6 +28,18 @@ export function useUpsertKesenangan() {
   
   return useMutation({
     mutationFn: (data: KesenanganFormData) => upsertKesenangan(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["kesenangan"] })
+      queryClient.invalidateQueries({ queryKey: ["overview"] })
+    },
+  })
+}
+
+export function useDeleteKesenangan() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => deleteKesenangan(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["kesenangan"] })
       queryClient.invalidateQueries({ queryKey: ["overview"] })

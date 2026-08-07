@@ -70,6 +70,30 @@ export async function upsertMasalahLog(formData: MasalahLogFormData) {
   return { data, error: null }
 }
 
+export async function updateMasalahLog(id: string, formData: { masalah?: string; solusi?: string; status?: 'belum' | 'proses' | 'selesai'; tanggal?: string }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  const updateData: Record<string, string> = {}
+  if (formData.masalah !== undefined) updateData.masalah = formData.masalah
+  if (formData.solusi !== undefined) updateData.solusi = formData.solusi
+  if (formData.status !== undefined) updateData.status = formData.status
+  if (formData.tanggal !== undefined) updateData.tanggal = formData.tanggal
+
+  const { data, error } = await supabase
+    .from("masalah_logs")
+    .update(updateData)
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .select()
+    .single()
+
+  if (error) throw new Error(error.message)
+  revalidatePath("/masalah"); revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
+  return { data, error: null }
+}
+
 export async function deleteMasalahLog(id: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

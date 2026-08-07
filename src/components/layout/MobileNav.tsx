@@ -67,6 +67,7 @@ const navigation: NavSection[] = [
     items: [
       { title: 'Masalah', href: '/masalah', icon: Shield },
       { title: 'PMO', href: '/pmo', icon: Brain },
+      { title: 'Kesenangan', href: '/kesenangan', icon: Smile },
     ],
   },
   {
@@ -74,8 +75,7 @@ const navigation: NavSection[] = [
     icon: Sparkles,
     items: [
       { title: 'Syukur', href: '/syukur', icon: Sparkles },
-      { title: 'Kesenangan', href: '/kesenangan', icon: Smile },
-      { title: 'Saran Perbaikan', href: '/saran-perbaikan', icon: Lightbulb },
+      { title: 'Masukan Daytrack', href: '/saran-perbaikan', icon: Lightbulb },
     ],
   },
 ]

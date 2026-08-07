@@ -1,39 +1,55 @@
 "use client"
 
-import { useState } from 'react'
-import { format, subDays, addDays, isSameDay, startOfWeek, endOfWeek } from 'date-fns'
+import { useMemo } from 'react'
+import {
+  format,
+  eachDayOfInterval,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  startOfYear,
+  endOfYear,
+} from 'date-fns'
 import { id } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, Calendar, Check, X, RotateCcw, Sparkles, Plus, Edit2, Trash2, Flame } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import { Calendar, Sparkles, Check, X, Trash2 } from 'lucide-react'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
-import { useSyukurLog, useSyukurLogRange, useSyukurDailySummary, useUpsertSyukurLog, useDeleteSyukurLog } from '@/hooks/useSyukurLogs'
-import { useSyukurLogRealtime } from '@/hooks/useRealtime'
+import { useSyukurLogRange, useUpsertSyukurLog, useDeleteSyukurLog } from '@/hooks/useSyukurLogs'
+import { useRealtime } from '@/hooks/useRealtime'
+import { useHeaderControls } from '@/components/layout/HeaderControls'
 
-const KATEGORI_OPTIONS = [
-  { key: 'kesehatan', label: 'Kesehatan', icon: '💚' },
-  { key: 'keluarga', label: 'Keluarga', icon: '👨‍👩‍👧‍👦' },
-  { key: 'rezeki', label: 'Rezeki', icon: '💰' },
-  { key: 'pekerjaan', label: 'Pekerjaan', icon: '💼' },
-  { key: 'ilmu', label: 'Ilmu', icon: '📚' },
-  { key: 'hal_kecil', label: 'Hal Kecil', icon: '✨' },
-  { key: 'lainnya', label: 'Lainnya', icon: '🌈' },
-] as const
+// ─── Constants ────────────────────────────────────
 
-const ALASAN_OPTIONS = [
-  { value: 'lupa', label: 'Lupa' },
+// Revisi 2 (batch 5): alasan tidak bersyukur → disimpan di kolom alasan_tidak
+type SyukurReason = 'sibuk' | 'malas' | 'tidak_fokus'
+
+const SYUKUR_REASONS: { value: SyukurReason; label: string }[] = [
   { value: 'sibuk', label: 'Sibuk' },
-  { value: 'tidak_terpikir', label: 'Tidak Terpikir' },
-  { value: 'lainnya', label: 'Lainnya' },
-] as const
+  { value: 'malas', label: 'Malas' },
+  { value: 'tidak_fokus', label: 'Tidak Fokus' },
+]
 
-type KategoriKey = typeof KATEGORI_OPTIONS[number]['key']
-type AlasanKey = typeof ALASAN_OPTIONS[number]['value']
+const ALASAN_LABELS: Record<string, string> = {
+  sibuk: 'Sibuk',
+  malas: 'Malas',
+  tidak_fokus: 'Tidak Fokus',
+  lupa: 'Lupa',
+  tidak_terpikir: 'Tidak Terpikir',
+  lainnya: 'Lainnya',
+}
+
+const DAY_BADGE_COLORS: Record<string, string> = {
+  Senin: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  Selasa: 'bg-orange-100 text-orange-800 border-orange-200',
+  Rabu: 'bg-purple-100 text-purple-800 border-purple-200',
+  Kamis: 'bg-amber-100 text-amber-800 border-amber-200',
+  Jumat: 'bg-blue-100 text-blue-800 border-blue-200',
+  Sabtu: 'bg-green-100 text-green-800 border-green-200',
+  Minggu: 'bg-rose-100 text-rose-800 border-rose-200',
+}
+
+const TABLE_BORDER = 'border-slate-900'
 
 interface SyukurLogEntry {
   id: string
@@ -41,470 +57,196 @@ interface SyukurLogEntry {
   tanggal: string
   status: 'sudah' | 'belum'
   isi_syukur: string | null
-  kategori: KategoriKey | null
+  kategori: string | null
   catatan: string | null
-  alasan_tidak: AlasanKey | null
+  alasan_tidak: string | null
   created_at: string
   updated_at: string
 }
 
-export default function SyukurPage() {
-  const [currentDate, setCurrentDate] = useState(new Date())
-  const [editDialog, setEditDialog] = useState<{ open: boolean; entry: SyukurLogEntry | null }>({ open: false, entry: null })
-  const [alasanDialog, setAlasanDialog] = useState<{ open: boolean; entry: SyukurLogEntry | null } | null>(null)
-  const dateKey = format(currentDate, 'yyyy-MM-dd')
-  const isToday = isSameDay(currentDate, new Date())
+function startOfDaySafe(d: Date): Date {
+  const x = new Date(d)
+  x.setHours(0, 0, 0, 0)
+  return x
+}
 
-  const { data: syukurLogs = [], isLoading, error, refetch } = useSyukurLog(dateKey)
-  const { data: dailySummary } = useSyukurDailySummary(dateKey)
-  const { data: weeklyLogs = [] } = useSyukurLogRange(
-    format(startOfWeek(currentDate, { weekStartsOn: 1 }), 'yyyy-MM-dd'),
-    format(endOfWeek(currentDate, { weekStartsOn: 1 }), 'yyyy-MM-dd')
-  )
+// ─── Main Component ────────────────────────────────
+
+export default function SyukurPage() {
+  // Periode & tanggal dari HeaderControls (toolbar di header)
+  const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
+
+  const { rangeStart, rangeEnd } = useMemo(() => {
+    const today = new Date()
+    let start: Date
+    let end: Date
+    if (period === 'daily') {
+      start = startOfDaySafe(anchorDate)
+      end = anchorDate
+    } else if (period === 'weekly') {
+      start = startOfWeek(anchorDate, { weekStartsOn: 1 })
+      end = endOfWeek(anchorDate, { weekStartsOn: 1 })
+    } else if (period === 'monthly') {
+      start = startOfMonth(anchorDate)
+      end = endOfMonth(anchorDate)
+    } else {
+      start = startOfYear(anchorDate)
+      end = endOfYear(anchorDate)
+    }
+    const cappedEnd = end > today ? today : end
+    return { rangeStart: start, rangeEnd: cappedEnd }
+  }, [period, anchorDate])
+
+  const startDate = format(rangeStart, 'yyyy-MM-dd')
+  const endDate = format(rangeEnd, 'yyyy-MM-dd')
+
+  const { data: logs = [], isLoading, error } = useSyukurLogRange(startDate, endDate)
+  useRealtime({
+    table: 'syukur_logs',
+    filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
+    queryKeys: [['syukur_logs', 'range', startDate, endDate]],
+  })
+
   const upsertSyukurLog = useUpsertSyukurLog()
   const deleteSyukurLog = useDeleteSyukurLog()
 
-  // Subscribe to realtime updates
-  useSyukurLogRealtime(dateKey)
+  // Map tanggal -> entry
+  const logMap = useMemo(() => {
+    const map: Record<string, SyukurLogEntry> = {}
+    for (const l of logs as SyukurLogEntry[]) map[l.tanggal] = l
+    return map
+  }, [logs])
 
-  const navigateDay = (direction: 'prev' | 'next') => {
-    setCurrentDate(prev => direction === 'prev' ? subDays(prev, 1) : addDays(prev, 1))
-  }
+  // Daftar tanggal dalam rentang (ascending — terbaru paling bawah)
+  const dates = useMemo(() => {
+    if (rangeEnd < rangeStart) return []
+    return eachDayOfInterval({ start: rangeStart, end: rangeEnd }).map(d => format(d, 'yyyy-MM-dd'))
+  }, [rangeStart, rangeEnd])
 
-  const goToToday = () => setCurrentDate(new Date())
-
-  const getLog = () => {
-    return syukurLogs[0] || null
-  }
-
-  const handleOpenEdit = (entry: SyukurLogEntry | null) => {
-    if (entry) {
-      setEditDialog({ open: true, entry })
-    } else {
-      setEditDialog({ 
-        open: true, 
-        entry: {
-          id: '',
-          user_id: '',
-          tanggal: dateKey,
-          status: 'sudah',
-          isi_syukur: '',
-          kategori: 'hal_kecil',
-          catatan: '',
-          alasan_tidak: null,
-          created_at: '',
-          updated_at: '',
-        } as SyukurLogEntry
-      })
-    }
-  }
-
-  const handleEditSubmit = async (data: any) => {
-    const { entry, ...formData } = data
+  const handleSetStatus = async (tanggal: string, status: 'sudah' | 'belum', reasonValue?: SyukurReason) => {
     await upsertSyukurLog.mutateAsync({
-      tanggal: dateKey,
-      status: formData.status,
-      isi_syukur: formData.isi_syukur || undefined,
-      kategori: formData.kategori || undefined,
-      catatan: formData.catatan || undefined,
-      alasan_tidak: formData.alasan_tidak || undefined,
+      tanggal,
+      status,
+      alasan_tidak: status === 'belum' ? reasonValue : undefined,
     })
-    setEditDialog({ open: false, entry: null })
-    refetch()
   }
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Yakin ingin menghapus catatan syukur ini?')) {
-      await deleteSyukurLog.mutateAsync(id)
-      refetch()
-    }
+  const handleClear = async (tanggal: string) => {
+    const entry = logMap[tanggal]
+    if (entry) await deleteSyukurLog.mutateAsync(entry.id)
   }
-
-  const handleOpenAlasan = (entry: SyukurLogEntry | null) => {
-    setAlasanDialog({ open: true, entry: entry || {
-      id: '',
-      user_id: '',
-      tanggal: dateKey,
-      status: 'belum',
-      isi_syukur: '',
-      kategori: null,
-      catatan: '',
-      alasan_tidak: null,
-      created_at: '',
-      updated_at: '',
-    } as SyukurLogEntry })
-  }
-
-  const handleAlasanSubmit = async (alasan: AlasanKey) => {
-    if (!alasanDialog) return
-    await upsertSyukurLog.mutateAsync({
-      tanggal: dateKey,
-      status: 'belum',
-      alasan_tidak: alasan,
-    })
-    setAlasanDialog(null)
-    refetch()
-  }
-
-  const log = getLog()
-  const isDone = log?.status === 'sudah'
-
-  // Calculate streak
-  const calculateStreak = () => {
-    let streak = 0
-    const sortedDates = [...new Set(weeklyLogs.map(log => log.tanggal))].sort((a, b) => b.localeCompare(a))
-    for (const date of sortedDates) {
-      const dayLogs = weeklyLogs.filter(log => log.tanggal === date)
-      const hasSudah = dayLogs.some(log => log.status === 'sudah')
-      if (hasSudah) streak++
-      else break
-    }
-    return streak
-  }
-
-  const streak = calculateStreak()
-  const totalSyukur = weeklyLogs.filter(log => log.status === 'sudah').length
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold">Syukur</h1>
-          <p className="text-sm text-muted-foreground">Catat rasa syukur hari ini</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => navigateDay('prev')} aria-label="Hari sebelumnya">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" onClick={goToToday} className="px-3" disabled={isToday}>
-            <Calendar className="h-4 w-4 mr-2" /> {format(currentDate, 'd MMMM yyyy', { locale: id })}
-          </Button>
-          <Button variant="outline" size="icon" onClick={() => navigateDay('next')} aria-label="Hari berikutnya">
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Daily Summary Card */}
-      <Card>
-        <CardContent className="p-6">
-          {isDone && log ? (
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center">
-                  <Sparkles className="h-8 w-8 text-amber-600" />
+    <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+      {/* Tabel gaya Quran: Tanggal | Hari | Status */}
+      <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)] rounded-lg border bg-white', TABLE_BORDER)}>
+        <table className="w-full border-collapse text-xs sm:text-sm">
+          <thead className="sticky top-0 z-20 bg-white">
+            <tr className={cn('border-b', TABLE_BORDER)}>
+              <th className={cn('sticky left-0 z-30 bg-white px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[72px] sm:min-w-[100px]', TABLE_BORDER)}>
+                <div className="flex items-center justify-center gap-1">
+                  <Calendar className="h-3.5 w-3.5 text-blue-500" />
+                  Tanggal
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Syukur Hari Ini</p>
-                  <p className="text-3xl font-bold">{log.isi_syukur || 'Sudah mencatat'}</p>
+              </th>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[64px] sm:min-w-[90px] sm:sticky sm:left-[100px] sm:z-30 sm:bg-white', TABLE_BORDER)}>
+                Hari
+              </th>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[120px] sm:min-w-[150px]', TABLE_BORDER)}>
+                <div className="flex items-center justify-center gap-1">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                  Status
                 </div>
-              </div>
-              <div className="w-full sm:w-80 space-y-4">
-                <div>
-                  <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="text-muted-foreground">Streak</span>
-                    <span className="font-semibold">{streak} hari</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading ? (
+              <tr>
+                <td colSpan={3} className="text-center py-12 text-slate-400">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" />
+                    <span className="text-sm">Memuat data...</span>
                   </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-amber-500 rounded-full transition-all duration-300" 
-                      style={{ width: `${Math.min(streak * 10, 100)}%` }}
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center gap-4 text-sm">
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 rounded-lg border border-amber-200/50">
-                    <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-                    <span className="font-semibold text-amber-600">{totalSyukur}</span>
-                    <span className="text-muted-foreground">total catatan</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-4">
-                <Sparkles className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <p className="text-lg font-medium text-muted-foreground">Belum ada catatan syukur hari ini</p>
-              <p className="text-sm text-muted-foreground mt-1">Tuliskan satu hal kecil yang membuat hari ini berarti</p>
-              <Button 
-                variant="default" 
-                className="mt-4 gap-2"
-                onClick={() => handleOpenEdit(null)}
-              >
-                <Plus className="h-4 w-4" />
-                Mulai Mencatat
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                </td>
+              </tr>
+            ) : error ? (
+              <tr>
+                <td colSpan={3} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td>
+              </tr>
+            ) : (
+              dates.map((dateStr, rowIdx) => {
+                const date = new Date(dateStr + 'T00:00:00')
+                const dayName = format(date, 'EEEE', { locale: id })
+                const dateDisplay = format(date, 'd MMMM', { locale: id })
+                const entry = logMap[dateStr]
+                const isDone = entry?.status === 'sudah'
+                const isMissed = entry?.status === 'belum'
+                const missedLabel = isMissed && entry?.alasan_tidak
+                  ? (ALASAN_LABELS[entry.alasan_tidak] ?? 'Tidak')
+                  : 'Tidak'
 
-      {/* Syukur Entry Card */}
-      {isDone && log && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              Catatan Syukur
-              <span className="text-sm font-normal text-muted-foreground">
-                {format(currentDate, 'EEEE', { locale: id })}
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-3 p-4 bg-amber-500/5 rounded-xl border border-amber-500/20">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-600">
-                {KATEGORI_OPTIONS.find(k => k.key === log.kategori)?.icon || '✨'}
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-lg">{log.isi_syukur}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  {log.kategori && (
-                    <span className="px-2 py-0.5 bg-amber-500/10 text-amber-700 dark:text-amber-300 rounded-full text-xs">
-                      {KATEGORI_OPTIONS.find(k => k.key === log.kategori)?.label}
-                    </span>
-                  )}
-                </div>
-                {log.catatan && (
-                  <p className="text-sm text-muted-foreground mt-2">{log.catatan}</p>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9"
-                  onClick={() => handleOpenEdit(log)}
-                  aria-label="Edit catatan"
-                >
-                  <Edit2 className="h-4 w-4 text-muted-foreground" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 text-destructive hover:bg-destructive/10"
-                  onClick={() => handleDelete(log.id)}
-                  aria-label="Hapus catatan"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Add New Entry Card (when not done) */}
-      {!isDone && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Tambah Catatan Syukur</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button 
-              variant="default" 
-              className="w-full gap-2 py-4"
-              onClick={() => handleOpenEdit(null)}
-            >
-              <Plus className="h-5 w-5" />
-              <span>Mulai Mencatat Syukur</span>
-            </Button>
-            <p className="text-center text-sm text-muted-foreground mt-3">
-              Atau klik tombol di atas jika belum beruntung hari ini
-            </p>
-            <Button 
-              variant="outline" 
-              className="w-full gap-2"
-              onClick={() => handleOpenAlasan(null)}
-            >
-              <X className="h-4 w-4" />
-              <span>Belum Mencatat Hari Ini</span>
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Edit/Add Entry Dialog */}
-      <Dialog open={editDialog.open} onOpenChange={(open) => !open && setEditDialog({ open: false, entry: null })}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{editDialog.entry?.id ? 'Edit Catatan Syukur' : 'Tambah Catatan Syukur'}</DialogTitle>
-            <DialogDescription>
-              Tuliskan hal yang membuat hari ini berarti
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <Select
-              value={editDialog.entry?.status || 'sudah'}
-              onValueChange={(value) => setEditDialog({ 
-                open: true, 
-                entry: editDialog.entry ? { ...editDialog.entry, status: value as 'sudah' | 'belum' } : null 
-              })}
-            >
-              <SelectTrigger><SelectValue placeholder="Pilih status" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="sudah">Sudah Bersyukur</SelectItem>
-                <SelectItem value="belum">Belum Mencatat</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {(editDialog.entry?.status || 'sudah') === 'sudah' && (
-              <>
-                <div>
-                  <Label>Hal yang Disyukuri</Label>
-                  <Textarea
-                    value={editDialog.entry?.isi_syukur || ''}
-                    onChange={(e) => setEditDialog({ 
-                      open: true, 
-                      entry: editDialog.entry ? { ...editDialog.entry, isi_syukur: e.target.value } : null 
-                    })}
-                    placeholder="Contoh: Bisa bangun pagi dengan sehat, makan enak, teman yang mendengarkan..."
-                    rows={3}
-                  />
-                </div>
-
-                <Select
-                  value={editDialog.entry?.kategori || 'hal_kecil'}
-                  onValueChange={(value) => setEditDialog({ 
-                    open: true, 
-                    entry: editDialog.entry ? { ...editDialog.entry, kategori: value as KategoriKey } : null 
-                  })}
-                >
-                  <SelectTrigger><SelectValue placeholder="Pilih kategori" /></SelectTrigger>
-                  <SelectContent>
-                    {KATEGORI_OPTIONS.map(k => (
-                      <SelectItem key={k.key} value={k.key}>{k.icon} {k.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <div>
-                  <Label>Catatan Tambahan (opsional)</Label>
-                  <Textarea
-                    value={editDialog.entry?.catatan || ''}
-                    onChange={(e) => setEditDialog({ 
-                      open: true, 
-                      entry: editDialog.entry ? { ...editDialog.entry, catatan: e.target.value } : null 
-                    })}
-                    placeholder="Refleksi lebih dalam, detail peristiwa..."
-                    rows={2}
-                  />
-                </div>
-              </>
-            )}
-
-            {(editDialog.entry?.status || 'sudah') === 'belum' && (
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  Pilih alasan tidak mencatat syukur akan diisi setelah submit
-                </p>
-              </div>
-            )}
-
-            <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" onClick={() => setEditDialog({ open: false, entry: null })}>Batal</Button>
-              <Button onClick={() => handleEditSubmit(editDialog.entry)}>Simpan</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Alasan Dialog */}
-      <Dialog open={!!alasanDialog} onOpenChange={(open) => !open && setAlasanDialog(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Belum Mencatat Syukur</DialogTitle>
-            <DialogDescription>
-              Pilih alasan mengapa belum sempat mencatat
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-2 py-4">
-            {ALASAN_OPTIONS.map((opt) => (
-              <Button
-                key={opt.value}
-                variant="outline"
-                className="w-full justify-start"
-                onClick={() => handleAlasanSubmit(opt.value)}
-              >
-                {opt.label}
-              </Button>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Weekly History */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Riwayat Minggu Ini</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left text-muted-foreground">
-                  <th className="pb-2 font-medium">Tanggal</th>
-                  <th className="pb-2 font-medium text-center">Status</th>
-                  <th className="pb-2 font-medium">Hal yang Disyukuri</th>
-                  <th className="pb-2 font-medium">Kategori</th>
-                  <th className="pb-2 font-medium">Keterangan</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Array.from({ length: 7 }, (_, i) => {
-                  const date = subDays(endOfWeek(currentDate, { weekStartsOn: 1 }), i)
-                  const dateStr = format(date, 'yyyy-MM-dd')
-                  const dayLogs = weeklyLogs.filter(log => log.tanggal === dateStr)
-                  const hasData = dayLogs.length > 0
-                  const sudahLogs = dayLogs.filter(l => l.status === 'sudah')
-                  const belumLogs = dayLogs.filter(l => l.status === 'belum')
-                  
-                  return (
-                    <tr key={dateStr} className="border-b last:border-0 hover:bg-muted/30">
-                      <td className="py-2 font-medium">{format(date, 'd MMM', { locale: id })}</td>
-                      <td className="py-2 text-center">
-                        {hasData ? (
-                          <span className={cn(
-                            'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium',
-                            sudahLogs.length > 0 
-                              ? 'bg-green-500/10 text-green-700 dark:text-green-300' 
-                              : 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-300'
-                          )}>
-                            {sudahLogs.length > 0 ? (
-                              <span className="flex items-center gap-1"><Check className="h-3 w-3" /> Sudah</span>
-                            ) : (
-                              <span className="flex items-center gap-1"><X className="h-3 w-3" /> Belum</span>
+                return (
+                  <tr
+                    key={dateStr}
+                    className={cn('border-b transition-colors', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30', 'hover:bg-blue-50/40')}
+                  >
+                    <td className={cn('sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
+                      <span className="sm:hidden">{format(date, 'd MMM', { locale: id })}</span>
+                      <span className="hidden sm:inline">{dateDisplay}</span>
+                    </td>
+                    <td className={cn('px-2 sm:px-3 py-2 text-center border-r sm:sticky sm:left-[100px] sm:z-10 sm:bg-inherit', TABLE_BORDER)}>
+                      <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs border font-medium', DAY_BADGE_COLORS[dayName] || 'bg-slate-100 text-slate-700 border-slate-200')}>
+                        {dayName}
+                      </span>
+                    </td>
+                    <td className={cn('px-2 sm:px-3 py-2 text-center', TABLE_BORDER)}>
+                      <div className="flex items-center justify-center min-h-[36px]">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              className={cn(
+                                'inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium border transition-colors cursor-pointer whitespace-normal leading-tight text-center',
+                                isMissed
+                                  ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'
+                                  : isDone
+                                    ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200'
+                                    : 'text-slate-400 border-dashed border-slate-300 hover:bg-slate-50 hover:text-slate-600'
+                              )}
+                            >
+                              {isDone && <Check className="h-3.5 w-3.5 shrink-0" />}
+                              {isDone ? 'Sudah' : isMissed ? missedLabel : 'Belum'}
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="center" className="w-44">
+                            <DropdownMenuItem onClick={() => handleSetStatus(dateStr, 'sudah')} className="flex items-center gap-2">
+                              <Check className="h-4 w-4 text-green-600" /> Sudah
+                            </DropdownMenuItem>
+                            {SYUKUR_REASONS.map(r => (
+                              <DropdownMenuItem key={r.value} onClick={() => handleSetStatus(dateStr, 'belum', r.value)} className="flex items-center gap-2">
+                                <X className="h-4 w-4 text-red-500" /> {r.label}
+                              </DropdownMenuItem>
+                            ))}
+                            {entry && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => handleClear(dateStr)} className="flex items-center gap-2 text-destructive focus:text-destructive">
+                                  <Trash2 className="h-4 w-4" /> Batalkan
+                                </DropdownMenuItem>
+                              </>
                             )}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </td>
-                      <td className="py-2 max-w-xs truncate">
-                        {sudahLogs[0]?.isi_syukur || belumLogs[0]?.alasan_tidak ? ALASAN_OPTIONS.find(a => a.value === belumLogs[0]?.alasan_tidak)?.label : '—'}
-                      </td>
-                      <td className="py-2">
-                        {sudahLogs[0]?.kategori ? (
-                          <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs">
-                            {KATEGORI_OPTIONS.find(k => k.key === sudahLogs[0]?.kategori)?.label}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </td>
-                      <td className="py-2 text-muted-foreground max-w-xs truncate">
-                        {sudahLogs[0]?.catatan || '—'}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }

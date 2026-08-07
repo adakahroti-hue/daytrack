@@ -1,583 +1,321 @@
 "use client"
 
-import { useState, useEffect } from 'react'
-import { format, subDays, addDays, isSameDay, startOfWeek, endOfWeek } from 'date-fns'
+import { useMemo, useState } from 'react'
+import {
+  format,
+  eachDayOfInterval,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  startOfYear,
+  endOfYear,
+} from 'date-fns'
 import { id } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, Calendar, Plus, Edit2, Trash2, Lightbulb, Hammer, Target, CheckCircle2, Flag, ArrowUp, ArrowDown } from 'lucide-react'
+import { Calendar, Lightbulb, Check, X, Trash2, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Input } from '@/components/ui/input'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
-import { useImprovements, useUpsertImprovement, useUpdateImprovementStatus, useDeleteImprovement } from '@/hooks/useImprovementBacklog'
-import { useImprovementBacklogRealtime } from '@/hooks/useRealtime'
+import { useSaranPerbaikanRange, useUpsertSaranPerbaikan, useDeleteSaranPerbaikan } from '@/hooks/useSaranPerbaikan'
+import { useRealtime } from '@/hooks/useRealtime'
+import { useHeaderControls } from '@/components/layout/HeaderControls'
 
-const CATEGORY_OPTIONS = [
-  { value: 'ibadah', label: 'Ibadah', icon: '🕌' },
-  { value: 'mental', label: 'Mental', icon: '🧠' },
-  { value: 'kesehatan', label: 'Kesehatan', icon: '🏥' },
-  { value: 'produktivitas', label: 'Produktivitas', icon: '⚡' },
-  { value: 'finansial', label: 'Finansial', icon: '💰' },
-  { value: 'lingkungan', label: 'Lingkungan', icon: '🌱' },
-  { value: 'hubungan', label: 'Hubungan', icon: '🤝' },
-  { value: 'lainnya', label: 'Lainnya', icon: '📝' },
-] as const
+// ─── Constants ────────────────────────────────────
 
-const STATUS_OPTIONS = [
-  { value: 'ide_baru', label: 'Ide Baru', color: 'bg-gray-500/10 text-gray-700 border-gray-500/30', icon: Lightbulb },
-  { value: 'diprioritaskan', label: 'Diprioritaskan', color: 'bg-amber-500/10 text-amber-700 border-amber-500/30', icon: Flag },
-  { value: 'sedang_diperbaiki', label: 'Sedang Diperbaiki', color: 'bg-blue-500/10 text-blue-700 border-blue-500/30', icon: Hammer },
-  { value: 'menjadi_kebiasaan', label: 'Menjadi Kebiasaan', color: 'bg-green-500/10 text-green-700 border-green-500/30', icon: CheckCircle2 },
-] as const
-
-const PRIORITY_OPTIONS = [
-  { value: 'rendah', label: 'Rendah', color: 'bg-gray-500/10 text-gray-700 border-gray-500/30' },
-  { value: 'sedang', label: 'Sedang', color: 'bg-blue-500/10 text-blue-700 border-blue-500/30' },
-  { value: 'tinggi', label: 'Tinggi', color: 'bg-amber-500/10 text-amber-700 border-amber-500/30' },
-  { value: 'urgent', label: 'Urgent', color: 'bg-red-500/10 text-red-700 border-red-500/30' },
-] as const
-
-type StatusKey = 'ide_baru' | 'diprioritaskan' | 'sedang_diperbaiki' | 'menjadi_kebiasaan'
-type PriorityKey = 'rendah' | 'sedang' | 'tinggi' | 'urgent'
-type CategoryKey = 'ibadah' | 'mental' | 'kesehatan' | 'produktivitas' | 'finansial' | 'lingkungan' | 'hubungan' | 'lainnya'
-
-interface ImprovementEntry {
-  id: string
-  user_id: string
-  title: string
-  category: CategoryKey
-  priority: PriorityKey
-  reason: string | null
-  status: StatusKey
-  target_date: string | null
-  started_at: string | null
-  completed_at: string | null
-  progress: number
-  created_at: string
-  updated_at: string
+const DAY_BADGE_COLORS: Record<string, string> = {
+  Senin: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  Selasa: 'bg-orange-100 text-orange-800 border-orange-200',
+  Rabu: 'bg-purple-100 text-purple-800 border-purple-200',
+  Kamis: 'bg-amber-100 text-amber-800 border-amber-200',
+  Jumat: 'bg-blue-100 text-blue-800 border-blue-200',
+  Sabtu: 'bg-green-100 text-green-800 border-green-200',
+  Minggu: 'bg-rose-100 text-rose-800 border-rose-200',
 }
 
+const TABLE_BORDER = 'border-slate-900'
+
+interface SaranEntry {
+  id: string
+  user_id: string
+  tanggal: string
+  hari: string
+  saran: string
+  keterangan: string | null
+  status: 'belum' | 'proses' | 'selesai'
+  created_at: string
+}
+
+interface EditState {
+  tanggal: string
+  saran: string
+  tujuan: string
+}
+
+function startOfDaySafe(d: Date): Date {
+  const x = new Date(d)
+  x.setHours(0, 0, 0, 0)
+  return x
+}
+
+// ─── Main Component ────────────────────────────────
+
+// Revisi 8 (batch 5): tab ini berganti nama menjadi "Masukan Daytrack"
 export default function SaranPerbaikanPage() {
-  const [editDialog, setEditDialog] = useState<{ open: boolean; entry: ImprovementEntry | null }>({ open: false, entry: null })
-  const [filterStatus, setFilterStatus] = useState<string>('all')
-  const [filterCategory, setFilterCategory] = useState<string>('all')
-  const [focusWeekOpen, setFocusWeekOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
+  // Periode & tanggal dari HeaderControls (toolbar di header)
+  const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
 
-  useEffect(() => setMounted(true), [])
-
-  const { data: improvements = [], isLoading, error, refetch } = useImprovements(
-    filterCategory === 'all' ? undefined : filterCategory,
-    filterStatus === 'all' ? undefined : filterStatus
-  )
-  const upsertImprovement = useUpsertImprovement()
-  const updateImprovementStatus = useUpdateImprovementStatus()
-  const deleteImprovement = useDeleteImprovement()
-
-  useImprovementBacklogRealtime()
-
-  const handleOpenEdit = (entry: ImprovementEntry | null) => {
-    if (entry) {
-      setEditDialog({ open: true, entry })
+  const { rangeStart, rangeEnd } = useMemo(() => {
+    const today = new Date()
+    let start: Date
+    let end: Date
+    if (period === 'daily') {
+      start = startOfDaySafe(anchorDate)
+      end = anchorDate
+    } else if (period === 'weekly') {
+      start = startOfWeek(anchorDate, { weekStartsOn: 1 })
+      end = endOfWeek(anchorDate, { weekStartsOn: 1 })
+    } else if (period === 'monthly') {
+      start = startOfMonth(anchorDate)
+      end = endOfMonth(anchorDate)
     } else {
-      setEditDialog({ 
-        open: true, 
-        entry: {
-          id: '',
-          user_id: '',
-          title: '',
-          category: 'lainnya',
-          priority: 'sedang',
-          reason: '',
-          status: 'ide_baru',
-          target_date: null,
-          started_at: null,
-          completed_at: null,
-          progress: 0,
-          created_at: '',
-          updated_at: '',
-        } as ImprovementEntry
-      })
+      start = startOfYear(anchorDate)
+      end = endOfYear(anchorDate)
     }
+    const cappedEnd = end > today ? today : end
+    return { rangeStart: start, rangeEnd: cappedEnd }
+  }, [period, anchorDate])
+
+  const startDate = format(rangeStart, 'yyyy-MM-dd')
+  const endDate = format(rangeEnd, 'yyyy-MM-dd')
+
+  const { data: logs = [], isLoading, error } = useSaranPerbaikanRange(startDate, endDate)
+  useRealtime({
+    table: 'saran_perbaikan',
+    filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
+    queryKeys: [['saran-perbaikan', 'range', startDate, endDate]],
+  })
+
+  const upsertSaranPerbaikan = useUpsertSaranPerbaikan()
+  const deleteSaranPerbaikan = useDeleteSaranPerbaikan()
+
+  const [editState, setEditState] = useState<EditState | null>(null)
+
+  // Map tanggal -> entry
+  const logMap = useMemo(() => {
+    const map: Record<string, SaranEntry> = {}
+    for (const l of logs as SaranEntry[]) map[l.tanggal] = l
+    return map
+  }, [logs])
+
+  // Daftar tanggal dalam rentang (ascending — terbaru paling bawah)
+  const dates = useMemo(() => {
+    if (rangeEnd < rangeStart) return []
+    return eachDayOfInterval({ start: rangeStart, end: rangeEnd }).map(d => format(d, 'yyyy-MM-dd'))
+  }, [rangeStart, rangeEnd])
+
+  const openEdit = (dateStr: string) => {
+    const entry = logMap[dateStr]
+    setEditState({ tanggal: dateStr, saran: entry?.saran || '', tujuan: entry?.keterangan || '' })
   }
 
-  const handleEditSubmit = async (data: any) => {
-    await upsertImprovement.mutateAsync({
-      title: data.title,
-      category: data.category,
-      priority: data.priority,
-      reason: data.reason || undefined,
-      status: data.status,
-      target_date: data.target_date || undefined,
-      progress: data.progress || 0,
+  const handleSave = async () => {
+    if (!editState) return
+    const date = new Date(editState.tanggal + 'T00:00:00')
+    await upsertSaranPerbaikan.mutateAsync({
+      tanggal: editState.tanggal,
+      hari: format(date, 'EEEE', { locale: id }),
+      saran: editState.saran.trim(),
+      keterangan: editState.tujuan.trim() || undefined,
+      status: logMap[editState.tanggal]?.status ?? 'belum',
     })
-    setEditDialog({ open: false, entry: null })
-    refetch()
+    setEditState(null)
   }
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Yakin ingin menghapus saran perbaikan ini?')) {
-      await deleteImprovement.mutateAsync(id)
-      refetch()
-    }
+  const handleSetStatus = async (dateStr: string, done: boolean) => {
+    const date = new Date(dateStr + 'T00:00:00')
+    const entry = logMap[dateStr]
+    await upsertSaranPerbaikan.mutateAsync({
+      tanggal: dateStr,
+      hari: format(date, 'EEEE', { locale: id }),
+      saran: entry?.saran || '',
+      keterangan: entry?.keterangan || undefined,
+      status: done ? 'selesai' : 'belum',
+    })
   }
 
-  const handleStatusChange = async (id: string, status: StatusKey, progress?: number) => {
-    await updateImprovementStatus.mutateAsync({ id, status, progress })
-    refetch()
-  }
-
-  const stats = {
-    total: improvements.length,
-    ide: improvements.filter(l => l.status === 'ide_baru').length,
-    diprioritaskan: improvements.filter(l => l.status === 'diprioritaskan').length,
-    diperbaiki: improvements.filter(l => l.status === 'sedang_diperbaiki').length,
-    kebiasaan: improvements.filter(l => l.status === 'menjadi_kebiasaan').length,
-    tinggi: improvements.filter(l => l.priority === 'tinggi' || l.priority === 'urgent').length,
-  }
-
-  const focusWeekItems = improvements
-    .filter(l => l.status === 'diprioritaskan' || l.status === 'sedang_diperbaiki')
-    .slice(0, 3)
-
-  if (!mounted) {
-    return <div className="space-y-6"><div className="h-8 bg-muted animate-pulse rounded w-1/4" /></div>
+  const handleClear = async (dateStr: string) => {
+    const entry = logMap[dateStr]
+    if (entry) await deleteSaranPerbaikan.mutateAsync(entry.id)
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold flex items-center gap-2">
-            <Hammer className="h-5 w-5 text-amber-500" />
-            Saran Perbaikan
-          </h1>
-          <p className="text-sm text-muted-foreground">Catat hal yang ingin diperbaiki dan bangun versi diri yang lebih baik</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setFocusWeekOpen(true)}>
-            <Target className="mr-2 h-4 w-4" /> Fokus Minggu Ini
-          </Button>
-          <Button variant="default" onClick={() => handleOpenEdit(null)} className="gap-2">
-            <Plus className="h-4 w-4" />
-            Tambah Perbaikan
-          </Button>
-        </div>
-      </div>
-
-      {/* Summary Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Perbaikan</p>
-                <p className="text-2xl font-bold">{stats.total}</p>
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                <Lightbulb className="h-5 w-5 text-purple-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Sedang Dikerjakan</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.diperbaiki}</p>
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                <Hammer className="h-5 w-5 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Menjadi Kebiasaan</p>
-                <p className="text-2xl font-bold text-green-600">{stats.kebiasaan}</p>
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Prioritas Tinggi</p>
-                <p className="text-2xl font-bold text-amber-600">{stats.tinggi}</p>
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                <Flag className="h-5 w-5 text-amber-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Fokus Minggu Ini */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-amber-500" />
-            Fokus Minggu Ini
-          </CardTitle>
-          <Button variant="ghost" size="icon" onClick={() => setFocusWeekOpen(true)} aria-label="Lihat semua">
-            <ArrowUp className="h-4 w-4" />
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {focusWeekItems.length === 0 ? (
-            <div className="text-center py-6">
-              <Target className="h-10 w-10 text-muted-foreground/50 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Belum ada fokus minggu ini</p>
-              <p className="text-xs text-muted-foreground">Pilih perbaikan dengan status "Diprioritaskan" atau "Sedang Diperbaiki"</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {focusWeekItems.map((item) => (
-                <div key={item.id} className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold truncate">{item.title}</h4>
-                      <div className="flex flex-wrap items-center gap-1.5 mt-1 text-xs">
-                        <Badge variant="outline" className={cn('text-xs', STATUS_OPTIONS.find(s => s.value === item.status)?.color)}>
-                          {(() => { const s = STATUS_OPTIONS.find(s => s.value === item.status); return s?.icon ? <s.icon className="inline h-2.5 w-2.5 mr-1" /> : null })()}
-                          {STATUS_OPTIONS.find(s => s.value === item.status)?.label}
-                        </Badge>
-                        <Badge variant="outline" className={cn('text-xs', CATEGORY_OPTIONS.find(c => c.value === item.category)?.icon ? '' : '')}>
-                          {CATEGORY_OPTIONS.find(c => c.value === item.category)?.icon} {CATEGORY_OPTIONS.find(c => c.value === item.category)?.label}
-                        </Badge>
-                        <Badge variant="outline" className={cn('text-xs', PRIORITY_OPTIONS.find(p => p.value === item.priority)?.color)}>
-                          {PRIORITY_OPTIONS.find(p => p.value === item.priority)?.label}
-                        </Badge>
-                      </div>
-                      {item.target_date && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          <Flag className="inline h-3 w-3 mr-1" /> Target: {format(new Date(item.target_date), 'd MMM', { locale: id })}
-                        </p>
-                      )}
-                    </div>
-                    {item.status === 'sedang_diperbaiki' && item.progress > 0 && (
-                      <div className="w-24 ml-4">
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <div className="h-full bg-blue-500 rounded-full transition-all" style={{ width: `${item.progress}%` }} />
-                        </div>
-                        <p className="text-xs text-muted-foreground text-right">{item.progress}%</p>
-                      </div>
-                    )}
-                    {item.status === 'diprioritaskan' && (
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => handleStatusChange(item.id, 'sedang_diperbaiki', 10)}
-                        className="text-xs"
-                      >
-                        <Hammer className="mr-1 h-3 w-3" /> Mulai
-                      </Button>
-                    )}
-                    {item.status === 'sedang_diperbaiki' && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleStatusChange(item.id, 'menjadi_kebiasaan', 100)}
-                        className="text-xs"
-                      >
-                        <CheckCircle2 className="mr-1 h-3 w-3" /> Selesai
-                      </Button>
-                    )}
-                  </div>
+    <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+      {/* Tabel gaya Quran: Tanggal | Hari | Saran Perbaikan | Tujuan | Status */}
+      <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)] rounded-lg border bg-white', TABLE_BORDER)}>
+        <table className="w-full border-collapse text-xs sm:text-sm">
+          <thead className="sticky top-0 z-20 bg-white">
+            <tr className={cn('border-b', TABLE_BORDER)}>
+              <th className={cn('sticky left-0 z-30 bg-white px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[72px] sm:min-w-[100px]', TABLE_BORDER)}>
+                <div className="flex items-center justify-center gap-1">
+                  <Calendar className="h-3.5 w-3.5 text-blue-500" />
+                  Tanggal
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Filters */}
-      <div className="flex gap-2 overflow-x-auto pb-2 flex-wrap">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">Status:</span>
-          <Button variant={filterStatus === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setFilterStatus('all')}>Semua</Button>
-          {STATUS_OPTIONS.map(s => (
-            <Button key={s.value} variant={filterStatus === s.value ? 'default' : 'outline'} size="sm" onClick={() => setFilterStatus(s.value)}>
-              <s.icon className="mr-1 h-3 w-3" /> {s.label}
-            </Button>
-          ))}
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">Kategori:</span>
-          <Button variant={filterCategory === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setFilterCategory('all')}>Semua</Button>
-          {CATEGORY_OPTIONS.map(c => (
-            <Button key={c.value} variant={filterCategory === c.value ? 'default' : 'outline'} size="sm" onClick={() => setFilterCategory(c.value)}>
-              {c.icon} {c.label}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      {/* Improvement List */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            Daftar Perbaikan
-            <span className="text-sm font-normal text-muted-foreground">{improvements.length} item</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-            </div>
-          ) : error ? (
-            <div className="text-center text-destructive py-8">
-              <p>Gagal memuat data: {error.message}</p>
-              <Button variant="outline" onClick={() => refetch()} className="mt-2">Coba Lagi</Button>
-            </div>
-          ) : improvements.length === 0 ? (
-            <div className="text-center py-12">
-              <Lightbulb className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-              <p className="text-muted-foreground">Belum ada saran perbaikan</p>
-              <p className="text-sm text-muted-foreground mt-1">Mulai catat hal yang ingin Anda perbaiki</p>
-              <Button variant="default" className="mt-4 gap-2" onClick={() => handleOpenEdit(null)}>
-                <Plus className="h-4 w-4" />
-                Tambah Perbaikan Pertama
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {STATUS_OPTIONS.map(({ value, label, color, icon: StatusIcon }) => {
-                const items = improvements.filter(l => l.status === value)
-                if (items.length === 0) return null
+              </th>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[64px] sm:min-w-[90px]', TABLE_BORDER)}>
+                Hari
+              </th>
+              <th className={cn('px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 border-r min-w-[160px] sm:min-w-[220px]', TABLE_BORDER)}>
+                <div className="flex items-center gap-1">
+                  <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
+                  Saran Perbaikan
+                </div>
+              </th>
+              <th className={cn('px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 border-r min-w-[140px] sm:min-w-[200px]', TABLE_BORDER)}>
+                Tujuan
+              </th>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[96px] sm:min-w-[110px]', TABLE_BORDER)}>
+                Status
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading ? (
+              <tr>
+                <td colSpan={5} className="text-center py-12 text-slate-400">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" />
+                    <span className="text-sm">Memuat data...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : error ? (
+              <tr>
+                <td colSpan={5} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td>
+              </tr>
+            ) : (
+              dates.map((dateStr, rowIdx) => {
+                const date = new Date(dateStr + 'T00:00:00')
+                const dayName = format(date, 'EEEE', { locale: id })
+                const dateDisplay = format(date, 'd MMMM', { locale: id })
+                const entry = logMap[dateStr]
+                const isDone = entry?.status === 'selesai'
+                const hasEntry = !!entry
 
                 return (
-                  <div key={value} className="space-y-3">
-                    <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                      <StatusIcon className="h-4 w-4" />
-                      {label} ({items.length})
-                    </h3>
-                    <div className="space-y-2">
-                      {items.map((item) => (
-                        <div key={item.id} className={cn('p-4 rounded-xl border', color, 'border-l-4')}>
-                          <div className="flex gap-4">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between gap-2 mb-1">
-                                <h4 className="font-semibold truncate">{item.title}</h4>
-                                <div className="flex items-center gap-1">
-                                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenEdit(item)} aria-label="Edit">
-                                    <Edit2 className="h-4 w-4" />
-                                  </Button>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => handleDelete(item.id)} aria-label="Hapus">
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </div>
-                              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                                <Badge variant="outline" className="text-xs">
-                                  {CATEGORY_OPTIONS.find(c => c.value === item.category)?.icon} {CATEGORY_OPTIONS.find(c => c.value === item.category)?.label}
-                                </Badge>
-                                <Badge variant="outline" className={cn('text-xs', PRIORITY_OPTIONS.find(p => p.value === item.priority)?.color)}>
-                                  {PRIORITY_OPTIONS.find(p => p.value === item.priority)?.label}
-                                </Badge>
-                                {item.target_date && (
-                                  <Badge variant="outline" className="text-xs">
-                                    <Flag className="h-3 w-3 mr-1" />
-                                    {format(new Date(item.target_date), 'd MMM', { locale: id })}
-                                  </Badge>
-                                )}
-                              </div>
-                              {item.reason && (
-                                <p className="text-sm text-muted-foreground mt-2 flex items-center gap-1">
-                                  <Lightbulb className="h-3 w-3" />
-                                  <span>Alasan: {item.reason}</span>
-                                </p>
+                  <tr
+                    key={dateStr}
+                    className={cn('border-b transition-colors', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30', 'hover:bg-blue-50/40')}
+                  >
+                    <td className={cn('sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
+                      <span className="sm:hidden">{format(date, 'd MMM', { locale: id })}</span>
+                      <span className="hidden sm:inline">{dateDisplay}</span>
+                    </td>
+                    <td className={cn('px-2 sm:px-3 py-2 text-center border-r', TABLE_BORDER)}>
+                      <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs border font-medium', DAY_BADGE_COLORS[dayName] || 'bg-slate-100 text-slate-700 border-slate-200')}>
+                        {dayName}
+                      </span>
+                    </td>
+                    <td className={cn('px-2 sm:px-3 py-2 border-r', TABLE_BORDER)}>
+                      <button type="button" onClick={() => openEdit(dateStr)} className="w-full text-left group">
+                        {entry?.saran ? (
+                          <span className="text-slate-800 whitespace-normal break-words leading-snug group-hover:text-blue-700">{entry.saran}</span>
+                        ) : (
+                          <span className="text-slate-400 italic">Tulis masukan untuk Daytrack…</span>
+                        )}
+                        <Pencil className="inline-block h-3 w-3 ml-1.5 text-slate-300 group-hover:text-blue-500 align-middle" />
+                      </button>
+                    </td>
+                    <td className={cn('px-2 sm:px-3 py-2 border-r', TABLE_BORDER)}>
+                      <button type="button" onClick={() => openEdit(dateStr)} className="w-full text-left">
+                        {entry?.keterangan ? (
+                          <span className="text-slate-700 whitespace-normal break-words leading-snug">{entry.keterangan}</span>
+                        ) : (
+                          <span className="text-slate-400 italic">Tujuan…</span>
+                        )}
+                      </button>
+                    </td>
+                    <td className={cn('px-2 sm:px-3 py-2 text-center', TABLE_BORDER)}>
+                      <div className="flex items-center justify-center min-h-[36px]">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              className={cn(
+                                'inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium border transition-colors cursor-pointer whitespace-normal leading-tight text-center',
+                                isDone
+                                  ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200'
+                                  : hasEntry
+                                    ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                                    : 'text-slate-400 border-dashed border-slate-300 hover:bg-slate-50 hover:text-slate-600'
                               )}
-                              {item.status === 'sedang_diperbaiki' && item.progress > 0 && (
-                                <div className="mt-2">
-                                  <div className="flex justify-between text-xs mb-1">
-                                    <span>Progress</span>
-                                    <span>{item.progress}%</span>
-                                  </div>
-                                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                                    <div className="h-full bg-blue-500 rounded-full transition-all" style={{ width: `${item.progress}%` }} />
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                            >
+                              {isDone && <Check className="h-3.5 w-3.5 shrink-0" />}
+                              {isDone ? 'Sudah' : 'Belum'}
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="center" className="w-36">
+                            <DropdownMenuItem onClick={() => handleSetStatus(dateStr, false)} className="flex items-center gap-2">
+                              <X className="h-4 w-4 text-amber-500" /> Belum
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleSetStatus(dateStr, true)} className="flex items-center gap-2">
+                              <Check className="h-4 w-4 text-green-600" /> Sudah
+                            </DropdownMenuItem>
+                            {entry && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => handleClear(dateStr)} className="flex items-center gap-2 text-destructive focus:text-destructive">
+                                  <Trash2 className="h-4 w-4" /> Hapus
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </td>
+                  </tr>
                 )
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
 
-      {/* Add/Edit Dialog */}
-      <Dialog open={editDialog.open} onOpenChange={(open) => !open && setEditDialog({ open: false, entry: null })}>
-        <DialogContent className="max-w-lg">
+      {/* Dialog edit masukan */}
+      <Dialog open={!!editState} onOpenChange={(open) => !open && setEditState(null)}>
+        <DialogContent className="max-w-[92vw] sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{editDialog.entry?.id ? 'Edit Perbaikan' : 'Tambah Perbaikan Baru'}</DialogTitle>
-            <DialogDescription>
-              Catat hal yang ingin diperbaiki dan bangun kebiasaan baru
-            </DialogDescription>
+            <DialogTitle>
+              Masukan Daytrack — {editState ? format(new Date(editState.tanggal + 'T00:00:00'), 'EEEE, d MMMM yyyy', { locale: id }) : ''}
+            </DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Judul Perbaikan *</Label>
-              <Input
-                id="title"
-                placeholder="Contoh: Bangun pagi tanpa snooze, kurangi media sosial, olahraga 3x seminggu..."
-                value={editDialog.entry?.title || ''}
-                onChange={(e) => setEditDialog({ open: true, entry: editDialog.entry ? { ...editDialog.entry, title: e.target.value } : null })}
-                required
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="saran-teks">Saran Perbaikan</Label>
+              <Textarea
+                id="saran-teks"
+                placeholder="Tulis masukan atau saran perbaikan…"
+                value={editState?.saran ?? ''}
+                onChange={(e) => setEditState(prev => prev ? { ...prev, saran: e.target.value } : prev)}
+                rows={3}
               />
             </div>
-
-            <Select
-              value={editDialog.entry?.category || 'lainnya'}
-              onValueChange={(value) => setEditDialog({ open: true, entry: editDialog.entry ? { ...editDialog.entry, category: value as CategoryKey } : null })}
-            >
-              <SelectTrigger><SelectValue placeholder="Pilih kategori" /></SelectTrigger>
-              <SelectContent>
-                {CATEGORY_OPTIONS.map(c => <SelectItem key={c.value} value={c.value}>{c.icon} {c.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={editDialog.entry?.priority || 'sedang'}
-              onValueChange={(value) => setEditDialog({ open: true, entry: editDialog.entry ? { ...editDialog.entry, priority: value as PriorityKey } : null })}
-            >
-              <SelectTrigger><SelectValue placeholder="Prioritas" /></SelectTrigger>
-              <SelectContent>
-                {PRIORITY_OPTIONS.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={editDialog.entry?.status || 'ide_baru'}
-              onValueChange={(value) => setEditDialog({ open: true, entry: editDialog.entry ? { ...editDialog.entry, status: value as StatusKey } : null })}
-            >
-              <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
-              <SelectContent>
-                {STATUS_OPTIONS.map(s => <SelectItem key={s.value} value={s.value}><s.icon className="mr-2 h-4 w-4" /> {s.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
-
-            <div className="space-y-2">
-              <Label htmlFor="reason">Alasan / Motivasi</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="saran-tujuan">Tujuan</Label>
               <Textarea
-                id="reason"
-                placeholder="Mengapa ini penting untuk Anda? (opsional)"
-                value={editDialog.entry?.reason || ''}
-                onChange={(e) => setEditDialog({ open: true, entry: editDialog.entry ? { ...editDialog.entry, reason: e.target.value } : null })}
+                id="saran-tujuan"
+                placeholder="Apa tujuan dari masukan ini? (opsional)"
+                value={editState?.tujuan ?? ''}
+                onChange={(e) => setEditState(prev => prev ? { ...prev, tujuan: e.target.value } : prev)}
                 rows={2}
               />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="target_date">Target Tanggal (opsional)</Label>
-              <Input
-                id="target_date"
-                type="date"
-                value={editDialog.entry?.target_date || ''}
-                onChange={(e) => setEditDialog({ open: true, entry: editDialog.entry ? { ...editDialog.entry, target_date: e.target.value } : null })}
-              />
+            <div className="flex justify-end gap-2 pt-1">
+              <Button variant="outline" onClick={() => setEditState(null)}>Batal</Button>
+              <Button onClick={handleSave}>Simpan</Button>
             </div>
-
-            {(editDialog.entry?.status === 'sedang_diperbaiki' || editDialog.entry?.status === 'diprioritaskan') && (
-              <div className="space-y-2">
-                <Label htmlFor="progress">Progress (%)</Label>
-                <Input
-                  id="progress"
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={editDialog.entry?.progress?.toString() || '0'}
-                  onChange={(e) => setEditDialog({ open: true, entry: editDialog.entry ? { ...editDialog.entry, progress: parseInt(e.target.value) || 0 } : null })}
-                  className="w-[100px]"
-                />
-              </div>
-            )}
-
-            <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => setEditDialog({ open: false, entry: null })}>Batal</Button>
-              <Button onClick={() => handleEditSubmit(editDialog.entry)}>Simpan</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Focus Week Dialog */}
-      <Dialog open={focusWeekOpen} onOpenChange={(open) => setFocusWeekOpen(open)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-amber-500" />
-              Fokus Minggu Ini
-            </DialogTitle>
-            <DialogDescription>
-              Pilih 3 perbaikan utama yang akan dikerjakan minggu ini
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            {improvements.filter(l => l.status === 'ide_baru').length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">Belum ada ide baru untuk dipilih</p>
-            ) : (
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                {improvements.filter(l => l.status === 'ide_baru').map((item) => (
-                  <div key={item.id} className="p-3 rounded-xl border border-muted/50 hover:border-primary/30 cursor-pointer transition-colors"
-                    onClick={() => handleStatusChange(item.id, 'diprioritaskan', 0)}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h4 className="font-semibold">{item.title}</h4>
-                        <div className="flex flex-wrap gap-1.5 mt-1 text-xs">
-                          <Badge variant="outline" className="text-xs">
-                            {CATEGORY_OPTIONS.find(c => c.value === item.category)?.icon} {CATEGORY_OPTIONS.find(c => c.value === item.category)?.label}
-                          </Badge>
-                          <Badge variant="outline" className={cn('text-xs', PRIORITY_OPTIONS.find(p => p.value === item.priority)?.color)}>
-                            {PRIORITY_OPTIONS.find(p => p.value === item.priority)?.label}
-                          </Badge>
-                        </div>
-                      </div>
-                      <ArrowUp className="h-5 w-5 text-amber-500" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            {focusWeekItems.length > 0 && (
-              <div className="pt-4 border-t">
-                <h4 className="font-medium mb-2">Sudah dipilih ({focusWeekItems.length}/3):</h4>
-                <div className="space-y-2">
-                  {focusWeekItems.map((item) => (
-                    <div key={item.id} className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{item.title}</span>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleStatusChange(item.id, 'ide_baru', 0)}>
-                          <ArrowDown className="h-4 w-4 text-muted-foreground" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </DialogContent>
       </Dialog>

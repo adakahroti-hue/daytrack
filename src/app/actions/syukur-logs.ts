@@ -10,7 +10,7 @@ const syukurLogSchema = z.object({
   isi_syukur: z.string().optional(),
   kategori: z.enum(["kesehatan", "keluarga", "rezeki", "pekerjaan", "ilmu", "hal_kecil", "lainnya"]).optional(),
   catatan: z.string().optional(),
-  alasan_tidak: z.enum(["lupa", "sibuk", "tidak_terpikir", "lainnya"]).optional(),
+  alasan_tidak: z.enum(["lupa", "sibuk", "tidak_terpikir", "malas", "tidak_fokus", "lainnya"]).optional(),
 })
 
 export type SyukurLogFormData = z.infer<typeof syukurLogSchema>

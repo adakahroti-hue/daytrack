@@ -56,8 +56,8 @@ function getCategoryFromPath(pathname: string): string {
   if (pathname.startsWith('/tugas')) return 'tugas'
   if (pathname.startsWith('/sholat') || pathname.startsWith('/quran') || pathname.startsWith('/doa') || pathname.startsWith('/syukur')) return 'ibadah'
   if (pathname.startsWith('/tidur') || pathname.startsWith('/minum-air')) return 'kesehatan'
-  if (pathname.startsWith('/masalah') || pathname.startsWith('/pmo')) return 'mental'
-  if (pathname.startsWith('/kesenangan') || pathname.startsWith('/saran-perbaikan')) return 'perbaikan'
+  if (pathname.startsWith('/masalah') || pathname.startsWith('/pmo') || pathname.startsWith('/kesenangan')) return 'mental'
+  if (pathname.startsWith('/saran-perbaikan')) return 'perbaikan'
   return 'overview'
 }
 
@@ -113,7 +113,7 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
   if (category === 'perbaikan' && subPage) {
     switch (subPage) {
       case 'kesenangan': return 'Kesenangan'
-      case 'saran-perbaikan': return 'Saran Perbaikan'
+      case 'saran-perbaikan': return 'Masukan Daytrack'
     }
   }
 
@@ -168,7 +168,7 @@ function getCategoryDescription(category: string, period: Period, subPage: strin
   if (category === 'perbaikan' && subPage) {
     switch (subPage) {
       case 'kesenangan': return 'Catat momen bahagia hari ini'
-      case 'saran-perbaikan': return 'Catat saran perbaikan dan lacak progres'
+      case 'saran-perbaikan': return 'Sampaikan masukan untuk Daytrack'
     }
   }
 

@@ -7,7 +7,7 @@ import { z } from "zod"
 const saranPerbaikanSchema = z.object({
   tanggal: z.string().min(1, "Tanggal wajib diisi"),
   hari: z.string().min(1, "Hari wajib diisi"),
-  saran: z.string().min(1, "Saran wajib diisi"),
+  saran: z.string().optional(),
   keterangan: z.string().optional(),
   status: z.enum(["belum", "proses", "selesai"]).default("belum"),
 })
@@ -33,7 +33,7 @@ export async function upsertSaranPerbaikan(formData: SaranPerbaikanFormData) {
     user_id: user.id,
     tanggal: validated.tanggal,
     hari: validated.hari,
-    saran: validated.saran,
+    saran: validated.saran ?? "",
     keterangan: validated.keterangan || null,
     status: validated.status,
   }
