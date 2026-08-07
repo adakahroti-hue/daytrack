@@ -75,10 +75,10 @@ export function CategorySummaryCards({ period }: CategorySummaryCardsProps) {
   const { data: kesenanganData } = useKesenangan(dateKey)
   const kesenanganDone = kesenanganData && (kesenanganData as any)?.aktivitas ? 1 : 0
 
-  // Perbaikan - Saran Perbaikan
-  const { data: saranData = [] } = useSaranPerbaikan(dateKey)
-  const saranTotal = saranData.length
-  const saranDone = saranData.filter((s: any) => s.status === 'selesai').length
+  // Perbaikan - Masukan Daytrack (getter single → objek/null, BUKAN array — default [] hanya menangani undefined)
+  const { data: saranData } = useSaranPerbaikan(dateKey)
+  const saranTotal = saranData ? 1 : 0
+  const saranDone = saranData && (saranData as any).status === 'selesai' ? 1 : 0
 
   // Category summaries
   const ibadahDone = sholatDone + quranDone + doaDone + syukurDone

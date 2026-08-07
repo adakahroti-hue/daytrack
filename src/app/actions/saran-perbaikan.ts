@@ -149,3 +149,39 @@ export async function getSaranPerbaikanRange(startDate: string, endDate: string)
   if (error) throw new Error(error.message)
   return data || []
 }
+
+// Revisi 1 (batch 7): model entri — insert baru (bukan upsert per tanggal)
+export async function createSaranPerbaikan(formData: SaranPerbaikanFormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+  const validated = saranPerbaikanSchema.parse(formData)
+  const insertData = {
+    user_id: user.id,
+    tanggal: validated.tanggal,
+    hari: validated.hari,
+    saran: validated.saran ?? "",
+    keterangan: validated.keterangan ?? null,
+    status: validated.status ?? "belum",
+  }
+  const { data, error } = await supabase.from("saran_perbaikan").insert(insertData).select().single()
+  if (error) throw new Error(error.message)
+  revalidatePath("/saran-perbaikan")
+  return { data, error: null }
+}
+
+export async function updateSaranPerbaikan(id: string, formData: { tanggal?: string; hari?: string; saran?: string; keterangan?: string; status?: "belum" | "proses" | "selesai" }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+  const updateData: Record<string, string> = {}
+  if (formData.tanggal !== undefined) updateData.tanggal = formData.tanggal
+  if (formData.hari !== undefined) updateData.hari = formData.hari
+  if (formData.saran !== undefined) updateData.saran = formData.saran
+  if (formData.keterangan !== undefined) updateData.keterangan = formData.keterangan
+  if (formData.status !== undefined) updateData.status = formData.status
+  const { data, error } = await supabase.from("saran_perbaikan").update(updateData).eq("id", id).eq("user_id", user.id).select().single()
+  if (error) throw new Error(error.message)
+  revalidatePath("/saran-perbaikan")
+  return { data, error: null }
+}

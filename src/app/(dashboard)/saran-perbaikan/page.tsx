@@ -3,7 +3,6 @@
 import { useMemo, useState } from 'react'
 import {
   format,
-  eachDayOfInterval,
   startOfWeek,
   endOfWeek,
   startOfMonth,
@@ -12,14 +11,15 @@ import {
   endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, Lightbulb, Check, X, Trash2, Pencil, Plus } from 'lucide-react'
+import { Calendar, Lightbulb, Check, X, Trash2, Plus, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
-import { useSaranPerbaikanRange, useUpsertSaranPerbaikan, useDeleteSaranPerbaikan } from '@/hooks/useSaranPerbaikan'
+import { useSaranPerbaikanRange, useCreateSaranPerbaikan, useUpdateSaranPerbaikan, useDeleteSaranPerbaikan } from '@/hooks/useSaranPerbaikan'
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
 
@@ -49,6 +49,7 @@ interface SaranEntry {
 }
 
 interface EditState {
+  id: string | null // null = tambah baru
   tanggal: string
   saran: string
   tujuan: string
@@ -62,10 +63,12 @@ function startOfDaySafe(d: Date): Date {
 
 // ─── Main Component ────────────────────────────────
 
-// Revisi 8 (batch 5): tab ini berganti nama menjadi "Masukan Daytrack"
+// Revisi 1 (batch 7): model entri seperti tab Masalah — tabel kosong sampai ada inputan,
+// tanggal mengikuti inputan (bukan grid semua tanggal). Tab ini bernama "Masukan".
 export default function SaranPerbaikanPage() {
   // Periode & tanggal dari HeaderControls (toolbar di header)
   const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
+  const todayStr = format(new Date(), 'yyyy-MM-dd')
 
   const { rangeStart, rangeEnd } = useMemo(() => {
     const today = new Date()
@@ -98,62 +101,54 @@ export default function SaranPerbaikanPage() {
     queryKeys: [['saran-perbaikan', 'range', startDate, endDate]],
   })
 
-  const upsertSaranPerbaikan = useUpsertSaranPerbaikan()
+  const createSaranPerbaikan = useCreateSaranPerbaikan()
+  const updateSaranPerbaikan = useUpdateSaranPerbaikan()
   const deleteSaranPerbaikan = useDeleteSaranPerbaikan()
 
   const [editState, setEditState] = useState<EditState | null>(null)
 
-  // Map tanggal -> entry
-  const logMap = useMemo(() => {
-    const map: Record<string, SaranEntry> = {}
-    for (const l of logs as SaranEntry[]) map[l.tanggal] = l
-    return map
+  // Urutkan entri: terbaru di atas
+  const entries = useMemo(() => {
+    return [...(logs as SaranEntry[])].sort((a, b) => b.tanggal.localeCompare(a.tanggal))
   }, [logs])
 
-  // Daftar tanggal dalam rentang (ascending — terbaru paling bawah)
-  const dates = useMemo(() => {
-    if (rangeEnd < rangeStart) return []
-    return eachDayOfInterval({ start: rangeStart, end: rangeEnd }).map(d => format(d, 'yyyy-MM-dd'))
-  }, [rangeStart, rangeEnd])
-
-  const openEdit = (dateStr: string) => {
-    const entry = logMap[dateStr]
-    setEditState({ tanggal: dateStr, saran: entry?.saran || '', tujuan: entry?.keterangan || '' })
-  }
+  const openAdd = () => setEditState({ id: null, tanggal: todayStr, saran: '', tujuan: '' })
+  const openEdit = (e: SaranEntry) => setEditState({ id: e.id, tanggal: e.tanggal, saran: e.saran, tujuan: e.keterangan || '' })
 
   const handleSave = async () => {
     if (!editState) return
-    const date = new Date(editState.tanggal + 'T00:00:00')
-    await upsertSaranPerbaikan.mutateAsync({
-      tanggal: editState.tanggal,
-      hari: format(date, 'EEEE', { locale: id }),
-      saran: editState.saran.trim(),
-      keterangan: editState.tujuan.trim() || undefined,
-      status: logMap[editState.tanggal]?.status ?? 'belum',
-    })
+    if (!editState.saran.trim()) return
+    const hari = format(new Date(editState.tanggal + 'T00:00:00'), 'EEEE', { locale: id })
+    if (editState.id) {
+      await updateSaranPerbaikan.mutateAsync({
+        id: editState.id,
+        data: { tanggal: editState.tanggal, hari, saran: editState.saran.trim(), keterangan: editState.tujuan.trim() },
+      })
+    } else {
+      await createSaranPerbaikan.mutateAsync({
+        tanggal: editState.tanggal,
+        hari,
+        saran: editState.saran.trim(),
+        keterangan: editState.tujuan.trim() || undefined,
+        status: 'belum',
+      })
+    }
     setEditState(null)
   }
 
-  const handleSetStatus = async (dateStr: string, done: boolean) => {
-    const date = new Date(dateStr + 'T00:00:00')
-    const entry = logMap[dateStr]
-    await upsertSaranPerbaikan.mutateAsync({
-      tanggal: dateStr,
-      hari: format(date, 'EEEE', { locale: id }),
-      saran: entry?.saran || '',
-      keterangan: entry?.keterangan || undefined,
-      status: done ? 'selesai' : 'belum',
-    })
+  const handleDelete = async () => {
+    if (!editState?.id) return
+    await deleteSaranPerbaikan.mutateAsync(editState.id)
+    setEditState(null)
   }
 
-  const handleClear = async (dateStr: string) => {
-    const entry = logMap[dateStr]
-    if (entry) await deleteSaranPerbaikan.mutateAsync(entry.id)
+  const handleSetStatus = async (entry: SaranEntry, done: boolean) => {
+    await updateSaranPerbaikan.mutateAsync({ id: entry.id, data: { status: done ? 'selesai' : 'belum' } })
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
-      {/* Tabel gaya Quran: Tanggal | Hari | Saran Perbaikan | Tujuan | Status */}
+    <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
+      {/* Tabel gaya Quran: Tanggal | Hari | Saran Perbaikan | Tujuan | Status — hanya entri yang ada */}
       <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)] rounded-lg border bg-white', TABLE_BORDER)}>
         <table className="w-full border-collapse text-xs sm:text-sm">
           <thead className="sticky top-0 z-20 bg-white">
@@ -195,19 +190,23 @@ export default function SaranPerbaikanPage() {
               <tr>
                 <td colSpan={5} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td>
               </tr>
+            ) : entries.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="text-center py-12 text-slate-400 text-sm">
+                  Belum ada masukan. Tekan tombol + untuk menambah.
+                </td>
+              </tr>
             ) : (
-              dates.map((dateStr, rowIdx) => {
-                const date = new Date(dateStr + 'T00:00:00')
+              entries.map((entry, rowIdx) => {
+                const date = new Date(entry.tanggal + 'T00:00:00')
                 const dayName = format(date, 'EEEE', { locale: id })
                 const dateDisplay = format(date, 'd MMMM', { locale: id })
-                const entry = logMap[dateStr]
-                const isDone = entry?.status === 'selesai'
-                const hasEntry = !!entry
+                const isDone = entry.status === 'selesai'
 
                 return (
                   <tr
-                    key={dateStr}
-                    className={cn('border-b transition-colors', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30', 'hover:bg-blue-50/40')}
+                    key={entry.id}
+                    className={cn('border-b transition-colors', TABLE_BORDER, entry.tanggal === todayStr ? 'row-today-pulse' : (rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'), 'hover:bg-blue-50/40')}
                   >
                     <td className={cn('sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
                       <span className="sm:hidden">{format(date, 'd MMM', { locale: id })}</span>
@@ -219,18 +218,14 @@ export default function SaranPerbaikanPage() {
                       </span>
                     </td>
                     <td className={cn('px-2 sm:px-3 py-2 border-r', TABLE_BORDER)}>
-                      <button type="button" onClick={() => openEdit(dateStr)} className="w-full text-left group">
-                        {entry?.saran ? (
-                          <span className="text-slate-800 whitespace-normal break-words leading-snug group-hover:text-blue-700">{entry.saran}</span>
-                        ) : (
-                          <span className="text-slate-400 italic">Tulis masukan untuk Daytrack…</span>
-                        )}
+                      <button type="button" onClick={() => openEdit(entry)} className="w-full text-left group">
+                        <span className="text-slate-800 whitespace-normal break-words leading-snug group-hover:text-blue-700">{entry.saran}</span>
                         <Pencil className="inline-block h-3 w-3 ml-1.5 text-slate-300 group-hover:text-blue-500 align-middle" />
                       </button>
                     </td>
                     <td className={cn('px-2 sm:px-3 py-2 border-r', TABLE_BORDER)}>
-                      <button type="button" onClick={() => openEdit(dateStr)} className="w-full text-left">
-                        {entry?.keterangan ? (
+                      <button type="button" onClick={() => openEdit(entry)} className="w-full text-left">
+                        {entry.keterangan ? (
                           <span className="text-slate-700 whitespace-normal break-words leading-snug">{entry.keterangan}</span>
                         ) : (
                           <span className="text-slate-400 italic">Tujuan…</span>
@@ -247,9 +242,7 @@ export default function SaranPerbaikanPage() {
                                 'inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium border transition-colors cursor-pointer whitespace-normal leading-tight text-center',
                                 isDone
                                   ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200'
-                                  : hasEntry
-                                    ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
-                                    : 'text-slate-400 border-dashed border-slate-300 hover:bg-slate-50 hover:text-slate-600'
+                                  : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
                               )}
                             >
                               {isDone && <Check className="h-3.5 w-3.5 shrink-0" />}
@@ -257,20 +250,16 @@ export default function SaranPerbaikanPage() {
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="center" className="w-36">
-                            <DropdownMenuItem onClick={() => handleSetStatus(dateStr, false)} className="flex items-center gap-2">
+                            <DropdownMenuItem onClick={() => handleSetStatus(entry, false)} className="flex items-center gap-2">
                               <X className="h-4 w-4 text-amber-500" /> Belum
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleSetStatus(dateStr, true)} className="flex items-center gap-2">
+                            <DropdownMenuItem onClick={() => handleSetStatus(entry, true)} className="flex items-center gap-2">
                               <Check className="h-4 w-4 text-green-600" /> Sudah
                             </DropdownMenuItem>
-                            {entry && (
-                              <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => handleClear(dateStr)} className="flex items-center gap-2 text-destructive focus:text-destructive">
-                                  <Trash2 className="h-4 w-4" /> Hapus
-                                </DropdownMenuItem>
-                              </>
-                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => openEdit(entry)} className="flex items-center gap-2">
+                              <Pencil className="h-4 w-4 text-slate-500" /> Edit
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
@@ -283,9 +272,9 @@ export default function SaranPerbaikanPage() {
         </table>
       </div>
 
-      {/* Revisi 8: tombol tambah floating seperti tab Semua */}
+      {/* Revisi 8 (batch 6): tombol tambah floating seperti tab Semua */}
       <Button
-        onClick={() => openEdit(format(new Date(), 'yyyy-MM-dd'))}
+        onClick={openAdd}
         size="icon"
         aria-label="Tambah Masukan"
         className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-white shadow-lg"
@@ -293,15 +282,22 @@ export default function SaranPerbaikanPage() {
         <Plus className="h-6 w-6" />
       </Button>
 
-      {/* Dialog edit masukan */}
+      {/* Dialog tambah/edit masukan */}
       <Dialog open={!!editState} onOpenChange={(open) => !open && setEditState(null)}>
         <DialogContent className="max-w-[92vw] sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              Masukan Daytrack — {editState ? format(new Date(editState.tanggal + 'T00:00:00'), 'EEEE, d MMMM yyyy', { locale: id }) : ''}
-            </DialogTitle>
+            <DialogTitle>{editState?.id ? 'Edit Masukan' : 'Tambah Masukan'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="saran-tanggal">Tanggal</Label>
+              <Input
+                id="saran-tanggal"
+                type="date"
+                value={editState?.tanggal ?? todayStr}
+                onChange={(e) => setEditState(prev => prev ? { ...prev, tanggal: e.target.value } : prev)}
+              />
+            </div>
             <div className="space-y-1.5">
               <Label htmlFor="saran-teks">Saran Perbaikan</Label>
               <Textarea
@@ -322,9 +318,18 @@ export default function SaranPerbaikanPage() {
                 rows={2}
               />
             </div>
-            <div className="flex justify-end gap-2 pt-1">
-              <Button variant="outline" onClick={() => setEditState(null)}>Batal</Button>
-              <Button onClick={handleSave}>Simpan</Button>
+            <div className="flex items-center justify-between gap-2 pt-1">
+              <div>
+                {editState?.id && (
+                  <Button variant="ghost" onClick={handleDelete} className="text-destructive hover:bg-destructive/10">
+                    <Trash2 className="h-4 w-4 mr-1.5" /> Hapus
+                  </Button>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setEditState(null)}>Batal</Button>
+                <Button onClick={handleSave} disabled={!editState?.saran.trim()}>Simpan</Button>
+              </div>
             </div>
           </div>
         </DialogContent>

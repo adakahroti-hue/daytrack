@@ -123,3 +123,37 @@ export async function deleteKesenangan(id: string) {
   revalidatePath("/kesenangan")
   return { error: null }
 }
+
+// Revisi 1 (batch 7): model entri — insert baru (bukan upsert per tanggal)
+export async function createKesenangan(formData: KesenanganFormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+  const validated = kesenanganSchema.parse(formData)
+  const insertData = {
+    user_id: user.id,
+    tanggal: validated.tanggal,
+    hari: validated.hari,
+    kesenangan: validated.kesenangan ?? "",
+    status: validated.status ?? "belum",
+  }
+  const { data, error } = await supabase.from("kesenangan").insert(insertData).select().single()
+  if (error) throw new Error(error.message)
+  revalidatePath("/kesenangan")
+  return { data, error: null }
+}
+
+export async function updateKesenangan(id: string, formData: { tanggal?: string; hari?: string; kesenangan?: string; status?: "belum" | "sudah" }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+  const updateData: Record<string, string> = {}
+  if (formData.tanggal !== undefined) updateData.tanggal = formData.tanggal
+  if (formData.hari !== undefined) updateData.hari = formData.hari
+  if (formData.kesenangan !== undefined) updateData.kesenangan = formData.kesenangan
+  if (formData.status !== undefined) updateData.status = formData.status
+  const { data, error } = await supabase.from("kesenangan").update(updateData).eq("id", id).eq("user_id", user.id).select().single()
+  if (error) throw new Error(error.message)
+  revalidatePath("/kesenangan")
+  return { data, error: null }
+}

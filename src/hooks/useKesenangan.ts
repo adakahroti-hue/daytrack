@@ -3,7 +3,9 @@ import {
   getKesenangan, 
   getKesenanganRange, 
   upsertKesenangan,
-  deleteKesenangan 
+  deleteKesenangan,
+  createKesenangan,
+  updateKesenangan 
 } from "@/app/actions/kesenangan"
 import type { KesenanganFormData } from "@/app/actions/kesenangan"
 
@@ -40,6 +42,28 @@ export function useDeleteKesenangan() {
 
   return useMutation({
     mutationFn: (id: string) => deleteKesenangan(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["kesenangan"] })
+      queryClient.invalidateQueries({ queryKey: ["overview"] })
+    },
+  })
+}
+
+export function useCreateKesenangan() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: Parameters<typeof createKesenangan>[0]) => createKesenangan(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["kesenangan"] })
+      queryClient.invalidateQueries({ queryKey: ["overview"] })
+    },
+  })
+}
+
+export function useUpdateKesenangan() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { tanggal?: string; hari?: string; kesenangan?: string; status?: "belum" | "sudah" } }) => updateKesenangan(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["kesenangan"] })
       queryClient.invalidateQueries({ queryKey: ["overview"] })

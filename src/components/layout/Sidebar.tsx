@@ -121,10 +121,10 @@ const navigation: NavSection[] = [
     ],
   },
   {
-    title: 'Perbaikan',
+    title: 'Maintenance Daytrack',
     icon: Sparkles,
     items: [
-      { title: 'Masukan Daytrack', href: '/saran-perbaikan', icon: Lightbulb },
+      { title: 'Masukan', href: '/saran-perbaikan', icon: Lightbulb },
     ],
   },
 ]

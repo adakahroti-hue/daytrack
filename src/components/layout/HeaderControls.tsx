@@ -113,7 +113,7 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
   if (category === 'perbaikan' && subPage) {
     switch (subPage) {
       case 'kesenangan': return 'Kesenangan'
-      case 'saran-perbaikan': return 'Masukan Daytrack'
+      case 'saran-perbaikan': return 'Masukan'
     }
   }
 

@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { getSaranPerbaikan, upsertSaranPerbaikan, updateSaranPerbaikanStatus, deleteSaranPerbaikan, getSaranPerbaikanRange } from "@/app/actions/saran-perbaikan"
+import { getSaranPerbaikan, upsertSaranPerbaikan, updateSaranPerbaikanStatus, deleteSaranPerbaikan, getSaranPerbaikanRange, createSaranPerbaikan, updateSaranPerbaikan } from "@/app/actions/saran-perbaikan"
 import { SaranPerbaikanFormData } from "@/app/actions/saran-perbaikan"
 
 export function useSaranPerbaikan(tanggal: string) {
@@ -49,6 +49,28 @@ export function useDeleteSaranPerbaikan() {
     mutationFn: (id: string) => deleteSaranPerbaikan(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["saran-perbaikan"] })
+    },
+  })
+}
+
+export function useCreateSaranPerbaikan() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: SaranPerbaikanFormData) => createSaranPerbaikan(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["saran-perbaikan"] })
+      queryClient.invalidateQueries({ queryKey: ["overview"] })
+    },
+  })
+}
+
+export function useUpdateSaranPerbaikan() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { tanggal?: string; hari?: string; saran?: string; keterangan?: string; status?: "belum" | "proses" | "selesai" } }) => updateSaranPerbaikan(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["saran-perbaikan"] })
+      queryClient.invalidateQueries({ queryKey: ["overview"] })
     },
   })
 }
