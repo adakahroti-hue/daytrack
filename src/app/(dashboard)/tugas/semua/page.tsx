@@ -442,12 +442,18 @@ function SemuaPageClient() {
       return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     }
 
+    // Rev 5: pisahkan tugas terlambat — untuk mode prioritas/tanggal/durasi, tugas terlambat
+    // dikumpulkan dalam group "Terlambat" di bagian bawah (bukan tercampur di group lain)
+    const todayStart = startOfDay(new Date())
+    const overdueTasks = filteredTasks.filter(t => isBefore(new Date(t.tanggal), todayStart))
+    const onTimeTasks = filteredTasks.filter(t => !isBefore(new Date(t.tanggal), todayStart))
+
     const groups: { key: string; title: string; description: string; icon: React.ComponentType<{ className?: string }>; iconColor: string; tasks: Task[] }[] = []
 
     if (groupMode === 'tanggal') {
       // Group by tanggal dikerjakan (newest first)
       const byDate = new Map<string, Task[]>()
-      for (const t of filteredTasks) {
+      for (const t of onTimeTasks) {
         if (!byDate.has(t.tanggal)) byDate.set(t.tanggal, [])
         byDate.get(t.tanggal)!.push(t)
       }
@@ -466,7 +472,7 @@ function SemuaPageClient() {
         { key: 'sangat-panjang', label: 'Sangat Panjang', desc: '> 2 jam', min: 121, max: Number.MAX_SAFE_INTEGER },
       ]
       for (const b of buckets) {
-        const tasks = filteredTasks
+        const tasks = onTimeTasks
           .filter(t => t.estimasi_menit >= b.min && t.estimasi_menit <= b.max)
           .sort(byPrioritySort)
         if (tasks.length > 0) {
@@ -475,17 +481,14 @@ function SemuaPageClient() {
       }
     } else if (groupMode === 'lambat') {
       // Group by keterlambatan — hanya tampilkan tugas yang terlambat saja
-      const todayStart = startOfDay(new Date())
-      const terlambat = filteredTasks
-        .filter(t => isBefore(new Date(t.tanggal), todayStart))
-        .sort(byPrioritySort)
+      const terlambat = [...overdueTasks].sort(byPrioritySort)
       if (terlambat.length > 0) {
         groups.push({ key: 'terlambat', title: 'Terlambat', description: `${terlambat.length} tugas melewati tanggal`, icon: AlertTriangle, iconColor: 'text-red-600 dark:text-red-400', tasks: terlambat })
       }
     } else {
       // Group by prioritas (default — same look as Hari Ini tab)
       for (const p of PRIORITY_ORDER) {
-        const tasks = filteredTasks.filter(t => t.prioritas === p).sort(byPrioritySort)
+        const tasks = onTimeTasks.filter(t => t.prioritas === p).sort(byPrioritySort)
         if (tasks.length > 0) {
           groups.push({
             key: p,
@@ -497,6 +500,11 @@ function SemuaPageClient() {
           })
         }
       }
+    }
+
+    // Rev 5: group "Terlambat" di bagian bawah (untuk mode prioritas/tanggal/durasi)
+    if (groupMode !== 'lambat' && overdueTasks.length > 0) {
+      groups.push({ key: 'terlambat', title: 'Terlambat', description: `${overdueTasks.length} tugas melewati tanggal`, icon: AlertTriangle, iconColor: 'text-red-600 dark:text-red-400', tasks: [...overdueTasks].sort(byPrioritySort) })
     }
 
     return groups

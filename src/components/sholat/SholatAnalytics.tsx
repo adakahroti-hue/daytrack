@@ -58,13 +58,15 @@ const RADIAN = Math.PI / 180
 
 // Label persentase putih di dalam potongan donut
 const renderDonutLabel = (props: any) => {
-  const { cx, cy, midAngle, innerRadius, outerRadius, percent } = props
+  const { cx, cy, midAngle, innerRadius, outerRadius, payload, percent } = props
   const radius = innerRadius + (outerRadius - innerRadius) / 2
   const x = cx + radius * Math.cos(-midAngle * RADIAN)
   const y = cy + radius * Math.sin(-midAngle * RADIAN)
+  // Rev 6: pakai percent dari data (payload.percent) agar sama persis dengan tooltip
+  const pct = payload?.percent ?? Math.round((percent ?? 0) * 100)
   return (
     <text x={x} y={y} fill="#ffffff" fontSize={11} fontWeight={700} textAnchor="middle" dominantBaseline="central">
-      {`${Math.round((percent ?? 0) * 100)}%`}
+      {`${pct}%`}
     </text>
   )
 }
@@ -296,7 +298,7 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
         {/* ── Card 1: Sholat Paling Sulit Dilakukan ── */}
         <AnalyticsCard
-          title="Sholat Paling Sulit Dilakukan"
+          title="Tingkat Kesulitan Sholat"
           subtitle="Berdasarkan frekuensi tidak dikerjakan"
           insight={
             hasMissedData && topMissed && topMissed.missed > 0
@@ -338,7 +340,7 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
 
         {/* ── Card 2: Sholat Paling Tidak Khusyuk ── */}
         <AnalyticsCard
-          title="Sholat Paling Tidak Khusyuk"
+          title="Tingkat Kekhusyukan Sholat"
           subtitle="Rata-rata rating kekhusyukan (1 = sangat tidak khusyuk, 5 = sangat khusyuk)"
           insight={topLowRating ? `${topLowRating.name} memiliki tingkat kekhusyukan terendah.` : null}
           insightTone="amber"

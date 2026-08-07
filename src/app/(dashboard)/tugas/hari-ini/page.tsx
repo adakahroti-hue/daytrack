@@ -151,7 +151,7 @@ const TaskCard = memo(({
     <Card className={cn('group', cardBorderClass)}>
       <CardContent className="p-4 space-y-3">
         {/* Top Row: Priority Badge + Dropdown Menu */}
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start justify-between gap-2 min-h-[28px]">
           <div className="flex items-center gap-2" />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -190,7 +190,7 @@ const TaskCard = memo(({
         {/* Duration Info */}
         <div className="space-y-1">
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Clock className="h-3.5 w-3.5" />
+            <Clock className="h-3.5 w-3.5 flex-shrink-0" />
             <span>Estimasi: {getEstimasiText(task.estimasi_menit)}</span>
           </div>
 
@@ -198,7 +198,7 @@ const TaskCard = memo(({
           {actualDurationText && comparison && (
             <>
               <div className="flex items-center gap-1 text-sm text-slate-700 dark:text-slate-300">
-                <Clock className="h-3.5 w-3.5" />
+                <Clock className="h-3.5 w-3.5 flex-shrink-0" />
                 <span>Real: {actualDurationText}</span>
               </div>
               <div className="flex items-center gap-1 text-xs">
@@ -218,7 +218,7 @@ const TaskCard = memo(({
               'flex items-center gap-1 text-sm',
               isPaused ? 'text-slate-500 dark:text-slate-400' : 'text-amber-700 dark:text-amber-300 animate-pulse'
             )}>
-              <Clock className="h-3.5 w-3.5" />
+              <Clock className="h-3.5 w-3.5 flex-shrink-0" />
               <span>{isPaused ? 'Dijeda — ' : 'Sedang: '}{getTaskLiveDurationText(task)}</span>
             </div>
           )}
@@ -403,7 +403,7 @@ function HariIniPageClient() {
                   <span className="ml-1.5 text-sm font-semibold text-slate-500">({inProgressTasks.length})</span>
                 </h2>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 {inProgressTasks.map((task: Task) => (
                   <TaskCard
                     key={task.id}
