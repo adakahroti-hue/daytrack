@@ -5,7 +5,6 @@ import {
   BarChart,
   Bar,
   XAxis,
-  YAxis,
   Tooltip,
   ResponsiveContainer,
   Cell,
@@ -16,30 +15,34 @@ import {
 import { Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-// ─── Types (mirror struktur row tabel sholat) ─────────────────────
+// ─── Types (mirror struktur log minum air) ────────────────
 
-export type SholatLogRow = Record<string, boolean | number | string | null | undefined>
+export interface WaterLogEntry {
+  id: string
+  tanggal: string
+  waktu_baca: string
+  jumlah_ml: number
+  catatan: string | null
+  status: string | null
+}
 
-interface SholatColumn {
+interface WaterColumn {
   key: string
   label: string
 }
 
-interface SholatAnalyticsProps {
-  dates: string[]
-  sholatMap: Record<string, SholatLogRow | undefined>
-  columns: readonly SholatColumn[]
-  alasanLabels: Record<string, string>
+interface MinumAirAnalyticsProps {
+  logMap: Record<string, Record<string, WaterLogEntry | undefined>>
+  columns: readonly WaterColumn[]
 }
 
-// Palet pastel lembut konsisten dengan tema Daytrack
 const PASTEL_BAR_COLORS = [
-  '#FDA4AF', // soft rose
-  '#93C5FD', // soft blue
-  '#FCD34D', // soft amber
-  '#86EFAC', // soft green
-  '#C4B5FD', // soft violet
-  '#7DD3FC', // soft sky
+  '#FDA4AF',
+  '#93C5FD',
+  '#FCD34D',
+  '#86EFAC',
+  '#C4B5FD',
+  '#7DD3FC',
 ]
 
 const PASTEL_DONUT_COLORS = [
@@ -56,13 +59,11 @@ const PASTEL_DONUT_COLORS = [
 
 const RADIAN = Math.PI / 180
 
-// Label persentase putih di dalam potongan donut
 const renderDonutLabel = (props: any) => {
   const { cx, cy, midAngle, innerRadius, outerRadius, payload, percent } = props
   const radius = innerRadius + (outerRadius - innerRadius) / 2
   const x = cx + radius * Math.cos(-midAngle * RADIAN)
   const y = cy + radius * Math.sin(-midAngle * RADIAN)
-  // Rev 6: pakai percent dari data (payload.percent) agar sama persis dengan tooltip
   const pct = payload?.percent ?? Math.round((percent ?? 0) * 100)
   return (
     <text x={x} y={y} fill="#ffffff" fontSize={11} fontWeight={700} textAnchor="middle" dominantBaseline="central">
@@ -70,8 +71,6 @@ const renderDonutLabel = (props: any) => {
     </text>
   )
 }
-
-// ─── Card wrapper (konsisten design system Daytrack) ──────────────
 
 function AnalyticsCard({
   title,
@@ -121,8 +120,6 @@ function EmptyState() {
   )
 }
 
-// ─── Tooltips ─────────────────────────────────────────────────────
-
 function TooltipShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs shadow-md dark:bg-slate-900 dark:border-slate-700">
@@ -145,18 +142,6 @@ function MissedTooltip({ active, payload }: any) {
   )
 }
 
-function RatingTooltip({ active, payload }: any) {
-  if (!active || !payload?.length) return null
-  const d = payload[0].payload
-  return (
-    <TooltipShell>
-      <p className="font-semibold text-slate-800 dark:text-slate-100">{d.name}</p>
-      <p className="text-slate-500">Rata-rata kekhusyukan: {d.average} / 5</p>
-      <p className="text-slate-500">Berdasarkan {d.count} catatan</p>
-    </TooltipShell>
-  )
-}
-
 function ReasonTooltip({ active, payload }: any) {
   if (!active || !payload?.length) return null
   const d = payload[0].payload
@@ -164,32 +149,25 @@ function ReasonTooltip({ active, payload }: any) {
     <TooltipShell>
       <p className="font-semibold text-slate-800 dark:text-slate-100">{d.name}</p>
       <p className="text-slate-500">{d.count} kejadian</p>
-      <p className="font-medium text-slate-700 dark:text-slate-200">{d.percent}% dari seluruh sholat yang terlewat</p>
+      <p className="font-medium text-slate-700 dark:text-slate-200">{d.percent}% dari seluruh waktu minum yang terlewat</p>
     </TooltipShell>
   )
 }
 
-// ─── Main component ───────────────────────────────────────────────
+// ─── Main component ───────────────────────────────────────
 
-export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: SholatAnalyticsProps) {
-  // Kumpulkan hanya baris yang benar-benar tercatat (ada datanya)
-  const rows = useMemo(
-    () => dates.map(d => sholatMap[d]).filter((r): r is SholatLogRow => !!r),
-    [dates, sholatMap]
-  )
-
-  // Card 1: persentase tidak dilakukan per sholat
+export function MinumAirAnalytics({ logMap, columns }: MinumAirAnalyticsProps) {
+  // Card 1: persentase tidak minum per waktu
   const missedStats = useMemo(() => {
     return columns
       .map(col => {
         let missed = 0
-        let total = 0 // hanya kesempatan yang sudah dicatat (bukan null)
-        for (const row of rows) {
-          const v = row[`sholat_${col.key}`]
-          if (v === true || v === false) {
-            total += 1
-            if (v === false) missed += 1
-          }
+        let total = 0
+        for (const tanggal of Object.keys(logMap)) {
+          const entry = logMap[tanggal]?.[col.key]
+          if (!entry) continue
+          total += 1
+          if (entry.status === 'lupa') missed += 1
         }
         return {
           key: col.key,
@@ -201,49 +179,19 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
       })
       .filter(s => s.total > 0)
       .sort((a, b) => b.percent - a.percent || b.missed - a.missed)
-  }, [rows, columns])
+  }, [logMap, columns])
 
-  // Card 2: rata-rata rating kekhusyukan per sholat (skip null)
-  const ratingStats = useMemo(() => {
-    return columns
-      .map(col => {
-        let sum = 0
-        let count = 0
-        for (const row of rows) {
-          const q = row[`kualitas_${col.key}`]
-          if (typeof q === 'number' && q >= 1 && q <= 5) {
-            sum += q
-            count += 1
-          }
-        }
-        return {
-          key: col.key,
-          name: col.label,
-          count,
-          average: count > 0 ? Math.round((sum / count) * 10) / 10 : 0,
-          hasData: count > 0,
-        }
-      })
-      .sort((a, b) => {
-        if (a.hasData && b.hasData) return a.average - b.average
-        if (a.hasData) return -1
-        if (b.hasData) return 1
-        return 0
-      })
-  }, [rows, columns])
-
-  // Card 3: alasan terbanyak tidak sholat
+  // Card 2: alasan terbanyak tidak minum (dari catatan "Tidak minum: ...")
   const reasonStats = useMemo(() => {
     const counts = new Map<string, number>()
-    for (const row of rows) {
+    for (const tanggal of Object.keys(logMap)) {
       for (const col of columns) {
-        if (row[`sholat_${col.key}`] === false) {
-          const a = row[`alasan_${col.key}`]
-          if (typeof a === 'string' && a.trim()) {
-            const label = alasanLabels[a] ?? a
-            counts.set(label, (counts.get(label) ?? 0) + 1)
-          }
-        }
+        const entry = logMap[tanggal]?.[col.key]
+        if (!entry || entry.status !== 'lupa') continue
+        const reason = entry.catatan?.startsWith('Tidak minum:')
+          ? entry.catatan.replace('Tidak minum: ', '').trim()
+          : 'Lupa'
+        if (reason) counts.set(reason, (counts.get(reason) ?? 0) + 1)
       }
     }
     const total = [...counts.values()].reduce((s, c) => s + c, 0)
@@ -254,56 +202,31 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
         percent: total > 0 ? Math.round((count / total) * 100) : 0,
       }))
       .sort((a, b) => b.count - a.count)
-  }, [rows, columns, alasanLabels])
+  }, [logMap, columns])
 
   const topMissed = missedStats[0] ?? null
-  const topLowRating = ratingStats.find(r => r.hasData) ?? null
   const topReason = reasonStats[0] ?? null
-
   const hasMissedData = missedStats.length > 0
-  const hasRatingData = ratingStats.some(r => r.hasData)
   const hasReasonData = reasonStats.length > 0
 
-  // Label "X.X ★" di ujung batang rating (inline seperti referensi)
-  const renderRatingLabel = (props: any) => {
-    const { x, y, width, height, index } = props
-    const entry = ratingStats[index]
-    if (!entry) return null
-    const lx = (x ?? 0) + (width ?? 0) + 6
-    const ly = (y ?? 0) + (height ?? 0) / 2
-    if (!entry.hasData) {
-      return (
-        <text x={lx} y={ly} dy={3} fontSize={11} fill="#94A3B8">
-          —
-        </text>
-      )
-    }
-    return (
-      <text x={lx} y={ly} dy={3} fontSize={11} fontWeight={600}>
-        <tspan fill="#475569">{entry.average.toFixed(1)}</tspan>
-        <tspan fill="#F59E0B" dx={3}>★</tspan>
-      </text>
-    )
-  }
-
   return (
-    <section className="space-y-4" aria-label="Analytics sholat">
+    <section className="space-y-4" aria-label="Analytics minum air">
       <div className="pt-2">
         <h2 className="text-sm font-bold uppercase tracking-tight text-slate-700 dark:text-slate-200">
           Analytics &amp; Insight
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
-        {/* ── Card 1: Sholat Paling Sulit Dilakukan ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+        {/* ── Card 1: Tingkat Kesulitan Minum Air ── */}
         <AnalyticsCard
-          title="Tingkat Kesulitan Sholat"
-          subtitle="Berdasarkan frekuensi tidak dikerjakan"
+          title="Tingkat Kesulitan Minum Air"
+          subtitle="Berdasarkan frekuensi lupa / tidak minum"
           insight={
             hasMissedData && topMissed && topMissed.missed > 0
-              ? `${topMissed.name} adalah sholat yang paling sering terlewat.`
+              ? `${topMissed.name} adalah waktu yang paling sering terlewat.`
               : hasMissedData
-                ? 'Semua sholat yang tercatat sudah dikerjakan. Pertahankan!'
+                ? 'Semua waktu minum yang tercatat sudah dilakukan. Pertahankan!'
                 : null
           }
           insightTone="red"
@@ -337,51 +260,10 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
           )}
         </AnalyticsCard>
 
-        {/* ── Card 2: Sholat Paling Tidak Khusyuk ── */}
+        {/* ── Card 2: Alasan Terbanyak Tidak Minum ── */}
         <AnalyticsCard
-          title="Tingkat Kekhusyukan Sholat"
-          subtitle="Rata-rata rating kekhusyukan (1 = sangat tidak khusyuk, 5 = sangat khusyuk)"
-          insight={topLowRating ? `${topLowRating.name} memiliki tingkat kekhusyukan terendah.` : null}
-          insightTone="amber"
-        >
-          {hasRatingData ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart
-                data={ratingStats}
-                layout="vertical"
-                margin={{ top: 4, right: 48, left: 4, bottom: 4 }}
-                barCategoryGap="22%"
-              >
-                <XAxis type="number" domain={[0, 5]} hide />
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  width={64}
-                  tick={{ fontSize: 11, fill: '#64748B' }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <Tooltip content={<RatingTooltip />} cursor={{ fill: 'rgba(148,163,184,0.08)' }} />
-                <Bar dataKey="average" radius={[0, 6, 6, 0]} maxBarSize={16} isAnimationActive animationDuration={500}>
-                  {ratingStats.map((entry, i) => (
-                    <Cell
-                      key={entry.key}
-                      fill={entry.hasData ? PASTEL_BAR_COLORS[i % PASTEL_BAR_COLORS.length] : '#E2E8F0'}
-                    />
-                  ))}
-                  <LabelList dataKey="average" position="right" content={renderRatingLabel} />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <EmptyState />
-          )}
-        </AnalyticsCard>
-
-        {/* ── Card 3: Alasan Terbanyak Tidak Sholat ── */}
-        <AnalyticsCard
-          title="Alasan Terbanyak Tidak Sholat"
-          subtitle="Berdasarkan alasan yang dipilih saat melewatkan sholat"
+          title="Alasan Terbanyak Tidak Minum"
+          subtitle="Berdasarkan alasan yang dipilih saat melewatkan waktu minum"
           insight={topReason ? `${topReason.name} adalah alasan paling sering.` : null}
           insightTone="blue"
         >

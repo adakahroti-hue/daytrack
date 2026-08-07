@@ -23,17 +23,18 @@ import { cn } from '@/lib/utils'
 import { useQuranLogRange, useUpsertQuranLog, useDeleteQuranLog } from '@/hooks/useQuranLogs'
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
+import { QuranAnalytics } from '@/components/quran/QuranAnalytics'
 
 // ─── Constants ────────────────────────────────────
 
 type WaktuBacaKey = 'setelah_subuh' | 'setelah_dzuhur' | 'setelah_ashar' | 'setelah_maghrib' | 'setelah_isya'
 
 const WAKTU_BACA: { key: WaktuBacaKey; label: string; icon: React.ComponentType<{ className?: string }>; color: string }[] = [
-  { key: 'setelah_subuh', label: 'Subuh', icon: Sun, color: 'text-amber-500' },
-  { key: 'setelah_dzuhur', label: 'Dzuhur', icon: Sun, color: 'text-yellow-500' },
-  { key: 'setelah_ashar', label: 'Ashar', icon: CloudSun, color: 'text-sky-500' },
-  { key: 'setelah_maghrib', label: 'Maghrib', icon: Sunset, color: 'text-rose-500' },
-  { key: 'setelah_isya', label: 'Isya', icon: Moon, color: 'text-indigo-500' },
+  { key: 'setelah_subuh', label: 'Setelah Subuh', icon: Sun, color: 'text-amber-500' },
+  { key: 'setelah_dzuhur', label: 'Setelah Dzuhur', icon: Sun, color: 'text-yellow-500' },
+  { key: 'setelah_ashar', label: 'Setelah Ashar', icon: CloudSun, color: 'text-sky-500' },
+  { key: 'setelah_maghrib', label: 'Setelah Maghrib', icon: Sunset, color: 'text-rose-500' },
+  { key: 'setelah_isya', label: 'Setelah Isya', icon: Moon, color: 'text-indigo-500' },
 ]
 
 // Opsi status seperti tab sholat: centang = sudah baca, sisanya alasan tidak membaca
@@ -564,6 +565,9 @@ export default function QuranPage() {
           </table>
         </div>
       </div>
+
+      {/* Revisi 5: Analytics & Insight — tingkat kesulitan + alasan terbanyak tidak baca */}
+      <QuranAnalytics logMap={logMap} columns={WAKTU_BACA} />
 
       {/* Dropdown menu gaya sholat */}
       {dropdown && (

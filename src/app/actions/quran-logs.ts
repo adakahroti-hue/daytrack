@@ -145,7 +145,7 @@ export async function getQuranLogRange(startDate: string, endDate: string) {
 
   const { data, error } = await supabase
     .from("quran_logs")
-    .select("*")
+    .select("id, tanggal, waktu_baca, surat, juz, halaman_mulai, halaman_selesai, jumlah_halaman, catatan, created_at, updated_at")
     .eq("user_id", user.id)
     .gte("tanggal", startDate)
     .lte("tanggal", endDate)

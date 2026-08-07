@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query"
 import { 
   getQuranLog, 
   getQuranLogRange, 
@@ -19,6 +19,7 @@ export function useQuranLogRange(startDate: string, endDate: string) {
     queryKey: ["quran_logs", "range", startDate, endDate],
     queryFn: () => getQuranLogRange(startDate, endDate),
     enabled: !!startDate && !!endDate,
+    placeholderData: keepPreviousData,
   })
 }
 export function useQuranDailySummary(tanggal: string) {

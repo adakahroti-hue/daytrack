@@ -67,6 +67,7 @@ const TaskCard = memo(({
   onStatusChange,
   onPause,
   onResume,
+  onStart,
 }: {
   task: Task
   onEdit: (task: Task) => void
@@ -74,6 +75,7 @@ const TaskCard = memo(({
   onStatusChange: (id: string, status: 'belum' | 'proses' | 'selesai') => void
   onPause: (id: string) => void
   onResume: (id: string) => void
+  onStart?: (task: Task) => void
 }) => {
   const isCompleted = task.status === 'selesai'
   const isInProgress = task.status === 'proses'
@@ -90,7 +92,8 @@ const TaskCard = memo(({
 
   const handlePrimaryAction = () => {
     if (isPending) {
-      onStatusChange(task.id, 'proses')
+      // Revisi 10: lewatkan ke parent — cek prioritas, mungkin tampilkan popup peringatan
+      onStart?.(task)
     } else if (isInProgress) {
       onStatusChange(task.id, 'selesai')
     }
@@ -280,6 +283,8 @@ TaskCard.displayName = 'TaskCard'
 function HariIniPageClient() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<EditingTask | null>(null)
+  // Revisi 10: tugas yang diklik tapi prioritasnya bukan tertinggi — tunggu konfirmasi
+  const [pendingStart, setPendingStart] = useState<Task | null>(null)
 
   const today = new Date()
   const todayStr = format(today, 'yyyy-MM-dd')
@@ -315,6 +320,22 @@ function HariIniPageClient() {
 
   const handleStatusChange = (id: string, status: 'belum' | 'proses' | 'selesai') => {
     toggleTaskStatus.mutate({ id, status })
+  }
+
+  // Revisi 10: cek apakah ada tugas hari ini dengan prioritas lebih tinggi yang belum selesai
+  const handleStartRequest = (task: Task) => {
+    const taskPriorityIndex = PRIORITY_ORDER.indexOf(task.prioritas)
+    const hasHigherPriorityPending = todayTasks.some(
+      (t: Task) =>
+        t.id !== task.id &&
+        t.status !== 'selesai' &&
+        PRIORITY_ORDER.indexOf(t.prioritas) < taskPriorityIndex
+    )
+    if (hasHigherPriorityPending) {
+      setPendingStart(task)
+      return
+    }
+    handleStatusChange(task.id, 'proses')
   }
 
   const handlePause = (id: string) => pauseTask.mutate(id)
@@ -413,6 +434,7 @@ function HariIniPageClient() {
                     onStatusChange={handleStatusChange}
                     onPause={handlePause}
                     onResume={handleResume}
+                    onStart={handleStartRequest}
                   />
                 ))}
               </div>
@@ -441,6 +463,7 @@ function HariIniPageClient() {
                         onStatusChange={handleStatusChange}
                         onPause={handlePause}
                         onResume={handleResume}
+                        onStart={handleStartRequest}
                       />
                     ))}
                   </div>
@@ -493,6 +516,41 @@ function HariIniPageClient() {
       >
         <Plus className="h-6 w-6" />
       </Button>
+
+      {/* Revisi 10: popup peringatan prioritas — tugas yang diklik bukan prioritas tertinggi */}
+      <Dialog open={!!pendingStart} onOpenChange={(open) => !open && setPendingStart(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-amber-600">
+              <AlertTriangle className="h-5 w-5" />
+              Peringatan Prioritas
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-slate-600 dark:text-slate-300">
+              Kamu akan mengerjakan{' '}
+              <span className="font-semibold text-slate-900 dark:text-white capitalize">
+                “{pendingStart?.nama}”
+              </span>
+              , padahal masih ada tugas dengan prioritas lebih tinggi yang belum dikerjakan hari ini.
+            </p>
+            <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
+              Apakah kamu ingin mengabaikan tugas prioritas lebih tinggi dan tetap mengerjakan tugas ini?
+            </p>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setPendingStart(null)}>Batal</Button>
+            <Button
+              onClick={() => {
+                if (pendingStart) handleStatusChange(pendingStart.id, 'proses')
+                setPendingStart(null)
+              }}
+            >
+              Ya, kerjakan
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Add/Edit Task Dialog */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>

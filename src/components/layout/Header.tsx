@@ -1,15 +1,16 @@
 'use client'
 
+import { useMemo } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, Clock, CalendarDays, CalendarRange, CheckCircle2, AlertTriangle } from 'lucide-react'
-import { format } from 'date-fns'
+import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, Clock, CalendarDays, CalendarRange, CheckCircle2, AlertTriangle, Droplets, LayoutDashboard, BookOpen, Mosque, Heart, Moon, GlassWater, Shield, Brain, Smile, Lightbulb, Sparkles } from 'lucide-react'
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
-import { useHeaderControls, formatDateForPeriod, formatIndonesianDate, formatIbadahPeriodLabel } from './HeaderControls'
+import { useHeaderControls, formatDateForPeriod, formatIndonesianDate, formatIbadahPeriodLabel, GROUP_MODES } from './HeaderControls'
 import { useTasks } from '@/hooks/useTasks'
+import { useWaterLogRange } from '@/hooks/useMinumAirLogs'
 import { getEstimasiText } from '@/lib/utils'
-import Image from 'next/image'
 
 interface HeaderProps {
   onMenuClick: () => void
@@ -104,6 +105,72 @@ function SelesaiHeaderStats() {
   )
 }
 
+// Ikon per tab — mengikuti icon sidebar (revisi 7). PMO memakai Brain (revisi 8, dibedakan dari Masalah/Shield)
+const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  '/overview': LayoutDashboard,
+  '/tugas/hari-ini': Clock,
+  '/tugas/semua': CalendarDays,
+  '/tugas/selesai': CheckCircle2,
+  '/sholat': Mosque,
+  '/quran': BookOpen,
+  '/doa': Heart,
+  '/syukur': Sparkles,
+  '/tidur': Moon,
+  '/minum-air': GlassWater,
+  '/masalah': Shield,
+  '/pmo': Brain,
+  '/kesenangan': Smile,
+  '/saran-perbaikan': Lightbulb,
+}
+
+const GLASS_ML = 250
+
+function startOfDaySafe(d: Date): Date {
+  const x = new Date(d)
+  x.setHours(0, 0, 0, 0)
+  return x
+}
+
+// Revisi 4: card jumlah gelas air — dipindah ke header, di kiri navigasi tanggal tab Minum Air
+function MinumAirHeaderStats() {
+  const { ibadahPeriod, ibadahDate } = useHeaderControls()
+  const today = new Date()
+  const { rangeStart, rangeEnd } = useMemo(() => {
+    let start: Date
+    let end: Date
+    if (ibadahPeriod === 'daily') {
+      start = startOfDaySafe(ibadahDate)
+      end = ibadahDate
+    } else if (ibadahPeriod === 'weekly') {
+      start = startOfWeek(ibadahDate, { weekStartsOn: 1 })
+      end = endOfWeek(ibadahDate, { weekStartsOn: 1 })
+    } else if (ibadahPeriod === 'monthly') {
+      start = startOfMonth(ibadahDate)
+      end = endOfMonth(ibadahDate)
+    } else {
+      start = startOfYear(ibadahDate)
+      end = endOfYear(ibadahDate)
+    }
+    const cappedEnd = end > today ? today : end
+    return { rangeStart: start, rangeEnd: cappedEnd }
+  }, [ibadahPeriod, ibadahDate, today])
+
+  const startDate = format(rangeStart, 'yyyy-MM-dd')
+  const endDate = format(rangeEnd, 'yyyy-MM-dd')
+  const { data: waterLogs = [] } = useWaterLogRange(startDate, endDate)
+  const totalGelas = Math.round(
+    (waterLogs as any[]).reduce((sum, l) => sum + (l.jumlah_ml || 0), 0) / GLASS_ML
+  )
+
+  return (
+    <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 border border-blue-200 rounded-lg shrink-0">
+      <Droplets className="h-3.5 w-3.5 text-blue-600" />
+      <span className="text-xs font-semibold text-blue-700">{totalGelas}</span>
+      <span className="text-[10px] text-blue-600/70">gelas</span>
+    </div>
+  )
+}
+
 export function Header({ onMenuClick }: HeaderProps) {
   const pathname = usePathname()
   const {
@@ -119,6 +186,8 @@ export function Header({ onMenuClick }: HeaderProps) {
     ibadahDate,
     setIbadahPeriod,
     navigateIbadah,
+    groupMode,
+    setGroupMode,
   } = useHeaderControls()
 
   // Show period toggle only on Overview page
@@ -164,13 +233,10 @@ export function Header({ onMenuClick }: HeaderProps) {
       {/* Page title & description — left side */}
       <div className="flex-1 min-w-0">
         <h1 className="flex items-center gap-2 text-lg font-semibold truncate">
-          <Image
-            src="/daytrack-logo.png"
-            alt="Daytrack logo"
-            width={22}
-            height={22}
-            className="h-[22px] w-[22px] shrink-0 rounded-md"
-          />
+          {(() => {
+            const Icon = NAV_ICONS[pathname] ?? LayoutDashboard
+            return <Icon className="h-[18px] w-[18px] shrink-0 text-primary" />
+          })()}
           <span className="truncate">{title}</span>
         </h1>
         <p className="text-xs text-muted-foreground truncate">{description}</p>
@@ -192,6 +258,28 @@ export function Header({ onMenuClick }: HeaderProps) {
 
         {/* Semua Stats — only on tugas/semua */}
         {isSemua && <SemuaHeaderStats />}
+
+        {/* Revisi 1: toggle group (Prioritas/Tanggal/Durasi/Lambat) — di header, kanan card Terlambat */}
+        {isSemua && (
+          <div className="hidden md:flex items-center gap-0.5 p-0.5 bg-muted/50 rounded-lg border border-border shrink-0">
+            {GROUP_MODES.map((gm) => (
+              <button
+                key={gm.value}
+                type="button"
+                onClick={() => setGroupMode(gm.value)}
+                className={cn(
+                  'flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap',
+                  groupMode === gm.value
+                    ? 'bg-[#0F172A] text-white shadow-sm'
+                    : 'text-slate-600 hover:bg-white/60'
+                )}
+              >
+                <gm.icon className="h-3.5 w-3.5" />
+                <span className="hidden lg:inline">{gm.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Selesai Stats — only on tugas/selesai */}
         {isSelesai && <SelesaiHeaderStats />}
@@ -256,6 +344,8 @@ export function Header({ onMenuClick }: HeaderProps) {
         {/* Sholat, Quran & Minum Air toolbar — navigasi tanggal (kiri) + toggle group (kanan) di header */}
         {(isSholat || isQuran || isMinumAir) && (
           <div className="flex items-center gap-1 sm:gap-2">
+            {/* Revisi 4: jumlah gelas di kiri navigasi tanggal (tab Minum Air) */}
+            {isMinumAir && <MinumAirHeaderStats />}
             <div className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 bg-muted/50 rounded-lg border border-border">
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateIbadah('prev')} aria-label="Periode sebelumnya">
                 <ChevronLeft className="h-4 w-4" />

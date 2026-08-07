@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
-import { X, LayoutDashboard, Calendar, Mosque, BookOpen, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, ChevronDown, ChevronRight } from 'lucide-react'
+import { X, LayoutDashboard, Calendar, Mosque, BookOpen, Heart, Moon, GlassWater, Shield, Brain, Smile, Lightbulb, Sparkles, ChevronDown, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 
@@ -66,7 +66,7 @@ const navigation: NavSection[] = [
     icon: Shield,
     items: [
       { title: 'Masalah', href: '/masalah', icon: Shield },
-      { title: 'PMO', href: '/pmo', icon: Shield },
+      { title: 'PMO', href: '/pmo', icon: Brain },
     ],
   },
   {

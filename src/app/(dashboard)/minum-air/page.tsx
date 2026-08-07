@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from 'react'
+import { useMemo } from 'react'
 import {
   format,
   eachDayOfInterval,
@@ -16,13 +16,14 @@ import {
   subMonths,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, Droplets, Check, X, Trash2 } from 'lucide-react'
+import { Calendar, Check, X, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { useWaterLogRange, useUpsertWaterLog, useDeleteWaterLog } from '@/hooks/useMinumAirLogs'
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
+import { MinumAirAnalytics } from '@/components/minum-air/MinumAirAnalytics'
 
 // ─── Constants ────────────────────────────────────
 
@@ -35,6 +36,9 @@ const WATER_TIMES: { key: WaterKey; label: string; icon: string; waktu: string }
   { key: 'setelah_maghrib', label: 'Setelah Maghrib', icon: '🌇', waktu: '18:00' },
   { key: 'sebelum_tidur', label: 'Sebelum Tidur', icon: '🌙', waktu: '21:30' },
 ]
+
+// Revisi 6: daftar alasan tidak minum (disimpan di kolom catatan: "Tidak minum: <alasan>")
+const WATER_REASONS = ['Malas', 'Lupa', 'Sibuk', 'Sakit', 'Perjalanan', 'Tidak Ada Tempat', 'Bersama Teman', 'Lainnya']
 
 const DAY_BADGE_COLORS: Record<string, string> = {
   Senin: 'bg-yellow-100 text-yellow-800 border-yellow-200',
@@ -78,11 +82,8 @@ function startOfDaySafe(d: Date): Date {
 // ─── Main Component ────────────────────────────────
 
 export default function MinumAirPage() {
-  const [mounted, setMounted] = useState(false)
   // ── Rev 6: periode & tanggal dari HeaderControls (toolbar pindah ke header) ──
   const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
-
-  useEffect(() => setMounted(true), [])
 
   const { rangeStart, rangeEnd, periodLabel, isCurrentPeriod } = useMemo(() => {
     const today = new Date()
@@ -145,14 +146,14 @@ export default function MinumAirPage() {
     return eachDayOfInterval({ start: rangeStart, end: rangeEnd }).reverse().map(d => format(d, 'yyyy-MM-dd'))
   }, [rangeStart, rangeEnd])
 
-  // Total gelas dalam rentang
-  const totalGelas = useMemo(
-    () => Math.round((waterLogs as WaterLogEntry[]).reduce((sum, l) => sum + (l.jumlah_ml || 0), 0) / GLASS_ML),
-    [waterLogs]
-  )
-
-  const handleSetStatus = async (tanggal: string, key: WaterKey, status: 'sudah' | 'lupa') => {
-    await upsertWaterLog.mutateAsync({ tanggal, waktu_baca: key, jumlah_ml: status === 'sudah' ? GLASS_ML : 0, status })
+  const handleSetStatus = async (tanggal: string, key: WaterKey, status: 'sudah' | 'lupa', reason?: string) => {
+    await upsertWaterLog.mutateAsync({
+      tanggal,
+      waktu_baca: key,
+      jumlah_ml: status === 'sudah' ? GLASS_ML : 0,
+      status,
+      catatan: status === 'lupa' && reason ? `Tidak minum: ${reason}` : undefined,
+    })
     refetch()
   }
   const handleClear = async (tanggal: string, key: WaterKey) => {
@@ -163,19 +164,9 @@ export default function MinumAirPage() {
     }
   }
 
-  if (!mounted) {
-    return <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6"><div className="h-8 bg-muted animate-pulse rounded w-1/4" /></div>
-  }
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
-      {/* Total gelas — dipindah dari toolbar (rev 6) */}
-      <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 border border-blue-200 rounded-lg w-fit">
-        <Droplets className="h-3.5 w-3.5 text-blue-600" />
-        <span className="text-xs font-semibold text-blue-700">{totalGelas}</span>
-        <span className="text-[10px] text-blue-600/70">gelas</span>
-      </div>
-
       {/* Table — gaya seperti tab sholat */}
       <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)] rounded-lg border bg-white', TABLE_BORDER)}>
         <table className="w-full border-collapse text-sm">
@@ -238,6 +229,9 @@ export default function MinumAirPage() {
                       const entry = logMap[dateStr]?.[col.key]
                       const isDone = !!entry && (entry.status === 'sudah' || entry.jumlah_ml > 0)
                       const isLupa = !!entry && entry.status === 'lupa'
+                      const lupaLabel = isLupa && entry?.catatan?.startsWith('Tidak minum:')
+                        ? entry.catatan.replace('Tidak minum: ', '')
+                        : 'Lupa'
                       return (
                         <td
                           key={col.key}
@@ -258,16 +252,18 @@ export default function MinumAirPage() {
                                   )}
                                 >
                                   {isDone && <Check className="h-3.5 w-3.5" />}
-                                  {isDone ? 'Sudah' : isLupa ? 'Lupa' : 'Belum'}
+                                  {isDone ? 'Sudah' : isLupa ? lupaLabel : 'Belum'}
                                 </button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="center" className="w-40">
                                 <DropdownMenuItem onClick={() => handleSetStatus(dateStr, col.key, 'sudah')} className="flex items-center gap-2">
                                   <Check className="h-4 w-4 text-blue-600" /> Sudah Minum
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleSetStatus(dateStr, col.key, 'lupa')} className="flex items-center gap-2">
-                                  <X className="h-4 w-4 text-red-500" /> Lupa
-                                </DropdownMenuItem>
+                                {WATER_REASONS.map(r => (
+                                  <DropdownMenuItem key={r} onClick={() => handleSetStatus(dateStr, col.key, 'lupa', r)} className="flex items-center gap-2">
+                                    <X className="h-4 w-4 text-red-500" /> {r}
+                                  </DropdownMenuItem>
+                                ))}
                                 {entry && (
                                   <>
                                     <DropdownMenuSeparator />
@@ -289,6 +285,9 @@ export default function MinumAirPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Revisi 6: Analytics & Insight — tingkat kesulitan + alasan terbanyak tidak minum */}
+      <MinumAirAnalytics logMap={logMap} columns={WATER_TIMES} />
     </div>
   )
 }
