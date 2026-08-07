@@ -6,14 +6,14 @@ import {
   Bar,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   Cell,
+  LabelList,
   PieChart,
   Pie,
 } from 'recharts'
-import { AlertTriangle, Star, Info } from 'lucide-react'
+import { AlertTriangle, Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 // ─── Types (mirror struktur row tabel sholat) ─────────────────────
@@ -43,8 +43,8 @@ const PASTEL_BAR_COLORS = [
 ]
 
 const PASTEL_DONUT_COLORS = [
-  '#93C5FD',
   '#FDA4AF',
+  '#93C5FD',
   '#FCD34D',
   '#86EFAC',
   '#C4B5FD',
@@ -53,6 +53,21 @@ const PASTEL_DONUT_COLORS = [
   '#A5B4FC',
   '#F9A8D4',
 ]
+
+const RADIAN = Math.PI / 180
+
+// Label persentase putih di dalam potongan donut
+const renderDonutLabel = (props: any) => {
+  const { cx, cy, midAngle, innerRadius, outerRadius, percent } = props
+  const radius = innerRadius + (outerRadius - innerRadius) / 2
+  const x = cx + radius * Math.cos(-midAngle * RADIAN)
+  const y = cy + radius * Math.sin(-midAngle * RADIAN)
+  return (
+    <text x={x} y={y} fill="#ffffff" fontSize={11} fontWeight={700} textAnchor="middle" dominantBaseline="central">
+      {`${Math.round((percent ?? 0) * 100)}%`}
+    </text>
+  )
+}
 
 // ─── Card wrapper (konsisten design system Daytrack) ──────────────
 
@@ -247,6 +262,28 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
   const hasRatingData = ratingStats.some(r => r.hasData)
   const hasReasonData = reasonStats.length > 0
 
+  // Label "X.X ★" di ujung batang rating (inline seperti referensi)
+  const renderRatingLabel = (props: any) => {
+    const { x, y, width, height, index } = props
+    const entry = ratingStats[index]
+    if (!entry) return null
+    const lx = (x ?? 0) + (width ?? 0) + 6
+    const ly = (y ?? 0) + (height ?? 0) / 2
+    if (!entry.hasData) {
+      return (
+        <text x={lx} y={ly} dy={3} fontSize={11} fill="#94A3B8">
+          —
+        </text>
+      )
+    }
+    return (
+      <text x={lx} y={ly} dy={3} fontSize={11} fontWeight={600}>
+        <tspan fill="#475569">{entry.average.toFixed(1)}</tspan>
+        <tspan fill="#F59E0B" dx={3}>★</tspan>
+      </text>
+    )
+  }
+
   return (
     <section className="space-y-4" aria-label="Analytics sholat">
       <div className="flex items-center gap-2 pt-2">
@@ -272,8 +309,7 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
         >
           {hasMissedData ? (
             <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={missedStats} margin={{ top: 20, right: 8, left: -18, bottom: 0 }} barCategoryGap="28%">
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+              <BarChart data={missedStats} margin={{ top: 24, right: 8, left: 8, bottom: 0 }} barCategoryGap="28%">
                 <XAxis
                   dataKey="name"
                   tick={{ fontSize: 11, fill: '#64748B' }}
@@ -281,18 +317,17 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
                   tickLine={false}
                   interval={0}
                 />
-                <YAxis
-                  tick={{ fontSize: 11, fill: '#94A3B8' }}
-                  axisLine={false}
-                  tickLine={false}
-                  domain={[0, 100]}
-                  tickFormatter={(v: number) => `${v}%`}
-                />
                 <Tooltip content={<MissedTooltip />} cursor={{ fill: 'rgba(148,163,184,0.08)' }} />
                 <Bar dataKey="percent" radius={[6, 6, 0, 0]} maxBarSize={44} isAnimationActive animationDuration={500}>
                   {missedStats.map((entry, i) => (
                     <Cell key={entry.key} fill={PASTEL_BAR_COLORS[i % PASTEL_BAR_COLORS.length]} />
                   ))}
+                  <LabelList
+                    dataKey="percent"
+                    position="top"
+                    formatter={(v: number) => `${v}%`}
+                    style={{ fontSize: 11, fill: '#475569', fontWeight: 600 }}
+                  />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -305,11 +340,7 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
         <AnalyticsCard
           title="Sholat Paling Tidak Khusyuk"
           subtitle="Rata-rata rating kekhusyukan (1 = sangat tidak khusyuk, 5 = sangat khusyuk)"
-          insight={
-            topLowRating
-              ? `${topLowRating.name} memiliki tingkat kekhusyukan terendah.`
-              : null
-          }
+          insight={topLowRating ? `${topLowRating.name} memiliki tingkat kekhusyukan terendah.` : null}
           insightTone="amber"
         >
           {hasRatingData ? (
@@ -317,51 +348,32 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
               <BarChart
                 data={ratingStats}
                 layout="vertical"
-                margin={{ top: 4, right: 12, left: 4, bottom: 4 }}
+                margin={{ top: 4, right: 48, left: 4, bottom: 4 }}
                 barCategoryGap="22%"
               >
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#F1F5F9" />
-                <XAxis type="number" domain={[0, 5]} tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
+                <XAxis type="number" domain={[0, 5]} hide />
                 <YAxis
                   type="category"
                   dataKey="name"
                   width={64}
                   tick={{ fontSize: 11, fill: '#64748B' }}
-                  axisLine={{ stroke: '#E2E8F0' }}
+                  axisLine={false}
                   tickLine={false}
                 />
                 <Tooltip content={<RatingTooltip />} cursor={{ fill: 'rgba(148,163,184,0.08)' }} />
-                <Bar dataKey="average" radius={[0, 6, 6, 0]} maxBarSize={18} isAnimationActive animationDuration={500}>
+                <Bar dataKey="average" radius={[0, 6, 6, 0]} maxBarSize={16} isAnimationActive animationDuration={500}>
                   {ratingStats.map((entry, i) => (
                     <Cell
                       key={entry.key}
                       fill={entry.hasData ? PASTEL_BAR_COLORS[i % PASTEL_BAR_COLORS.length] : '#E2E8F0'}
                     />
                   ))}
+                  <LabelList dataKey="average" position="right" content={renderRatingLabel} />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           ) : (
             <EmptyState />
-          )}
-          {hasRatingData && (
-            <div className="mt-1 space-y-1">
-              {ratingStats.map(r => (
-                <div key={r.key} className="flex items-center justify-between text-[11px] text-slate-500">
-                  <span>{r.name}</span>
-                  <span className="inline-flex items-center gap-1 font-medium text-slate-600 dark:text-slate-300">
-                    {r.hasData ? (
-                      <>
-                        <Star className="h-3 w-3 fill-amber-300 text-amber-400" />
-                        {r.average.toFixed(1)}
-                      </>
-                    ) : (
-                      '-'
-                    )}
-                  </span>
-                </div>
-              ))}
-            </div>
           )}
         </AnalyticsCard>
 
@@ -387,6 +399,8 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
                       paddingAngle={2}
                       strokeWidth={2}
                       stroke="#ffffff"
+                      labelLine={false}
+                      label={renderDonutLabel}
                       isAnimationActive
                       animationDuration={500}
                     >
