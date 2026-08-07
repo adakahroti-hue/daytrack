@@ -88,6 +88,14 @@ function CompactStatCard({ label, value, valueColor }: {
 }
 
 // ============================================
+// Revisi 9: warna background card mengikuti aturan tab Hari Ini (sticky note per prioritas)
+const PRIORITY_CARD_COLORS: Record<string, string> = {
+  p1: 'bg-rose-50 border-rose-300 hover:border-rose-400 dark:bg-rose-950/40 dark:border-rose-800',
+  p2: 'bg-amber-50 border-amber-300 hover:border-amber-400 dark:bg-amber-950/40 dark:border-amber-800',
+  p3: 'bg-green-50 border-green-300 hover:border-green-400 dark:bg-green-950/40 dark:border-green-800',
+  p4: 'bg-purple-50 border-purple-300 hover:border-purple-400 dark:bg-purple-950/40 dark:border-purple-800',
+}
+
 // TaskCard Component - Clean, consistent height, neutral by default
 // ============================================
 const TaskCard = memo(({
@@ -149,7 +157,14 @@ const TaskCard = memo(({
     <Card
       className={cn(
         'group relative overflow-hidden transition-all duration-200',
-        CARD_BASE,
+        isCompleted
+          ? CARD_BASE
+          : cn(
+              'rounded-xl transition-colors duration-200',
+              isInProgress
+                ? 'bg-blue-50 border-blue-300 hover:border-blue-400 dark:bg-blue-950/40 dark:border-blue-800'
+                : PRIORITY_CARD_COLORS[task.prioritas]
+            ),
         CARD_HOVER,
         isCompleted && 'opacity-60',
         isOverdue && !isCompleted && 'border-l-3 border-l-red-400 dark:border-l-red-500',

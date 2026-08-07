@@ -322,6 +322,7 @@ export default function SholatPage() {
 
   // ── Rev 10: periode & anchor date dari HeaderControls (toolbar di header) ──
   const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
+  const todayStr = format(new Date(), 'yyyy-MM-dd')
 
   // Hitung rentang tanggal berdasarkan periode + anchor
   const { rangeStart, rangeEnd, periodLabel, isCurrentPeriod } = useMemo(() => {
@@ -566,7 +567,7 @@ export default function SholatPage() {
                     className={cn(
                       'border-b transition-colors',
                       TABLE_BORDER,
-                      rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30',
+                      dateStr === todayStr ? 'row-today-pulse' : (rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'),
                       'hover:bg-blue-50/40'
                     )}
                   >

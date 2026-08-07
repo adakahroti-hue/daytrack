@@ -152,16 +152,16 @@ const TaskCard = memo(({
 
   return (
     <Card className={cn('group', cardBorderClass)}>
-      <CardContent className="p-4 space-y-3">
-        {/* Top Row: Priority Badge + Dropdown Menu */}
-        <div className="flex items-start justify-between gap-2 min-h-[28px]">
-          <div className="flex items-center gap-2" />
+      <CardContent className="pt-4 pb-3 px-4 space-y-2.5">
+        {/* Revisi 2-3: judul + menu titik tiga SEBARIS di kanan atas, sejajar */}
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-medium text-base leading-tight truncate capitalize flex-1 min-w-0">{task.nama}</h3>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 opacity-70"
+                className="h-7 w-7 -mt-1 -mr-1.5 shrink-0 opacity-70"
                 aria-label="Menu tugas"
               >
                 <MoreHorizontal className="h-3.5 w-3.5" />
@@ -179,9 +179,6 @@ const TaskCard = memo(({
           </DropdownMenu>
         </div>
 
-        {/* Task Title */}
-        <h3 className="font-medium text-base leading-tight truncate pr-8 capitalize">{task.nama}</h3>
-
         {/* Terlewat note */}
         {task.terlewat_tanggal && task.status !== 'selesai' && (
           <div className="flex items-center gap-1.5 w-fit text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">
@@ -190,11 +187,20 @@ const TaskCard = memo(({
           </div>
         )}
 
-        {/* Duration Info */}
+        {/* Revisi 1: estimasi + waktu berjalan dalam SATU BARIS */}
         <div className="space-y-1">
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400">
             <Clock className="h-3.5 w-3.5 flex-shrink-0" />
             <span>Estimasi: {getEstimasiText(task.estimasi_menit)}</span>
+            {isInProgress && task.started_at && (
+              <span className={cn(
+                'flex items-center gap-1',
+                isPaused ? 'text-slate-500 dark:text-slate-400' : 'text-amber-700 dark:text-amber-300 animate-pulse'
+              )}>
+                <span className="text-slate-300 dark:text-slate-600 mx-0.5">•</span>
+                {isPaused ? 'Dijeda — ' : 'Sedang: '}{getTaskLiveDurationText(task)}
+              </span>
+            )}
           </div>
 
           {/* Real duration for completed tasks (pause-aware) */}
@@ -215,16 +221,6 @@ const TaskCard = memo(({
             </>
           )}
 
-          {/* Live duration for in-progress tasks (pause-aware) */}
-          {isInProgress && task.started_at && (
-            <div className={cn(
-              'flex items-center gap-1 text-sm',
-              isPaused ? 'text-slate-500 dark:text-slate-400' : 'text-amber-700 dark:text-amber-300 animate-pulse'
-            )}>
-              <Clock className="h-3.5 w-3.5 flex-shrink-0" />
-              <span>{isPaused ? 'Dijeda — ' : 'Sedang: '}{getTaskLiveDurationText(task)}</span>
-            </div>
-          )}
         </div>
 
         {/* Bottom Row: Status Badge + Pause/Resume + Primary Action */}
