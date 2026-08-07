@@ -183,7 +183,7 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
         let missed = 0
         let total = 0 // hanya kesempatan yang sudah dicatat (bukan null)
         for (const row of rows) {
-          const v = row[col.key]
+          const v = row[`sholat_${col.key}`]
           if (v === true || v === false) {
             total += 1
             if (v === false) missed += 1
@@ -235,7 +235,7 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
     const counts = new Map<string, number>()
     for (const row of rows) {
       for (const col of columns) {
-        if (row[col.key] === false) {
+        if (row[`sholat_${col.key}`] === false) {
           const a = row[`alasan_${col.key}`]
           if (typeof a === 'string' && a.trim()) {
             const label = alasanLabels[a] ?? a
