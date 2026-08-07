@@ -1,0 +1,422 @@
+'use client'
+
+import { useMemo } from 'react'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+  PieChart,
+  Pie,
+} from 'recharts'
+import { AlertTriangle, Star, Info } from 'lucide-react'
+import { cn } from '@/lib/utils'
+
+// ─── Types (mirror struktur row tabel sholat) ─────────────────────
+
+export type SholatLogRow = Record<string, boolean | number | string | null | undefined>
+
+interface SholatColumn {
+  key: string
+  label: string
+}
+
+interface SholatAnalyticsProps {
+  dates: string[]
+  sholatMap: Record<string, SholatLogRow | undefined>
+  columns: readonly SholatColumn[]
+  alasanLabels: Record<string, string>
+}
+
+// Palet pastel lembut konsisten dengan tema Daytrack
+const PASTEL_BAR_COLORS = [
+  '#FDA4AF', // soft rose
+  '#93C5FD', // soft blue
+  '#FCD34D', // soft amber
+  '#86EFAC', // soft green
+  '#C4B5FD', // soft violet
+  '#7DD3FC', // soft sky
+]
+
+const PASTEL_DONUT_COLORS = [
+  '#93C5FD',
+  '#FDA4AF',
+  '#FCD34D',
+  '#86EFAC',
+  '#C4B5FD',
+  '#7DD3FC',
+  '#FDBA74',
+  '#A5B4FC',
+  '#F9A8D4',
+]
+
+// ─── Card wrapper (konsisten design system Daytrack) ──────────────
+
+function AnalyticsCard({
+  title,
+  subtitle,
+  children,
+  insight,
+  insightTone,
+}: {
+  title: string
+  subtitle: string
+  children: React.ReactNode
+  insight: string | null
+  insightTone: 'red' | 'amber' | 'blue'
+}) {
+  const toneClass =
+    insightTone === 'red'
+      ? 'bg-rose-50 text-rose-700 border-rose-100'
+      : insightTone === 'amber'
+        ? 'bg-amber-50 text-amber-700 border-amber-100'
+        : 'bg-blue-50 text-blue-700 border-blue-100'
+  return (
+    <div className="bg-white dark:bg-slate-900 border border-[#E5E7EB] dark:border-[#374151] rounded-xl p-5 sm:p-6 shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex flex-col gap-4 min-w-0">
+      <div className="flex items-start gap-2">
+        <div className="min-w-0">
+          <h3 className="flex items-center gap-1.5 text-sm font-bold text-[#0F172A] dark:text-white leading-tight">
+            {title}
+            <Info className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
+          </h3>
+          <p className="text-xs text-slate-500 mt-1">{subtitle}</p>
+        </div>
+      </div>
+      <div className="min-h-[200px]">{children}</div>
+      {insight && (
+        <div className={cn('mt-auto rounded-lg border px-3 py-2 text-xs font-medium', toneClass)}>
+          {insight}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function EmptyState() {
+  return (
+    <div className="flex h-[200px] items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50/50 text-center px-4">
+      <p className="text-xs text-slate-400">Belum cukup data untuk menampilkan analisis.</p>
+    </div>
+  )
+}
+
+// ─── Tooltips ─────────────────────────────────────────────────────
+
+function TooltipShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs shadow-md dark:bg-slate-900 dark:border-slate-700">
+      {children}
+    </div>
+  )
+}
+
+function MissedTooltip({ active, payload }: any) {
+  if (!active || !payload?.length) return null
+  const d = payload[0].payload
+  return (
+    <TooltipShell>
+      <p className="font-semibold text-slate-800 dark:text-slate-100">{d.name}</p>
+      <p className="text-slate-500">
+        {d.missed} dari {d.total} kali tidak dilakukan
+      </p>
+      <p className="font-medium text-slate-700 dark:text-slate-200">{d.percent}%</p>
+    </TooltipShell>
+  )
+}
+
+function RatingTooltip({ active, payload }: any) {
+  if (!active || !payload?.length) return null
+  const d = payload[0].payload
+  return (
+    <TooltipShell>
+      <p className="font-semibold text-slate-800 dark:text-slate-100">{d.name}</p>
+      <p className="text-slate-500">Rata-rata kekhusyukan: {d.average} / 5</p>
+      <p className="text-slate-500">Berdasarkan {d.count} catatan</p>
+    </TooltipShell>
+  )
+}
+
+function ReasonTooltip({ active, payload }: any) {
+  if (!active || !payload?.length) return null
+  const d = payload[0].payload
+  return (
+    <TooltipShell>
+      <p className="font-semibold text-slate-800 dark:text-slate-100">{d.name}</p>
+      <p className="text-slate-500">{d.count} kejadian</p>
+      <p className="font-medium text-slate-700 dark:text-slate-200">{d.percent}% dari seluruh sholat yang terlewat</p>
+    </TooltipShell>
+  )
+}
+
+// ─── Main component ───────────────────────────────────────────────
+
+export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: SholatAnalyticsProps) {
+  // Kumpulkan hanya baris yang benar-benar tercatat (ada datanya)
+  const rows = useMemo(
+    () => dates.map(d => sholatMap[d]).filter((r): r is SholatLogRow => !!r),
+    [dates, sholatMap]
+  )
+
+  // Card 1: persentase tidak dilakukan per sholat
+  const missedStats = useMemo(() => {
+    return columns
+      .map(col => {
+        let missed = 0
+        let total = 0 // hanya kesempatan yang sudah dicatat (bukan null)
+        for (const row of rows) {
+          const v = row[col.key]
+          if (v === true || v === false) {
+            total += 1
+            if (v === false) missed += 1
+          }
+        }
+        return {
+          key: col.key,
+          name: col.label,
+          missed,
+          total,
+          percent: total > 0 ? Math.round((missed / total) * 100) : 0,
+        }
+      })
+      .filter(s => s.total > 0)
+      .sort((a, b) => b.percent - a.percent || b.missed - a.missed)
+  }, [rows, columns])
+
+  // Card 2: rata-rata rating kekhusyukan per sholat (skip null)
+  const ratingStats = useMemo(() => {
+    return columns
+      .map(col => {
+        let sum = 0
+        let count = 0
+        for (const row of rows) {
+          const q = row[`kualitas_${col.key}`]
+          if (typeof q === 'number' && q >= 1 && q <= 5) {
+            sum += q
+            count += 1
+          }
+        }
+        return {
+          key: col.key,
+          name: col.label,
+          count,
+          average: count > 0 ? Math.round((sum / count) * 10) / 10 : 0,
+          hasData: count > 0,
+        }
+      })
+      .sort((a, b) => {
+        if (a.hasData && b.hasData) return a.average - b.average
+        if (a.hasData) return -1
+        if (b.hasData) return 1
+        return 0
+      })
+  }, [rows, columns])
+
+  // Card 3: alasan terbanyak tidak sholat
+  const reasonStats = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const row of rows) {
+      for (const col of columns) {
+        if (row[col.key] === false) {
+          const a = row[`alasan_${col.key}`]
+          if (typeof a === 'string' && a.trim()) {
+            const label = alasanLabels[a] ?? a
+            counts.set(label, (counts.get(label) ?? 0) + 1)
+          }
+        }
+      }
+    }
+    const total = [...counts.values()].reduce((s, c) => s + c, 0)
+    return [...counts.entries()]
+      .map(([name, count]) => ({
+        name,
+        count,
+        percent: total > 0 ? Math.round((count / total) * 100) : 0,
+      }))
+      .sort((a, b) => b.count - a.count)
+  }, [rows, columns, alasanLabels])
+
+  const topMissed = missedStats[0] ?? null
+  const topLowRating = ratingStats.find(r => r.hasData) ?? null
+  const topReason = reasonStats[0] ?? null
+
+  const hasMissedData = missedStats.length > 0
+  const hasRatingData = ratingStats.some(r => r.hasData)
+  const hasReasonData = reasonStats.length > 0
+
+  return (
+    <section className="space-y-4" aria-label="Analytics sholat">
+      <div className="flex items-center gap-2 pt-2">
+        <AlertTriangle className="h-4 w-4 text-slate-400" />
+        <h2 className="text-sm font-bold uppercase tracking-tight text-slate-700 dark:text-slate-200">
+          Analytics &amp; Insight
+        </h2>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+        {/* ── Card 1: Sholat Paling Sulit Dilakukan ── */}
+        <AnalyticsCard
+          title="Sholat Paling Sulit Dilakukan"
+          subtitle="Berdasarkan frekuensi tidak dikerjakan"
+          insight={
+            hasMissedData && topMissed && topMissed.missed > 0
+              ? `${topMissed.name} adalah sholat yang paling sering terlewat.`
+              : hasMissedData
+                ? 'Semua sholat yang tercatat sudah dikerjakan. Pertahankan!'
+                : null
+          }
+          insightTone="red"
+        >
+          {hasMissedData ? (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={missedStats} margin={{ top: 20, right: 8, left: -18, bottom: 0 }} barCategoryGap="28%">
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fontSize: 11, fill: '#64748B' }}
+                  axisLine={{ stroke: '#E2E8F0' }}
+                  tickLine={false}
+                  interval={0}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fill: '#94A3B8' }}
+                  axisLine={false}
+                  tickLine={false}
+                  domain={[0, 100]}
+                  tickFormatter={(v: number) => `${v}%`}
+                />
+                <Tooltip content={<MissedTooltip />} cursor={{ fill: 'rgba(148,163,184,0.08)' }} />
+                <Bar dataKey="percent" radius={[6, 6, 0, 0]} maxBarSize={44} isAnimationActive animationDuration={500}>
+                  {missedStats.map((entry, i) => (
+                    <Cell key={entry.key} fill={PASTEL_BAR_COLORS[i % PASTEL_BAR_COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <EmptyState />
+          )}
+        </AnalyticsCard>
+
+        {/* ── Card 2: Sholat Paling Tidak Khusyuk ── */}
+        <AnalyticsCard
+          title="Sholat Paling Tidak Khusyuk"
+          subtitle="Rata-rata rating kekhusyukan (1 = sangat tidak khusyuk, 5 = sangat khusyuk)"
+          insight={
+            topLowRating
+              ? `${topLowRating.name} memiliki tingkat kekhusyukan terendah.`
+              : null
+          }
+          insightTone="amber"
+        >
+          {hasRatingData ? (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart
+                data={ratingStats}
+                layout="vertical"
+                margin={{ top: 4, right: 12, left: 4, bottom: 4 }}
+                barCategoryGap="22%"
+              >
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#F1F5F9" />
+                <XAxis type="number" domain={[0, 5]} tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  width={64}
+                  tick={{ fontSize: 11, fill: '#64748B' }}
+                  axisLine={{ stroke: '#E2E8F0' }}
+                  tickLine={false}
+                />
+                <Tooltip content={<RatingTooltip />} cursor={{ fill: 'rgba(148,163,184,0.08)' }} />
+                <Bar dataKey="average" radius={[0, 6, 6, 0]} maxBarSize={18} isAnimationActive animationDuration={500}>
+                  {ratingStats.map((entry, i) => (
+                    <Cell
+                      key={entry.key}
+                      fill={entry.hasData ? PASTEL_BAR_COLORS[i % PASTEL_BAR_COLORS.length] : '#E2E8F0'}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <EmptyState />
+          )}
+          {hasRatingData && (
+            <div className="mt-1 space-y-1">
+              {ratingStats.map(r => (
+                <div key={r.key} className="flex items-center justify-between text-[11px] text-slate-500">
+                  <span>{r.name}</span>
+                  <span className="inline-flex items-center gap-1 font-medium text-slate-600 dark:text-slate-300">
+                    {r.hasData ? (
+                      <>
+                        <Star className="h-3 w-3 fill-amber-300 text-amber-400" />
+                        {r.average.toFixed(1)}
+                      </>
+                    ) : (
+                      '-'
+                    )}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </AnalyticsCard>
+
+        {/* ── Card 3: Alasan Terbanyak Tidak Sholat ── */}
+        <AnalyticsCard
+          title="Alasan Terbanyak Tidak Sholat"
+          subtitle="Berdasarkan alasan yang dipilih saat melewatkan sholat"
+          insight={topReason ? `${topReason.name} adalah alasan paling sering.` : null}
+          insightTone="blue"
+        >
+          {hasReasonData ? (
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="w-full sm:w-[46%] min-w-[150px]">
+                <ResponsiveContainer width="100%" height={190}>
+                  <PieChart>
+                    <Tooltip content={<ReasonTooltip />} />
+                    <Pie
+                      data={reasonStats}
+                      dataKey="count"
+                      nameKey="name"
+                      innerRadius={48}
+                      outerRadius={78}
+                      paddingAngle={2}
+                      strokeWidth={2}
+                      stroke="#ffffff"
+                      isAnimationActive
+                      animationDuration={500}
+                    >
+                      {reasonStats.map((entry, i) => (
+                        <Cell key={entry.name} fill={PASTEL_DONUT_COLORS[i % PASTEL_DONUT_COLORS.length]} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="w-full sm:flex-1 space-y-1.5 min-w-0">
+                {reasonStats.map((r, i) => (
+                  <div key={r.name} className="flex items-center gap-2 text-xs min-w-0">
+                    <span
+                      className="h-2.5 w-2.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: PASTEL_DONUT_COLORS[i % PASTEL_DONUT_COLORS.length] }}
+                    />
+                    <span className="text-slate-600 dark:text-slate-300 truncate">{r.name}</span>
+                    <span className="ml-auto font-medium text-slate-700 dark:text-slate-200 whitespace-nowrap">
+                      {r.count} kali
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <EmptyState />
+          )}
+        </AnalyticsCard>
+      </div>
+    </section>
+  )
+}
