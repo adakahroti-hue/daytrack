@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   format,
   eachDayOfInterval,
@@ -18,7 +19,7 @@ import {
   subYears,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, Calendar, BookOpen, Check, Sun, CloudSun, Sunset, Moon } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar, BookOpen, Check, Sun, CloudSun, Sunset, Moon, Edit2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
@@ -39,6 +40,30 @@ const WAKTU_BACA: { key: WaktuBacaKey; label: string; icon: React.ComponentType<
   { key: 'setelah_maghrib', label: 'Maghrib', icon: Sunset, color: 'text-rose-500' },
   { key: 'setelah_isya', label: 'Isya', icon: Moon, color: 'text-indigo-500' },
 ]
+
+// Opsi status seperti tab sholat: centang = sudah baca, sisanya alasan tidak membaca
+const STATUS_OPTIONS: { value: string; label: string; isDone: boolean }[] = [
+  { value: 'sudah', label: 'Sudah Baca', isDone: true },
+  { value: 'malas', label: 'Malas', isDone: false },
+  { value: 'lupa', label: 'Lupa', isDone: false },
+  { value: 'sibuk', label: 'Sibuk', isDone: false },
+  { value: 'sakit', label: 'Sakit', isDone: false },
+  { value: 'perjalanan', label: 'Perjalanan', isDone: false },
+  { value: 'tak_ada_tempat', label: 'Tidak Ada Tempat Sholat', isDone: false },
+  { value: 'bersama_teman', label: 'Bersama Teman', isDone: false },
+  { value: 'lainnya', label: 'Lainnya', isDone: false },
+]
+
+const REASON_LABELS: Record<string, string> = {
+  malas: 'Malas',
+  lupa: 'Lupa',
+  sibuk: 'Sibuk',
+  sakit: 'Sakit',
+  perjalanan: 'Perjalanan',
+  tak_ada_tempat: 'Tidak Ada Tempat',
+  bersama_teman: 'Bersama Teman',
+  lainnya: 'Lainnya',
+}
 
 const DAY_BADGE_COLORS: Record<string, string> = {
   Senin: 'bg-yellow-100 text-yellow-800 border-yellow-200',
@@ -74,6 +99,8 @@ interface QuranLogEntry {
   updated_at: string
 }
 
+type DropdownState = { tanggal: string; waktuKey: WaktuBacaKey } | null
+
 type EditState = {
   open: boolean
   tanggal: string
@@ -87,12 +114,134 @@ function startOfDaySafe(d: Date): Date {
   return x
 }
 
+// ─── Helper: status cell dari entry ───────────────
+
+function getCellStatus(entry: QuranLogEntry | undefined): { status: 'done' | 'reason' | 'empty'; reason: string | null } {
+  if (!entry) return { status: 'empty', reason: null }
+  const note = entry.catatan || ''
+  if (note.startsWith('Tidak membaca:')) {
+    return { status: 'reason', reason: note.replace('Tidak membaca: ', '') }
+  }
+  return { status: 'done', reason: null }
+}
+
+// ─── Dropdown Menu (gaya sholat) ──────────────────
+
+function QuranDropdown({
+  tanggal,
+  waktuKey,
+  logMap,
+  onSelect,
+  onDetail,
+  onClear,
+  onClose,
+}: {
+  tanggal: string
+  waktuKey: WaktuBacaKey
+  logMap: Record<string, Record<string, QuranLogEntry>>
+  onSelect: (option: { value: string; label: string; isDone: boolean }) => void
+  onDetail: () => void
+  onClear: () => void
+  onClose: () => void
+}) {
+  const menuRef = useRef<HTMLDivElement>(null)
+  const [position, setPosition] = useState<{ top: number; left: number } | null>(null)
+
+  useEffect(() => {
+    const cell = document.querySelector(`[data-quran-cell="${tanggal}-${waktuKey}"]`) as HTMLElement
+    if (!cell) return
+    const rect = cell.getBoundingClientRect()
+    const menuWidth = 240
+    const menuHeight = 420
+    let top = rect.bottom + 4
+    let left = rect.left
+    if (top + menuHeight > window.innerHeight) top = rect.top - menuHeight - 4
+    if (left + menuWidth > window.innerWidth) left = window.innerWidth - menuWidth - 8
+    if (left < 8) left = 8
+    setPosition({ top, left })
+  }, [tanggal, waktuKey])
+
+  // Hanya tutup via Escape — klik luar ditangani parent (yang tahu posisi menu)
+  useEffect(() => {
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [onClose])
+
+  const currentValue = (() => {
+    const entry = logMap[tanggal]?.[waktuKey]
+    if (!entry) return null
+    const { status, reason } = getCellStatus(entry)
+    if (status === 'done') return 'sudah'
+    if (status === 'reason' && reason) {
+      const found = Object.entries(REASON_LABELS).find(([, label]) => label === reason)
+      return found ? found[0] : 'lainnya'
+    }
+    return null
+  })()
+
+  if (!position) return null
+
+  return (
+    <div
+      ref={menuRef}
+      data-quran-dropdown
+      className="fixed z-50 bg-white rounded-lg shadow-lg border border-slate-200 py-1 min-w-[240px] max-h-[420px] overflow-y-auto"
+      style={{ top: position.top, left: position.left }}
+    >
+      {STATUS_OPTIONS.map(option => (
+        <button
+          key={option.value}
+          onClick={() => onSelect(option)}
+          className={cn(
+            'w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors',
+            'hover:bg-green-50 text-slate-700',
+            currentValue === option.value && 'bg-green-50 font-medium text-green-700'
+          )}
+        >
+          {option.isDone ? (
+            <Check className="h-3.5 w-3.5 text-green-500 shrink-0" />
+          ) : (
+            <span className="w-3.5 h-3.5 shrink-0" />
+          )}
+          {option.label}
+        </button>
+      ))}
+
+      <div className="border-t border-slate-100 my-1" />
+
+      {/* Catat detail surat/halaman */}
+      <button
+        onClick={onDetail}
+        className="w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors hover:bg-slate-50 text-slate-700"
+      >
+        <Edit2 className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+        Catat detail (surat/halaman)…
+      </button>
+
+      {/* Kosongkan status */}
+      <button
+        onClick={onClear}
+        className="w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors hover:bg-slate-50 text-slate-500"
+      >
+        <span className="w-3.5 h-3.5 shrink-0" />
+        Kosongkan Status
+      </button>
+    </div>
+  )
+}
+
 // ─── Main Component ────────────────────────────────
 
 export default function QuranPage() {
+  const queryClient = useQueryClient()
   const [period, setPeriod] = useState<PeriodMode>('weekly')
   const [anchorDate, setAnchorDate] = useState<Date>(new Date())
+  const [dropdown, setDropdown] = useState<DropdownState>(null)
   const [editState, setEditState] = useState<EditState>(null)
+  const tableContainerRef = useRef<HTMLDivElement>(null)
 
   const { rangeStart, rangeEnd, periodLabel, isCurrentPeriod } = useMemo(() => {
     const today = new Date()
@@ -145,12 +294,12 @@ export default function QuranPage() {
     return map
   }, [quranLogs])
 
+  // Rev 8: urutan tanggal dari atas ke bawah — terbaru paling bawah (ascending)
   const dates = useMemo(() => {
     if (rangeEnd < rangeStart) return []
-    return eachDayOfInterval({ start: rangeStart, end: rangeEnd }).reverse().map(d => format(d, 'yyyy-MM-dd'))
+    return eachDayOfInterval({ start: rangeStart, end: rangeEnd }).map(d => format(d, 'yyyy-MM-dd'))
   }, [rangeStart, rangeEnd])
 
-  // Total halaman dalam rentang (untuk ringkasan di toolbar)
   const totalHalaman = useMemo(
     () => (quranLogs as QuranLogEntry[]).reduce((sum, l) => sum + (l.jumlah_halaman || 0), 0),
     [quranLogs]
@@ -166,9 +315,124 @@ export default function QuranPage() {
   const goToToday = () => setAnchorDate(new Date())
   const changePeriod = (p: PeriodMode) => { setPeriod(p); setAnchorDate(new Date()) }
 
-  const openEdit = (tanggal: string, waktuBaca: WaktuBacaKey) => {
-    const existing = logMap[tanggal]?.[waktuBaca] || null
-    setEditState({ open: true, tanggal, waktuBaca, entry: existing })
+  // Tutup dropdown saat klik di luar tabel & di luar menu
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      const target = e.target as HTMLElement
+      const inTable = tableContainerRef.current?.contains(target)
+      const inMenu = !!target.closest?.('[data-quran-dropdown]')
+      if (!inTable && !inMenu) setDropdown(null)
+    }
+    if (dropdown) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [dropdown])
+
+  const handleCellClick = (e: React.MouseEvent, tanggal: string, waktuKey: WaktuBacaKey) => {
+    e.stopPropagation()
+    if (dropdown?.tanggal === tanggal && dropdown?.waktuKey === waktuKey) {
+      setDropdown(null)
+      return
+    }
+    setDropdown({ tanggal, waktuKey })
+  }
+
+  // Optimistic update supaya pilihan langsung tercatat di UI
+  const optimisticallySet = useCallback(
+    (tanggal: string, waktuKey: WaktuBacaKey, updater: (entry: QuranLogEntry | undefined) => QuranLogEntry | null) => {
+      queryClient.setQueryData(['quran_logs', 'range', startDate, endDate], (old: QuranLogEntry[] | undefined) => {
+        if (!old) return old
+        const existing = old.find(l => l.tanggal === tanggal && l.waktu_baca === waktuKey)
+        const next = updater(existing)
+        if (next === null) return old.filter(l => !(l.tanggal === tanggal && l.waktu_baca === waktuKey))
+        if (existing) return old.map(l => (l.tanggal === tanggal && l.waktu_baca === waktuKey ? next : l))
+        return [...old, next]
+      })
+    },
+    [queryClient, startDate, endDate]
+  )
+
+  const handleSelectStatus = async (option: { value: string; label: string; isDone: boolean }) => {
+    if (!dropdown) return
+    const { tanggal, waktuKey } = dropdown
+    setDropdown(null)
+
+    if (option.isDone) {
+      // Sudah baca — pertahankan detail yang sudah ada bila ada
+      const existing = logMap[tanggal]?.[waktuKey]
+      const keepNote = existing?.catatan && !existing.catatan.startsWith('Tidak membaca') ? existing.catatan : 'Sudah baca'
+      optimisticallySet(tanggal, waktuKey, (entry) => ({
+        ...(entry || {
+          id: 'temp-' + tanggal + '-' + waktuKey,
+          user_id: '',
+          tanggal,
+          waktu_baca: waktuKey,
+          surat: null, juz: null, halaman_mulai: null, halaman_selesai: null,
+          jumlah_halaman: null, catatan: null, created_at: '', updated_at: '',
+        }),
+        catatan: keepNote,
+      } as QuranLogEntry))
+      try {
+        await upsertQuranLog.mutateAsync({
+          tanggal,
+          waktu_baca: waktuKey,
+          surat: existing?.surat || undefined,
+          juz: existing?.juz || undefined,
+          halaman_mulai: existing?.halaman_mulai || undefined,
+          halaman_selesai: existing?.halaman_selesai || undefined,
+          catatan: keepNote,
+        })
+      } catch {
+        queryClient.invalidateQueries({ queryKey: ['quran_logs'] })
+      }
+    } else {
+      // Alasan tidak membaca
+      optimisticallySet(tanggal, waktuKey, (entry) => ({
+        ...(entry || {
+          id: 'temp-' + tanggal + '-' + waktuKey,
+          user_id: '',
+          tanggal,
+          waktu_baca: waktuKey,
+          surat: null, juz: null, halaman_mulai: null, halaman_selesai: null,
+          jumlah_halaman: null, catatan: null, created_at: '', updated_at: '',
+        }),
+        surat: null, juz: null, halaman_mulai: null, halaman_selesai: null, jumlah_halaman: null,
+        catatan: `Tidak membaca: ${option.label}`,
+      } as QuranLogEntry))
+      try {
+        await upsertQuranLog.mutateAsync({
+          tanggal,
+          waktu_baca: waktuKey,
+          catatan: `Tidak membaca: ${option.label}`,
+        })
+      } catch {
+        queryClient.invalidateQueries({ queryKey: ['quran_logs'] })
+      }
+    }
+  }
+
+  const handleClearStatus = async () => {
+    if (!dropdown) return
+    const { tanggal, waktuKey } = dropdown
+    const existing = logMap[tanggal]?.[waktuKey]
+    setDropdown(null)
+    optimisticallySet(tanggal, waktuKey, () => null)
+    if (existing?.id && !existing.id.startsWith('temp-')) {
+      try {
+        await deleteQuranLog.mutateAsync(existing.id)
+      } catch {
+        queryClient.invalidateQueries({ queryKey: ['quran_logs'] })
+      }
+    }
+  }
+
+  const handleOpenDetail = () => {
+    if (!dropdown) return
+    const { tanggal, waktuKey } = dropdown
+    const existing = logMap[tanggal]?.[waktuKey] || null
+    setDropdown(null)
+    setEditState({ open: true, tanggal, waktuBaca: waktuKey, entry: existing })
   }
 
   const handleSubmit = async (form: { surat?: string; juz?: number; halaman_mulai?: number; halaman_selesai?: number; catatan?: string }) => {
@@ -238,102 +502,130 @@ export default function QuranPage() {
 
       {/* Table — gaya seperti tab sholat */}
       <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)] rounded-lg border bg-white', TABLE_BORDER)}>
-        <table className="w-full border-collapse text-sm">
-          <thead className="sticky top-0 z-20 bg-white">
-            <tr className={cn('border-b', TABLE_BORDER)}>
-              <th className={cn('sticky left-0 z-30 bg-white px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[100px]', TABLE_BORDER)}>
-                <div className="flex items-center justify-center gap-1">
-                  <Calendar className="h-3.5 w-3.5 text-blue-500" />
-                  Tanggal
-                </div>
-              </th>
-              <th className={cn('sticky left-[100px] z-30 bg-white px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[90px]', TABLE_BORDER)}>
-                Hari
-              </th>
-              {WAKTU_BACA.map(col => (
-                <th key={col.key} className={cn('px-3 py-2 text-center font-semibold text-slate-700 border-r last:border-r-0 min-w-[110px]', TABLE_BORDER)}>
+        <div ref={tableContainerRef}>
+          <table className="w-full border-collapse text-sm">
+            <thead className="sticky top-0 z-20 bg-white">
+              <tr className={cn('border-b', TABLE_BORDER)}>
+                <th className={cn('sticky left-0 z-30 bg-white px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[100px]', TABLE_BORDER)}>
                   <div className="flex items-center justify-center gap-1">
-                    <col.icon className={cn('h-3.5 w-3.5', col.color)} />
-                    {col.label}
+                    <Calendar className="h-3.5 w-3.5 text-blue-500" />
+                    Tanggal
                   </div>
                 </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr>
-                <td colSpan={7} className="text-center py-12 text-slate-400">
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" />
-                    <span className="text-sm">Memuat data...</span>
-                  </div>
-                </td>
+                <th className={cn('sticky left-[100px] z-30 bg-white px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[90px]', TABLE_BORDER)}>
+                  Hari
+                </th>
+                {WAKTU_BACA.map(col => (
+                  <th key={col.key} className={cn('px-3 py-2 text-center font-semibold text-slate-700 border-r last:border-r-0 min-w-[110px]', TABLE_BORDER)}>
+                    <div className="flex items-center justify-center gap-1">
+                      <col.icon className={cn('h-3.5 w-3.5', col.color)} />
+                      {col.label}
+                    </div>
+                  </th>
+                ))}
               </tr>
-            ) : error ? (
-              <tr>
-                <td colSpan={7} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td>
-              </tr>
-            ) : (
-              dates.map((dateStr, rowIdx) => {
-                const date = new Date(dateStr + 'T00:00:00')
-                const dayName = format(date, 'EEEE', { locale: id })
-                const dateDisplay = format(date, 'd MMMM', { locale: id })
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-12 text-slate-400">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" />
+                      <span className="text-sm">Memuat data...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td>
+                </tr>
+              ) : (
+                dates.map((dateStr, rowIdx) => {
+                  const date = new Date(dateStr + 'T00:00:00')
+                  const dayName = format(date, 'EEEE', { locale: id })
+                  const dateDisplay = format(date, 'd MMMM', { locale: id })
 
-                return (
-                  <tr
-                    key={dateStr}
-                    className={cn('border-b transition-colors', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30', 'hover:bg-green-50/40')}
-                  >
-                    <td className={cn('sticky left-0 z-10 bg-inherit px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
-                      {dateDisplay}
-                    </td>
-                    <td className={cn('sticky left-[100px] z-10 bg-inherit px-3 py-2 text-center border-r', TABLE_BORDER)}>
-                      <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs border font-medium', DAY_BADGE_COLORS[dayName] || 'bg-slate-100 text-slate-700 border-slate-200')}>
-                        {dayName}
-                      </span>
-                    </td>
-                    {WAKTU_BACA.map(col => {
-                      const entry = logMap[dateStr]?.[col.key]
-                      const hasLog = !!entry
-                      return (
-                        <td
-                          key={col.key}
-                          className={cn('px-3 py-2 text-center border-r last:border-r-0 cursor-pointer transition-colors', TABLE_BORDER, 'hover:bg-green-50/60')}
-                          onClick={() => openEdit(dateStr, col.key)}
-                        >
-                          <div className="flex flex-col items-center justify-center gap-1 min-h-[32px]">
-                            {hasLog ? (
-                              <>
-                                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-600 border border-green-200">
-                                  <Check className="h-3.5 w-3.5" />
-                                </span>
-                                {entry.jumlah_halaman ? (
-                                  <span className="inline-flex items-center px-1.5 py-px rounded-full bg-green-100 text-green-700 border border-green-200 text-[10px] font-semibold leading-tight">
-                                    {entry.jumlah_halaman} hlm
-                                  </span>
-                                ) : entry.surat ? (
-                                  <span className="inline-flex items-center px-1.5 py-px rounded-full bg-green-50 text-green-700 border border-green-200 text-[10px] font-medium leading-tight max-w-[100px] truncate">
-                                    {entry.surat}
-                                  </span>
-                                ) : null}
-                              </>
-                            ) : (
-                              <span className="text-slate-300 text-xs">×</span>
+                  return (
+                    <tr
+                      key={dateStr}
+                      className={cn('border-b transition-colors', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30', 'hover:bg-green-50/40')}
+                    >
+                      <td className={cn('sticky left-0 z-10 bg-inherit px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
+                        {dateDisplay}
+                      </td>
+                      <td className={cn('sticky left-[100px] z-10 bg-inherit px-3 py-2 text-center border-r', TABLE_BORDER)}>
+                        <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs border font-medium', DAY_BADGE_COLORS[dayName] || 'bg-slate-100 text-slate-700 border-slate-200')}>
+                          {dayName}
+                        </span>
+                      </td>
+                      {WAKTU_BACA.map(col => {
+                        const entry = logMap[dateStr]?.[col.key]
+                        const { status, reason } = getCellStatus(entry)
+                        const isDropdownOpen = dropdown?.tanggal === dateStr && dropdown?.waktuKey === col.key
+                        return (
+                          <td
+                            key={col.key}
+                            data-quran-cell={`${dateStr}-${col.key}`}
+                            className={cn(
+                              'px-3 py-2 text-center border-r last:border-r-0 cursor-pointer transition-colors',
+                              TABLE_BORDER,
+                              'hover:bg-green-50/60',
+                              isDropdownOpen && 'bg-green-50'
                             )}
-                          </div>
-                        </td>
-                      )
-                    })}
-                  </tr>
-                )
-              })
-            )}
-          </tbody>
-        </table>
+                            onClick={(e) => handleCellClick(e, dateStr, col.key)}
+                          >
+                            <div className="flex flex-col items-center justify-center gap-1 min-h-[32px]">
+                              {status === 'done' && entry && (
+                                <>
+                                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-600 border border-green-200">
+                                    <Check className="h-3.5 w-3.5" />
+                                  </span>
+                                  {entry.jumlah_halaman ? (
+                                    <span className="inline-flex items-center px-1.5 py-px rounded-full bg-green-100 text-green-700 border border-green-200 text-[10px] font-semibold leading-tight">
+                                      {entry.jumlah_halaman} hlm
+                                    </span>
+                                  ) : entry.surat ? (
+                                    <span className="inline-flex items-center px-1.5 py-px rounded-full bg-green-50 text-green-700 border border-green-200 text-[10px] font-medium leading-tight max-w-[100px] truncate">
+                                      {entry.surat}
+                                    </span>
+                                  ) : null}
+                                </>
+                              )}
+                              {status === 'reason' && reason && (
+                                <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200 text-xs font-medium whitespace-nowrap">
+                                  {reason}
+                                </span>
+                              )}
+                              {status === 'empty' && (
+                                <span className="text-slate-300 text-xs">×</span>
+                              )}
+                            </div>
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  )
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Edit/Add Dialog */}
+      {/* Dropdown menu gaya sholat */}
+      {dropdown && (
+        <QuranDropdown
+          tanggal={dropdown.tanggal}
+          waktuKey={dropdown.waktuKey}
+          logMap={logMap}
+          onSelect={handleSelectStatus}
+          onDetail={handleOpenDetail}
+          onClear={handleClearStatus}
+          onClose={() => setDropdown(null)}
+        />
+      )}
+
+      {/* Edit/Add Detail Dialog */}
       <Dialog open={!!editState?.open} onOpenChange={(open) => !open && setEditState(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>

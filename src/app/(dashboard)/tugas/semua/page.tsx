@@ -401,9 +401,9 @@ function SemuaPageClient() {
   // Today (for relative group labels)
   const today = format(new Date(), 'yyyy-MM-dd')
 
-  // Board ini menampilkan belum + proses (selesai punya tab sendiri) — ALWAYS memoized
+  // Board ini hanya menampilkan tugas 'belum' — proses disembunyikan (rev), selesai punya tab sendiri
   const filteredTasks = useMemo(() => {
-    return allTasks.filter(t => t.status !== 'selesai')
+    return allTasks.filter(t => t.status === 'belum')
   }, [allTasks])
 
   // Group tasks by selected mode — ALWAYS memoized
@@ -446,6 +446,21 @@ function SemuaPageClient() {
         if (tasks.length > 0) {
           groups.push({ key: b.key, title: b.label, description: `${b.desc} - ${tasks.length} tugas`, icon: Clock, iconColor: 'text-amber-600 dark:text-amber-400', tasks })
         }
+      }
+    } else if (groupMode === 'lambat') {
+      // Group by keterlambatan — Terlambat di atas, lalu Belum Terlambat
+      const todayStart = startOfDay(new Date())
+      const terlambat = filteredTasks
+        .filter(t => isBefore(new Date(t.tanggal), todayStart))
+        .sort(byPrioritySort)
+      const tidakTerlambat = filteredTasks
+        .filter(t => !isBefore(new Date(t.tanggal), todayStart))
+        .sort(byPrioritySort)
+      if (terlambat.length > 0) {
+        groups.push({ key: 'terlambat', title: 'Terlambat', description: `${terlambat.length} tugas melewati tanggal`, icon: AlertTriangle, iconColor: 'text-red-600 dark:text-red-400', tasks: terlambat })
+      }
+      if (tidakTerlambat.length > 0) {
+        groups.push({ key: 'tidak-terlambat', title: 'Belum Terlambat', description: `${tidakTerlambat.length} tugas masih dalam jadwal`, icon: CheckCircle2, iconColor: 'text-green-600 dark:text-green-400', tasks: tidakTerlambat })
       }
     } else {
       // Group by prioritas (default — same look as Hari Ini tab)

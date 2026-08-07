@@ -4,18 +4,19 @@ import { createContext, useContext, useState, ReactNode, useCallback, useMemo, u
 import { format, isSameDay, subDays, addDays, subWeeks, addWeeks, subMonths, addMonths, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
-import { Flag, Calendar, Clock, type LucideIcon } from 'lucide-react'
+import { Flag, Calendar, Clock, Hourglass, type LucideIcon } from 'lucide-react'
 
 type Period = 'monthly' | 'weekly' | 'daily'
 
 // Group mode untuk board tugas tab Semua — state-nya dipakai bersama:
 // Header merender toggle-nya (di samping kartu Proses), halaman semua memakai nilainya untuk grouping
-export type GroupMode = 'prioritas' | 'tanggal' | 'durasi'
+export type GroupMode = 'prioritas' | 'tanggal' | 'durasi' | 'lambat'
 
 export const GROUP_MODES: { value: GroupMode; label: string; icon: LucideIcon }[] = [
   { value: 'prioritas', label: 'Prioritas', icon: Flag },
   { value: 'tanggal', label: 'Tanggal', icon: Calendar },
   { value: 'durasi', label: 'Durasi', icon: Clock },
+  { value: 'lambat', label: 'Lambat', icon: Hourglass },
 ]
 
 interface HeaderControls {

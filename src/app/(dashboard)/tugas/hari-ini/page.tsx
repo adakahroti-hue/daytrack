@@ -386,7 +386,7 @@ function HariIniPageClient() {
           {inProgressTasks.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-start gap-3 pb-3 border-b border-slate-200/50 dark:border-slate-700/50">
-                <span className="text-2xl mt-0.5 flex-shrink-0">⚡</span>
+                <span className="text-2xl mt-0.5 flex-shrink-0">🛠️</span>
                 <div className="flex-1 min-w-0">
                   <h2 className="text-lg font-semibold leading-tight text-slate-900 dark:text-white">Sedang Dikerjakan</h2>
                   <p className="text-sm text-slate-500 mt-0.5">{inProgressTasks.length} misi sedang dikerjakan — timer hanya berjalan saat aktif</p>

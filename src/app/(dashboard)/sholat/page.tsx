@@ -218,20 +218,11 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
   }, [tanggal, sholatKey])
 
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        onClose()
-      }
-    }
     function handleEscape(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose()
     }
-    document.addEventListener('mousedown', handleClickOutside)
     document.addEventListener('keydown', handleEscape)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-      document.removeEventListener('keydown', handleEscape)
-    }
+    return () => document.removeEventListener('keydown', handleEscape)
   }, [onClose])
 
   const { currentValue, currentQuality } = (() => {
@@ -252,6 +243,7 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
   return (
     <div
       ref={menuRef}
+      data-sholat-dropdown
       className="fixed z-50 bg-white rounded-lg shadow-lg border border-slate-200 py-1 min-w-[240px] max-h-[460px] overflow-y-auto"
       style={{ top: position.top, left: position.left }}
     >
@@ -391,8 +383,8 @@ export default function SholatPage() {
   // Generate all dates in range (descending — newest first)
   const dates = useMemo(() => {
     if (rangeEnd < rangeStart) return []
-    const allDates = eachDayOfInterval({ start: rangeStart, end: rangeEnd })
-    return allDates.reverse().map(d => format(d, 'yyyy-MM-dd'))
+    // Urutan tanggal dari atas ke bawah — terbaru paling bawah (ascending)
+    return eachDayOfInterval({ start: rangeStart, end: rangeEnd }).map(d => format(d, 'yyyy-MM-dd'))
   }, [rangeStart, rangeEnd])
 
   // ── Navigasi periode ──
@@ -411,10 +403,14 @@ export default function SholatPage() {
     setAnchorDate(new Date()) // reset ke periode saat ini
   }
 
-  // Close dropdown on outside click
+  // Close dropdown on outside click — menu di-render fixed di luar table container,
+  // jadi cek juga apakah klik terjadi di dalam menu (via data attribute)
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (tableContainerRef.current && !tableContainerRef.current.contains(e.target as Node)) {
+      const target = e.target as HTMLElement
+      const inTable = tableContainerRef.current?.contains(target)
+      const inMenu = !!target.closest?.('[data-sholat-dropdown]')
+      if (!inTable && !inMenu) {
         setDropdown(null)
       }
     }
