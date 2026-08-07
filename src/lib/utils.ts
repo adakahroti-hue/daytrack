@@ -352,8 +352,12 @@ export function getTaskLiveDurationText(task: {
   last_resumed_at?: string | null
 }): string {
   const seconds = getTaskActiveSeconds(task)
-  if (seconds < 60) return '< 1 menit'
-  return getEstimasiText(Math.round(seconds / 60))
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = seconds % 60
+  if (h > 0) return `${h} jam ${m} menit ${s} detik`
+  if (m > 0) return `${m} menit ${s} detik`
+  return `${s} detik`
 }
 
 /** Durasi real (menit) tugas selesai, memakai accumulated_seconds bila ada (exclude pause) */

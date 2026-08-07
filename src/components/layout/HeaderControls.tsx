@@ -1,12 +1,14 @@
 "use client"
 
 import { createContext, useContext, useState, ReactNode, useCallback, useMemo, useEffect } from 'react'
-import { format, isSameDay, subDays, addDays, subWeeks, addWeeks, subMonths, addMonths, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns'
+import { format, isSameDay, subDays, addDays, subWeeks, addWeeks, subMonths, addMonths, addYears, subYears, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
 import { Flag, Calendar, Clock, Hourglass, type LucideIcon } from 'lucide-react'
 
 type Period = 'monthly' | 'weekly' | 'daily'
+
+export type IbadahPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly'
 
 // Group mode untuk board tugas tab Semua — state-nya dipakai bersama:
 // Header merender toggle-nya (di samping kartu Proses), halaman semua memakai nilainya untuk grouping
@@ -40,6 +42,10 @@ interface HeaderControls {
   setTugasView: (view: 'hari-ini' | 'semua' | 'selesai') => void
   groupMode: GroupMode
   setGroupMode: (mode: GroupMode) => void
+  ibadahPeriod: IbadahPeriod
+  ibadahDate: Date
+  setIbadahPeriod: (period: IbadahPeriod) => void
+  navigateIbadah: (direction: 'prev' | 'next') => void
 }
 
 const HeaderControlsContext = createContext<HeaderControls | null>(null)
@@ -260,6 +266,30 @@ export function HeaderControlsProvider({
     })
   }, [period])
 
+  // Rev 10: state periode & tanggal untuk tab Sholat/Quran — toolbar dirender di header
+  const [ibadahPeriod, setIbadahPeriodState] = useState<IbadahPeriod>('weekly')
+  const [ibadahDate, setIbadahDate] = useState<Date>(new Date())
+
+  const setIbadahPeriod = useCallback((p: IbadahPeriod) => {
+    setIbadahPeriodState(p)
+    setIbadahDate(new Date()) // reset ke periode saat ini
+  }, [])
+
+  const navigateIbadah = useCallback((direction: 'prev' | 'next') => {
+    setIbadahDate(prev => {
+      switch (ibadahPeriod) {
+        case 'daily':
+          return addDays(prev, direction === 'prev' ? -1 : 1)
+        case 'weekly':
+          return direction === 'prev' ? subWeeks(prev, 1) : addWeeks(prev, 1)
+        case 'monthly':
+          return direction === 'prev' ? subMonths(prev, 1) : addMonths(prev, 1)
+        case 'yearly':
+          return direction === 'prev' ? subYears(prev, 1) : addYears(prev, 1)
+      }
+    })
+  }, [ibadahPeriod])
+
   const dynamicTitle = getCategoryTitle(category, period, subPage, tugasView)
   const dynamicDescription = getCategoryDescription(category, period, subPage, tugasView)
 
@@ -284,7 +314,11 @@ export function HeaderControlsProvider({
     setTugasView,
     groupMode,
     setGroupMode,
-  }), [dynamicTitle, dynamicDescription, currentDate, period, setPeriod, page, setPage, navigate, goToToday, onRefresh, isLoading, isToday, navigateToPeriodStart, category, subPage, setSubPage, tugasView, setTugasView, groupMode])
+    ibadahPeriod,
+    ibadahDate,
+    setIbadahPeriod,
+    navigateIbadah,
+  }), [dynamicTitle, dynamicDescription, currentDate, period, setPeriod, page, setPage, navigate, goToToday, onRefresh, isLoading, isToday, navigateToPeriodStart, category, subPage, setSubPage, tugasView, setTugasView, groupMode, ibadahPeriod, ibadahDate, setIbadahPeriod, navigateIbadah])
 
   return (
     <HeaderControlsContext.Provider value={value}>
@@ -322,5 +356,22 @@ export function formatDateForPeriod(date: Date, period: Period) {
     case 'daily':
     default:
       return formatIndonesianDate(date)
+  }
+}
+
+// Rev 10: format label periode untuk tab Sholat/Quran (toolbar di header)
+export function formatIbadahPeriodLabel(date: Date, period: IbadahPeriod) {
+  switch (period) {
+    case 'daily':
+      return format(date, 'EEEE, d MMMM yyyy', { locale: id })
+    case 'weekly':
+      const weekStart = startOfWeek(date, { weekStartsOn: 1 })
+      const weekEnd = endOfWeek(date, { weekStartsOn: 1 })
+      return `${format(weekStart, 'd MMM', { locale: id })} - ${format(weekEnd, 'd MMM yyyy', { locale: id })}`
+    case 'monthly':
+      return format(date, 'MMMM yyyy', { locale: id })
+    case 'yearly':
+    default:
+      return format(date, 'yyyy', { locale: id })
   }
 }

@@ -1,8 +1,9 @@
 "use client"
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { createTask, updateTask, deleteTask, toggleTaskStatus, bulkDeleteTasks, bulkResetTasks, pauseTask, resumeTask } from "@/app/actions/tasks"
+import { createTask, updateTask, deleteTask, toggleTaskStatus, bulkDeleteTasks, bulkResetTasks, bulkUpdateTaskDate, pauseTask, resumeTask } from "@/app/actions/tasks"
 import { createClient } from "@/lib/supabase/client"
+import { getTaskActiveSeconds } from "@/lib/utils"
 import { TaskFormData } from "@/app/actions/tasks"
 
 // Baca langsung browser -> Supabase (RLS membatasi ke user sendiri).
@@ -110,9 +111,26 @@ export function useToggleTaskStatus() {
         return old.map((task: any) => {
           if (task.id !== id) return task
           const updated: any = { ...task, status, updated_at: now }
-          if (status === 'proses') updated.started_at = now
-          else if (status === 'selesai') updated.completed_at = now
-          else if (status === 'belum') { updated.started_at = null; updated.completed_at = null }
+          if (status === 'proses') {
+            // Mulai: reset timer aktif, catat waktu mulai (sama dengan server action)
+            updated.started_at = now
+            updated.completed_at = null
+            updated.accumulated_seconds = 0
+            updated.is_paused = false
+            updated.last_resumed_at = now
+          } else if (status === 'selesai') {
+            // Selesai: simpan total detik aktif (tanpa waktu pause) secara optimistik
+            updated.completed_at = now
+            updated.is_paused = false
+            updated.accumulated_seconds = getTaskActiveSeconds(task)
+            updated.last_resumed_at = null
+          } else if (status === 'belum') {
+            updated.started_at = null
+            updated.completed_at = null
+            updated.accumulated_seconds = 0
+            updated.is_paused = false
+            updated.last_resumed_at = null
+          }
           return updated
         })
       })
@@ -142,7 +160,7 @@ export function usePauseTask() {
         if (!old) return old
         return old.map((task: any) => {
           if (task.id !== id) return task
-          return { ...task, is_paused: true, last_resumed_at: null, updated_at: now }
+          return { ...task, is_paused: true, accumulated_seconds: getTaskActiveSeconds(task), last_resumed_at: null, updated_at: now }
         })
       })
       return { previousTasks }
@@ -211,6 +229,17 @@ export function useBulkResetTasks() {
   
   return useMutation({
     mutationFn: (ids: string[]) => bulkResetTasks(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] })
+    },
+  })
+}
+
+export function useBulkUpdateTaskDate() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ ids, tanggal }: { ids: string[]; tanggal: string }) => bulkUpdateTaskDate(ids, tanggal),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] })
     },

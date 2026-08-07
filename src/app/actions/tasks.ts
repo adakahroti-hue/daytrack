@@ -132,6 +132,31 @@ export async function bulkResetTasks(ids: string[]) {
   return { error: null }
 }
 
+export async function bulkUpdateTaskDate(ids: string[], tanggal: string) {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  if (!tanggal) throw new Error("Tanggal wajib diisi")
+  if (!ids || ids.length === 0) return { error: null }
+
+  const { error } = await supabase
+    .from("tasks")
+    .update({ tanggal })
+    .in("id", ids)
+    .eq("user_id", user.id)
+
+  if (error) throw new Error(error.message)
+
+  revalidatePath("/tugas/hari-ini")
+  revalidatePath("/tugas/semua")
+  revalidatePath("/tugas/selesai")
+  revalidatePath("/overview")
+
+  return { error: null }
+}
+
 /**
  * Hitung detik aktif yang sudah berjalan untuk tugas yang sedang proses.
  * accumulated_seconds = total detik aktif sebelum pause terakhir,

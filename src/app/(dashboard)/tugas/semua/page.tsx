@@ -9,9 +9,10 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
+import { Checkbox } from '@/components/ui/checkbox'
 import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, getMissionPriorityIcon, getMissionGroupName, getMissionPriorityShortLabel, getMissionPriorityBorder, getMissionGroupDescriptionWithCount, CARD_BASE, CARD_HOVER, STAT_ICON_CONTAINERS, BRAND_COLORS, getActualDurationText, compareEstimasiVsActual, getLiveDurationText, PRIORITY_COLORS } from '@/lib/utils'
 import { TaskForm } from '@/components/tasks/TaskForm'
-import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus } from '@/hooks/useTasks'
+import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus, useBulkUpdateTaskDate } from '@/hooks/useTasks'
 import { useTasksRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls, GROUP_MODES } from '@/components/layout/HeaderControls'
 import { Suspense } from 'react'
@@ -94,11 +95,17 @@ const TaskCard = memo(({
   onEdit,
   onDelete,
   onStatusChange,
+  selectionMode,
+  selected,
+  onToggleSelect,
 }: {
   task: Task
   onEdit: (task: Task) => void
   onDelete: (id: string) => void
   onStatusChange: (id: string, status: Task['status']) => void
+  selectionMode?: boolean
+  selected?: boolean
+  onToggleSelect?: (id: string) => void
 }) => {
   const isCompleted = task.status === 'selesai'
   const isInProgress = task.status === 'proses'
@@ -154,6 +161,14 @@ const TaskCard = memo(({
         {/* Top Row: Priority Badge + Dropdown Menu */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
+            {selectionMode && (
+              <Checkbox
+                checked={selected}
+                onCheckedChange={() => onToggleSelect?.(task.id)}
+                className="h-4 w-4"
+                aria-label="Pilih tugas"
+              />
+            )}
             <span className={priorityBadgeClass}>
               {PRIORITY_ICONS[task.prioritas]}
               {getMissionPriorityShortLabel(task.prioritas)}
@@ -346,6 +361,8 @@ function SemuaPageClient() {
   // groupMode ditinggikan ke HeaderControls — toggle-nya tampil di baris group pertama (rata kanan)
   const { groupMode, setGroupMode } = useHeaderControls()
   const [isMounted, setIsMounted] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [bulkDate, setBulkDate] = useState(format(new Date(), 'yyyy-MM-dd'))
 
   useEffect(() => {
     setIsMounted(true)
@@ -361,6 +378,7 @@ function SemuaPageClient() {
   const updateTask = useUpdateTask()
   const deleteTask = useDeleteTask()
   const toggleTaskStatus = useToggleTaskStatus()
+  const bulkUpdateTaskDate = useBulkUpdateTaskDate()
 
   const handleEdit = (task: Task) => {
     const formData: EditingTask = {
@@ -385,6 +403,14 @@ function SemuaPageClient() {
     toggleTaskStatus.mutate({ id, status })
   }
 
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id) else next.add(id)
+      return next
+    })
+  }
+
   const handleSubmit = (data: TaskFormData) => {
     const taskData = { ...data }
     if (editingTask) {
@@ -401,10 +427,10 @@ function SemuaPageClient() {
   // Today (for relative group labels)
   const today = format(new Date(), 'yyyy-MM-dd')
 
-  // Board ini hanya menampilkan tugas 'belum' — proses disembunyikan (rev), selesai punya tab sendiri
+  // Board ini hanya menampilkan tugas 'belum' (bukan hari ini — punya tab sendiri) — proses disembunyikan, selesai punya tab sendiri
   const filteredTasks = useMemo(() => {
-    return allTasks.filter(t => t.status === 'belum')
-  }, [allTasks])
+    return allTasks.filter(t => t.status === 'belum' && t.tanggal !== today)
+  }, [allTasks, today])
 
   // Group tasks by selected mode — ALWAYS memoized
   const groupedTasks = useMemo(() => {
@@ -448,19 +474,13 @@ function SemuaPageClient() {
         }
       }
     } else if (groupMode === 'lambat') {
-      // Group by keterlambatan — Terlambat di atas, lalu Belum Terlambat
+      // Group by keterlambatan — hanya tampilkan tugas yang terlambat saja
       const todayStart = startOfDay(new Date())
       const terlambat = filteredTasks
         .filter(t => isBefore(new Date(t.tanggal), todayStart))
         .sort(byPrioritySort)
-      const tidakTerlambat = filteredTasks
-        .filter(t => !isBefore(new Date(t.tanggal), todayStart))
-        .sort(byPrioritySort)
       if (terlambat.length > 0) {
         groups.push({ key: 'terlambat', title: 'Terlambat', description: `${terlambat.length} tugas melewati tanggal`, icon: AlertTriangle, iconColor: 'text-red-600 dark:text-red-400', tasks: terlambat })
-      }
-      if (tidakTerlambat.length > 0) {
-        groups.push({ key: 'tidak-terlambat', title: 'Belum Terlambat', description: `${tidakTerlambat.length} tugas masih dalam jadwal`, icon: CheckCircle2, iconColor: 'text-green-600 dark:text-green-400', tasks: tidakTerlambat })
       }
     } else {
       // Group by prioritas (default — same look as Hari Ini tab)
@@ -481,6 +501,18 @@ function SemuaPageClient() {
 
     return groups
   }, [filteredTasks, groupMode, today])
+
+  // Rev 7: daftar id tugas lambat (untuk Pilih Semua) & handler bulk ubah tanggal
+  const allLambatIds = useMemo(() => groupedTasks.flatMap(g => g.tasks.map(t => t.id)), [groupedTasks])
+  const selectAllLambat = () => setSelectedIds(new Set(allLambatIds))
+  const clearSelection = () => setSelectedIds(new Set())
+  const handleBulkUpdateDate = () => {
+    if (selectedIds.size === 0) return
+    bulkUpdateTaskDate.mutate(
+      { ids: Array.from(selectedIds), tanggal: bulkDate },
+      { onSuccess: () => setSelectedIds(new Set()) }
+    )
+  }
 
   // Empty state: totalTasks === 0 → belum ada tugas sama sekali;
   // filteredTasks kosong padahal ada tugas → semuanya sudah selesai
@@ -557,6 +589,35 @@ function SemuaPageClient() {
           </div>
         ) : (
           <div className="space-y-8">
+          {groupMode === 'lambat' && filteredTasks.length > 0 && (
+            <div className="sticky top-2 z-20 flex flex-wrap items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 shadow-sm">
+              <span className="text-xs font-medium text-slate-600 dark:text-slate-300 mr-1">
+                {selectedIds.size > 0 ? `${selectedIds.size} terpilih` : 'Pilih tugas'}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8"
+                onClick={selectedIds.size === allLambatIds.length && allLambatIds.length > 0 ? clearSelection : selectAllLambat}
+              >
+                {selectedIds.size === allLambatIds.length && allLambatIds.length > 0 ? 'Batal Pilih' : 'Pilih Semua'}
+              </Button>
+              <input
+                type="date"
+                value={bulkDate}
+                onChange={(e) => setBulkDate(e.target.value)}
+                className="h-8 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 text-sm text-slate-700 dark:text-slate-200"
+              />
+              <Button
+                size="sm"
+                className="h-8 bg-[#0F172A] hover:bg-[#1E293B] text-white"
+                disabled={selectedIds.size === 0 || bulkUpdateTaskDate.isPending}
+                onClick={handleBulkUpdateDate}
+              >
+                {bulkUpdateTaskDate.isPending ? 'Menyimpan...' : 'Ubah Tanggal'}
+              </Button>
+            </div>
+          )}
             {groupedTasks.map((group, idx) => (
               <div key={group.key} className="space-y-4">
                 {/* Group Header */}
@@ -598,6 +659,9 @@ function SemuaPageClient() {
                       onEdit={handleEdit}
                       onDelete={handleDelete}
                       onStatusChange={handleStatusChange}
+                      selectionMode={groupMode === 'lambat'}
+                      selected={selectedIds.has(task.id)}
+                      onToggleSelect={toggleSelect}
                     />
                   ))}
                 </div>

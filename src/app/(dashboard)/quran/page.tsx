@@ -11,15 +11,9 @@ import {
   endOfMonth,
   startOfYear,
   endOfYear,
-  addWeeks,
-  subWeeks,
-  addMonths,
-  subMonths,
-  addYears,
-  subYears,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, Calendar, BookOpen, Check, Sun, CloudSun, Sunset, Moon, Edit2 } from 'lucide-react'
+import { Calendar, BookOpen, Check, Sun, CloudSun, Sunset, Moon, Edit2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
@@ -28,6 +22,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { useQuranLogRange, useUpsertQuranLog, useDeleteQuranLog } from '@/hooks/useQuranLogs'
 import { useRealtime } from '@/hooks/useRealtime'
+import { useHeaderControls } from '@/components/layout/HeaderControls'
 
 // ─── Constants ────────────────────────────────────
 
@@ -77,8 +72,9 @@ const DAY_BADGE_COLORS: Record<string, string> = {
 
 const TABLE_BORDER = 'border-slate-900'
 
-type PeriodMode = 'weekly' | 'monthly' | 'yearly'
+type PeriodMode = 'daily' | 'weekly' | 'monthly' | 'yearly'
 const PERIOD_OPTIONS: { value: PeriodMode; label: string }[] = [
+  { value: 'daily', label: 'Harian' },
   { value: 'weekly', label: 'Mingguan' },
   { value: 'monthly', label: 'Bulanan' },
   { value: 'yearly', label: 'Tahunan' },
@@ -237,8 +233,8 @@ function QuranDropdown({
 
 export default function QuranPage() {
   const queryClient = useQueryClient()
-  const [period, setPeriod] = useState<PeriodMode>('weekly')
-  const [anchorDate, setAnchorDate] = useState<Date>(new Date())
+  // ── Rev 10: periode & anchor date dari HeaderControls (toolbar di header) ──
+  const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
   const [dropdown, setDropdown] = useState<DropdownState>(null)
   const [editState, setEditState] = useState<EditState>(null)
   const tableContainerRef = useRef<HTMLDivElement>(null)
@@ -247,7 +243,10 @@ export default function QuranPage() {
     const today = new Date()
     let start: Date
     let end: Date
-    if (period === 'weekly') {
+    if (period === 'daily') {
+      start = startOfDaySafe(anchorDate)
+      end = anchorDate
+    } else if (period === 'weekly') {
       start = startOfWeek(anchorDate, { weekStartsOn: 1 })
       end = endOfWeek(anchorDate, { weekStartsOn: 1 })
     } else if (period === 'monthly') {
@@ -261,7 +260,9 @@ export default function QuranPage() {
     const isCurrent = start <= today && end >= startOfDaySafe(today)
 
     let label: string
-    if (period === 'weekly') {
+    if (period === 'daily') {
+      label = format(anchorDate, 'EEEE, d MMMM yyyy', { locale: id })
+    } else if (period === 'weekly') {
       label = `${format(start, 'd MMM', { locale: id })} – ${format(end, 'd MMM yyyy', { locale: id })}`
     } else if (period === 'monthly') {
       label = format(anchorDate, 'MMMM yyyy', { locale: id })
@@ -304,16 +305,6 @@ export default function QuranPage() {
     () => (quranLogs as QuranLogEntry[]).reduce((sum, l) => sum + (l.jumlah_halaman || 0), 0),
     [quranLogs]
   )
-
-  const navigatePeriod = (direction: 'prev' | 'next') => {
-    setAnchorDate(prev => {
-      if (period === 'weekly') return direction === 'prev' ? subWeeks(prev, 1) : addWeeks(prev, 1)
-      if (period === 'monthly') return direction === 'prev' ? subMonths(prev, 1) : addMonths(prev, 1)
-      return direction === 'prev' ? subYears(prev, 1) : addYears(prev, 1)
-    })
-  }
-  const goToToday = () => setAnchorDate(new Date())
-  const changePeriod = (p: PeriodMode) => { setPeriod(p); setAnchorDate(new Date()) }
 
   // Tutup dropdown saat klik di luar tabel & di luar menu
   useEffect(() => {
@@ -461,43 +452,11 @@ export default function QuranPage() {
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
-      {/* Toolbar — toggle periode + navigasi rentang */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="inline-flex items-center gap-1 p-1 bg-muted/50 rounded-lg border border-border w-fit">
-          {PERIOD_OPTIONS.map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => changePeriod(opt.value)}
-              className={cn(
-                'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
-                period === opt.value ? 'bg-[#0F172A] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-              )}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 bg-green-50 border border-green-200 rounded-lg">
-            <BookOpen className="h-3.5 w-3.5 text-green-600" />
-            <span className="text-xs font-semibold text-green-700">{totalHalaman}</span>
-            <span className="text-[10px] text-green-600/70">halaman</span>
-          </div>
-          <Button variant="outline" size="icon" onClick={() => navigatePeriod('prev')} aria-label="Periode sebelumnya" className="h-9 w-9">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-lg border border-border min-w-[180px] justify-center">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium whitespace-nowrap">{periodLabel}</span>
-          </div>
-          <Button variant="outline" size="icon" onClick={() => navigatePeriod('next')} aria-label="Periode berikutnya" className="h-9 w-9" disabled={isCurrentPeriod}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          {!isCurrentPeriod && (
-            <Button variant="outline" onClick={goToToday} className="h-9 px-3">Hari Ini</Button>
-          )}
-        </div>
+      {/* Total halaman dibaca — dipindah dari toolbar (rev 10) */}
+      <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 bg-green-50 border border-green-200 rounded-lg w-fit">
+        <BookOpen className="h-3.5 w-3.5 text-green-600" />
+        <span className="text-xs font-semibold text-green-700">{totalHalaman}</span>
+        <span className="text-[10px] text-green-600/70">halaman</span>
       </div>
 
       {/* Table — gaya seperti tab sholat */}
@@ -512,7 +471,7 @@ export default function QuranPage() {
                     Tanggal
                   </div>
                 </th>
-                <th className={cn('sticky left-[100px] z-30 bg-white px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[90px]', TABLE_BORDER)}>
+                <th className={cn('px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[90px] sm:sticky sm:left-[100px] sm:z-30 sm:bg-white', TABLE_BORDER)}>
                   Hari
                 </th>
                 {WAKTU_BACA.map(col => (
@@ -551,9 +510,10 @@ export default function QuranPage() {
                       className={cn('border-b transition-colors', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30', 'hover:bg-green-50/40')}
                     >
                       <td className={cn('sticky left-0 z-10 bg-inherit px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
-                        {dateDisplay}
+                        <span className="sm:hidden">{format(date, 'd MMM', { locale: id })}</span>
+                        <span className="hidden sm:inline">{dateDisplay}</span>
                       </td>
-                      <td className={cn('sticky left-[100px] z-10 bg-inherit px-3 py-2 text-center border-r', TABLE_BORDER)}>
+                      <td className={cn('px-3 py-2 text-center border-r sm:sticky sm:left-[100px] sm:z-10 sm:bg-inherit', TABLE_BORDER)}>
                         <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs border font-medium', DAY_BADGE_COLORS[dayName] || 'bg-slate-100 text-slate-700 border-slate-200')}>
                           {dayName}
                         </span>

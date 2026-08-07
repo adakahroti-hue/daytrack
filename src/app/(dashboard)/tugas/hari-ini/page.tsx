@@ -76,7 +76,7 @@ const TaskCard = memo(({
   const [, setTick] = useState(0)
   useEffect(() => {
     if (!isInProgress || isPaused) return
-    const t = setInterval(() => setTick(x => x + 1), 10_000)
+    const t = setInterval(() => setTick(x => x + 1), 1_000)
     return () => clearInterval(t)
   }, [isInProgress, isPaused])
 

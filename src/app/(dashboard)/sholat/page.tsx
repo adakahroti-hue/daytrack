@@ -13,19 +13,14 @@ import {
   endOfMonth,
   startOfYear,
   endOfYear,
-  addWeeks,
-  subWeeks,
-  addMonths,
-  subMonths,
-  addYears,
-  subYears,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Check, Sun, CloudSun, Sunset, Moon, Calendar, ChevronLeft, ChevronRight, Star } from 'lucide-react'
+import { Check, Sun, CloudSun, Sunset, Moon, Calendar, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { usePrayerLogRange, useTogglePrayer, useUpdatePrayerQuality } from '@/hooks/usePrayerLogs'
 import { useRealtime } from '@/hooks/useRealtime'
+import { useHeaderControls } from '@/components/layout/HeaderControls'
 
 // ─── Constants ────────────────────────────────────
 
@@ -112,9 +107,10 @@ const TABLE_BORDER = 'border-slate-900'
 
 // ─── Types ─────────────────────────────────────────
 
-type PeriodMode = 'weekly' | 'monthly' | 'yearly'
+type PeriodMode = 'daily' | 'weekly' | 'monthly' | 'yearly'
 
 const PERIOD_OPTIONS: { value: PeriodMode; label: string }[] = [
+  { value: 'daily', label: 'Harian' },
   { value: 'weekly', label: 'Mingguan' },
   { value: 'monthly', label: 'Bulanan' },
   { value: 'yearly', label: 'Tahunan' },
@@ -323,16 +319,18 @@ export default function SholatPage() {
   const [dropdown, setDropdown] = useState<DropdownState>(null)
   const tableContainerRef = useRef<HTMLDivElement>(null)
 
-  // ── Rev 9: period mode + anchor date untuk navigasi rentang waktu ──
-  const [period, setPeriod] = useState<PeriodMode>('weekly')
-  const [anchorDate, setAnchorDate] = useState<Date>(new Date())
+  // ── Rev 10: periode & anchor date dari HeaderControls (toolbar di header) ──
+  const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
 
   // Hitung rentang tanggal berdasarkan periode + anchor
   const { rangeStart, rangeEnd, periodLabel, isCurrentPeriod } = useMemo(() => {
     const today = new Date()
     let start: Date
     let end: Date
-    if (period === 'weekly') {
+    if (period === 'daily') {
+      start = startOfDaySafe(anchorDate)
+      end = anchorDate
+    } else if (period === 'weekly') {
       start = startOfWeek(anchorDate, { weekStartsOn: 1 })
       end = endOfWeek(anchorDate, { weekStartsOn: 1 })
     } else if (period === 'monthly') {
@@ -348,7 +346,9 @@ export default function SholatPage() {
     const isCurrent = start <= today && end >= startOfDaySafe(today)
 
     let label: string
-    if (period === 'weekly') {
+    if (period === 'daily') {
+      label = format(anchorDate, 'EEEE, d MMMM yyyy', { locale: id })
+    } else if (period === 'weekly') {
       label = `${format(start, 'd MMM', { locale: id })} – ${format(end, 'd MMM yyyy', { locale: id })}`
     } else if (period === 'monthly') {
       label = format(anchorDate, 'MMMM yyyy', { locale: id })
@@ -386,22 +386,6 @@ export default function SholatPage() {
     // Urutan tanggal dari atas ke bawah — terbaru paling bawah (ascending)
     return eachDayOfInterval({ start: rangeStart, end: rangeEnd }).map(d => format(d, 'yyyy-MM-dd'))
   }, [rangeStart, rangeEnd])
-
-  // ── Navigasi periode ──
-  const navigatePeriod = (direction: 'prev' | 'next') => {
-    setAnchorDate(prev => {
-      if (period === 'weekly') return direction === 'prev' ? subWeeks(prev, 1) : addWeeks(prev, 1)
-      if (period === 'monthly') return direction === 'prev' ? subMonths(prev, 1) : addMonths(prev, 1)
-      return direction === 'prev' ? subYears(prev, 1) : addYears(prev, 1)
-    })
-  }
-
-  const goToToday = () => setAnchorDate(new Date())
-
-  const changePeriod = (p: PeriodMode) => {
-    setPeriod(p)
-    setAnchorDate(new Date()) // reset ke periode saat ini
-  }
 
   // Close dropdown on outside click — menu di-render fixed di luar table container,
   // jadi cek juga apakah klik terjadi di dalam menu (via data attribute)
@@ -525,53 +509,6 @@ export default function SholatPage() {
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
-      {/* ── Rev 9: Header toolbar — toggle periode + navigasi rentang ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        {/* Toggle group periode */}
-        <div className="inline-flex items-center gap-1 p-1 bg-muted/50 rounded-lg border border-border w-fit">
-          {PERIOD_OPTIONS.map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => changePeriod(opt.value)}
-              className={cn(
-                'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
-                period === opt.value
-                  ? 'bg-[#0F172A] text-white shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-              )}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Navigasi rentang waktu */}
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => navigatePeriod('prev')} aria-label="Periode sebelumnya" className="h-9 w-9">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-lg border border-border min-w-[180px] justify-center">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium whitespace-nowrap">{periodLabel}</span>
-          </div>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => navigatePeriod('next')}
-            aria-label="Periode berikutnya"
-            className="h-9 w-9"
-            disabled={isCurrentPeriod}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          {!isCurrentPeriod && (
-            <Button variant="outline" onClick={goToToday} className="h-9 px-3">
-              Hari Ini
-            </Button>
-          )}
-        </div>
-      </div>
-
       {/* ── Rev 3: Table dengan garis hitam (daytrack style) ── */}
       <div
         ref={tableContainerRef}
@@ -586,7 +523,7 @@ export default function SholatPage() {
                   Tanggal
                 </div>
               </th>
-              <th className={cn('sticky left-[100px] z-30 bg-white px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[90px]', TABLE_BORDER)}>
+              <th className={cn('px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[90px] sm:sticky sm:left-[100px] sm:z-30 sm:bg-white', TABLE_BORDER)}>
                 Hari
               </th>
               {SHOLAT_COLUMNS.map(col => (
@@ -633,9 +570,10 @@ export default function SholatPage() {
                     )}
                   >
                     <td className={cn('sticky left-0 z-10 bg-inherit px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
-                      {dateDisplay}
+                      <span className="sm:hidden">{format(date, 'd MMM', { locale: id })}</span>
+                      <span className="hidden sm:inline">{dateDisplay}</span>
                     </td>
-                    <td className={cn('sticky left-[100px] z-10 bg-inherit px-3 py-2 text-center border-r', TABLE_BORDER)}>
+                    <td className={cn('px-3 py-2 text-center border-r sm:sticky sm:left-[100px] sm:z-10 sm:bg-inherit', TABLE_BORDER)}>
                       <span className={cn(
                         'inline-block px-2 py-0.5 rounded-full text-xs border font-medium',
                         DAY_BADGE_COLORS[dayName] || 'bg-slate-100 text-slate-700 border-slate-200'

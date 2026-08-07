@@ -6,7 +6,7 @@ import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, Clock, Calenda
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
-import { useHeaderControls, formatDateForPeriod, formatIndonesianDate } from './HeaderControls'
+import { useHeaderControls, formatDateForPeriod, formatIndonesianDate, formatIbadahPeriodLabel } from './HeaderControls'
 import { useTasks } from '@/hooks/useTasks'
 import { getEstimasiText } from '@/lib/utils'
 import Image from 'next/image'
@@ -115,6 +115,10 @@ export function Header({ onMenuClick }: HeaderProps) {
     goToToday,
     setPeriod,
     isToday,
+    ibadahPeriod,
+    ibadahDate,
+    setIbadahPeriod,
+    navigateIbadah,
   } = useHeaderControls()
 
   // Show period toggle only on Overview page
@@ -131,6 +135,13 @@ export function Header({ onMenuClick }: HeaderProps) {
     weekly: { label: 'Mingguan', icon: CalendarDays },
     monthly: { label: 'Bulanan', icon: CalendarRange },
   }
+
+  const ibadahPeriodOptions = [
+    { value: 'daily', label: 'Harian' },
+    { value: 'weekly', label: 'Mingguan' },
+    { value: 'monthly', label: 'Bulanan' },
+    { value: 'yearly', label: 'Tahunan' },
+  ] as const
 
   const handlePeriodChange = (key: 'daily' | 'weekly' | 'monthly') => {
     setPeriod(key)
@@ -185,7 +196,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         {isSelesai && <SelesaiHeaderStats />}
 
         {/* Date Navigation — hidden on Hari Ini, Semua, Selesai, and Sholat tabs */}
-        {!isHariIni && !isSemua && !isSelesai && !isSholat && !isQuran && (
+        {isOverviewPage && (
         <div className="flex-1 flex items-center justify-start gap-2 min-w-0">
           {/* Desktop date navigation */}
           <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border">
@@ -238,6 +249,44 @@ export function Header({ onMenuClick }: HeaderProps) {
                   <span className="hidden sm:inline truncate">{label}</span>
                 </Button>
               ))}
+            </div>
+          </div>
+        )}
+        {/* Sholat & Quran toolbar — toggle + navigasi di header, rata kanan (rev 10) */}
+        {(isSholat || isQuran) && (
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="hidden sm:inline-flex items-center gap-0.5 p-0.5 bg-muted/50 rounded-lg border border-border">
+              {ibadahPeriodOptions.map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => setIbadahPeriod(opt.value)}
+                  className={cn(
+                    'px-2.5 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap',
+                    ibadahPeriod === opt.value
+                      ? 'bg-[#0F172A] text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                  )}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 bg-muted/50 rounded-lg border border-border">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateIbadah('prev')} aria-label="Periode sebelumnya">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="flex items-center gap-1">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium whitespace-nowrap hidden sm:inline">
+                  {formatIbadahPeriodLabel(ibadahDate, ibadahPeriod)}
+                </span>
+                <span className="text-xs font-medium whitespace-nowrap sm:hidden">
+                  {format(ibadahDate, 'd MMM yyyy', { locale: id })}
+                </span>
+              </div>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateIbadah('next')} aria-label="Periode selanjutnya">
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         )}

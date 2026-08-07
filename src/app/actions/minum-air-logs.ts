@@ -6,9 +6,10 @@ import { z } from "zod"
 
 const waterLogSchema = z.object({
   tanggal: z.string().min(1, "Tanggal wajib diisi"),
-  waktu_baca: z.enum(['setelah_bangun', 'pertengahan_pagi', 'setelah_dzuhur', 'sebelum_maghrib', 'setelah_ashar', 'setelah_isya']),
-  jumlah_ml: z.number().int().min(50).max(1000).default(250),
+  waktu_baca: z.enum(['setelah_bangun', 'setelah_dzuhur', 'setelah_ashar', 'setelah_maghrib', 'sebelum_tidur']),
+  jumlah_ml: z.number().int().min(0).max(1000).default(250),
   catatan: z.string().optional(),
+  status: z.enum(['sudah', 'lupa']).optional().nullable(),
 })
 
 export type WaterLogFormData = z.infer<typeof waterLogSchema>
@@ -20,11 +21,12 @@ export interface WaterLogEntry {
   waktu_baca: string
   jumlah_ml: number
   catatan: string | null
+  status: string | null
   created_at: string
   updated_at: string
 }
 
-const WATER_TIMES = ['setelah_bangun', 'pertengahan_pagi', 'setelah_dzuhur', 'sebelum_maghrib', 'setelah_ashar', 'setelah_isya'] as const
+const WATER_TIMES = ['setelah_bangun', 'setelah_dzuhur', 'setelah_ashar', 'setelah_maghrib', 'sebelum_tidur'] as const
 const TARGET_ML = 2000 // 8 glasses x 250ml
 
 export async function upsertWaterLog(formData: WaterLogFormData) {
@@ -48,6 +50,7 @@ export async function upsertWaterLog(formData: WaterLogFormData) {
     waktu_baca: validated.waktu_baca,
     jumlah_ml: validated.jumlah_ml,
     catatan: validated.catatan || null,
+    status: validated.status || null,
   }
 
   let data, error
