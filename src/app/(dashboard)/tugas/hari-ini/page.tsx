@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, memo } from 'react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Plus, Edit, Trash2, Clock, Play, Pause, Check, CheckCircle2, MoreHorizontal, AlertTriangle } from 'lucide-react'
+import { Plus, Edit, Trash2, Clock, Play, Pause, Check, CheckCircle2, MoreHorizontal, AlertTriangle, Layers } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, getMissionPriorityIcon, getMissionGroupName, CARD_BASE, CARD_HOVER, getTaskActualDurationText, compareTaskEstimasiVsActual, getTaskLiveDurationText } from '@/lib/utils'
 import { TaskForm } from '@/components/tasks/TaskForm'
+import { TaskGroupRibbon, TaskGroupDialog } from '@/components/tasks/task-group'
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus, usePauseTask, useResumeTask } from '@/hooks/useTasks'
 import { useTasksRealtime } from '@/hooks/useRealtime'
 import { Suspense } from 'react'
@@ -31,6 +32,8 @@ type Task = {
   accumulated_seconds?: number | null
   is_paused?: boolean | null
   last_resumed_at?: string | null
+  group_id?: string | null
+  group_order?: number | null
 }
 
 type TaskFormData = {
@@ -68,6 +71,7 @@ const TaskCard = memo(({
   onPause,
   onResume,
   onStart,
+  onSetGroup,
 }: {
   task: Task
   onEdit: (task: Task) => void
@@ -76,6 +80,7 @@ const TaskCard = memo(({
   onPause: (id: string) => void
   onResume: (id: string) => void
   onStart?: (task: Task) => void
+  onSetGroup?: (task: Task) => void
 }) => {
   const isCompleted = task.status === 'selesai'
   const isInProgress = task.status === 'proses'
@@ -151,7 +156,11 @@ const TaskCard = memo(({
     : null
 
   return (
-    <Card className={cn('group', cardBorderClass)}>
+    <Card className={cn('group relative', cardBorderClass)}>
+      {/* Revisi batch 12: pita penanda paket (parent=1, child=2,3,...) */}
+      {task.group_id && task.group_order != null && (
+        <TaskGroupRibbon groupId={task.group_id} order={task.group_order} />
+      )}
       <CardContent className="pt-4 pb-3 px-4 space-y-2.5">
         {/* Revisi 2-3: judul + menu titik tiga SEBARIS di kanan atas, sejajar */}
         <div className="flex items-start justify-between gap-2">
@@ -170,6 +179,9 @@ const TaskCard = memo(({
             <DropdownMenuContent align="end" className="w-36">
               <DropdownMenuItem onClick={() => onEdit(task)} className="flex items-center gap-2" inset={false}>
                 <Edit className="h-3.5 w-3.5" />Edit Tugas
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onSetGroup?.(task)} className="flex items-center gap-2" inset={false}>
+                <Layers className="h-3.5 w-3.5" />Penanda Paket
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => onDelete(task.id)} className="flex items-center gap-2 text-destructive focus:text-destructive" inset={false}>
@@ -281,6 +293,8 @@ function HariIniPageClient() {
   const [editingTask, setEditingTask] = useState<EditingTask | null>(null)
   // Revisi 10: tugas yang diklik tapi prioritasnya bukan tertinggi — tunggu konfirmasi
   const [pendingStart, setPendingStart] = useState<Task | null>(null)
+  // Revisi batch 12: penanda paket (parent/child/single)
+  const [groupTask, setGroupTask] = useState<Task | null>(null)
 
   const today = new Date()
   const todayStr = format(today, 'yyyy-MM-dd')
@@ -457,6 +471,7 @@ function HariIniPageClient() {
                         onEdit={handleEdit}
                         onDelete={handleDelete}
                         onStatusChange={handleStatusChange}
+                      onSetGroup={setGroupTask}
                         onPause={handlePause}
                         onResume={handleResume}
                         onStart={handleStartRequest}
@@ -558,6 +573,21 @@ function HariIniPageClient() {
           <TaskForm initialData={editingTask} onSubmit={handleSubmit} onCancel={() => { setIsFormOpen(false); setEditingTask(null) }} />
         </DialogContent>
       </Dialog>
+      {/* Revisi batch 12: dialog penanda paket */}
+      <TaskGroupDialog
+        open={!!groupTask}
+        onOpenChange={(open) => !open && setGroupTask(null)}
+        task={groupTask}
+        allTasks={todayTasks}
+        isSaving={updateTask.isPending}
+        onSave={(data) => {
+          if (!groupTask) return
+          updateTask.mutate(
+            { id: groupTask.id, data },
+            { onSuccess: () => setGroupTask(null), onError: () => alert('Gagal menyimpan penanda paket. Pastikan migrasi SQL terbaru sudah dijalankan.') }
+          )
+        }}
+      />
     </div>
   )
 }

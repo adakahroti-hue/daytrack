@@ -12,6 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, getMissionGroupName, getMissionPriorityShortLabel, getMissionGroupDescriptionWithCount, CARD_BASE, CARD_HOVER, BRAND_COLORS, PRIORITY_COLORS, getActualDurationText, compareEstimasiVsActual, getLiveDurationText } from '@/lib/utils'
 import { TaskForm } from '@/components/tasks/TaskForm'
+import { TaskGroupRibbon, TaskGroupDialog } from '@/components/tasks/task-group'
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus, useBulkDeleteTasks, useBulkResetTasks } from '@/hooks/useTasks'
 import { useTasksRealtime } from '@/hooks/useRealtime'
 import { Suspense } from 'react'
@@ -264,6 +265,8 @@ const TaskCard = memo(({
 function SelesaiPageClient() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<EditingTask | null>(null)
+  // Revisi batch 12: penanda paket (parent/child/single)
+  const [groupTask, setGroupTask] = useState<Task | null>(null)
   const [groupMode, setGroupMode] = useState<GroupMode>('prioritas')
   const [isMounted, setIsMounted] = useState(false)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
@@ -566,6 +569,7 @@ function SelesaiPageClient() {
                       onEdit={handleEdit}
                       onDelete={handleDelete}
                       onStatusChange={handleStatusChange}
+                onSetGroup={setGroupTask}
                       onSelect={isSelectionMode ? handleSelectTask : undefined}
                       isSelected={selectedIds.includes(task.id)}
                     />
@@ -596,6 +600,22 @@ function SelesaiPageClient() {
           <TaskForm initialData={editingTask} onSubmit={handleSubmit} onCancel={() => { setIsFormOpen(false); setEditingTask(null) }} />
         </DialogContent>
       </Dialog>
+
+      {/* Revisi batch 12: dialog penanda paket */}
+      <TaskGroupDialog
+        open={!!groupTask}
+        onOpenChange={(open) => !open && setGroupTask(null)}
+        task={groupTask}
+        allTasks={completedTasks}
+        isSaving={updateTask.isPending}
+        onSave={(data) => {
+          if (!groupTask) return
+          updateTask.mutate(
+            { id: groupTask.id, data },
+            { onSuccess: () => setGroupTask(null), onError: () => alert('Gagal menyimpan penanda paket. Pastikan migrasi SQL terbaru sudah dijalankan.') }
+          )
+        }}
+      />
     </div>
   )
 }

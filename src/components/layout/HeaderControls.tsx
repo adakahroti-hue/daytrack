@@ -6,7 +6,7 @@ import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
 import { Flag, Calendar, Clock, Hourglass, type LucideIcon } from 'lucide-react'
 
-type Period = 'monthly' | 'weekly' | 'daily'
+type Period = 'monthly' | 'weekly' | 'daily' | 'yesterday' | 'yearly'
 
 export type IbadahPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly'
 
@@ -27,6 +27,7 @@ interface HeaderControls {
   currentDate: Date
   period: Period
   setPeriod: (period: Period) => void
+  selectYesterday: () => void
   navigate: (direction: 'prev' | 'next') => void
   goToToday: () => void
   onRefresh: () => void
@@ -122,8 +123,10 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
     case 'overview':
       switch (period) {
         case 'daily': return 'Overview Harian'
+        case 'yesterday': return 'Overview Kemarin'
         case 'weekly': return 'Overview Mingguan'
         case 'monthly': return 'Overview Bulanan'
+        case 'yearly': return 'Overview Tahunan'
       }
     case 'tugas': return 'Jadwal Tugas'
     case 'ibadah': return 'Ibadah'
@@ -177,8 +180,10 @@ function getCategoryDescription(category: string, period: Period, subPage: strin
     case 'overview':
       switch (period) {
         case 'daily': return 'Ringkasan aktivitas harian Anda'
+        case 'yesterday': return 'Ringkasan aktivitas kemarin'
         case 'weekly': return 'Ringkasan aktivitas mingguan Anda'
         case 'monthly': return 'Ringkasan aktivitas bulanan Anda'
+        case 'yearly': return 'Ringkasan aktivitas tahunan Anda'
       }
     case 'tugas': return 'Kelola dan lacak tugas harian Anda'
     case 'ibadah': return 'Kelola dan pantau aktivitas ibadah harian Anda'
@@ -232,6 +237,12 @@ export function HeaderControlsProvider({
   }, [pathname])
 
   const isToday = isSameDay(currentDate, new Date())
+
+  // Revisi batch 12: opsi "Kemarin" — tampilan harian dengan tanggal kemarin
+  const selectYesterday = useCallback(() => {
+    setCurrentDate(subDays(new Date(), 1))
+    setPeriod('yesterday')
+  }, [])
 
   const navigate = useCallback((direction: 'prev' | 'next') => {
     setCurrentDate(prev => {

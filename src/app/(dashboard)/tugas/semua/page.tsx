@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, memo } from 'react'
 import { format, isToday, isWithinInterval, startOfWeek, endOfWeek, isBefore, startOfDay, differenceInDays } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Plus, Edit, Trash2, Clock, Calendar, Play, Check, CheckCircle2, MoreHorizontal, Flag, Target, AlertTriangle } from 'lucide-react'
+import { Plus, Edit, Trash2, Clock, Calendar, Play, Check, CheckCircle2, MoreHorizontal, Flag, Target, AlertTriangle, Layers } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -12,6 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, getMissionPriorityIcon, getMissionGroupName, getMissionPriorityShortLabel, getMissionPriorityBorder, getMissionGroupDescriptionWithCount, CARD_BASE, CARD_HOVER, STAT_ICON_CONTAINERS, BRAND_COLORS, getActualDurationText, compareEstimasiVsActual, getLiveDurationText, PRIORITY_COLORS } from '@/lib/utils'
 import { TaskForm } from '@/components/tasks/TaskForm'
+import { TaskGroupRibbon, TaskGroupDialog } from '@/components/tasks/task-group'
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus, useBulkUpdateTaskDate } from '@/hooks/useTasks'
 import { useTasksRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
@@ -30,6 +31,8 @@ type Task = {
   started_at: string | null
   completed_at: string | null
   terlewat_tanggal?: string | null
+  group_id?: string | null
+  group_order?: number | null
 }
 
 type TaskFormData = {
@@ -106,6 +109,7 @@ const TaskCard = memo(({
   selectionMode,
   selected,
   onToggleSelect,
+  onSetGroup,
 }: {
   task: Task
   onEdit: (task: Task) => void
@@ -114,6 +118,7 @@ const TaskCard = memo(({
   selectionMode?: boolean
   selected?: boolean
   onToggleSelect?: (id: string) => void
+  onSetGroup?: (task: Task) => void
 }) => {
   const isCompleted = task.status === 'selesai'
   const isInProgress = task.status === 'proses'
@@ -170,34 +175,34 @@ const TaskCard = memo(({
         isOverdue && !isCompleted && 'border-l-3 border-l-red-400 dark:border-l-red-500',
         isInProgress && 'border-l-3 border-l-amber-400 dark:border-l-amber-500'
       )}
-      style={{ minHeight: '190px', display: 'flex', flexDirection: 'column' }}
     >
-      <CardContent className="p-5 space-y-4 flex flex-col h-full">
-        {/* Top Row: Priority Badge + Dropdown Menu */}
+      {/* Revisi batch 12: pita penanda paket */}
+      {task.group_id && task.group_order != null && (
+        <TaskGroupRibbon groupId={task.group_id} order={task.group_order} />
+      )}
+      <CardContent className="pt-4 pb-3 px-4 space-y-2.5">
+        {/* Revisi batch 12: top row ala Hari Ini — judul + menu sebaris, tanpa badge teks prioritas */}
         <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             {selectionMode && (
               <Checkbox
                 checked={selected}
                 onCheckedChange={() => onToggleSelect?.(task.id)}
-                className="h-4 w-4"
+                className="h-4 w-4 shrink-0"
                 aria-label="Pilih tugas"
               />
             )}
-            <span className={priorityBadgeClass}>
-              {PRIORITY_ICONS[task.prioritas]}
-              {getMissionPriorityShortLabel(task.prioritas)}
-            </span>
+            <h3 className="font-medium text-base leading-tight truncate capitalize flex-1 min-w-0">{task.nama}</h3>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 opacity-70"
+                className="h-7 w-7 -mt-1 -mr-1.5 shrink-0 opacity-70"
                 aria-label="Menu tugas"
               >
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreHorizontal className="h-3.5 w-3.5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
@@ -207,6 +212,13 @@ const TaskCard = memo(({
                 inset={false}
               >
                 <Edit className="h-4 w-4" />Edit Tugas
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onSetGroup?.(task)}
+                className="flex items-center gap-2"
+                inset={false}
+              >
+                <Layers className="h-4 w-4" />Penanda Paket
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -220,9 +232,6 @@ const TaskCard = memo(({
           </DropdownMenu>
         </div>
 
-        {/* Task Title - Most Prominent */}
-        <h3 className="font-semibold text-base leading-snug pr-8 capitalize flex-1 break-words">{task.nama}</h3>
-
         {/* Terlewat note — tugas dijadwalkan ulang otomatis */}
         {task.terlewat_tanggal && task.status !== 'selesai' && (
           <div className="flex items-center gap-1.5 w-fit text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">
@@ -231,15 +240,15 @@ const TaskCard = memo(({
           </div>
         )}
 
-        {/* Meta Info: Duration + Date */}
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+        {/* Meta Info: Duration + Date — compact */}
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
             <div className="flex items-center gap-1.5">
-              <Clock className="h-4 w-4 shrink-0" />
+              <Clock className="h-3.5 w-3.5 shrink-0" />
               <span className="whitespace-nowrap">Estimasi: {getEstimasiText(task.estimasi_menit)}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Calendar className="h-4 w-4 shrink-0" />
+              <Calendar className="h-3.5 w-3.5 shrink-0" />
               <span className={cn('whitespace-nowrap', isOverdue && 'text-destructive font-medium')}>
                 {format(taskDate, 'd MMM yyyy', { locale: id })}
                 {isOverdue && !isCompleted && (
@@ -285,7 +294,7 @@ const TaskCard = memo(({
         </div>
 
         {/* Bottom Row: Status Badge + Primary Action - Fixed at bottom */}
-        <div className="flex items-center justify-between pt-3 border-t border-border/50 mt-auto">
+        <div className="flex items-center justify-between pt-2 border-t border-border/50">
           <Badge variant="outline" className={statusBadgeClass}>
             {STATUS_SHORT_LABELS[task.status]}
           </Badge>
@@ -378,6 +387,8 @@ function SemuaPageClient() {
   const [isMounted, setIsMounted] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [bulkDate, setBulkDate] = useState(format(new Date(), 'yyyy-MM-dd'))
+  // Revisi batch 12: penanda paket (parent/child/single)
+  const [groupTask, setGroupTask] = useState<Task | null>(null)
 
   useEffect(() => {
     setIsMounted(true)
@@ -664,6 +675,7 @@ function SemuaPageClient() {
                       selectionMode={groupMode === 'lambat'}
                       selected={selectedIds.has(task.id)}
                       onToggleSelect={toggleSelect}
+                      onSetGroup={setGroupTask}
                     />
                   ))}
                 </div>
@@ -692,6 +704,22 @@ function SemuaPageClient() {
           <TaskForm initialData={editingTask} onSubmit={handleSubmit} onCancel={() => { setIsFormOpen(false); setEditingTask(null) }} />
         </DialogContent>
       </Dialog>
+
+      {/* Revisi batch 12: dialog penanda paket */}
+      <TaskGroupDialog
+        open={!!groupTask}
+        onOpenChange={(open) => !open && setGroupTask(null)}
+        task={groupTask}
+        allTasks={allTasks}
+        isSaving={updateTask.isPending}
+        onSave={(data) => {
+          if (!groupTask) return
+          updateTask.mutate(
+            { id: groupTask.id, data },
+            { onSuccess: () => setGroupTask(null), onError: () => alert('Gagal menyimpan penanda paket. Pastikan migrasi SQL terbaru sudah dijalankan.') }
+          )
+        }}
+      />
     </div>
   )
 }
