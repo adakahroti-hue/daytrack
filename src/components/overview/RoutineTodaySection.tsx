@@ -142,7 +142,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
   ]
   const bucketType = period === 'mingguan' ? 'day' : period === 'bulanan' ? 'week' : 'month'
   const bucketTiles = (doneDates: Set<string>) => {
-    const map = new Map<string, { label: string; done: number; total: number }>()
+    const map = new Map<string, { key: string; label: string; done: number; total: number }>()
     const start = new Date(startStr + 'T00:00:00')
     const end = new Date(cappedEnd + 'T00:00:00')
     const cur = new Date(start)
