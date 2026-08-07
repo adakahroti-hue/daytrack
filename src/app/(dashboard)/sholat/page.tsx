@@ -4,12 +4,27 @@ export const dynamic = "force-dynamic"
 
 import { useState, useMemo, useRef, useEffect, useCallback, forwardRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { format, subDays, eachDayOfInterval } from 'date-fns'
+import {
+  format,
+  eachDayOfInterval,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  startOfYear,
+  endOfYear,
+  addWeeks,
+  subWeeks,
+  addMonths,
+  subMonths,
+  addYears,
+  subYears,
+} from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Check, Sun, CloudSun, Sunset, Moon, Calendar } from 'lucide-react'
+import { Check, Sun, CloudSun, Sunset, Moon, Calendar, ChevronLeft, ChevronRight, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { usePrayerLogRange, useTogglePrayer } from '@/hooks/usePrayerLogs'
+import { usePrayerLogRange, useTogglePrayer, useUpdatePrayerQuality } from '@/hooks/usePrayerLogs'
 import { useRealtime } from '@/hooks/useRealtime'
 
 // ─── Constants ────────────────────────────────────
@@ -55,6 +70,32 @@ const REASON_LABELS: Record<string, string> = {
   lainnya: 'Lainnya',
 }
 
+// Rating kualitas sholat 1-5 dengan label kategori
+const RATING_OPTIONS: { value: number; label: string; desc: string }[] = [
+  { value: 1, label: 'Kurang', desc: 'Sekadar menggugurkan kewajiban' },
+  { value: 2, label: 'Cukup', desc: 'Sholat tapi kurang fokus' },
+  { value: 3, label: 'Baik', desc: 'Cukup khusyuk' },
+  { value: 4, label: 'Sangat Baik', desc: 'Khusyuk dan tuma\'ninah' },
+  { value: 5, label: 'Sempurna', desc: 'Hadir hati sepenuhnya' },
+]
+
+const RATING_LABELS: Record<number, string> = {
+  1: 'Kurang',
+  2: 'Cukup',
+  3: 'Baik',
+  4: 'Sangat Baik',
+  5: 'Sempurna',
+}
+
+// Warna badge rating (1 = merah, 5 = hijau)
+const RATING_COLORS: Record<number, string> = {
+  1: 'bg-rose-100 text-rose-700 border-rose-200',
+  2: 'bg-orange-100 text-orange-700 border-orange-200',
+  3: 'bg-amber-100 text-amber-700 border-amber-200',
+  4: 'bg-lime-100 text-lime-700 border-lime-200',
+  5: 'bg-green-100 text-green-700 border-green-200',
+}
+
 // Day badge pastel colors
 const DAY_BADGE_COLORS: Record<string, string> = {
   Senin: 'bg-yellow-100 text-yellow-800 border-yellow-200',
@@ -66,7 +107,18 @@ const DAY_BADGE_COLORS: Record<string, string> = {
   Minggu: 'bg-rose-100 text-rose-800 border-rose-200',
 }
 
+// Daytrack table border style — garis hitam
+const TABLE_BORDER = 'border-slate-900'
+
 // ─── Types ─────────────────────────────────────────
+
+type PeriodMode = 'weekly' | 'monthly' | 'yearly'
+
+const PERIOD_OPTIONS: { value: PeriodMode; label: string }[] = [
+  { value: 'weekly', label: 'Mingguan' },
+  { value: 'monthly', label: 'Bulanan' },
+  { value: 'yearly', label: 'Tahunan' },
+]
 
 type SholatRow = {
   id: string
@@ -83,6 +135,12 @@ type SholatRow = {
   alasan_ashar: string | null
   alasan_maghrib: string | null
   alasan_isya: string | null
+  kualitas_subuh: number | null
+  kualitas_dhuha: number | null
+  kualitas_dzuhur: number | null
+  kualitas_ashar: number | null
+  kualitas_maghrib: number | null
+  kualitas_isya: number | null
 }
 
 type CellStatus = 'done' | 'reason' | 'empty'
@@ -96,34 +154,31 @@ type DropdownState = {
 
 // ─── Helper: get cell status from row data ────────
 
-function getCellStatus(row: SholatRow | undefined, key: SholatKey): { status: CellStatus; reason: string | null } {
-  if (!row) return { status: 'empty', reason: null }
+function getCellStatus(row: SholatRow | undefined, key: SholatKey): { status: CellStatus; reason: string | null; quality: number | null } {
+  if (!row) return { status: 'empty', reason: null, quality: null }
   const isDone = row[`sholat_${key}` as keyof SholatRow] as boolean
   const reason = row[`alasan_${key}` as keyof SholatRow] as string | null
-  if (isDone) return { status: 'done', reason: null }
-  if (reason) return { status: 'reason', reason }
-  return { status: 'empty', reason: null }
+  const quality = row[`kualitas_${key}` as keyof SholatRow] as number | null
+  if (isDone) return { status: 'done', reason: null, quality: quality ?? null }
+  if (reason) return { status: 'reason', reason, quality: null }
+  return { status: 'empty', reason: null, quality: null }
 }
 
-// ─── Cell Badge Component ─────────────────────────
+// ─── Rating badge (compact, untuk di dalam cell) ──
 
-function CellBadge({ status, reason }: { status: CellStatus; reason: string | null }) {
-  if (status === 'done') {
-    return (
-      <span className="inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 border border-green-200 text-xs font-medium">
-        <Check className="h-3 w-3" />
-      </span>
-    )
-  }
-  if (status === 'reason' && reason) {
-    const label = REASON_LABELS[reason] || reason
-    return (
-      <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200 text-xs font-medium whitespace-nowrap">
-        {label}
-      </span>
-    )
-  }
-  return null
+function RatingBadge({ quality }: { quality: number }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-0.5 px-1.5 py-px rounded-full border text-[10px] font-semibold leading-tight',
+        RATING_COLORS[quality] || 'bg-slate-100 text-slate-600 border-slate-200'
+      )}
+      title={RATING_LABELS[quality]}
+    >
+      <Star className="h-2.5 w-2.5 fill-current" />
+      {quality}
+    </span>
+  )
 }
 
 // ─── Dropdown Menu Component ──────────────────────
@@ -133,41 +188,35 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
   sholatKey: SholatKey
   sholatMap: Record<string, SholatRow>
   onSelect: (option: StatusOption) => void
+  onRate: (quality: number) => void
   onClear: () => void
   onClose: () => void
-}>(({ tanggal, sholatKey, sholatMap, onSelect, onClear, onClose }, ref) => {
+}>(({ tanggal, sholatKey, sholatMap, onSelect, onRate, onClear, onClose }, ref) => {
   const menuRef = useRef<HTMLDivElement>(null)
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null)
 
   useEffect(() => {
-    // Find the clicked cell element to position dropdown near it
     const cell = document.querySelector(`[data-dropdown-cell="${tanggal}-${sholatKey}"]`) as HTMLElement
     if (!cell) return
 
     const rect = cell.getBoundingClientRect()
-    const menuWidth = 200
-    const menuHeight = 360
+    const menuWidth = 240
+    const menuHeight = 460
 
     let top = rect.bottom + 4
     let left = rect.left
 
-    // Flip up if not enough space below
     if (top + menuHeight > window.innerHeight) {
       top = rect.top - menuHeight - 4
     }
-
-    // Shift left if not enough space right
     if (left + menuWidth > window.innerWidth) {
       left = window.innerWidth - menuWidth - 8
     }
-
-    // Ensure minimum left
     if (left < 8) left = 8
 
     setPosition({ top, left })
   }, [tanggal, sholatKey])
 
-  // Close on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -185,22 +234,25 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
     }
   }, [onClose])
 
-  const currentValue = (() => {
+  const { currentValue, currentQuality } = (() => {
     const row = sholatMap[tanggal]
-    if (!row) return null
+    if (!row) return { currentValue: null as string | null, currentQuality: null as number | null }
     const isDone = row[`sholat_${sholatKey}` as keyof SholatRow] as boolean
     const reason = row[`alasan_${sholatKey}` as keyof SholatRow] as string | null
-    if (isDone) return 'sudah'
-    if (reason) return reason
-    return null
+    const quality = row[`kualitas_${sholatKey}` as keyof SholatRow] as number | null
+    if (isDone) return { currentValue: 'sudah', currentQuality: quality ?? null }
+    if (reason) return { currentValue: reason, currentQuality: null }
+    return { currentValue: null, currentQuality: null }
   })()
 
   if (!position) return null
 
+  const isDone = currentValue === 'sudah'
+
   return (
     <div
-      ref={ref}
-      className="fixed z-50 bg-white rounded-lg shadow-lg border border-slate-200 py-1 min-w-[200px] max-h-[360px] overflow-y-auto"
+      ref={menuRef}
+      className="fixed z-50 bg-white rounded-lg shadow-lg border border-slate-200 py-1 min-w-[240px] max-h-[460px] overflow-y-auto"
       style={{ top: position.top, left: position.left }}
     >
       {STATUS_OPTIONS.map(option => (
@@ -221,6 +273,42 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
           {option.label}
         </button>
       ))}
+
+      {/* Rating kualitas — hanya muncul bila sudah sholat */}
+      {isDone && (
+        <>
+          <div className="border-t border-slate-100 my-1" />
+          <div className="px-3 py-1.5">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Kualitas Sholat</p>
+            <div className="space-y-0.5">
+              {RATING_OPTIONS.map(r => (
+                <button
+                  key={r.value}
+                  onClick={() => onRate(r.value)}
+                  className={cn(
+                    'w-full text-left px-2 py-1.5 rounded-md text-sm flex items-center gap-2 transition-colors',
+                    'hover:bg-blue-50',
+                    currentQuality === r.value ? 'bg-blue-50 ring-1 ring-blue-200' : ''
+                  )}
+                >
+                  <span className={cn(
+                    'inline-flex items-center justify-center w-6 h-6 rounded-full border text-xs font-bold shrink-0',
+                    RATING_COLORS[r.value]
+                  )}>
+                    {r.value}
+                  </span>
+                  <span className="flex-1 min-w-0">
+                    <span className="block font-medium text-slate-800 leading-tight">{r.label}</span>
+                    <span className="block text-[11px] text-slate-400 leading-tight truncate">{r.desc}</span>
+                  </span>
+                  {currentQuality === r.value && <Check className="h-3.5 w-3.5 text-blue-600 shrink-0" />}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Divider */}
       <div className="border-t border-slate-100 my-1" />
       {/* Clear status */}
@@ -238,25 +326,48 @@ DropdownMenuContent.displayName = 'DropdownMenuContent'
 
 // ─── Main Component ────────────────────────────────
 
-const DAYS_TO_SHOW_INITIAL = 7
-
 export default function SholatPage() {
   const queryClient = useQueryClient()
-  const [daysToShow, setDaysToShow] = useState(DAYS_TO_SHOW_INITIAL)
   const [dropdown, setDropdown] = useState<DropdownState>(null)
-  const [isMobile, setIsMobile] = useState(false)
   const tableContainerRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 640)
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
+  // ── Rev 9: period mode + anchor date untuk navigasi rentang waktu ──
+  const [period, setPeriod] = useState<PeriodMode>('weekly')
+  const [anchorDate, setAnchorDate] = useState<Date>(new Date())
 
-  // Date range: from N days ago to today
-  const endDate = format(new Date(), 'yyyy-MM-dd')
-  const startDate = format(subDays(new Date(), daysToShow - 1), 'yyyy-MM-dd')
+  // Hitung rentang tanggal berdasarkan periode + anchor
+  const { rangeStart, rangeEnd, periodLabel, isCurrentPeriod } = useMemo(() => {
+    const today = new Date()
+    let start: Date
+    let end: Date
+    if (period === 'weekly') {
+      start = startOfWeek(anchorDate, { weekStartsOn: 1 })
+      end = endOfWeek(anchorDate, { weekStartsOn: 1 })
+    } else if (period === 'monthly') {
+      start = startOfMonth(anchorDate)
+      end = endOfMonth(anchorDate)
+    } else {
+      start = startOfYear(anchorDate)
+      end = endOfYear(anchorDate)
+    }
+    // Batasi end ke hari ini bila periode mencakup hari ini (hindari ratusan baris kosong masa depan)
+    const cappedEnd = end > today ? today : end
+    // Periode "saat ini" = rentang penuh (start..end) mencakup hari ini
+    const isCurrent = start <= today && end >= startOfDaySafe(today)
+
+    let label: string
+    if (period === 'weekly') {
+      label = `${format(start, 'd MMM', { locale: id })} – ${format(end, 'd MMM yyyy', { locale: id })}`
+    } else if (period === 'monthly') {
+      label = format(anchorDate, 'MMMM yyyy', { locale: id })
+    } else {
+      label = format(anchorDate, 'yyyy', { locale: id })
+    }
+    return { rangeStart: start, rangeEnd: cappedEnd, periodLabel: label, isCurrentPeriod: isCurrent }
+  }, [period, anchorDate])
+
+  const startDate = format(rangeStart, 'yyyy-MM-dd')
+  const endDate = format(rangeEnd, 'yyyy-MM-dd')
 
   const { data: sholatRows = [], isLoading, error } = usePrayerLogRange(startDate, endDate)
   useRealtime({
@@ -266,6 +377,7 @@ export default function SholatPage() {
   })
 
   const updateCell = useTogglePrayer()
+  const updateQuality = useUpdatePrayerQuality()
 
   // Build a map of tanggal -> row for quick lookup
   const sholatMap = useMemo(() => {
@@ -278,12 +390,26 @@ export default function SholatPage() {
 
   // Generate all dates in range (descending — newest first)
   const dates = useMemo(() => {
-    const allDates = eachDayOfInterval({
-      start: subDays(new Date(), daysToShow - 1),
-      end: new Date(),
-    })
+    if (rangeEnd < rangeStart) return []
+    const allDates = eachDayOfInterval({ start: rangeStart, end: rangeEnd })
     return allDates.reverse().map(d => format(d, 'yyyy-MM-dd'))
-  }, [daysToShow])
+  }, [rangeStart, rangeEnd])
+
+  // ── Navigasi periode ──
+  const navigatePeriod = (direction: 'prev' | 'next') => {
+    setAnchorDate(prev => {
+      if (period === 'weekly') return direction === 'prev' ? subWeeks(prev, 1) : addWeeks(prev, 1)
+      if (period === 'monthly') return direction === 'prev' ? subMonths(prev, 1) : addMonths(prev, 1)
+      return direction === 'prev' ? subYears(prev, 1) : addYears(prev, 1)
+    })
+  }
+
+  const goToToday = () => setAnchorDate(new Date())
+
+  const changePeriod = (p: PeriodMode) => {
+    setPeriod(p)
+    setAnchorDate(new Date()) // reset ke periode saat ini
+  }
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -314,7 +440,6 @@ export default function SholatPage() {
             } as SholatRow
           })
         }
-        // Row doesn't exist yet — add a new one
         const newRow: SholatRow = {
           id: 'temp-' + tanggal,
           tanggal,
@@ -322,6 +447,8 @@ export default function SholatPage() {
           sholat_ashar: false, sholat_maghrib: false, sholat_isya: false,
           alasan_subuh: null, alasan_dhuha: null, alasan_dzuhur: null,
           alasan_ashar: null, alasan_maghrib: null, alasan_isya: null,
+          kualitas_subuh: null, kualitas_dhuha: null, kualitas_dzuhur: null,
+          kualitas_ashar: null, kualitas_maghrib: null, kualitas_isya: null,
           [`sholat_${key}`]: status === 'done',
           [`alasan_${key}`]: status === 'reason' ? reason : null,
         } as SholatRow
@@ -331,10 +458,19 @@ export default function SholatPage() {
     [queryClient, startDate, endDate]
   )
 
+  const optimisticallyUpdateQuality = useCallback(
+    (tanggal: string, key: SholatKey, quality: number) => {
+      queryClient.setQueryData(['prayer_logs', 'range', startDate, endDate], (old: SholatRow[] | undefined) => {
+        if (!old) return old
+        return old.map(r => (r.tanggal === tanggal ? ({ ...r, [`kualitas_${key}`]: quality } as SholatRow) : r))
+      })
+    },
+    [queryClient, startDate, endDate]
+  )
+
   const handleSelectStatus = async (option: StatusOption) => {
     if (!dropdown) return
     const { tanggal, sholatKey } = dropdown
-    setDropdown(null)
 
     if (option.value === 'sudah') {
       optimisticallyUpdateCell(tanggal, sholatKey, 'done', null)
@@ -343,14 +479,28 @@ export default function SholatPage() {
       } catch {
         queryClient.invalidateQueries({ queryKey: ['prayer_logs'] })
       }
-    } else {
-      const reason = option.value
-      optimisticallyUpdateCell(tanggal, sholatKey, 'reason', reason)
-      try {
-        await updateCell.mutateAsync({ tanggal, prayerTime: sholatKey, value: false, reason })
-      } catch {
-        queryClient.invalidateQueries({ queryKey: ['prayer_logs'] })
-      }
+      // Jangan tutup dropdown — biarkan user langsung pilih rating kualitas
+      return
+    }
+
+    setDropdown(null)
+    const reason = option.value
+    optimisticallyUpdateCell(tanggal, sholatKey, 'reason', reason)
+    try {
+      await updateCell.mutateAsync({ tanggal, prayerTime: sholatKey, value: false, reason })
+    } catch {
+      queryClient.invalidateQueries({ queryKey: ['prayer_logs'] })
+    }
+  }
+
+  const handleRate = async (quality: number) => {
+    if (!dropdown) return
+    const { tanggal, sholatKey } = dropdown
+    optimisticallyUpdateQuality(tanggal, sholatKey, quality)
+    try {
+      await updateQuality.mutateAsync({ tanggal, prayerTime: sholatKey, quality })
+    } catch {
+      queryClient.invalidateQueries({ queryKey: ['prayer_logs'] })
     }
   }
 
@@ -360,6 +510,7 @@ export default function SholatPage() {
     setDropdown(null)
 
     optimisticallyUpdateCell(tanggal, sholatKey, 'empty', null)
+    optimisticallyUpdateQuality(tanggal, sholatKey, 0)
     try {
       await updateCell.mutateAsync({ tanggal, prayerTime: sholatKey, value: false })
     } catch {
@@ -376,31 +527,74 @@ export default function SholatPage() {
     setDropdown({ tanggal, sholatKey, rowIndex, colIndex })
   }
 
-  const loadMore = () => setDaysToShow(prev => prev + 30)
-
   return (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      {/* Table */}
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
+      {/* ── Rev 9: Header toolbar — toggle periode + navigasi rentang ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        {/* Toggle group periode */}
+        <div className="inline-flex items-center gap-1 p-1 bg-muted/50 rounded-lg border border-border w-fit">
+          {PERIOD_OPTIONS.map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => changePeriod(opt.value)}
+              className={cn(
+                'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                period === opt.value
+                  ? 'bg-[#0F172A] text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+              )}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Navigasi rentang waktu */}
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="icon" onClick={() => navigatePeriod('prev')} aria-label="Periode sebelumnya" className="h-9 w-9">
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-lg border border-border min-w-[180px] justify-center">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium whitespace-nowrap">{periodLabel}</span>
+          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigatePeriod('next')}
+            aria-label="Periode berikutnya"
+            className="h-9 w-9"
+            disabled={isCurrentPeriod}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          {!isCurrentPeriod && (
+            <Button variant="outline" onClick={goToToday} className="h-9 px-3">
+              Hari Ini
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* ── Rev 3: Table dengan garis hitam (daytrack style) ── */}
       <div
         ref={tableContainerRef}
-        className="relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-160px)] rounded-lg border border-slate-200 bg-white"
+        className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)] rounded-lg border bg-white', TABLE_BORDER)}
       >
         <table className="w-full border-collapse text-sm">
           <thead className="sticky top-0 z-20 bg-white">
-            <tr className="border-b border-slate-200">
-              {/* Sticky first two columns */}
-              <th className="sticky left-0 z-30 bg-white px-3 py-2 text-center font-medium text-slate-600 border-r border-slate-200 min-w-[100px]">
+            <tr className={cn('border-b', TABLE_BORDER)}>
+              <th className={cn('sticky left-0 z-30 bg-white px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[100px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
                   <Calendar className="h-3.5 w-3.5 text-blue-500" />
                   Tanggal
                 </div>
               </th>
-              <th className="sticky left-[100px] z-30 bg-white px-3 py-2 text-center font-medium text-slate-600 border-r border-slate-200 min-w-[90px]">
+              <th className={cn('sticky left-[100px] z-30 bg-white px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[90px]', TABLE_BORDER)}>
                 Hari
               </th>
-              {/* Prayer columns */}
               {SHOLAT_COLUMNS.map(col => (
-                <th key={col.key} className="px-3 py-2 text-center font-medium text-slate-600 border-r border-slate-200 last:border-r-0 min-w-[110px]">
+                <th key={col.key} className={cn('px-3 py-2 text-center font-semibold text-slate-700 border-r last:border-r-0 min-w-[110px]', TABLE_BORDER)}>
                   <div className="flex items-center justify-center gap-1">
                     <col.icon className={cn('h-3.5 w-3.5', col.color)} />
                     {col.label}
@@ -428,7 +622,7 @@ export default function SholatPage() {
             ) : (
               dates.map((dateStr, rowIdx) => {
                 const row = sholatMap[dateStr]
-                const date = new Date(dateStr)
+                const date = new Date(dateStr + 'T00:00:00')
                 const dayName = format(date, 'EEEE', { locale: id })
                 const dateDisplay = format(date, 'd MMMM', { locale: id })
 
@@ -436,17 +630,16 @@ export default function SholatPage() {
                   <tr
                     key={dateStr}
                     className={cn(
-                      'border-b border-slate-100 transition-colors',
+                      'border-b transition-colors',
+                      TABLE_BORDER,
                       rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30',
                       'hover:bg-blue-50/40'
                     )}
                   >
-                    {/* Tanggal — sticky left */}
-                    <td className="sticky left-0 z-10 bg-inherit px-3 py-2 text-center text-slate-700 border-r border-slate-200 font-medium tabular-nums">
+                    <td className={cn('sticky left-0 z-10 bg-inherit px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
                       {dateDisplay}
                     </td>
-                    {/* Hari — sticky, pastel badge */}
-                    <td className="sticky left-[100px] z-10 bg-inherit px-3 py-2 text-center border-r border-slate-200">
+                    <td className={cn('sticky left-[100px] z-10 bg-inherit px-3 py-2 text-center border-r', TABLE_BORDER)}>
                       <span className={cn(
                         'inline-block px-2 py-0.5 rounded-full text-xs border font-medium',
                         DAY_BADGE_COLORS[dayName] || 'bg-slate-100 text-slate-700 border-slate-200'
@@ -454,9 +647,8 @@ export default function SholatPage() {
                         {dayName}
                       </span>
                     </td>
-                    {/* Prayer cells */}
                     {SHOLAT_COLUMNS.map((col, colIdx) => {
-                      const { status, reason } = getCellStatus(row, col.key)
+                      const { status, reason, quality } = getCellStatus(row, col.key)
                       const isDropdownOpen = dropdown?.tanggal === dateStr && dropdown?.sholatKey === col.key
 
                       return (
@@ -464,17 +656,21 @@ export default function SholatPage() {
                           key={col.key}
                           data-dropdown-cell={`${dateStr}-${col.key}`}
                           className={cn(
-                            'px-3 py-2 text-center border-r border-slate-200 last:border-r-0 cursor-pointer transition-colors relative',
+                            'px-3 py-2 text-center border-r last:border-r-0 cursor-pointer transition-colors relative',
+                            TABLE_BORDER,
                             'hover:bg-blue-50/60',
                             isDropdownOpen && 'bg-blue-50'
                           )}
                           onClick={(e) => handleCellClick(e, dateStr, col.key, rowIdx, colIdx + 2)}
                         >
-                          <div className="flex items-center justify-center min-h-[28px]">
+                          <div className="flex flex-col items-center justify-center gap-1 min-h-[32px]">
                             {status === 'done' && (
-                              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-600 border border-green-200">
-                                <Check className="h-3.5 w-3.5" />
-                              </span>
+                              <>
+                                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-600 border border-green-200">
+                                  <Check className="h-3.5 w-3.5" />
+                                </span>
+                                {quality && quality >= 1 && quality <= 5 && <RatingBadge quality={quality} />}
+                              </>
                             )}
                             {status === 'reason' && reason && (
                               <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200 text-xs font-medium whitespace-nowrap">
@@ -496,18 +692,6 @@ export default function SholatPage() {
         </table>
       </div>
 
-      {/* Load More button */}
-      <div className="flex justify-center mt-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={loadMore}
-          className="text-slate-600"
-        >
-          Tampilkan lebih banyak
-        </Button>
-      </div>
-
       {/* Dropdown menu */}
       {dropdown && (
         <DropdownMenuContent
@@ -516,10 +700,18 @@ export default function SholatPage() {
           sholatKey={dropdown.sholatKey}
           sholatMap={sholatMap}
           onSelect={handleSelectStatus}
+          onRate={handleRate}
           onClear={handleClearStatus}
           onClose={() => setDropdown(null)}
         />
       )}
     </div>
   )
+}
+
+// Helper: startOfDay yang aman
+function startOfDaySafe(d: Date): Date {
+  const x = new Date(d)
+  x.setHours(0, 0, 0, 0)
+  return x
 }

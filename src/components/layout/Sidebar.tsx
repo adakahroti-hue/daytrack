@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, Fragment } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
@@ -287,13 +287,17 @@ function SidebarContent({
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2">
         <ul className="space-y-0.5">
-          {navigation.map((section) => {
+          {navigation.map((section, sectionIndex) => {
             if ('items' in section) {
               const isSectionOpen = !collapsedSections.includes(section.title)
               const isActive = section.items.some(item => matchesPath(pathname, item.href))
 
               return (
-                <Collapsible key={section.title} open={isSectionOpen} onOpenChange={() => toggleSection(section.title)} className="mt-1.5">
+                <Fragment key={section.title}>
+                  {sectionIndex > 0 && !isCollapsed && (
+                    <li aria-hidden="true" className="mx-2 my-1.5 border-t border-slate-200/70 dark:border-slate-700/50" />
+                  )}
+                <Collapsible open={isSectionOpen} onOpenChange={() => toggleSection(section.title)} className="mt-1.5">
                   <li>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -346,6 +350,7 @@ function SidebarContent({
                     </CollapsibleContent>
                   )}
                 </Collapsible>
+                </Fragment>
               )
             }
 

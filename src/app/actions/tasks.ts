@@ -14,6 +14,8 @@ const taskSchema = z.object({
 
 export type TaskFormData = z.infer<typeof taskSchema>
 
+const TASK_SELECT = "id, user_id, nama, tanggal, estimasi_menit, prioritas, status, created_at, updated_at, started_at, completed_at, accumulated_seconds, is_paused, last_resumed_at"
+
 export async function createTask(formData: TaskFormData) {
   const supabase = await createClient()
 
@@ -116,7 +118,7 @@ export async function bulkResetTasks(ids: string[]) {
 
   const { error } = await supabase
     .from("tasks")
-    .update({ status: 'belum', started_at: null, completed_at: null })
+    .update({ status: 'belum', started_at: null, completed_at: null, accumulated_seconds: 0, is_paused: false, last_resumed_at: null })
     .in("id", ids)
     .eq("user_id", user.id)
 
@@ -130,6 +132,22 @@ export async function bulkResetTasks(ids: string[]) {
   return { error: null }
 }
 
+/**
+ * Hitung detik aktif yang sudah berjalan untuk tugas yang sedang proses.
+ * accumulated_seconds = total detik aktif sebelum pause terakhir,
+ * ditambah selisih last_resumed_at -> sekarang bila sedang tidak paused.
+ */
+function computeActiveSeconds(task: {
+  accumulated_seconds?: number | null
+  is_paused?: boolean | null
+  last_resumed_at?: string | null
+}): number {
+  const base = task.accumulated_seconds || 0
+  if (task.is_paused || !task.last_resumed_at) return base
+  const elapsed = Math.max(0, Math.floor((Date.now() - new Date(task.last_resumed_at).getTime()) / 1000))
+  return base + elapsed
+}
+
 export async function toggleTaskStatus(id: string, status: "proses" | "belum" | "selesai") {
   const supabase = await createClient()
 
@@ -138,23 +156,128 @@ export async function toggleTaskStatus(id: string, status: "proses" | "belum" | 
 
   const now = new Date().toISOString()
 
-  let updateData: { status: string; started_at?: string | null; completed_at?: string | null } = { status }
+  let updateData: {
+    status: string
+    started_at?: string | null
+    completed_at?: string | null
+    accumulated_seconds?: number
+    is_paused?: boolean
+    last_resumed_at?: string | null
+  } = { status }
 
   if (status === 'proses') {
-    // Capture start time when task is picked up
+    // Mulai mengerjakan: reset timer aktif, catat waktu mulai
     updateData.started_at = now
+    updateData.completed_at = null
+    updateData.accumulated_seconds = 0
+    updateData.is_paused = false
+    updateData.last_resumed_at = now
   } else if (status === 'selesai') {
-    // Capture completion time when task is marked done
+    // Selesaikan: simpan total detik aktif (tanpa waktu pause)
     updateData.completed_at = now
+    updateData.is_paused = false
+    updateData.last_resumed_at = null
+    // Ambil data lama dulu agar accumulated_seconds akurat
+    const { data: existing } = await supabase
+      .from("tasks")
+      .select("accumulated_seconds, is_paused, last_resumed_at")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single()
+    updateData.accumulated_seconds = computeActiveSeconds(existing || {})
   } else if (status === 'belum') {
-    // Reset times when going back to belum
+    // Reset waktu bila kembali ke belum
     updateData.started_at = null
     updateData.completed_at = null
+    updateData.accumulated_seconds = 0
+    updateData.is_paused = false
+    updateData.last_resumed_at = null
   }
 
   const { data, error } = await supabase
     .from("tasks")
     .update(updateData)
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .select()
+    .single()
+
+  if (error) throw new Error(error.message)
+
+  revalidatePath("/tugas/hari-ini")
+  revalidatePath("/tugas/semua")
+  revalidatePath("/overview")
+
+  return { data, error: null }
+}
+
+/**
+ * Pause tugas yang sedang dikerjakan.
+ * Menyimpan akumulasi detik aktif hingga titik pause.
+ */
+export async function pauseTask(id: string) {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  const { data: existing, error: fetchError } = await supabase
+    .from("tasks")
+    .select("status, accumulated_seconds, is_paused, last_resumed_at")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .single()
+
+  if (fetchError) throw new Error(fetchError.message)
+  if (existing.status !== 'proses' || existing.is_paused) {
+    return { data: existing, error: null }
+  }
+
+  const accumulated = computeActiveSeconds(existing)
+
+  const { data, error } = await supabase
+    .from("tasks")
+    .update({ is_paused: true, accumulated_seconds: accumulated, last_resumed_at: null })
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .select()
+    .single()
+
+  if (error) throw new Error(error.message)
+
+  revalidatePath("/tugas/hari-ini")
+  revalidatePath("/tugas/semua")
+  revalidatePath("/overview")
+
+  return { data, error: null }
+}
+
+/**
+ * Resume tugas yang sedang paused. Timer aktif dihitung dari saat ini.
+ */
+export async function resumeTask(id: string) {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  const { data: existing, error: fetchError } = await supabase
+    .from("tasks")
+    .select("status, is_paused")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .single()
+
+  if (fetchError) throw new Error(fetchError.message)
+  if (existing.status !== 'proses' || !existing.is_paused) {
+    return { data: existing, error: null }
+  }
+
+  const now = new Date().toISOString()
+
+  const { data, error } = await supabase
+    .from("tasks")
+    .update({ is_paused: false, last_resumed_at: now })
     .eq("id", id)
     .eq("user_id", user.id)
     .select()
@@ -209,12 +332,9 @@ export async function getTasks(date?: string, status?: string, limit?: number) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
 
-  // Only select fields the client actually needs — reduces payload size
-  const selectFields = "id, user_id, nama, tanggal, estimasi_menit, prioritas, status, created_at, updated_at, started_at, completed_at"
-
   let query = supabase
     .from("tasks")
-    .select(selectFields)
+    .select(TASK_SELECT)
     .eq("user_id", user.id)
 
   if (date) {
@@ -247,7 +367,7 @@ export async function getTaskById(id: string) {
 
   const { data, error } = await supabase
     .from("tasks")
-    .select("id, user_id, nama, tanggal, estimasi_menit, prioritas, status, created_at, updated_at, started_at, completed_at")
+    .select(TASK_SELECT)
     .eq("id", id)
     .eq("user_id", user.id)
     .single()

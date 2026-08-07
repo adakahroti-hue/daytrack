@@ -19,13 +19,11 @@ interface HeaderProps {
 function HariIniHeaderStats() {
   const today = format(new Date(), 'yyyy-MM-dd')
   const { data: todayTasks = [] } = useTasks(today)
-  
+
   const activeMissions = todayTasks.filter((t: any) => t.status === 'belum' || t.status === 'proses').length
   const totalEstimatedMinutes = todayTasks
     .filter((t: any) => t.status !== 'selesai')
     .reduce((sum: number, t: any) => sum + t.estimasi_menit, 0)
-  const completedMissions = todayTasks.filter((t: any) => t.status === 'selesai').length
-  const totalToday = todayTasks.length
 
   return (
     <div className="hidden md:flex items-center gap-2">
@@ -38,20 +36,24 @@ function HariIniHeaderStats() {
         <Clock className="h-3.5 w-3.5 text-slate-500" />
         <span className="text-xs font-semibold text-slate-700">{getEstimasiText(totalEstimatedMinutes)}</span>
       </div>
-      {totalToday > 0 && (
-        <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-green-50 border border-green-200 rounded-lg">
-          <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
-          <div className="flex items-center gap-1.5">
-            <div className="w-16 h-1.5 bg-green-100 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-green-500 rounded-full transition-all duration-500"
-                style={{ width: `${Math.round((completedMissions / totalToday) * 100)}%` }}
-              />
-            </div>
-            <span className="text-xs font-semibold text-green-700">{completedMissions}/{totalToday}</span>
-          </div>
-        </div>
-      )}
+    </div>
+  )
+}
+
+// Rev 4: kalimat misi yang dipasang di CENTER header tab Hari Ini
+function HariIniMissionSentence() {
+  const today = format(new Date(), 'yyyy-MM-dd')
+  const { data: todayTasks = [] } = useTasks(today)
+
+  const completedMissions = todayTasks.filter((t: any) => t.status === 'selesai').length
+  const remainingMissions = todayTasks.filter((t: any) => t.status === 'belum' || t.status === 'proses').length
+
+  return (
+    <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg">
+      <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+      <span className="text-sm font-medium text-green-800 whitespace-nowrap">
+        {completedMissions} misi sudah dituntaskan, tinggal {remainingMissions} misi penting lagi.
+      </span>
     </div>
   )
 }
@@ -146,7 +148,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 lg:px-4">
+    <header className="sticky top-0 z-30 relative flex h-16 items-center gap-3 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 lg:px-4">
       {/* Mobile menu button — hamburger/X toggle */}
       <Button
         variant="ghost"
@@ -172,6 +174,15 @@ export function Header({ onMenuClick }: HeaderProps) {
         </h1>
         <p className="text-xs text-muted-foreground truncate">{description}</p>
       </div>
+
+      {/* Center — kalimat misi Hari Ini (diposisikan di tengah header) */}
+      {isHariIni && (
+        <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+          <div className="pointer-events-auto">
+            <HariIniMissionSentence />
+          </div>
+        </div>
+      )}
 
       {/* Right side controls */}
       <div className="flex items-center gap-3">

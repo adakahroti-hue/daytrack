@@ -333,6 +333,72 @@ export function getLiveDurationText(startedAt: string | null): string {
   return getEstimasiText(menit)
 }
 
+/** Hitung detik aktif (exclude waktu pause) untuk tugas yang sedang proses. */
+export function getTaskActiveSeconds(task: {
+  accumulated_seconds?: number | null
+  is_paused?: boolean | null
+  last_resumed_at?: string | null
+}): number {
+  const base = task.accumulated_seconds || 0
+  if (task.is_paused || !task.last_resumed_at) return base
+  const elapsed = Math.max(0, Math.floor((Date.now() - new Date(task.last_resumed_at).getTime()) / 1000))
+  return base + elapsed
+}
+
+/** Text durasi aktif berjalan (support pause) — dipakai di kartu tugas proses */
+export function getTaskLiveDurationText(task: {
+  accumulated_seconds?: number | null
+  is_paused?: boolean | null
+  last_resumed_at?: string | null
+}): string {
+  const seconds = getTaskActiveSeconds(task)
+  if (seconds < 60) return '< 1 menit'
+  return getEstimasiText(Math.round(seconds / 60))
+}
+
+/** Durasi real (menit) tugas selesai, memakai accumulated_seconds bila ada (exclude pause) */
+export function getTaskActualDurationMinutes(task: {
+  accumulated_seconds?: number | null
+  started_at?: string | null
+  completed_at?: string | null
+}): number {
+  if (task.accumulated_seconds && task.accumulated_seconds > 0) {
+    return Math.max(1, Math.round(task.accumulated_seconds / 60))
+  }
+  if (task.started_at && task.completed_at) {
+    return getActualDurationMinutes(task.started_at, task.completed_at)
+  }
+  return 0
+}
+
+/** Text durasi real (support pause) untuk tugas selesai */
+export function getTaskActualDurationText(task: {
+  accumulated_seconds?: number | null
+  started_at?: string | null
+  completed_at?: string | null
+}): string {
+  const menit = getTaskActualDurationMinutes(task)
+  if (menit === 0) return '< 1 menit'
+  return getEstimasiText(menit)
+}
+
+/** Bandingkan estimasi vs durasi real (support pause) */
+export function compareTaskEstimasiVsActual(task: {
+  estimasi_menit: number
+  accumulated_seconds?: number | null
+  started_at?: string | null
+  completed_at?: string | null
+}) {
+  if (!task.started_at || !task.completed_at) return { selisihMenit: 0, selisihText: '-', status: 'unknown' as const }
+  const actual = getTaskActualDurationMinutes(task)
+  const selisih = actual - task.estimasi_menit
+  const absSelisih = Math.abs(selisih)
+  let status: 'lebih-cepat' | 'lebih-lama' | 'pas' = 'pas'
+  if (selisih < 0) status = 'lebih-cepat'
+  else if (selisih > 0) status = 'lebih-lama'
+  return { selisihMenit: selisih, selisihText: getEstimasiText(absSelisih), status }
+}
+
 // ============================================
 // Legacy exports for backward compatibility
 // ============================================

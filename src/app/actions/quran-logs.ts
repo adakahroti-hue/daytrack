@@ -11,6 +11,7 @@ const quranLogSchema = z.object({
   juz: z.number().int().min(1).max(30).optional(),
   halaman_mulai: z.number().int().min(1).max(604).optional(),
   halaman_selesai: z.number().int().min(1).max(604).optional(),
+  jumlah_halaman: z.number().int().min(0).max(604).optional(),
   catatan: z.string().optional(),
 })
 
@@ -47,6 +48,13 @@ export async function upsertQuranLog(formData: QuranLogFormData) {
     .eq("waktu_baca", validated.waktu_baca)
     .single()
 
+  // Hitung jumlah_halaman: pakai nilai eksplisit bila ada, else dari rentang halaman
+  const jumlahHalaman =
+    validated.jumlah_halaman ??
+    (validated.halaman_mulai && validated.halaman_selesai && validated.halaman_selesai >= validated.halaman_mulai
+      ? validated.halaman_selesai - validated.halaman_mulai + 1
+      : null)
+
   const insertData = {
     user_id: user.id,
     tanggal: validated.tanggal,
@@ -55,6 +63,7 @@ export async function upsertQuranLog(formData: QuranLogFormData) {
     juz: validated.juz || null,
     halaman_mulai: validated.halaman_mulai || null,
     halaman_selesai: validated.halaman_selesai || null,
+    jumlah_halaman: jumlahHalaman,
     catatan: validated.catatan || null,
   }
 

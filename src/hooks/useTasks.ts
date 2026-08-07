@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { createTask, updateTask, deleteTask, toggleTaskStatus, bulkDeleteTasks, bulkResetTasks } from "@/app/actions/tasks"
+import { createTask, updateTask, deleteTask, toggleTaskStatus, bulkDeleteTasks, bulkResetTasks, pauseTask, resumeTask } from "@/app/actions/tasks"
 import { createClient } from "@/lib/supabase/client"
 import { TaskFormData } from "@/app/actions/tasks"
 
@@ -114,6 +114,64 @@ export function useToggleTaskStatus() {
           else if (status === 'selesai') updated.completed_at = now
           else if (status === 'belum') { updated.started_at = null; updated.completed_at = null }
           return updated
+        })
+      })
+      return { previousTasks }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousTasks) {
+        context.previousTasks.forEach(([key, data]: any) => queryClient.setQueryData(key, data))
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] })
+    },
+  })
+}
+
+export function usePauseTask() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => pauseTask(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ["tasks"] })
+      const previousTasks = queryClient.getQueriesData({ queryKey: ["tasks"] })
+      const now = new Date().toISOString()
+      queryClient.setQueriesData({ queryKey: ["tasks"] }, (old: any) => {
+        if (!old) return old
+        return old.map((task: any) => {
+          if (task.id !== id) return task
+          return { ...task, is_paused: true, last_resumed_at: null, updated_at: now }
+        })
+      })
+      return { previousTasks }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousTasks) {
+        context.previousTasks.forEach(([key, data]: any) => queryClient.setQueryData(key, data))
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] })
+    },
+  })
+}
+
+export function useResumeTask() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => resumeTask(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ["tasks"] })
+      const previousTasks = queryClient.getQueriesData({ queryKey: ["tasks"] })
+      const now = new Date().toISOString()
+      queryClient.setQueriesData({ queryKey: ["tasks"] }, (old: any) => {
+        if (!old) return old
+        return old.map((task: any) => {
+          if (task.id !== id) return task
+          return { ...task, is_paused: false, last_resumed_at: now, updated_at: now }
         })
       })
       return { previousTasks }
