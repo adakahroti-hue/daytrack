@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils'
 import { usePrayerLogRange, useTogglePrayer, useUpdatePrayerQuality } from '@/hooks/usePrayerLogs'
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
+import { SholatAnalytics } from '@/components/sholat/SholatAnalytics'
 
 // ─── Constants ────────────────────────────────────
 
@@ -625,6 +626,14 @@ export default function SholatPage() {
           </tbody>
         </table>
       </div>
+
+      {/* ── Analytics & Insight — tepat di bawah tabel (dinamis per periode aktif) ── */}
+      <SholatAnalytics
+        dates={dates}
+        sholatMap={sholatMap}
+        columns={SHOLAT_COLUMNS}
+        alasanLabels={REASON_LABELS}
+      />
 
       {/* Dropdown menu */}
       {dropdown && (
