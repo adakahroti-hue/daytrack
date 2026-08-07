@@ -227,7 +227,8 @@ export function Header({ onMenuClick }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-30 relative flex h-16 items-center gap-3 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 lg:px-4">
+    <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="relative flex h-16 items-center gap-3 px-3 lg:px-4">
       {/* Mobile menu button — hamburger/X toggle */}
       <Button
         variant="ghost"
@@ -352,7 +353,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         )}
         {/* Sholat, Quran & Minum Air toolbar — navigasi tanggal (kiri) + toggle group (kanan) di header */}
         {isTableTab && (
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 max-md:portrait:hidden">
             {/* Revisi 4: jumlah gelas di kiri navigasi tanggal (tab Minum Air) */}
             {isMinumAir && <MinumAirHeaderStats />}
             <div className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 bg-muted/50 rounded-lg border border-border">
@@ -391,6 +392,69 @@ export function Header({ onMenuClick }: HeaderProps) {
           </div>
         )}
       </div>
+      </div>
+
+      {/* Revisi mobile (batch 8): toolbar dipindah ke bawah header, full width — khusus mobile portrait; desktop & landscape tidak berubah */}
+      {(isSemua || isTableTab) && (
+        <div className="hidden max-md:portrait:flex flex-col gap-2 px-3 pb-3">
+          {/* Tab Semua (rev 2): toggle group Prioritas/Tanggal/Durasi/Lambat */}
+          {isSemua && (
+            <div className="flex items-center gap-0.5 p-0.5 bg-muted/50 rounded-lg border border-border w-full">
+              {GROUP_MODES.map((gm) => (
+                <button
+                  key={gm.value}
+                  type="button"
+                  onClick={() => setGroupMode(gm.value)}
+                  className={cn(
+                    'flex-1 flex items-center justify-center gap-1 px-1.5 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap',
+                    groupMode === gm.value
+                      ? 'bg-[#0F172A] text-white shadow-sm'
+                      : 'text-slate-600 hover:bg-white/60'
+                  )}
+                >
+                  <gm.icon className="h-3.5 w-3.5 shrink-0" />
+                  <span>{gm.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+          {/* Tab tabel (rev 3 & 4): card navigasi tanggal + toggle periode, masing-masing full width */}
+          {isTableTab && (
+            <>
+              <div className="flex items-center justify-between gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border w-full">
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => navigateIbadah('prev')} aria-label="Periode sebelumnya">
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="text-sm font-medium truncate">
+                    {formatIbadahPeriodLabel(ibadahDate, ibadahPeriod)}
+                  </span>
+                </div>
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => navigateIbadah('next')} aria-label="Periode selanjutnya">
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex items-center gap-0.5 p-0.5 bg-muted/50 rounded-lg border border-border w-full">
+                {ibadahPeriodOptions.map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setIbadahPeriod(opt.value)}
+                    className={cn(
+                      'flex-1 px-2 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap',
+                      ibadahPeriod === opt.value
+                        ? 'bg-[#0F172A] text-white shadow-sm'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </header>
   )
 }

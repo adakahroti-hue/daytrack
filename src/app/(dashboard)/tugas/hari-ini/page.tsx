@@ -228,7 +228,7 @@ const TaskCard = memo(({
           <Badge variant="outline" className={statusBadgeClass}>
             {task.status === 'belum' ? 'Belum' : task.status === 'proses' ? (isPaused ? 'Dijeda' : 'Proses') : 'Selesai'}
           </Badge>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 max-md:portrait:gap-4">
             {/* Pause / Resume — only for in-progress tasks */}
             {isInProgress && (
               <Button

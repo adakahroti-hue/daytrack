@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
+import { useTableLock } from '@/components/ui/table-lock'
 import { useSaranPerbaikanRange, useCreateSaranPerbaikan, useUpdateSaranPerbaikan, useDeleteSaranPerbaikan } from '@/hooks/useSaranPerbaikan'
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
@@ -66,6 +67,8 @@ function startOfDaySafe(d: Date): Date {
 // Revisi 1 (batch 7): model entri seperti tab Masalah — tabel kosong sampai ada inputan,
 // tanggal mengikuti inputan (bukan grid semua tanggal). Tab ini bernama "Masukan".
 export default function SaranPerbaikanPage() {
+  // Revisi mobile (batch 8): lock/unlock tabel — khusus tampilan mobile
+  const { effectiveLocked, lockControl } = useTableLock()
   // Periode & tanggal dari HeaderControls (toolbar di header)
   const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
   const todayStr = format(new Date(), 'yyyy-MM-dd')
@@ -149,11 +152,12 @@ export default function SaranPerbaikanPage() {
   return (
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
       {/* Tabel gaya Quran: Tanggal | Hari | Saran Perbaikan | Tujuan | Status — hanya entri yang ada */}
-      <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)] rounded-lg border bg-white', TABLE_BORDER)}>
+      {lockControl}
+      <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)] landscape:max-lg:max-h-none rounded-lg border bg-white', TABLE_BORDER)}>
         <table className="w-full border-collapse text-xs sm:text-sm">
           <thead className="sticky top-0 z-20 bg-white">
             <tr className={cn('border-b', TABLE_BORDER)}>
-              <th className={cn('sticky left-0 z-30 bg-white px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[72px] sm:min-w-[100px]', TABLE_BORDER)}>
+              <th className={cn('dt-col-stick sticky left-0 z-30 bg-white px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[72px] sm:min-w-[100px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
                   <Calendar className="h-3.5 w-3.5 text-blue-500" />
                   Tanggal
@@ -176,7 +180,7 @@ export default function SaranPerbaikanPage() {
               </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className={cn(effectiveLocked && 'pointer-events-none select-none')}>
             {isLoading ? (
               <tr>
                 <td colSpan={5} className="text-center py-12 text-slate-400">
@@ -208,7 +212,7 @@ export default function SaranPerbaikanPage() {
                     key={entry.id}
                     className={cn('border-b transition-colors', TABLE_BORDER, entry.tanggal === todayStr ? 'row-today-pulse' : (rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'), 'hover:bg-blue-50/40')}
                   >
-                    <td className={cn('sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
+                    <td className={cn('dt-col-stick sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
                       <span className="sm:hidden">{format(date, 'd MMM', { locale: id })}</span>
                       <span className="hidden sm:inline">{dateDisplay}</span>
                     </td>

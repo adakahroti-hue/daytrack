@@ -93,3 +93,11 @@ main, [role="main"] {
 .row-today-pulse {
   animation: todayRowPulse 2.6s ease-in-out infinite;
 }
+
+/* ─── Revisi mobile (batch 8) — revisi 7 ─── */
+/* Khusus mobile portrait: kolom tabel tidak sticky/freeze — semua kolom ikut bergeser saat tabel digeser */
+@media (max-width: 767.98px) and (orientation: portrait) {
+  .dt-col-stick {
+    position: static !important;
+  }
+}

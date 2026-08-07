@@ -15,6 +15,7 @@ import { id } from 'date-fns/locale'
 import { Calendar, Moon, Check, X, Trash2 } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
+import { useTableLock } from '@/components/ui/table-lock'
 import { useTidurLogRange, useUpsertTidurLog, useDeleteTidurLog } from '@/hooks/useTidurLogs'
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
@@ -61,6 +62,8 @@ function startOfDaySafe(d: Date): Date {
 // ─── Main Component ────────────────────────────────
 
 export default function TidurPage() {
+  // Revisi mobile (batch 8): lock/unlock tabel — khusus tampilan mobile
+  const { effectiveLocked, lockControl } = useTableLock()
   // Periode & tanggal dari HeaderControls (toolbar di header)
   const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
   const todayStr = format(new Date(), 'yyyy-MM-dd')
@@ -139,17 +142,18 @@ export default function TidurPage() {
   return (
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
       {/* Tabel gaya Quran: Tanggal | Hari | Status */}
-      <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)] rounded-lg border bg-white', TABLE_BORDER)}>
+      {lockControl}
+      <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)] landscape:max-lg:max-h-none rounded-lg border bg-white', TABLE_BORDER)}>
         <table className="w-full border-collapse text-xs sm:text-sm">
           <thead className="sticky top-0 z-20 bg-white">
             <tr className={cn('border-b', TABLE_BORDER)}>
-              <th className={cn('sticky left-0 z-30 bg-white px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[72px] sm:min-w-[100px]', TABLE_BORDER)}>
+              <th className={cn('dt-col-stick sticky left-0 z-30 bg-white px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[72px] sm:min-w-[100px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
                   <Calendar className="h-3.5 w-3.5 text-blue-500" />
                   Tanggal
                 </div>
               </th>
-              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[64px] sm:min-w-[90px] sm:sticky sm:left-[100px] sm:z-30 sm:bg-white', TABLE_BORDER)}>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[64px] sm:min-w-[90px] dt-col-stick sm:sticky sm:left-[100px] sm:z-30 sm:bg-white', TABLE_BORDER)}>
                 Hari
               </th>
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
@@ -160,7 +164,7 @@ export default function TidurPage() {
               </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className={cn(effectiveLocked && 'pointer-events-none select-none')}>
             {isLoading ? (
               <tr>
                 <td colSpan={3} className="text-center py-12 text-slate-400">
@@ -191,11 +195,11 @@ export default function TidurPage() {
                     key={dateStr}
                     className={cn('border-b transition-colors', TABLE_BORDER, dateStr === todayStr ? 'row-today-pulse' : (rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'), 'hover:bg-blue-50/40')}
                   >
-                    <td className={cn('sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
+                    <td className={cn('dt-col-stick sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
                       <span className="sm:hidden">{format(date, 'd MMM', { locale: id })}</span>
                       <span className="hidden sm:inline">{dateDisplay}</span>
                     </td>
-                    <td className={cn('px-2 sm:px-3 py-2 text-center border-r sm:sticky sm:left-[100px] sm:z-10 sm:bg-inherit', TABLE_BORDER)}>
+                    <td className={cn('px-2 sm:px-3 py-2 text-center border-r dt-col-stick sm:sticky sm:left-[100px] sm:z-10 sm:bg-inherit', TABLE_BORDER)}>
                       <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs border font-medium', DAY_BADGE_COLORS[dayName] || 'bg-slate-100 text-slate-700 border-slate-200')}>
                         {dayName}
                       </span>
