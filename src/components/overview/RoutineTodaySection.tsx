@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Check, Minus, Mosque, BookOpen, GlassWater, ClipboardCheck, Repeat, Heart, Sparkles, Shield, Moon, ArrowRight, Brain } from 'lucide-react'
+import { Check, Minus, Mosque, BookOpen, GlassWater, Repeat, Heart, Sparkles, Shield, Moon, ArrowRight, Brain } from 'lucide-react'
 import { format, differenceInCalendarDays } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { JAM_TIDUR_OPTIONS } from '@/lib/tidur-options'
@@ -182,10 +182,10 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
         </div>
 
         {/* Ibadah — revisi batch 23: mengikuti mockup (angka kiri, pill kanan) */}
-        <RoutineCard tint="bg-white border-slate-200" icon={Mosque} iconColor="text-emerald-500" title="Ibadah" href="/sholat" linkColor="text-slate-500 hover:text-slate-700">
+        <RoutineCard tint="bg-white border-slate-200" icon={Mosque} iconColor="text-emerald-500" title="Ibadah">
           <div className="mt-3">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1">
-              <Mosque className="h-3.5 w-3.5" /> Sholat 5 Waktu
+              <Mosque className="h-3.5 w-3.5 text-emerald-500" /> Sholat 5 Waktu
             </p>
             <div className="mt-2 flex items-end justify-between gap-3">
               <p className="text-lg font-bold text-slate-900 tabular-nums">
@@ -220,7 +220,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
           </div>
           <div className="mt-3 pt-3 border-t border-slate-100">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1">
-              <BookOpen className="h-3.5 w-3.5" /> Baca Quran
+              <BookOpen className="h-3.5 w-3.5 text-emerald-500" /> Baca Quran
             </p>
             <div className="mt-2 flex items-end justify-between gap-3">
               <p className="text-lg font-bold text-slate-900 tabular-nums">
@@ -253,13 +253,35 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
               </div>
             </div>
           </div>
+          {/* #3: Optimasi Hoki — isi card Optimasi Hidup dipindahkan sini (batch 25) */}
+          <div className="mt-3 pt-3 border-t border-slate-100">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1">
+              <Sparkles className="h-3.5 w-3.5 text-emerald-500" /> Optimasi Hoki
+            </p>
+            <div className="mt-2 flex items-center gap-4 flex-wrap text-sm">
+              <div className="flex items-center gap-1.5">
+                <Heart className="h-3.5 w-3.5 text-emerald-500" />
+                <span className="text-slate-700">Bersyukur</span>
+                <span className={cn('font-semibold tabular-nums', checklist[0].days >= daysElapsed ? 'text-emerald-600' : 'text-slate-500')}>
+                  {checklist[0].days}/{daysElapsed}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-emerald-500" />
+                <span className="text-slate-700">Mendoakan orang lain</span>
+                <span className={cn('font-semibold tabular-nums', checklist[1].days >= daysElapsed ? 'text-emerald-600' : 'text-slate-500')}>
+                  {checklist[1].days}/{daysElapsed}
+                </span>
+              </div>
+            </div>
+          </div>
         </RoutineCard>
 
         {/* Kesehatan — Minum Air + Waktu Tidur + Bebas PMO (mockup batch 23: kolom kanan) */}
-        <RoutineCard tint="bg-white border-slate-200" icon={GlassWater} iconColor="text-sky-500" title="Kesehatan" href="/minum-air" linkColor="text-slate-500 hover:text-slate-700">
+        <RoutineCard tint="bg-white border-slate-200" icon={GlassWater} iconColor="text-sky-500" title="Kesehatan">
           <div className="mt-3">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1">
-              <GlassWater className="h-3.5 w-3.5" /> Minum Air
+              <GlassWater className="h-3.5 w-3.5 text-sky-500" /> Minum Air
             </p>
             <div className="mt-2 flex items-end justify-between gap-3">
               <div className="min-w-0">
@@ -301,7 +323,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
           </div>
           <div className="mt-3 pt-3 border-t border-slate-100">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1">
-              <Moon className="h-3.5 w-3.5" /> Waktu Tidur
+              <Moon className="h-3.5 w-3.5 text-sky-500" /> Waktu Tidur
             </p>
             <div className="mt-2 flex items-end justify-between gap-3">
               <div className="min-w-0">
@@ -332,7 +354,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
           </div>
           <div className="mt-3 pt-3 border-t border-slate-100">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1">
-              <Shield className="h-3.5 w-3.5" /> Bebas PMO
+              <Shield className="h-3.5 w-3.5 text-sky-500" /> Bebas PMO
             </p>
             <div className="mt-2 flex items-end justify-between gap-3">
               <p className="text-lg font-bold text-slate-900 tabular-nums">
@@ -343,29 +365,6 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                 <p className="text-sm font-bold text-slate-900 tabular-nums">{pmoRekor} <span className="text-xs font-medium text-slate-500">hari</span></p>
               </div>
             </div>
-          </div>
-        </RoutineCard>
-
-        {/* Optimasi Hidup — Syukur + Doa (mockup batch 23: kolom kiri bawah) */}
-        <RoutineCard tint="bg-white border-slate-200" icon={ClipboardCheck} iconColor="text-violet-500" title="Optimasi Hidup" href="/syukur" linkColor="text-slate-500 hover:text-slate-700">
-          <div className="mt-3 space-y-2">
-            {[
-              { key: 'syukur', label: 'Bersyukur', days: checklist[0].days, icon: Heart, iconColor: 'text-violet-500' },
-              { key: 'doa', label: 'Mendoakan orang', days: checklist[1].days, icon: Sparkles, iconColor: 'text-rose-500' },
-            ].map(it => {
-              const done = it.days >= daysElapsed
-              return (
-                <div key={it.key} className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <it.icon className={cn('h-4 w-4 shrink-0', it.iconColor)} />
-                    <span className="text-sm text-slate-700 truncate">{it.label}</span>
-                  </div>
-                  <span className={cn('text-sm font-semibold tabular-nums', done ? 'text-emerald-600' : 'text-slate-500')}>
-                    {it.days}/{daysElapsed}
-                  </span>
-                </div>
-              )
-            })}
           </div>
         </RoutineCard>
 

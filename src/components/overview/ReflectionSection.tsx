@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Brain, ArrowRight, NotebookPen } from 'lucide-react'
+import { Brain, ArrowRight, NotebookPen, Shield, Smile } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useMasalahLogRange } from '@/hooks/useMasalahLogs'
 import { useKesenanganRange } from '@/hooks/useKesenangan'
@@ -95,13 +95,10 @@ export function MentalCard({
           </div>
           <p className="text-sm font-semibold text-slate-700 truncate">{title}</p>
         </div>
-        <Link href={href} aria-label={`Lihat ${title}`} className={cn('p-1.5 rounded-lg transition-colors hover:bg-slate-100', linkColor)}>
-          <ArrowRight className="h-4 w-4" />
-        </Link>
       </div>
       <div className="mt-3 grid gap-4 sm:grid-cols-2">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Refleksi</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1"><Shield className="h-3.5 w-3.5 text-purple-500" /> Refleksi</p>
           {masalahItems.length > 0 ? (
             <ul className="mt-2 space-y-1.5">
               {masalahItems.map(item => (
@@ -116,7 +113,7 @@ export function MentalCard({
           )}
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Kesenangan Ditunda</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1"><Smile className="h-3.5 w-3.5 text-purple-500" /> Kesenangan Ditunda</p>
           {funItems.length > 0 ? (
             <ul className="mt-2 space-y-1.5">
               {funItems.map(item => (

@@ -286,8 +286,8 @@ export function Header({ onMenuClick }: HeaderProps) {
           </Button>
         )}
 
-        {/* Date Navigation — hidden on Hari Ini, Semua, Selesai, and Sholat tabs */}
-        {isOverviewPage && (
+        {/* Date Navigation — hidden on Hari Ini, Semua, Selesai, Sholat tabs; juga disembunyikan saat filter Kemarin (batch 25) */}
+        {isOverviewPage && period !== 'yesterday' && (
         <div className="flex-1 flex items-center justify-start gap-2 min-w-0">
           {/* Desktop date navigation */}
           <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border">
@@ -413,6 +413,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                   </button>
                 ))}
               </div>
+              {period !== 'yesterday' && (
               <div className="flex items-center justify-between gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border w-full">
                 <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => navigate('prev')} aria-label="Periode sebelumnya">
                   <ChevronLeft className="h-4 w-4" />
@@ -427,6 +428,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
+              )}
             </>
           )}
           {/* Tab Semua (rev 2): toggle group Prioritas/Tanggal/Durasi/Lambat */}
