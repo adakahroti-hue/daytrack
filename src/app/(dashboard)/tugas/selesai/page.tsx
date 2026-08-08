@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useMemo, useEffect, memo } from 'react'
-import { format } from 'date-fns'
+import { format, startOfDay, isBefore, differenceInDays } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Plus, Edit, Trash2, X, Clock, Calendar, Play, Check, CheckCircle2, MoreHorizontal, Flag, RotateCcw, CheckSquare, Layers } from 'lucide-react'
+import { AlertTriangle, Plus, Edit, Trash2, X, Clock, Calendar, Play, Check, CheckCircle2, MoreHorizontal, Flag, RotateCcw, CheckSquare, Layers } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -68,6 +68,12 @@ const PRIORITY_ICONS: Record<Task['prioritas'], string> = {
   p3: '📌',
   p4: '🌱',
 }
+const PRIORITY_CARD_COLORS: Record<string, string> = {
+  p1: 'bg-rose-50 border-rose-300 hover:border-rose-400 dark:bg-rose-950/40 dark:border-rose-800',
+  p2: 'bg-amber-50 border-amber-300 hover:border-amber-400 dark:bg-amber-950/40 dark:border-amber-800',
+  p3: 'bg-green-50 border-green-300 hover:border-green-400 dark:bg-green-950/40 dark:border-green-800',
+  p4: 'bg-purple-50 border-purple-300 hover:border-purple-400 dark:bg-purple-950/40 dark:border-purple-800',
+}
 
 // ============================================
 // TaskCard — desain sama seperti tab Semua,
@@ -102,7 +108,7 @@ const TaskCard = memo(({
     }
   }
 
-  const primaryButtonText = isPending ? 'Ambil Misi' : isInProgress ? 'Tandai Selesai' : 'Misi Selesai'
+  const primaryButtonText = isPending ? 'Mulai' : isInProgress ? 'Selesai' : 'Selesai'
   const primaryButtonDisabled = isCompleted
 
   const PrimaryButtonIcon = () => {
@@ -112,6 +118,9 @@ const TaskCard = memo(({
   }
 
   const taskDate = new Date(task.tanggal)
+  const today = startOfDay(new Date())
+  const isOverdue = isBefore(taskDate, today) && !isCompleted
+  const daysOverdue = isOverdue ? differenceInDays(today, taskDate) : 0
 
   // Status badge style - consistent pill style
   const statusBadgeClass = cn(
@@ -129,42 +138,47 @@ const TaskCard = memo(({
     <Card
       className={cn(
         'group relative overflow-hidden transition-all duration-200',
-        CARD_BASE,
+        isCompleted
+          ? CARD_BASE
+          : cn(
+              'rounded-xl transition-colors duration-200',
+              isInProgress
+                ? 'bg-blue-50 border-blue-300 hover:border-blue-400 dark:bg-blue-950/40 dark:border-blue-800'
+                : PRIORITY_CARD_COLORS[task.prioritas]
+            ),
         CARD_HOVER,
-        isSelected && 'border-[#2563EB] shadow-[0_0_0_3px_rgba(37,99,235,0.15)] bg-[#EFF6FF]/40 dark:bg-[#2563EB]/5'
+        isCompleted && 'opacity-60',
+        isOverdue && !isCompleted && 'border-l-3 border-l-red-400 dark:border-l-red-500',
+        isInProgress && 'border-l-3 border-l-amber-400 dark:border-l-amber-500'
       )}
-      style={{ minHeight: '190px', display: 'flex', flexDirection: 'column' }}
     >
-      <CardContent className="p-5 space-y-4 flex flex-col h-full">
-        {/* Revisi batch 12: pita penanda paket */}
-        {task.group_id && task.group_order != null && (
-          <TaskGroupRibbon groupId={task.group_id} order={task.group_order} />
-        )}
-        {/* Top Row: (Checkbox saat mode pilih) + Priority Badge + Dropdown Menu */}
+      {/* Revisi batch 12: pita penanda paket */}
+      {task.group_id && task.group_order != null && (
+        <TaskGroupRibbon groupId={task.group_id} order={task.group_order} />
+      )}
+      <CardContent className="pt-4 pb-3 px-4 space-y-2.5">
+        {/* Revisi batch 12: top row ala Hari Ini — judul + menu sebaris, tanpa badge teks prioritas */}
         <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             {onSelect && (
               <Checkbox
                 checked={isSelected}
                 onCheckedChange={(checked) => onSelect(task.id, checked === true)}
-                className="mt-0.5"
+                className="h-4 w-4 shrink-0"
                 aria-label="Pilih tugas"
               />
             )}
-            <span className={priorityBadgeClass}>
-              {PRIORITY_ICONS[task.prioritas]}
-              {getMissionPriorityShortLabel(task.prioritas)}
-            </span>
+            <h3 className={cn("font-medium text-base leading-tight truncate capitalize flex-1 min-w-0", task.group_id && "pl-7")}>{task.nama}</h3>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 opacity-70"
+                className="h-7 w-7 -mt-1 -mr-1.5 shrink-0 opacity-70"
                 aria-label="Menu tugas"
               >
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreHorizontal className="h-3.5 w-3.5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
@@ -194,24 +208,35 @@ const TaskCard = memo(({
           </DropdownMenu>
         </div>
 
-        {/* Task Title - Most Prominent */}
-        <h3 className={cn("font-semibold text-base leading-snug pr-8 capitalize flex-1 break-words", task.group_id && "pl-7")}>{task.nama}</h3>
+        {/* Terlewat note — tugas dijadwalkan ulang otomatis */}
+        {task.terlewat_tanggal && task.status !== 'selesai' && (
+          <div className="flex items-center gap-1.5 w-fit text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+            <span>Terlewat — dijadwal ulang dari {format(new Date(task.terlewat_tanggal + 'T00:00:00'), 'd MMMM', { locale: id })}</span>
+          </div>
+        )}
 
-        {/* Meta Info: Duration + Date */}
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+        {/* Meta Info: Duration + Date — compact */}
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
             <div className="flex items-center gap-1.5">
-              <Clock className="h-4 w-4 shrink-0" />
+              <Clock className="h-3.5 w-3.5 shrink-0" />
               <span className="whitespace-nowrap">Estimasi: {getEstimasiText(task.estimasi_menit)}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Calendar className="h-4 w-4 shrink-0" />
-              <span className="whitespace-nowrap">
+              <Calendar className="h-3.5 w-3.5 shrink-0" />
+              <span className={cn('whitespace-nowrap', isOverdue && 'text-destructive font-medium')}>
                 {format(taskDate, 'd MMM yyyy', { locale: id })}
+                {isOverdue && !isCompleted && (
+                  <Badge variant="outline" className="ml-1.5 text-xs px-2 py-0.5 gap-1 h-5 text-destructive border-destructive/30 bg-destructive/10">
+                    <AlertTriangle className="h-3 w-3" />
+                    Terlambat {daysOverdue} hari
+                  </Badge>
+                )}
               </span>
             </div>
           </div>
-
+         
           {/* Real duration for completed tasks */}
           {task.status === 'selesai' && task.started_at && task.completed_at && (
             <div className="space-y-1 pl-6 border-l border-border/50">
@@ -234,7 +259,7 @@ const TaskCard = memo(({
               </div>
             </div>
           )}
-
+         
           {/* Live duration for in-progress tasks */}
           {task.status === 'proses' && task.started_at && (
             <div className="flex items-center gap-1 text-sm text-amber-700 dark:text-amber-300 animate-pulse pl-6 border-l border-amber-400/50">
@@ -245,7 +270,7 @@ const TaskCard = memo(({
         </div>
 
         {/* Bottom Row: Status Badge + Primary Action - Fixed at bottom */}
-        <div className="flex items-center justify-between pt-3 border-t border-border/50 mt-auto">
+        <div className="flex items-center justify-between pt-2 border-t border-border/50">
           <Badge variant="outline" className={statusBadgeClass}>
             {STATUS_SHORT_LABELS[task.status]}
           </Badge>
@@ -265,7 +290,7 @@ const TaskCard = memo(({
             <span className="flex items-center gap-1.5">
               <PrimaryButtonIcon />
               <span className="hidden sm:inline">{primaryButtonText}</span>
-              <span className="sm:hidden">{isPending ? 'Ambil' : isInProgress ? 'Selesai' : 'Selesai'}</span>
+              <span className="sm:hidden">{isPending ? 'Mulai' : 'Selesai'}</span>
             </span>
           </Button>
         </div>
