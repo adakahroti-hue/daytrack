@@ -79,7 +79,7 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
         {/* Kiri: total + bar pendek */}
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-2">
-            <p className="text-2xl font-bold text-slate-900">{total}</p>
+            <p className="text-3xl font-bold text-slate-900">{total}</p>
             <p className="text-xs text-slate-500">Total tugas</p>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">{belum} belum dikerjakan</p>
@@ -98,7 +98,7 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
           <p className="text-xs font-medium text-slate-500">Sedang dikerjakan</p>
           {featured ? (
             <>
-              <p className="text-sm font-semibold text-slate-900 mt-1 line-clamp-2">{featured.nama}</p>
+              <p className="text-sm font-semibold text-slate-900 mt-1 py-0.5 line-clamp-2">{featured.nama}</p>
               <div className="flex items-center gap-3 text-xs text-slate-500 mt-2 flex-wrap">
                 <p className="flex items-center gap-1.5">
                   <Clock className="h-3.5 w-3.5" /> Estimasi: {getEstimasiText(featured.estimasi_menit)}

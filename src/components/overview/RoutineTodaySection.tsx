@@ -188,11 +188,12 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
                   <Mosque className="h-3.5 w-3.5 text-emerald-500" /> Sholat 5 Waktu
                 </p>
-                <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">
-                  {sholatCount}<span className="text-sm font-medium text-slate-500">/{sholatTarget} sholat</span>
+                <p className="mt-1 flex items-baseline gap-1.5 leading-none">
+                  <span className="text-[22px] font-bold text-slate-900 tabular-nums">{sholatCount}/{sholatTarget}</span>
+                  <span className="text-sm font-medium text-slate-500">sholat</span>
                 </p>
               </div>
-              <div className="flex items-center gap-2.5 shrink-0">
+              <div className="grid grid-cols-5 gap-x-5 shrink-0">
                 {SHOLAT_5.map((s, i) => {
                   const done = isHarian ? sholatPerWaktu[i] > 0 : sholatPerWaktu[i] >= daysElapsed
                   return (
@@ -219,11 +220,12 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
                   <BookOpen className="h-3.5 w-3.5 text-emerald-500" /> Baca Quran
                 </p>
-                <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">
-                  {quranCount}<span className="text-sm font-medium text-slate-500">/{quranTarget} sesi</span>
+                <p className="mt-1 flex items-baseline gap-1.5 leading-none">
+                  <span className="text-[22px] font-bold text-slate-900 tabular-nums">{quranCount}/{quranTarget}</span>
+                  <span className="text-sm font-medium text-slate-500">sesi</span>
                 </p>
               </div>
-              <div className="flex items-center gap-2.5 shrink-0">
+              <div className="grid grid-cols-5 gap-x-5 shrink-0">
                 {QURAN_SESSIONS.map((s, i) => {
                   const done = isHarian ? quranPerSesi[i] > 0 : quranPerSesi[i] >= daysElapsed
                   return (
@@ -251,13 +253,13 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
             </p>
             <div className="mt-1.5 flex items-center gap-4 flex-wrap text-sm">
               <div className="flex items-center gap-1.5">
-                <span className="text-[11px] font-semibold tabular-nums text-slate-900">
+                <span className="text-sm font-semibold tabular-nums text-slate-900">
                   {checklist[0].days}/{daysElapsed}
                 </span>
                 <span className="text-slate-700">Bersyukur</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="text-[11px] font-semibold tabular-nums text-slate-900">
+                <span className="text-sm font-semibold tabular-nums text-slate-900">
                   {checklist[1].days}/{daysElapsed}
                 </span>
                 <span className="text-slate-700">Mendoakan orang lain</span>
@@ -274,8 +276,9 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
                   <GlassWater className="h-3.5 w-3.5 text-sky-500" /> Minum Air
                 </p>
-                <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">
-                  {gelas}<span className="text-sm font-medium text-slate-500">/{targetGelasPeriod} gelas</span>
+                <p className="mt-1 flex items-baseline gap-1.5 leading-none">
+                  <span className="text-[22px] font-bold text-slate-900 tabular-nums">{gelas}/{targetGelasPeriod}</span>
+                  <span className="text-sm font-medium text-slate-500">gelas</span>
                 </p>
                 {isHarian && gelas >= TARGET_GELAS && (
                   <p className="text-xs text-slate-500 mt-1">
@@ -283,7 +286,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                   </p>
                 )}
               </div>
-              <div className="flex items-center gap-2.5 shrink-0">
+              <div className="grid grid-cols-5 gap-x-5 shrink-0">
                 {WATER_SESSIONS.map((s, i) => {
                   const done = isHarian ? waterPerSesi[i] > 0 : waterPerSesi[i] >= daysElapsed
                   return (
@@ -310,14 +313,15 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
             </p>
             <div className="mt-1.5 flex items-end justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-lg font-bold text-slate-900 tabular-nums">
-                  {checklist[3].days}<span className="text-sm font-medium text-slate-500">/{daysElapsed} tepat</span>
+                <p className="flex items-baseline gap-1.5 leading-none">
+                  <span className="text-[22px] font-bold text-slate-900 tabular-nums">{checklist[3].days}/{daysElapsed}</span>
+                  <span className="text-sm font-medium text-slate-500">tepat</span>
                 </p>
                 {!tidurTopJam && (
                   <p className="text-xs text-slate-500 mt-0.5">Belum ada data</p>
                 )}
               </div>
-              <div className="flex items-center gap-2.5 shrink-0">
+              <div className="grid grid-cols-5 gap-x-5 shrink-0">
                 {JAM_TIDUR_OPTIONS.map(o => (
                   <div key={o.value} className="flex flex-col items-center gap-0.5 min-w-0">
                     <span className="text-[10px] leading-tight text-slate-500">{o.label}</span>
@@ -334,8 +338,9 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
               <Shield className="h-3.5 w-3.5 text-sky-500" /> Bebas PMO
             </p>
             <div className="mt-1.5 flex items-end justify-between gap-3">
-              <p className="text-lg font-bold text-slate-900 tabular-nums">
-                {checklist[2].days}<span className="text-sm font-medium text-slate-500">/{daysElapsed} berhasil</span>
+              <p className="flex items-baseline gap-1.5 leading-none">
+                <span className="text-[22px] font-bold text-slate-900 tabular-nums">{checklist[2].days}/{daysElapsed}</span>
+                <span className="text-sm font-medium text-slate-500">berhasil</span>
               </p>
               <div className="text-right">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Rekor</p>
