@@ -12,9 +12,9 @@ import { useSyukurLogRange } from '@/hooks/useSyukurLogs'
 import { useDoaLogRange } from '@/hooks/useDoaLogs'
 import { usePmoLogRange } from '@/hooks/usePmoLogs'
 import { useTidurLogRange } from '@/hooks/useTidurLogs'
-import { PERIOD_LABEL, type OverviewPeriod } from './FocusTodaySection'
+import { PERIOD_LABEL, type OverviewPeriod, FocusTodayCard } from './FocusTodaySection'
 
-// ─── Revisi batch 9, 11 & 13: section "Rutinitas" untuk tab Overview (harian/mingguan/bulanan) ───
+// ─── Revisi batch 18: section "Rutinitas" untuk tab Overview (tema hitam-putih) ───
 
 const SHOLAT_5 = [
   { key: 'subuh', label: 'Subuh' },
@@ -64,12 +64,11 @@ function RoutineCard({
     <div className={cn('rounded-xl border p-4 flex flex-col', tint)}>
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-slate-700">{title}</p>
-        <div className="p-1.5 rounded-lg bg-white/70">
+        <div className="p-1.5 rounded-lg bg-slate-100">
           <Icon className={cn('h-4 w-4', iconColor)} />
         </div>
       </div>
       {children}
-      {/* Revisi batch 13: tombol Selengkapnya → tab terkait */}
       {href && (
         <Link
           href={href}
@@ -85,7 +84,6 @@ function RoutineCard({
 export function RoutineTodaySection({ startStr, endStr, period }: { startStr: string; endStr: string; period: OverviewPeriod }) {
   const isHarian = period === 'harian' || period === 'kemarin'
 
-  // Jumlah hari berjalan dalam periode (masa depan tidak dihitung sebagai penyebut)
   const todayStr = format(new Date(), 'yyyy-MM-dd')
   const cappedEnd = endStr < todayStr ? endStr : todayStr
   const daysElapsed = Math.max(
@@ -93,7 +91,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
     differenceInCalendarDays(new Date(cappedEnd + 'T00:00:00'), new Date(startStr + 'T00:00:00')) + 1
   )
 
-  // Sholat 5 waktu (agregat rentang)
+  // Sholat 5 waktu
   const { data: prayerRows = [] } = usePrayerLogRange(startStr, endStr)
   const sholatPerWaktu = SHOLAT_5.map(s =>
     (prayerRows as any[]).filter(row => !!row?.[`sholat_${s.key}`]).length
@@ -101,7 +99,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
   const sholatCount = sholatPerWaktu.reduce((a, b) => a + b, 0)
   const sholatTarget = 5 * daysElapsed
 
-  // Baca Quran per sesi (agregat rentang)
+  // Baca Quran
   const { data: quranEntries = [] } = useQuranLogRange(startStr, endStr)
   const quranRows = quranEntries as any[]
   const quranPerSesi = QURAN_SESSIONS.map(s =>
@@ -110,18 +108,17 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
   const quranCount = quranPerSesi.reduce((a, b) => a + b, 0)
   const quranTarget = 5 * daysElapsed
 
-  // Minum air (agregat rentang)
+  // Minum Air
   const { data: waterEntries = [] } = useWaterLogRange(startStr, endStr)
   const totalMl = (waterEntries as any[]).reduce((sum, e) => sum + (e.jumlah_ml || 0), 0)
   const gelas = Math.round(totalMl / ML_PER_GELAS)
   const targetGelasPeriod = TARGET_GELAS * daysElapsed
   const avgGelas = Math.round(gelas / daysElapsed)
-  // Revisi: per-sesi minum air (untuk kartu gaya Baca Quran)
   const waterPerSesi = WATER_SESSIONS.map(s =>
     (waterEntries as any[]).filter(e => e.waktu_baca === s.key && e.status === 'sudah').length
   )
 
-  // Checklist: jumlah hari tiap item dikerjakan dalam periode
+  // Checklist
   const { data: syukurEntries = [] } = useSyukurLogRange(startStr, endStr)
   const { data: doaEntries = [] } = useDoaLogRange(startStr, endStr)
   const { data: pmoEntries = [] } = usePmoLogRange(startStr, endStr)
@@ -134,11 +131,9 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
     { label: 'Bebas PMO', days: countDays(pmoEntries as any[], e => e.status === 'berhasil') },
     { label: 'Tidur tepat waktu', days: countDays(tidurEntries as any[], e => e.status === 'tepat') },
   ]
-  // Harian: centang = dikerjakan hari itu. Mingguan/bulanan: centang = dikerjakan setiap hari dalam periode.
   const checklistWithDone = checklist.map(c => ({ ...c, done: c.days >= daysElapsed }))
   const checklistDone = checklistWithDone.filter(c => c.done).length
 
-  // Revisi batch 13 & 14: kartu checklist gaya Baca Quran (tanpa diagram lingkaran)
   const doneDateSets = [
     new Set((syukurEntries as any[]).filter(e => e.status === 'sudah').map(e => e.tanggal)),
     new Set((doaEntries as any[]).filter(e => e.status === 'sudah').map(e => e.tanggal)),
@@ -146,10 +141,10 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
     new Set((tidurEntries as any[]).filter(e => e.status === 'tepat').map(e => e.tanggal)),
   ]
   const checklistCards = [
-    { key: 'syukur', title: 'Syukur', days: checklist[0].days, doneDates: doneDateSets[0], tint: 'bg-violet-50/70 border-violet-200', icon: Heart, iconColor: 'text-violet-500', tileDone: 'bg-violet-100/70 border-violet-200', tileText: 'text-violet-600', linkColor: 'text-violet-600 hover:text-violet-700', href: '/syukur' },
-    { key: 'doa', title: 'Doa', days: checklist[1].days, doneDates: doneDateSets[1], tint: 'bg-rose-50/70 border-rose-200', icon: Sparkles, iconColor: 'text-rose-500', tileDone: 'bg-rose-100/70 border-rose-200', tileText: 'text-rose-600', linkColor: 'text-rose-600 hover:text-rose-700', href: '/doa' },
-    { key: 'pmo', title: 'PMO', days: checklist[2].days, doneDates: doneDateSets[2], tint: 'bg-orange-50/70 border-orange-200', icon: Shield, iconColor: 'text-orange-500', tileDone: 'bg-orange-100/70 border-orange-200', tileText: 'text-orange-600', linkColor: 'text-orange-600 hover:text-orange-700', href: '/pmo' },
-    { key: 'tidur', title: 'Tidur', days: checklist[3].days, doneDates: doneDateSets[3], tint: 'bg-indigo-50/70 border-indigo-200', icon: Moon, iconColor: 'text-indigo-500', tileDone: 'bg-indigo-100/70 border-indigo-200', tileText: 'text-indigo-600', linkColor: 'text-indigo-600 hover:text-indigo-700', href: '/tidur' },
+    { key: 'syukur', title: 'Syukur', days: checklist[0].days, doneDates: doneDateSets[0], tint: 'bg-white border-slate-200', icon: Heart, iconColor: 'text-violet-500', tileDone: 'bg-slate-100 border-slate-300', tileText: 'text-slate-600', linkColor: 'text-slate-500 hover:text-slate-700', href: '/syukur' },
+    { key: 'doa', title: 'Doa', days: checklist[1].days, doneDates: doneDateSets[1], tint: 'bg-white border-slate-200', icon: Sparkles, iconColor: 'text-rose-500', tileDone: 'bg-slate-100 border-slate-300', tileText: 'text-slate-600', linkColor: 'text-slate-500 hover:text-slate-700', href: '/doa' },
+    { key: 'pmo', title: 'PMO', days: checklist[2].days, doneDates: doneDateSets[2], tint: 'bg-white border-slate-200', icon: Shield, iconColor: 'text-orange-500', tileDone: 'bg-slate-100 border-slate-300', tileText: 'text-slate-600', linkColor: 'text-slate-500 hover:text-slate-700', href: '/pmo' },
+    { key: 'tidur', title: 'Tidur', days: checklist[3].days, doneDates: doneDateSets[3], tint: 'bg-white border-slate-200', icon: Moon, iconColor: 'text-indigo-500', tileDone: 'bg-slate-100 border-slate-300', tileText: 'text-slate-600', linkColor: 'text-slate-500 hover:text-slate-700', href: '/tidur' },
   ]
   const bucketType = period === 'mingguan' ? 'day' : period === 'bulanan' ? 'week' : 'month'
   const bucketTiles = (doneDates: Set<string>) => {
@@ -191,8 +186,11 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        {/* Kartu Tugas — revisi batch 18: digabung ke grid rutinitas */}
+        <FocusTodayCard startStr={startStr} endStr={endStr} period={period} />
+
         {/* Sholat 5 waktu */}
-        <RoutineCard tint="bg-emerald-50/70 border-emerald-200" icon={Mosque} iconColor="text-emerald-500" title="Sholat 5 Waktu" href="/sholat" linkColor="text-emerald-600 hover:text-emerald-700">
+        <RoutineCard tint="bg-white border-slate-200" icon={Mosque} iconColor="text-emerald-500" title="Sholat 5 Waktu" href="/sholat" linkColor="text-slate-500 hover:text-slate-700">
           <p className="text-2xl font-bold text-slate-900 mt-1.5">
             {sholatCount}/{sholatTarget} <span className="text-sm font-medium text-slate-500">sholat</span>
           </p>
@@ -205,7 +203,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                   key={s.key}
                   className={cn(
                     'rounded-lg border py-2 px-1 flex flex-col items-center gap-1',
-                    done ? 'bg-emerald-100/70 border-emerald-200' : 'bg-white/60 border-slate-200'
+                    done ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
                   )}
                 >
                   <span className="text-[10px] leading-tight text-center text-slate-600">{s.label}</span>
@@ -225,7 +223,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
         </RoutineCard>
 
         {/* Baca Quran */}
-        <RoutineCard tint="bg-teal-50/70 border-teal-200" icon={BookOpen} iconColor="text-teal-500" title="Baca Quran" href="/quran" linkColor="text-teal-600 hover:text-teal-700">
+        <RoutineCard tint="bg-white border-slate-200" icon={BookOpen} iconColor="text-teal-500" title="Baca Quran" href="/quran" linkColor="text-slate-500 hover:text-slate-700">
           <p className="text-2xl font-bold text-slate-900 mt-1.5">
             {quranCount}/{quranTarget} <span className="text-sm font-medium text-slate-500">sesi</span>
           </p>
@@ -238,7 +236,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                   key={s.key}
                   className={cn(
                     'rounded-lg border py-2 px-1 flex flex-col items-center gap-1',
-                    done ? 'bg-teal-100/70 border-teal-200' : 'bg-white/60 border-slate-200'
+                    done ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
                   )}
                 >
                   <span className="text-[10px] leading-tight text-center text-slate-600">{s.label}</span>
@@ -258,7 +256,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
         </RoutineCard>
 
         {/* Minum Air */}
-        <RoutineCard tint="bg-sky-50/70 border-sky-200" icon={GlassWater} iconColor="text-sky-500" title="Minum Air" href="/minum-air" linkColor="text-sky-600 hover:text-sky-700">
+        <RoutineCard tint="bg-white border-slate-200" icon={GlassWater} iconColor="text-sky-500" title="Minum Air" href="/minum-air" linkColor="text-slate-500 hover:text-slate-700">
           <p className="text-2xl font-bold text-slate-900 mt-1.5">
             {gelas}/{targetGelasPeriod} <span className="text-sm font-medium text-slate-500">gelas</span>
           </p>
@@ -275,7 +273,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                   key={s.key}
                   className={cn(
                     'rounded-lg border py-2 px-1 flex flex-col items-center gap-1',
-                    done ? 'bg-sky-100/70 border-sky-200' : 'bg-white/60 border-slate-200'
+                    done ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
                   )}
                 >
                   <span className="text-[10px] leading-tight text-center text-slate-600">{s.label}</span>
@@ -294,9 +292,9 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
           </div>
         </RoutineCard>
 
-        {/* Checklist: harian = 1 kartu agregat; mingguan/bulanan = 4 kartu donut (revisi batch 13) */}
+        {/* Checklist: harian = 1 kartu agregat; mingguan/bulanan = 4 kartu */}
         {isHarian ? (
-          <RoutineCard tint="bg-violet-50/70 border-violet-200" icon={ClipboardCheck} iconColor="text-violet-500" title="Checklist Harian">
+          <RoutineCard tint="bg-white border-slate-200" icon={ClipboardCheck} iconColor="text-violet-500" title="Checklist Harian">
             <p className="text-2xl font-bold text-slate-900 mt-1.5">
               {checklistDone}/4 <span className="text-sm font-medium text-slate-500">selesai</span>
             </p>
@@ -306,7 +304,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                 <div key={c.label} className="flex items-center gap-2.5">
                   <span className={cn(
                     'flex h-4 w-4 items-center justify-center rounded border shrink-0',
-                    c.done ? 'bg-green-500 border-green-500' : 'bg-white border-slate-300'
+                    c.done ? 'bg-slate-700 border-slate-700' : 'bg-white border-slate-300'
                   )}>
                     {c.done && <Check className="h-3 w-3 text-white" />}
                   </span>
@@ -332,13 +330,13 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                         key={t.key}
                         className={cn(
                           'rounded-lg border py-1.5 px-0.5 flex flex-col items-center gap-0.5 flex-1 min-w-[30px]',
-                          done ? c.tileDone : 'bg-white/60 border-slate-200'
+                          done ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
                         )}
                       >
                         <span className="text-[10px] leading-tight text-center text-slate-600">{t.label}</span>
                         {done
                           ? <Check className="h-3 w-3 text-slate-700" />
-                          : <span className={cn('text-[10px] font-semibold tabular-nums', c.tileText)}>{t.done}/{t.total}</span>}
+                          : <span className="text-[10px] font-semibold tabular-nums text-slate-500">{t.done}/{t.total}</span>}
                       </div>
                     )
                   })}

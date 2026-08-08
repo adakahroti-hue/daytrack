@@ -1,14 +1,12 @@
 'use client'
 
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns'
-import { FocusTodaySection, type OverviewPeriod } from '@/components/overview/FocusTodaySection'
+import { type OverviewPeriod } from '@/components/overview/FocusTodaySection'
 import { RoutineTodaySection } from '@/components/overview/RoutineTodaySection'
 import { ReflectionSection } from '@/components/overview/ReflectionSection'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
 
-// Revisi batch 11 & 12: tampilan mingguan/bulanan/tahunan mengikuti desain harian —
-// struktur sama, hanya angkanya yang menyesuaikan rentang periode.
-// 'kemarin' (yesterday) memakai desain harian dengan tanggal kemarin.
+// Revisi batch 18: kartu "Tugas" digabung ke grid Rutinitas (tema hitam-putih).
 export default function OverviewPage() {
   const { period, currentDate } = useHeaderControls()
 
@@ -37,7 +35,6 @@ export default function OverviewPage() {
 
   return (
     <div className="space-y-8">
-      <FocusTodaySection startStr={startStr} endStr={endStr} period={summaryPeriod} />
       <RoutineTodaySection startStr={startStr} endStr={endStr} period={summaryPeriod} />
       <ReflectionSection startStr={startStr} endStr={endStr} period={summaryPeriod} />
     </div>

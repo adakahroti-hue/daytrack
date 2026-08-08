@@ -7,7 +7,7 @@ import { useMasalahLogRange } from '@/hooks/useMasalahLogs'
 import { useKesenanganRange } from '@/hooks/useKesenangan'
 import { type OverviewPeriod } from './FocusTodaySection'
 
-// ─── Revisi batch 9 & 11: section "Catatan & Refleksi" untuk tab Overview ───
+// ─── Revisi batch 18: section "Catatan & Refleksi" untuk tab Overview (tema hitam-putih) ───
 
 function ReflectionCard({
   tint,
@@ -33,7 +33,7 @@ function ReflectionCard({
   return (
     <div className={cn('rounded-xl border p-4 flex flex-col', tint)}>
       <div className="flex items-center gap-2">
-        <div className="p-1.5 rounded-lg bg-white/70">
+        <div className="p-1.5 rounded-lg bg-slate-100">
           <Icon className={cn('h-4 w-4', iconColor)} />
         </div>
         <p className="text-sm font-semibold text-slate-700">{title}</p>
@@ -68,7 +68,7 @@ export function ReflectionSection({ startStr, endStr }: { startStr: string; endS
     .filter(Boolean)
     .slice(0, 3)
 
-  // Revisi: Kesenangan ditunda — dari tabel kesenangan (status 'belum'), bukan fun_queue
+  // Kesenangan ditunda — dari tabel kesenangan (status 'belum')
   const { data: kesenanganEntries = [] } = useKesenanganRange(startStr, endStr)
   const funList = (kesenanganEntries as any[])
     .filter(e => e.status === 'belum')
@@ -85,22 +85,22 @@ export function ReflectionSection({ startStr, endStr }: { startStr: string; endS
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ReflectionCard
-          tint="bg-purple-50/70 border-purple-200"
+          tint="bg-white border-slate-200"
           icon={Frown}
           iconColor="text-purple-500"
-          dotColor="bg-purple-400"
-          linkColor="text-purple-600 hover:text-purple-700"
+          dotColor="bg-slate-400"
+          linkColor="text-slate-500 hover:text-slate-700"
           title="Refleksi"
           items={masalahList}
           emptyText="Tidak ada refleksi tercatat pada periode ini."
           href="/masalah"
         />
         <ReflectionCard
-          tint="bg-amber-50/70 border-amber-200"
+          tint="bg-white border-slate-200"
           icon={Clock}
           iconColor="text-amber-500"
-          dotColor="bg-amber-400"
-          linkColor="text-amber-600 hover:text-amber-700"
+          dotColor="bg-slate-400"
+          linkColor="text-slate-500 hover:text-slate-700"
           title="Kesenangan Ditunda"
           items={funList}
           emptyText="Tidak ada kesenangan yang ditunda."
