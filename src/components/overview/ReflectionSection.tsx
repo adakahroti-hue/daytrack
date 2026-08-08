@@ -32,11 +32,16 @@ function ReflectionCard({
 }) {
   return (
     <div className={cn('rounded-xl border p-4 flex flex-col', tint)}>
-      <div className="flex items-center gap-2">
-        <div className="p-1.5 rounded-lg bg-slate-100">
-          <Icon className={cn('h-4 w-4', iconColor)} />
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="p-1.5 rounded-lg bg-slate-100 shrink-0">
+            <Icon className={cn('h-4 w-4', iconColor)} />
+          </div>
+          <p className="text-sm font-semibold text-slate-700 truncate">{title}</p>
         </div>
-        <p className="text-sm font-semibold text-slate-700">{title}</p>
+        <Link href={href} aria-label={`Lihat ${title}`} className={cn('p-1.5 rounded-lg transition-colors hover:bg-slate-100', linkColor)}>
+          <ArrowRight className="h-4 w-4" />
+        </Link>
       </div>
       {items.length > 0 ? (
         <ul className="mt-3 space-y-1.5">
@@ -50,12 +55,7 @@ function ReflectionCard({
       ) : (
         <p className="mt-3 text-sm text-slate-400">{emptyText}</p>
       )}
-      <Link
-        href={href}
-        className={cn('mt-auto pt-3 inline-flex items-center gap-1 justify-end text-xs font-medium', linkColor)}
-      >
-        Lihat semua <ArrowRight className="h-3.5 w-3.5" />
-      </Link>
+
     </div>
   )
 }

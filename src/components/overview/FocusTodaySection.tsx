@@ -66,22 +66,33 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
     <div className="rounded-xl border border-slate-200 bg-white p-4 flex flex-col">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-slate-700">Tugas {label}</p>
-        <div className="p-1.5 rounded-lg bg-slate-100">
-          <FileText className="h-4 w-4 text-slate-500" />
+        <div className="flex items-center gap-1.5">
+          <Link
+            href="/tugas/hari-ini"
+            aria-label="Lihat tugas"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+          >
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          <div className="p-1.5 rounded-lg bg-slate-100">
+            <FileText className="h-4 w-4 text-slate-500" />
+          </div>
         </div>
       </div>
-      <p className="text-3xl font-bold text-slate-900 mt-2">{total}</p>
-      <p className="text-xs text-slate-500">Total tugas</p>
+      <div className="flex items-baseline gap-2 mt-2">
+        <p className="text-3xl font-bold text-slate-900">{total}</p>
+        <p className="text-xs text-slate-500">Total tugas</p>
+      </div>
       <p className="text-xs text-slate-500 mt-3">{belum} belum dikerjakan</p>
       <div className="h-2 rounded-full bg-slate-100 mt-1.5 overflow-hidden">
         <div className="h-full rounded-full bg-slate-800 transition-all" style={{ width: `${progressPct}%` }} />
       </div>
 
       {featured && (
-        <div className="mt-3 pt-3 border-t border-slate-100 space-y-1">
+        <div className="mt-3 pt-3 border-t border-slate-100">
           <p className="text-xs font-medium text-slate-400">Sedang dikerjakan</p>
-          <p className="text-sm font-semibold text-slate-900 line-clamp-2">{featured.nama}</p>
-          <div className="space-y-0.5 text-xs text-slate-500">
+          <p className="text-sm font-semibold text-slate-900 mt-0.5 line-clamp-2">{featured.nama}</p>
+          <div className="flex items-center gap-3 text-xs text-slate-500 mt-1 flex-wrap">
             <p className="flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5" /> Estimasi: {getEstimasiText(featured.estimasi_menit)}
             </p>
@@ -91,13 +102,6 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
           </div>
         </div>
       )}
-
-      <Link
-        href="/tugas/hari-ini"
-        className="mt-auto pt-3 inline-flex items-center gap-1 justify-end text-xs font-medium text-slate-500 hover:text-slate-700"
-      >
-        Selengkapnya <ArrowRight className="h-3.5 w-3.5" />
-      </Link>
     </div>
   )
 }

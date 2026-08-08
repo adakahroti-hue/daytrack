@@ -62,21 +62,24 @@ function RoutineCard({
 }) {
   return (
     <div className={cn('rounded-xl border p-4 flex flex-col', tint)}>
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-slate-700">{title}</p>
-        <div className="p-1.5 rounded-lg bg-slate-100">
-          <Icon className={cn('h-4 w-4', iconColor)} />
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm font-medium text-slate-700 truncate">{title}</p>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {href && (
+            <Link
+              href={href}
+              aria-label={`Buka ${title}`}
+              className={cn('p-1.5 rounded-lg transition-colors hover:bg-slate-100', linkColor ?? 'text-slate-400')}
+            >
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
+          <div className="p-1.5 rounded-lg bg-slate-100">
+            <Icon className={cn('h-4 w-4', iconColor)} />
+          </div>
         </div>
       </div>
       {children}
-      {href && (
-        <Link
-          href={href}
-          className={cn('mt-auto pt-3 inline-flex items-center gap-1 justify-end text-xs font-medium', linkColor ?? 'text-slate-500 hover:text-slate-700')}
-        >
-          Selengkapnya <ArrowRight className="h-3.5 w-3.5" />
-        </Link>
-      )}
     </div>
   )
 }
