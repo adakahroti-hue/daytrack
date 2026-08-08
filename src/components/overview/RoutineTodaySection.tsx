@@ -101,6 +101,7 @@ function RoutineCard({
 
 export function RoutineTodaySection({ startStr, endStr, period }: { startStr: string; endStr: string; period: OverviewPeriod }) {
   const isHarian = period === 'harian' || period === 'kemarin'
+  const isKemarin = period === 'kemarin'
 
   const todayStr = format(new Date(), 'yyyy-MM-dd')
   const cappedEnd = endStr < todayStr ? endStr : todayStr
@@ -108,6 +109,12 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
     1,
     differenceInCalendarDays(new Date(cappedEnd + 'T00:00:00'), new Date(startStr + 'T00:00:00')) + 1
   )
+
+  // Revisi batch 35: angka di bawah subjudul — hijau saat target tercapai, merah khusus filter Kemarin
+  const numColor = (reached: boolean) =>
+    reached ? 'text-emerald-600' : isKemarin ? 'text-red-500' : 'text-slate-900'
+  const numColorSoft = (reached: boolean) =>
+    reached ? 'text-emerald-600/70' : isKemarin ? 'text-red-500/70' : 'text-slate-500'
 
   // Sholat 5 waktu
   const { data: prayerRows = [] } = usePrayerLogRange(startStr, endStr)
@@ -189,7 +196,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                   <Mosque className="h-3.5 w-3.5 text-emerald-500" /> Sholat 5 Waktu
                 </p>
                 <p className="mt-2 pl-[18px] flex items-baseline gap-1.5 leading-none">
-                  <span className="text-[22px] font-bold text-slate-900 tabular-nums">{sholatCount}<span className="text-lg text-slate-500">/{sholatTarget}</span></span>
+                  <span className={cn('text-[22px] font-bold tabular-nums', numColor(sholatCount >= sholatTarget))}>{sholatCount}<span className={cn('text-lg', numColorSoft(sholatCount >= sholatTarget))}>/{sholatTarget}</span></span>
                   <span className="text-sm font-medium text-slate-500">sholat</span>
                 </p>
               </div>
@@ -221,7 +228,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                   <BookOpen className="h-3.5 w-3.5 text-emerald-500" /> Baca Quran
                 </p>
                 <p className="mt-2 pl-[18px] flex items-baseline gap-1.5 leading-none">
-                  <span className="text-[22px] font-bold text-slate-900 tabular-nums">{quranCount}<span className="text-lg text-slate-500">/{quranTarget}</span></span>
+                  <span className={cn('text-[22px] font-bold tabular-nums', numColor(quranCount >= quranTarget))}>{quranCount}<span className={cn('text-lg', numColorSoft(quranCount >= quranTarget))}>/{quranTarget}</span></span>
                   <span className="text-sm font-medium text-slate-500">sesi</span>
                 </p>
               </div>
@@ -253,11 +260,11 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
             </p>
             <div className="mt-1.5 pl-[18px] flex items-center gap-6 flex-wrap text-sm">
               <div className="flex items-center gap-1.5">
-                <span className="text-[22px] font-bold leading-none tabular-nums text-slate-900">{checklist[0].days}<span className="text-lg text-slate-500">/{daysElapsed}</span></span>
+                <span className={cn('text-[22px] font-bold leading-none tabular-nums', numColor(checklist[0].days >= daysElapsed))}>{checklist[0].days}<span className={cn('text-lg', numColorSoft(checklist[0].days >= daysElapsed))}>/{daysElapsed}</span></span>
                 <span className="text-slate-700">Bersyukur</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="text-[22px] font-bold leading-none tabular-nums text-slate-900">{checklist[1].days}<span className="text-lg text-slate-500">/{daysElapsed}</span></span>
+                <span className={cn('text-[22px] font-bold leading-none tabular-nums', numColor(checklist[1].days >= daysElapsed))}>{checklist[1].days}<span className={cn('text-lg', numColorSoft(checklist[1].days >= daysElapsed))}>/{daysElapsed}</span></span>
                 <span className="text-slate-700">Mendoakan orang lain</span>
               </div>
             </div>
@@ -273,7 +280,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                   <GlassWater className="h-3.5 w-3.5 text-sky-500" /> Minum Air
                 </p>
                 <p className="mt-2 pl-[18px] flex items-baseline gap-1.5 leading-none">
-                  <span className="text-[22px] font-bold text-slate-900 tabular-nums">{gelas}<span className="text-lg text-slate-500">/{targetGelasPeriod}</span></span>
+                  <span className={cn('text-[22px] font-bold tabular-nums', numColor(gelas >= targetGelasPeriod))}>{gelas}<span className={cn('text-lg', numColorSoft(gelas >= targetGelasPeriod))}>/{targetGelasPeriod}</span></span>
                   <span className="text-sm font-medium text-slate-500">gelas</span>
                 </p>
                 {isHarian && gelas >= TARGET_GELAS && (
@@ -310,7 +317,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
             <div className="mt-1.5 flex items-end justify-between gap-3">
               <div className="min-w-0">
                 <p className="pl-[18px] flex items-baseline gap-1.5 leading-none">
-                  <span className="text-[22px] font-bold text-slate-900 tabular-nums">{checklist[3].days}<span className="text-lg text-slate-500">/{daysElapsed}</span></span>
+                  <span className={cn('text-[22px] font-bold tabular-nums', numColor(checklist[3].days >= daysElapsed))}>{checklist[3].days}<span className={cn('text-lg', numColorSoft(checklist[3].days >= daysElapsed))}>/{daysElapsed}</span></span>
                   <span className="text-sm font-medium text-slate-500">tepat</span>
                 </p>
                 {!tidurTopJam && (
@@ -335,7 +342,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
             </p>
             <div className="mt-1.5 flex items-end justify-between gap-3">
               <p className="pl-[18px] flex items-baseline gap-1.5 leading-none">
-                <span className="text-[22px] font-bold text-slate-900 tabular-nums">{checklist[2].days}<span className="text-lg text-slate-500">/{daysElapsed}</span></span>
+                <span className={cn('text-[22px] font-bold tabular-nums', numColor(checklist[2].days >= daysElapsed))}>{checklist[2].days}<span className={cn('text-lg', numColorSoft(checklist[2].days >= daysElapsed))}>/{daysElapsed}</span></span>
                 <span className="text-sm font-medium text-slate-500">berhasil</span>
               </p>
               <div className="text-right">
