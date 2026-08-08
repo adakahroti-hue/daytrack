@@ -79,12 +79,12 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
         {/* Kiri: total + bar pendek */}
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-2">
-            <p className="text-3xl font-bold text-slate-900">{total}</p>
+            <p className="text-4xl lg:text-3xl font-bold text-slate-900">{total}</p>
             <p className="text-xs text-slate-500">Total tugas</p>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">{belum} belum dikerjakan</p>
-          <div className="mt-1.5 flex items-center gap-2">
-            <div className="h-2 rounded-full bg-slate-100 flex-1 overflow-hidden">
+          <div className="mt-1.5 flex flex-col gap-1.5 lg:flex-row lg:items-center lg:gap-2">
+            <div className="h-2 rounded-full bg-slate-100 w-full lg:w-auto lg:flex-1 overflow-hidden">
               <div className="h-full rounded-full bg-slate-800 transition-all" style={{ width: `${progressPct}%` }} />
             </div>
             <span className="text-xs font-bold text-emerald-600 tabular-nums shrink-0">{selesai} tugas selesai</span>
@@ -104,7 +104,7 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
                   <Clock className="h-3.5 w-3.5" /> Estimasi: {getEstimasiText(featured.estimasi_menit)}
                 </p>
                 <p className="flex items-center gap-1.5 text-orange-500 animate-pulse">
-                  <Timer className="h-3.5 w-3.5" /> Berjalan: {formatSedang(featured)}
+                  <Timer className="h-3.5 w-3.5" /> <span className="hidden lg:inline">Berjalan: </span>{formatSedang(featured)}
                 </p>
               </div>
             </>

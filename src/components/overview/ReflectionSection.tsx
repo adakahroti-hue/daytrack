@@ -96,7 +96,7 @@ export function MentalCard({
         </div>
       </div>
       <div className="mt-3 grid gap-3 sm:grid-cols-2 items-start divide-y divide-slate-200 sm:divide-y-0 sm:divide-x">
-        <div>
+        <div className="pb-3 sm:pb-0">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1"><PersonStanding className="h-3.5 w-3.5 text-purple-500" /> Refleksi</p>
           {masalahItems.length > 0 ? (
             <ul className="mt-2 space-y-1 pl-[18px]">
@@ -111,7 +111,7 @@ export function MentalCard({
             <p className="mt-2 pl-[18px] text-sm text-slate-500">{masalahEmptyText}</p>
           )}
         </div>
-        <div>
+        <div className="pt-3 sm:pt-0">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1"><Hourglass className="h-3.5 w-3.5 text-purple-500" /> Kesenangan Ditunda</p>
           {funItems.length > 0 ? (
             <ul className="mt-2 space-y-1 pl-[18px]">
