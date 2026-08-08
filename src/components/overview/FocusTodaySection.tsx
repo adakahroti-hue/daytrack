@@ -69,7 +69,6 @@ export function FocusTodaySection({ startStr, endStr, period }: { startStr: stri
   // Revisi batch 13: tampilkan maksimal MAX_MISSION_CARDS misi (featured ikut dihitung)
   const missions = featured ? [featured, ...backlog] : backlog
   const visibleMissions = missions.slice(0, MAX_MISSION_CARDS)
-  const hiddenCount = missions.length - visibleMissions.length
 
   const total = tasks.length
   const belum = tasks.filter(t => t.status === 'belum').length
@@ -193,19 +192,6 @@ export function FocusTodaySection({ startStr, endStr, period }: { startStr: stri
             </div>
           </div>
         ))}
-
-        {/* Revisi batch 13: kartu "Selengkapnya" bila misi melebihi batas tampil */}
-        {hiddenCount > 0 && (
-          <Link
-            href="/tugas/hari-ini"
-            className="snap-start shrink-0 w-44 rounded-xl border border-dashed border-slate-300 bg-slate-50/50 p-4 flex flex-col items-center justify-center text-center gap-2 hover:bg-slate-100/70 transition-colors"
-          >
-            <span className="text-sm font-semibold text-slate-700">+{hiddenCount} misi lainnya</span>
-            <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600">
-              Selengkapnya <ArrowRight className="h-3.5 w-3.5" />
-            </span>
-          </Link>
-        )}
 
         {/* Empty state bila benar-benar tidak ada tugas */}
         {total === 0 && (

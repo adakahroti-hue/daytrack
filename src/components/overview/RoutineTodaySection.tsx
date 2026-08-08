@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Check, Minus, Mosque, BookOpen, GlassWater, ClipboardCheck, Droplet, Repeat, Heart, Sparkles, Shield, Moon, ArrowRight } from 'lucide-react'
+import { Check, Minus, Mosque, BookOpen, GlassWater, ClipboardCheck, Repeat, Heart, Sparkles, Shield, Moon, ArrowRight } from 'lucide-react'
 import { format, startOfWeek, differenceInCalendarDays } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
@@ -30,6 +30,14 @@ const QURAN_SESSIONS = [
   { key: 'setelah_ashar', label: 'Setelah Ashar' },
   { key: 'setelah_maghrib', label: 'Setelah Maghrib' },
   { key: 'setelah_isya', label: 'Setelah Isya' },
+] as const
+
+const WATER_SESSIONS = [
+  { key: 'setelah_bangun', label: 'Setelah Bangun' },
+  { key: 'setelah_dzuhur', label: 'Setelah Dzuhur' },
+  { key: 'setelah_ashar', label: 'Setelah Ashar' },
+  { key: 'setelah_maghrib', label: 'Setelah Maghrib' },
+  { key: 'sebelum_tidur', label: 'Sebelum Tidur' },
 ] as const
 
 const TARGET_GELAS = 8
@@ -108,7 +116,10 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
   const gelas = Math.round(totalMl / ML_PER_GELAS)
   const targetGelasPeriod = TARGET_GELAS * daysElapsed
   const avgGelas = Math.round(gelas / daysElapsed)
-  const dropletsFilled = Math.min(TARGET_GELAS, avgGelas)
+  // Revisi: per-sesi minum air (untuk kartu gaya Baca Quran)
+  const waterPerSesi = WATER_SESSIONS.map(s =>
+    (waterEntries as any[]).filter(e => e.waktu_baca === s.key && e.status === 'sudah').length
+  )
 
   // Checklist: jumlah hari tiap item dikerjakan dalam periode
   const { data: syukurEntries = [] } = useSyukurLogRange(startStr, endStr)
@@ -256,13 +267,30 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
               ? (gelas >= TARGET_GELAS ? 'Target tercapai 🎉' : `${Math.max(0, TARGET_GELAS - gelas)} gelas tersisa`)
               : `Rata-rata ${avgGelas} gelas per hari`}
           </p>
-          <div className="flex items-center gap-1 mt-3 flex-wrap">
-            {Array.from({ length: TARGET_GELAS }).map((_, i) => (
-              <Droplet
-                key={i}
-                className={cn('h-5 w-5', i < (isHarian ? gelas : dropletsFilled) ? 'text-sky-500 fill-sky-500' : 'text-slate-300')}
-              />
-            ))}
+          <div className="grid grid-cols-5 gap-1.5 mt-3">
+            {WATER_SESSIONS.map((s, i) => {
+              const done = isHarian ? waterPerSesi[i] > 0 : waterPerSesi[i] >= daysElapsed
+              return (
+                <div
+                  key={s.key}
+                  className={cn(
+                    'rounded-lg border py-2 px-1 flex flex-col items-center gap-1',
+                    done ? 'bg-sky-100/70 border-sky-200' : 'bg-white/60 border-slate-200'
+                  )}
+                >
+                  <span className="text-[10px] leading-tight text-center text-slate-600">{s.label}</span>
+                  {isHarian ? (
+                    done
+                      ? <Check className="h-3.5 w-3.5 text-sky-600" />
+                      : <Minus className="h-3.5 w-3.5 text-slate-300" />
+                  ) : (
+                    <span className={cn('text-[10px] font-semibold tabular-nums', done ? 'text-sky-600' : 'text-slate-400')}>
+                      {waterPerSesi[i]}/{daysElapsed}
+                    </span>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </RoutineCard>
 

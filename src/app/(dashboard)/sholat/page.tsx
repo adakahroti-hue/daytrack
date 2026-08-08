@@ -22,7 +22,8 @@ import { useTableLock } from '@/components/ui/table-lock'
 import { usePrayerLogRange, useTogglePrayer, useUpdatePrayerQuality } from '@/hooks/usePrayerLogs'
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
-import { SholatAnalytics } from '@/components/sholat/SholatAnalytics'
+import dynamic from 'next/dynamic'
+const SholatAnalytics = dynamic(() => import('@/components/sholat/SholatAnalytics').then(m => m.SholatAnalytics), { ssr: false, loading: () => null })
 
 // ─── Constants ────────────────────────────────────
 
@@ -191,7 +192,7 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
   onClose: () => void
 }>(({ tanggal, sholatKey, sholatMap, onSelect, onRate, onClear, onClose }, ref) => {
   const menuRef = useRef<HTMLDivElement>(null)
-  const [position, setPosition] = useState<{ top: number; left: number } | null>(null)
+  const [position, setPosition] = useState<{ top: number; left: number; maxHeight?: number } | null>(null)
 
   useEffect(() => {
     const cell = document.querySelector(`[data-dropdown-cell="${tanggal}-${sholatKey}"]`) as HTMLElement
@@ -199,20 +200,22 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
 
     const rect = cell.getBoundingClientRect()
     const menuWidth = 240
-    const menuHeight = 460
+    const menuMaxHeight = 460
 
     let top = rect.bottom + 4
     let left = rect.left
 
-    if (top + menuHeight > window.innerHeight) {
-      top = rect.top - menuHeight - 4
-    }
     if (left + menuWidth > window.innerWidth) {
       left = window.innerWidth - menuWidth - 8
     }
     if (left < 8) left = 8
 
-    setPosition({ top, left })
+    // Revisi: popup selalu muncul di bawah cell — jangan flip ke atas.
+    // Bila ruang di bawah kurang, kecilkan maxHeight agar muat & bisa di-scroll.
+    const availableBelow = window.innerHeight - top - 8
+    const maxHeight = Math.max(160, Math.min(menuMaxHeight, availableBelow))
+
+    setPosition({ top, left, maxHeight })
   }, [tanggal, sholatKey])
 
   useEffect(() => {
@@ -243,7 +246,7 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
       ref={menuRef}
       data-sholat-dropdown
       className="fixed z-50 bg-white rounded-lg shadow-lg border border-slate-200 py-1 min-w-[240px] max-h-[460px] overflow-y-auto"
-      style={{ top: position.top, left: position.left }}
+      style={{ top: position.top, left: position.left, maxHeight: position.maxHeight }}
     >
       {STATUS_OPTIONS.map(option => (
         <button

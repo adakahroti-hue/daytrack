@@ -402,13 +402,13 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
-            <div className="hidden sm:inline-flex items-center gap-0.5 p-0.5 bg-muted/50 rounded-lg border border-border">
+            <div className="hidden sm:inline-flex items-center gap-0.5 py-1 px-0.5 bg-muted/50 rounded-lg border border-border">
               {ibadahPeriodOptions.map(opt => (
                 <button
                   key={opt.value}
                   onClick={() => setIbadahPeriod(opt.value)}
                   className={cn(
-                    'px-2.5 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap',
+                    'px-2.5 h-8 rounded-md text-xs font-medium transition-colors whitespace-nowrap',
                     ibadahPeriod === opt.value
                       ? 'bg-[#0F172A] text-white shadow-sm'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'

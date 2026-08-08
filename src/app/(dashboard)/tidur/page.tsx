@@ -19,7 +19,8 @@ import { useTableLock } from '@/components/ui/table-lock'
 import { useTidurLogRange, useUpsertTidurLog, useDeleteTidurLog } from '@/hooks/useTidurLogs'
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
-import { StatusAnalytics } from '@/components/analytics/StatusAnalytics'
+import dynamic from 'next/dynamic'
+const StatusAnalytics = dynamic(() => import('@/components/analytics/StatusAnalytics').then(m => m.StatusAnalytics), { ssr: false, loading: () => null })
 
 // ─── Constants ────────────────────────────────────
 

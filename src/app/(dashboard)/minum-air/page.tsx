@@ -24,7 +24,8 @@ import { useTableLock } from '@/components/ui/table-lock'
 import { useWaterLogRange, useUpsertWaterLog, useDeleteWaterLog } from '@/hooks/useMinumAirLogs'
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
-import { MinumAirAnalytics } from '@/components/minum-air/MinumAirAnalytics'
+import dynamic from 'next/dynamic'
+const MinumAirAnalytics = dynamic(() => import('@/components/minum-air/MinumAirAnalytics').then(m => m.MinumAirAnalytics), { ssr: false, loading: () => null })
 
 // ─── Constants ────────────────────────────────────
 

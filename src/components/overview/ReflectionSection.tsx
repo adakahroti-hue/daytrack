@@ -1,12 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { Frown, Clock, Lightbulb, ArrowRight, NotebookPen } from 'lucide-react'
-import { format, subDays } from 'date-fns'
+import { Frown, Clock, ArrowRight, NotebookPen } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useMasalahLogRange } from '@/hooks/useMasalahLogs'
-import { useFunQueue } from '@/hooks/useFunQueue'
-import { useSaranPerbaikanRange } from '@/hooks/useSaranPerbaikan'
+import { useKesenanganRange } from '@/hooks/useKesenangan'
 import { type OverviewPeriod } from './FocusTodaySection'
 
 // ─── Revisi batch 9 & 11: section "Catatan & Refleksi" untuk tab Overview ───
@@ -62,7 +60,7 @@ function ReflectionCard({
   )
 }
 
-export function ReflectionSection({ startStr, endStr, period }: { startStr: string; endStr: string; period: OverviewPeriod }) {
+export function ReflectionSection({ startStr, endStr }: { startStr: string; endStr: string; period: OverviewPeriod }) {
   // Masalah dalam rentang periode
   const { data: masalahEntries = [] } = useMasalahLogRange(startStr, endStr)
   const masalahList = (masalahEntries as any[])
@@ -70,22 +68,12 @@ export function ReflectionSection({ startStr, endStr, period }: { startStr: stri
     .filter(Boolean)
     .slice(0, 3)
 
-  // Kesenangan yang ditunda (antrean global, tidak terikat tanggal)
-  const { data: funEntries = [] } = useFunQueue('ditunda')
-  const funList = (funEntries as any[])
-    .map(e => e.nama_kesenangan as string)
+  // Revisi: Kesenangan ditunda — dari tabel kesenangan (status 'belum'), bukan fun_queue
+  const { data: kesenanganEntries = [] } = useKesenanganRange(startStr, endStr)
+  const funList = (kesenanganEntries as any[])
+    .filter(e => e.status === 'belum')
+    .map(e => e.kesenangan as string)
     .filter(Boolean)
-    .slice(0, 3)
-
-  // Saran perbaikan — harian: 30 hari terakhir; mingguan/bulanan: rentang periode
-  const saranStart = period === 'harian' || period === 'kemarin'
-    ? format(subDays(new Date(endStr + 'T00:00:00'), 30), 'yyyy-MM-dd')
-    : startStr
-  const { data: saranEntries = [] } = useSaranPerbaikanRange(saranStart, endStr)
-  const saranList = [...(saranEntries as any[])]
-    .sort((a, b) => (a.tanggal < b.tanggal ? 1 : -1))
-    .map(e => (e.saran || '') as string)
-    .filter(s => s.trim().length > 0)
     .slice(0, 3)
 
   return (
@@ -95,7 +83,7 @@ export function ReflectionSection({ startStr, endStr, period }: { startStr: stri
         <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Catatan & Refleksi</h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ReflectionCard
           tint="bg-purple-50/70 border-purple-200"
           icon={Frown}
@@ -117,17 +105,6 @@ export function ReflectionSection({ startStr, endStr, period }: { startStr: stri
           items={funList}
           emptyText="Tidak ada kesenangan yang ditunda."
           href="/kesenangan"
-        />
-        <ReflectionCard
-          tint="bg-green-50/70 border-green-200"
-          icon={Lightbulb}
-          iconColor="text-green-500"
-          dotColor="bg-green-400"
-          linkColor="text-green-600 hover:text-green-700"
-          title="Saran Perbaikan"
-          items={saranList}
-          emptyText="Belum ada saran perbaikan."
-          href="/saran-perbaikan"
         />
       </div>
     </section>

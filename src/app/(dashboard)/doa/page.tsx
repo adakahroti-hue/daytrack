@@ -18,7 +18,8 @@ import { cn } from '@/lib/utils'
 import { useDoaLogRange, useUpsertDoaLog, useDeleteDoaLog } from '@/hooks/useDoaLogs'
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
-import { StatusAnalytics } from '@/components/analytics/StatusAnalytics'
+import dynamic from 'next/dynamic'
+const StatusAnalytics = dynamic(() => import('@/components/analytics/StatusAnalytics').then(m => m.StatusAnalytics), { ssr: false, loading: () => null })
 
 // ─── Constants ────────────────────────────────────
 

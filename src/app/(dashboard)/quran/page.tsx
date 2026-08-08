@@ -24,7 +24,8 @@ import { useTableLock } from '@/components/ui/table-lock'
 import { useQuranLogRange, useUpsertQuranLog, useDeleteQuranLog } from '@/hooks/useQuranLogs'
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
-import { QuranAnalytics } from '@/components/quran/QuranAnalytics'
+import dynamic from 'next/dynamic'
+const QuranAnalytics = dynamic(() => import('@/components/quran/QuranAnalytics').then(m => m.QuranAnalytics), { ssr: false, loading: () => null })
 
 // ─── Constants ────────────────────────────────────
 
