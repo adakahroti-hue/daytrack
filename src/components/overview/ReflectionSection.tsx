@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Frown, Clock, ArrowRight, NotebookPen } from 'lucide-react'
+import { Brain, ArrowRight, NotebookPen } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useMasalahLogRange } from '@/hooks/useMasalahLogs'
 import { useKesenanganRange } from '@/hooks/useKesenangan'
@@ -60,6 +60,82 @@ export function ReflectionCard({
   )
 }
 
+// ─── Revisi batch 22: card Refleksi + Kesenangan digabung jadi satu card "Mental" ───
+export function MentalCard({
+  tint,
+  icon: Icon,
+  iconColor,
+  dotColor,
+  linkColor,
+  title = 'Mental',
+  masalahItems,
+  funItems,
+  masalahEmptyText,
+  funEmptyText,
+  href,
+}: {
+  tint: string
+  icon: React.ComponentType<{ className?: string }>
+  iconColor: string
+  dotColor: string
+  linkColor: string
+  title?: string
+  masalahItems: string[]
+  funItems: string[]
+  masalahEmptyText: string
+  funEmptyText: string
+  href: string
+}) {
+  return (
+    <div className={cn('rounded-xl border p-4 flex flex-col', tint)}>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="p-1.5 rounded-lg bg-slate-100 shrink-0">
+            <Icon className={cn('h-4 w-4', iconColor)} />
+          </div>
+          <p className="text-sm font-semibold text-slate-700 truncate">{title}</p>
+        </div>
+        <Link href={href} aria-label={`Lihat ${title}`} className={cn('p-1.5 rounded-lg transition-colors hover:bg-slate-100', linkColor)}>
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
+      <div className="mt-3 grid gap-4 sm:grid-cols-2">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Refleksi</p>
+          {masalahItems.length > 0 ? (
+            <ul className="mt-2 space-y-1.5">
+              {masalahItems.map(item => (
+                <li key={item} className="flex items-start gap-2 text-sm text-slate-600">
+                  <span className={cn('mt-2 h-1 w-1 rounded-full shrink-0', dotColor)} />
+                  <span className="line-clamp-2">{item}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 text-sm text-slate-400">{masalahEmptyText}</p>
+          )}
+        </div>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Kesenangan Ditunda</p>
+          {funItems.length > 0 ? (
+            <ul className="mt-2 space-y-1.5">
+              {funItems.map(item => (
+                <li key={item} className="flex items-start gap-2 text-sm text-slate-600">
+                  <span className={cn('mt-2 h-1 w-1 rounded-full shrink-0', dotColor)} />
+                  <span className="line-clamp-2">{item}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 text-sm text-slate-400">{funEmptyText}</p>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Revisi batch 22: ReflectionSection kini hanya merender satu card "Mental" ───
 export function ReflectionSection({ startStr, endStr }: { startStr: string; endStr: string; period: OverviewPeriod }) {
   // Masalah dalam rentang periode
   const { data: masalahEntries = [] } = useMasalahLogRange(startStr, endStr)
@@ -83,28 +159,19 @@ export function ReflectionSection({ startStr, endStr }: { startStr: string; endS
         <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Catatan & Refleksi</h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <ReflectionCard
+      <div className="grid grid-cols-1 gap-4">
+        <MentalCard
           tint="bg-white border-slate-200"
-          icon={Frown}
+          icon={Brain}
           iconColor="text-purple-500"
           dotColor="bg-slate-400"
           linkColor="text-slate-500 hover:text-slate-700"
-          title="Refleksi"
-          items={masalahList}
-          emptyText="Tidak ada refleksi tercatat pada periode ini."
+          title="Mental"
+          masalahItems={masalahList}
+          funItems={funList}
+          masalahEmptyText="Tidak ada refleksi tercatat pada periode ini."
+          funEmptyText="Tidak ada kesenangan yang ditunda."
           href="/masalah"
-        />
-        <ReflectionCard
-          tint="bg-white border-slate-200"
-          icon={Clock}
-          iconColor="text-amber-500"
-          dotColor="bg-slate-400"
-          linkColor="text-slate-500 hover:text-slate-700"
-          title="Kesenangan Ditunda"
-          items={funList}
-          emptyText="Tidak ada kesenangan yang ditunda."
-          href="/kesenangan"
         />
       </div>
     </section>

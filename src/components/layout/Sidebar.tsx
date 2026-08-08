@@ -109,6 +109,7 @@ const navigation: NavSection[] = [
     items: [
       { title: 'Tidur', href: '/tidur', icon: Moon },
       { title: 'Minum Air', href: '/minum-air', icon: GlassWater },
+      { title: 'PMO', href: '/pmo', icon: Brain },
     ],
   },
   {
@@ -116,7 +117,6 @@ const navigation: NavSection[] = [
     icon: Shield,
     items: [
       { title: 'Refleksi', href: '/masalah', icon: Shield },
-      { title: 'PMO', href: '/pmo', icon: Brain },
       { title: 'Kesenangan', href: '/kesenangan', icon: Smile },
     ],
   },

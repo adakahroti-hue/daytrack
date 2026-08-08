@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Check, Minus, Mosque, BookOpen, GlassWater, ClipboardCheck, Repeat, Heart, Sparkles, Shield, Moon, ArrowRight, Frown, Clock } from 'lucide-react'
+import { Check, Minus, Mosque, BookOpen, GlassWater, ClipboardCheck, Repeat, Heart, Sparkles, Shield, Moon, ArrowRight, Brain } from 'lucide-react'
 import { format, differenceInCalendarDays } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { usePrayerLogRange } from '@/hooks/usePrayerLogs'
@@ -14,7 +14,7 @@ import { useTidurLogRange } from '@/hooks/useTidurLogs'
 import { useMasalahLogRange } from '@/hooks/useMasalahLogs'
 import { useKesenanganRange } from '@/hooks/useKesenangan'
 import { PERIOD_LABEL, type OverviewPeriod, FocusTodayCard } from './FocusTodaySection'
-import { ReflectionCard } from './ReflectionSection'
+import { MentalCard } from './ReflectionSection'
 
 // ─── Revisi batch 18: section "Rutinitas" untuk tab Overview (tema hitam-putih) ───
 
@@ -67,6 +67,7 @@ function RoutineCard({
   title,
   href,
   linkColor,
+  className,
   children,
 }: {
   tint: string
@@ -75,10 +76,11 @@ function RoutineCard({
   title: string
   href?: string
   linkColor?: string
+  className?: string
   children: React.ReactNode
 }) {
   return (
-    <div className={cn('rounded-xl border p-4 flex flex-col', tint)}>
+    <div className={cn('rounded-xl border p-4 flex flex-col', tint, className)}>
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm font-medium text-slate-700 truncate">{title}</p>
         <div className="flex items-center gap-1.5 shrink-0">
@@ -198,158 +200,176 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {/* Kartu Tugas — revisi batch 18: digabung ke grid rutinitas */}
-        <FocusTodayCard startStr={startStr} endStr={endStr} period={period} />
+        <div className="col-span-full">
+          <FocusTodayCard startStr={startStr} endStr={endStr} period={period} />
+        </div>
 
-        {/* Sholat 5 waktu */}
-        <RoutineCard tint="bg-white border-slate-200" icon={Mosque} iconColor="text-emerald-500" title="Sholat 5 Waktu" href="/sholat" linkColor="text-slate-500 hover:text-slate-700">
-          <p className="text-2xl font-bold text-slate-900 mt-1.5">
-            {sholatCount}/{sholatTarget} <span className="text-sm font-medium text-slate-500">sholat</span>
-          </p>
-          <p className="text-xs text-slate-500">{sholatCount} dikerjakan • {Math.max(0, sholatTarget - sholatCount)} belum</p>
-          <div className="grid grid-cols-5 gap-1.5 mt-3">
-            {SHOLAT_5.map((s, i) => {
-              const done = isHarian ? sholatPerWaktu[i] > 0 : sholatPerWaktu[i] >= daysElapsed
-              return (
-                <div
-                  key={s.key}
-                  className={cn(
-                    'rounded-lg border py-2 px-1 flex flex-col items-center gap-1',
-                    done ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
-                  )}
-                >
-                  <span className="text-[10px] leading-tight text-center text-slate-600">{s.label}</span>
-                  {isHarian ? (
-                    done
-                      ? <Check className="h-3.5 w-3.5 text-emerald-600" />
-                      : <Minus className="h-3.5 w-3.5 text-slate-300" />
-                  ) : (
-                    <span className={cn('text-[10px] font-semibold tabular-nums', done ? 'text-emerald-600' : 'text-slate-400')}>
-                      {sholatPerWaktu[i]}/{daysElapsed}
-                    </span>
-                  )}
-                </div>
-              )
-            })}
+        {/* Ibadah — revisi batch 22: card Sholat + Quran digabung jadi satu */}
+        <RoutineCard tint="bg-white border-slate-200" icon={Mosque} iconColor="text-emerald-500" title="Ibadah" href="/sholat" linkColor="text-slate-500 hover:text-slate-700" className="xl:col-span-2">
+          <div className="mt-1.5">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1">
+              <Mosque className="h-3.5 w-3.5" /> Sholat 5 Waktu
+            </p>
+            <p className="text-lg font-bold text-slate-900 mt-1">
+              {sholatCount}/{sholatTarget} <span className="text-sm font-medium text-slate-500">sholat</span>
+            </p>
+            <div className="grid grid-cols-5 gap-1.5 mt-2">
+              {SHOLAT_5.map((s, i) => {
+                const done = isHarian ? sholatPerWaktu[i] > 0 : sholatPerWaktu[i] >= daysElapsed
+                return (
+                  <div
+                    key={s.key}
+                    className={cn(
+                      'rounded-lg border py-2 px-1 flex flex-col items-center gap-1',
+                      done ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
+                    )}
+                  >
+                    <span className="text-[10px] leading-tight text-center text-slate-600">{s.label}</span>
+                    {isHarian ? (
+                      done
+                        ? <Check className="h-3.5 w-3.5 text-emerald-600" />
+                        : <Minus className="h-3.5 w-3.5 text-slate-300" />
+                    ) : (
+                      <span className={cn('text-[10px] font-semibold tabular-nums', done ? 'text-emerald-600' : 'text-slate-400')}>
+                        {sholatPerWaktu[i]}/{daysElapsed}
+                      </span>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-slate-100">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1">
+              <BookOpen className="h-3.5 w-3.5" /> Baca Quran
+            </p>
+            <p className="text-lg font-bold text-slate-900 mt-1">
+              {quranCount}/{quranTarget} <span className="text-sm font-medium text-slate-500">sesi quran</span>
+            </p>
+            <div className="grid grid-cols-5 gap-1.5 mt-2">
+              {QURAN_SESSIONS.map((s, i) => {
+                const done = isHarian ? quranPerSesi[i] > 0 : quranPerSesi[i] >= daysElapsed
+                return (
+                  <div
+                    key={s.key}
+                    className={cn(
+                      'rounded-lg border py-2 px-1 flex flex-col items-center gap-1',
+                      done ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
+                    )}
+                  >
+                    <span className="text-[10px] leading-tight text-center text-slate-600">{s.label}</span>
+                    {isHarian ? (
+                      done
+                        ? <Check className="h-3.5 w-3.5 text-teal-600" />
+                        : <Minus className="h-3.5 w-3.5 text-slate-300" />
+                    ) : (
+                      <span className={cn('text-[10px] font-semibold tabular-nums', done ? 'text-teal-600' : 'text-slate-400')}>
+                        {quranPerSesi[i]}/{daysElapsed}
+                      </span>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
           </div>
         </RoutineCard>
 
-        {/* Baca Quran */}
-        <RoutineCard tint="bg-white border-slate-200" icon={BookOpen} iconColor="text-teal-500" title="Baca Quran" href="/quran" linkColor="text-slate-500 hover:text-slate-700">
-          <p className="text-2xl font-bold text-slate-900 mt-1.5">
-            {quranCount}/{quranTarget} <span className="text-sm font-medium text-slate-500">sesi</span>
-          </p>
-          <p className="text-xs text-slate-500">{quranCount} dikerjakan • {Math.max(0, quranTarget - quranCount)} belum</p>
-          <div className="grid grid-cols-5 gap-1.5 mt-3">
-            {QURAN_SESSIONS.map((s, i) => {
-              const done = isHarian ? quranPerSesi[i] > 0 : quranPerSesi[i] >= daysElapsed
-              return (
-                <div
-                  key={s.key}
-                  className={cn(
-                    'rounded-lg border py-2 px-1 flex flex-col items-center gap-1',
-                    done ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
-                  )}
-                >
-                  <span className="text-[10px] leading-tight text-center text-slate-600">{s.label}</span>
-                  {isHarian ? (
-                    done
-                      ? <Check className="h-3.5 w-3.5 text-teal-600" />
-                      : <Minus className="h-3.5 w-3.5 text-slate-300" />
-                  ) : (
-                    <span className={cn('text-[10px] font-semibold tabular-nums', done ? 'text-teal-600' : 'text-slate-400')}>
-                      {quranPerSesi[i]}/{daysElapsed}
-                    </span>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        </RoutineCard>
-
-        {/* Minum Air */}
-        <RoutineCard tint="bg-white border-slate-200" icon={GlassWater} iconColor="text-sky-500" title="Minum Air" href="/minum-air" linkColor="text-slate-500 hover:text-slate-700">
-          <p className="text-2xl font-bold text-slate-900 mt-1.5">
-            {gelas}/{targetGelasPeriod} <span className="text-sm font-medium text-slate-500">gelas</span>
-          </p>
-          <p className="text-xs text-slate-500">
-            {isHarian
-              ? (gelas >= TARGET_GELAS ? 'Target tercapai 🎉' : `${Math.max(0, TARGET_GELAS - gelas)} gelas tersisa`)
-              : `Rata-rata ${avgGelas} gelas per hari`}
-          </p>
-          <div className="grid grid-cols-5 gap-1.5 mt-3">
-            {WATER_SESSIONS.map((s, i) => {
-              const done = isHarian ? waterPerSesi[i] > 0 : waterPerSesi[i] >= daysElapsed
-              return (
-                <div
-                  key={s.key}
-                  className={cn(
-                    'rounded-lg border py-2 px-1 flex flex-col items-center gap-1',
-                    done ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
-                  )}
-                >
-                  <span className="text-[10px] leading-tight text-center text-slate-600">{s.label}</span>
-                  {isHarian ? (
-                    done
+        {/* Minum Air + Checklist Harian — revisi batch 22: digabung jadi satu card (harian/kemarin).
+            Mingguan/bulanan/tahunan: Minum Air tetap sendiri + 4 kartu checklist. */}
+        {isHarian ? (
+          <>
+          <RoutineCard tint="bg-white border-slate-200" icon={GlassWater} iconColor="text-sky-500" title="Minum Air & Checklist" className="xl:col-span-2">
+            <p className="text-2xl font-bold text-slate-900 mt-1.5">
+              {gelas}/{targetGelasPeriod} <span className="text-sm font-medium text-slate-500">gelas</span>
+            </p>
+            <p className="text-xs text-slate-500">
+              {gelas >= TARGET_GELAS ? 'Target tercapai 🎉' : `${Math.max(0, TARGET_GELAS - gelas)} gelas tersisa`}
+            </p>
+            <div className="grid grid-cols-5 gap-1.5 mt-3">
+              {WATER_SESSIONS.map((s, i) => {
+                const done = waterPerSesi[i] > 0
+                return (
+                  <div
+                    key={s.key}
+                    className={cn(
+                      'rounded-lg border py-2 px-1 flex flex-col items-center gap-1',
+                      done ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
+                    )}
+                  >
+                    <span className="text-[10px] leading-tight text-center text-slate-600">{s.label}</span>
+                    {done
                       ? <Check className="h-3.5 w-3.5 text-sky-600" />
-                      : <Minus className="h-3.5 w-3.5 text-slate-300" />
-                  ) : (
+                      : <Minus className="h-3.5 w-3.5 text-slate-300" />}
+                  </div>
+                )
+              })}
+            </div>
+            <div className="mt-3 pt-3 border-t border-slate-100">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1">
+                  <ClipboardCheck className="h-3.5 w-3.5" /> Checklist Harian
+                </p>
+                <p className="text-xs font-medium text-slate-500">{checklistDone}/4 selesai</p>
+              </div>
+              <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+                {checklistWithDone.map(c => (
+                  <div key={c.label} className="flex items-center gap-2.5">
+                    <span className={cn(
+                      'flex h-4 w-4 items-center justify-center rounded border shrink-0',
+                      c.done ? 'bg-slate-700 border-slate-700' : 'bg-white border-slate-300'
+                    )}>
+                      {c.done && <Check className="h-3 w-3 text-white" />}
+                    </span>
+                    <span className={cn('text-sm', c.done ? 'text-slate-700' : 'text-slate-500')}>{c.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </RoutineCard>
+          <div className="col-span-full">
+            <MentalCard
+              tint="bg-white border-slate-200"
+              icon={Brain}
+              iconColor="text-purple-500"
+              dotColor="bg-slate-400"
+              linkColor="text-slate-500 hover:text-slate-700"
+              title="Mental"
+              masalahItems={masalahList}
+              funItems={funList}
+              masalahEmptyText="Tidak ada refleksi tercatat."
+              funEmptyText="Tidak ada kesenangan ditunda."
+              href="/masalah"
+            />
+          </div>
+          </>
+        ) : (
+          <>
+          <RoutineCard tint="bg-white border-slate-200" icon={GlassWater} iconColor="text-sky-500" title="Minum Air" href="/minum-air" linkColor="text-slate-500 hover:text-slate-700">
+            <p className="text-2xl font-bold text-slate-900 mt-1.5">
+              {gelas}/{targetGelasPeriod} <span className="text-sm font-medium text-slate-500">gelas</span>
+            </p>
+            <p className="text-xs text-slate-500">Rata-rata {avgGelas} gelas per hari</p>
+            <div className="grid grid-cols-5 gap-1.5 mt-3">
+              {WATER_SESSIONS.map((s, i) => {
+                const done = waterPerSesi[i] >= daysElapsed
+                return (
+                  <div
+                    key={s.key}
+                    className={cn(
+                      'rounded-lg border py-2 px-1 flex flex-col items-center gap-1',
+                      done ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
+                    )}
+                  >
+                    <span className="text-[10px] leading-tight text-center text-slate-600">{s.label}</span>
                     <span className={cn('text-[10px] font-semibold tabular-nums', done ? 'text-sky-600' : 'text-slate-400')}>
                       {waterPerSesi[i]}/{daysElapsed}
                     </span>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        </RoutineCard>
-
-        {/* Checklist: harian = 1 kartu agregat; mingguan/bulanan = 4 kartu */}
-        {isHarian ? (
-          <>
-          <RoutineCard tint="bg-white border-slate-200" icon={ClipboardCheck} iconColor="text-violet-500" title="Checklist Harian">
-            <p className="text-2xl font-bold text-slate-900 mt-1.5">
-              {checklistDone}/4 <span className="text-sm font-medium text-slate-500">selesai</span>
-            </p>
-            <p className="text-xs text-slate-500">Selesaikan hal-hal penting hari ini</p>
-            <div className="mt-3 space-y-2">
-              {checklistWithDone.map(c => (
-                <div key={c.label} className="flex items-center gap-2.5">
-                  <span className={cn(
-                    'flex h-4 w-4 items-center justify-center rounded border shrink-0',
-                    c.done ? 'bg-slate-700 border-slate-700' : 'bg-white border-slate-300'
-                  )}>
-                    {c.done && <Check className="h-3 w-3 text-white" />}
-                  </span>
-                  <span className={cn('text-sm', c.done ? 'text-slate-700' : 'text-slate-500')}>{c.label}</span>
-                </div>
-              ))}
+                  </div>
+                )
+              })}
             </div>
           </RoutineCard>
-          <ReflectionCard
-            tint="bg-white border-slate-200"
-            icon={Frown}
-            iconColor="text-purple-500"
-            dotColor="bg-slate-400"
-            linkColor="text-slate-500 hover:text-slate-700"
-            title="Refleksi"
-            items={masalahList}
-            emptyText="Tidak ada refleksi tercatat."
-            href="/masalah"
-          />
-          <ReflectionCard
-            tint="bg-white border-slate-200"
-            icon={Clock}
-            iconColor="text-amber-500"
-            dotColor="bg-slate-400"
-            linkColor="text-slate-500 hover:text-slate-700"
-            title="Kesenangan Ditunda"
-            items={funList}
-            emptyText="Tidak ada kesenangan ditunda."
-            href="/kesenangan"
-          />
-          </>
-        ) : (
-          checklistCards.map(c => {
+          {checklistCards.map(c => {
             return (
               <RoutineCard key={c.key} tint={c.tint} icon={c.icon} iconColor={c.iconColor} title={c.title} href={c.href} linkColor={c.linkColor}>
                 <p className="text-2xl font-bold text-slate-900 mt-1.5">
@@ -367,7 +387,8 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                 </div>
               </RoutineCard>
             )
-          })
+          })}
+          </>
         )}
       </div>
     </section>
