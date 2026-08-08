@@ -1,64 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { Brain, ArrowRight, NotebookPen, Hourglass, PersonStanding } from 'lucide-react'
+import { Brain, NotebookPen, Hourglass, PersonStanding } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useMasalahLogRange } from '@/hooks/useMasalahLogs'
 import { useKesenanganRange } from '@/hooks/useKesenangan'
 import { type OverviewPeriod } from './FocusTodaySection'
-
-// ─── Revisi batch 18: section "Catatan & Refleksi" untuk tab Overview (tema hitam-putih) ───
-
-export function ReflectionCard({
-  tint,
-  icon: Icon,
-  iconColor,
-  dotColor,
-  linkColor,
-  title,
-  items,
-  emptyText,
-  href,
-}: {
-  tint: string
-  icon: React.ComponentType<{ className?: string }>
-  iconColor: string
-  dotColor: string
-  linkColor: string
-  title: string
-  items: string[]
-  emptyText: string
-  href: string
-}) {
-  return (
-    <div className={cn('rounded-xl border px-4 py-3 flex flex-col', tint)}>
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="p-1.5 rounded-lg bg-slate-100 shrink-0">
-            <Icon className={cn('h-4 w-4', iconColor)} />
-          </div>
-          <p className="text-sm font-semibold text-slate-700 truncate">{title}</p>
-        </div>
-        <Link href={href} aria-label={`Lihat ${title}`} className={cn('p-1.5 rounded-lg transition-colors hover:bg-slate-100', linkColor)}>
-          <ArrowRight className="h-4 w-4" />
-        </Link>
-      </div>
-      {items.length > 0 ? (
-        <ul className="mt-3 space-y-1.5">
-          {items.map(item => (
-            <li key={item} className="flex items-start gap-2 text-sm text-slate-600">
-              <span className={cn('mt-1.5 h-1 w-1 rounded-full shrink-0', dotColor)} />
-              <span className="line-clamp-2">{item}</span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="mt-3 text-sm text-slate-400">{emptyText}</p>
-      )}
-
-    </div>
-  )
-}
 
 // ─── Revisi batch 22: card Refleksi + Kesenangan digabung jadi satu card "Mental" ───
 // ─── Revisi batch 26: icon ungu pindah ke kanan atas + garis pembatas Refleksi/Kesenangan Ditunda ───

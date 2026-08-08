@@ -90,9 +90,7 @@ function subscribeChannel(entry: ChannelEntry, supabase: ReturnType<typeof creat
       entry.combinedHandler
     )
     
-    entry.channel.subscribe((status) => {
-      console.log(`[Realtime] Channel status:`, status)
-    })
+    entry.channel.subscribe()
     entry.subscribed = true
   }
 }
@@ -110,8 +108,7 @@ export function useRealtime({
   const handlerIdRef = useRef<string>('')
   const entryRef = useRef<ChannelEntry | null>(null)
 
-  const handleRealtimeEvent = useCallback((payload: any) => {
-    console.log(`[Realtime] ${payload.eventType} on ${table}:`, payload)
+  const handleRealtimeEvent = useCallback((_payload: any) => {
     
     queryKeys.forEach(key => {
       queryClient.invalidateQueries({ queryKey: key })
@@ -164,9 +161,7 @@ export function useRealtime({
         entry.combinedHandler
       )
       
-      entry.channel.subscribe((status) => {
-        console.log(`[Realtime] Channel ${table} status:`, status)
-      })
+      entry.channel.subscribe()
       entry.subscribed = true
     }
 
@@ -368,8 +363,7 @@ export function useOverviewRealtime() {
           schema: 'public',
           table,
         },
-        (payload) => {
-          console.log(`[Realtime Overview] ${payload.eventType} on ${table}:`, payload)
+        () => {
           // Invalidate overview queries
           queryClient.invalidateQueries({ queryKey: ['overview'] })
           // Invalidate individual table queries

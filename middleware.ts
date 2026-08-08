@@ -31,7 +31,7 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // Protected routes
-  const protectedPaths = ['/overview', '/jadwal-tugas', '/sholat', '/quran', '/doa', '/syukur', '/tidur', '/masalah', '/minum-air', '/pmo', '/kesenangan', '/saran-perbaikan']
+  const protectedPaths = ['/overview', '/sholat', '/quran', '/doa', '/syukur', '/tidur', '/masalah', '/minum-air', '/pmo', '/kesenangan', '/saran-perbaikan', '/tugas']
   const isProtectedPath = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path))
 
   if (isProtectedPath && !user) {
@@ -46,7 +46,7 @@ export async function middleware(request: NextRequest) {
 
   if (isAuthPath && user) {
     const url = request.nextUrl.clone()
-    url.pathname = '/overview/bulanan'
+    url.pathname = '/overview'
     return NextResponse.redirect(url)
   }
 
