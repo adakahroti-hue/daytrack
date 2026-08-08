@@ -91,12 +91,14 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
             <div className="h-full rounded-full bg-slate-800 transition-all" style={{ width: `${progressPct}%` }} />
           </div>
         </div>
-        {/* Kanan: sedang dikerjakan — dipisahkan garis pembatas tipis (revisi batch 25) */}
-        {featured && (
-          <>
-            <div className="w-px bg-slate-100 shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-slate-400">Sedang dikerjakan</p>
+        {/* Kanan: sedang dikerjakan — dipisahkan garis pembatas tipis (revisi batch 25).
+            Revisi batch 26: kolom kanan selalu tampil agar card Tugas Kemarin mengikuti desain
+            card Tugas Hari Ini di semua filter (placeholder saat tidak ada tugas berjalan). */}
+        <div className="w-px bg-slate-100 shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium text-slate-400">Sedang dikerjakan</p>
+          {featured ? (
+            <>
               <p className="text-sm font-semibold text-slate-900 mt-0.5 line-clamp-2">{featured.nama}</p>
               <div className="flex items-center gap-3 text-xs text-slate-500 mt-1 flex-wrap">
                 <p className="flex items-center gap-1.5">
@@ -106,9 +108,11 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
                   <Timer className="h-3.5 w-3.5" /> Berjalan: {formatSedang(featured)}
                 </p>
               </div>
-            </div>
-          </>
-        )}
+            </>
+          ) : (
+            <p className="text-sm text-slate-400 mt-0.5">Tidak ada tugas berjalan</p>
+          )}
+        </div>
       </div>
     </div>
   )

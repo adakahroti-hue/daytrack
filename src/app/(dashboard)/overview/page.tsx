@@ -3,10 +3,11 @@
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns'
 import { type OverviewPeriod } from '@/components/overview/FocusTodaySection'
 import { RoutineTodaySection } from '@/components/overview/RoutineTodaySection'
-import { ReflectionSection } from '@/components/overview/ReflectionSection'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
 
 // Revisi batch 18: kartu "Tugas" digabung ke grid Rutinitas (tema hitam-putih).
+// Revisi batch 26: hapus ReflectionSection (card Mental duplikat di mingguan/bulanan/tahunan) —
+// card Mental kini hanya dirender oleh RoutineTodaySection (acuan desain filter harian).
 export default function OverviewPage() {
   const { period, currentDate } = useHeaderControls()
 
@@ -33,12 +34,9 @@ export default function OverviewPage() {
   const startStr = format(rangeStart, 'yyyy-MM-dd')
   const endStr = format(rangeEnd, 'yyyy-MM-dd')
 
-  const isHarian = summaryPeriod === 'harian' || summaryPeriod === 'kemarin'
-
   return (
     <div className="space-y-8">
       <RoutineTodaySection startStr={startStr} endStr={endStr} period={summaryPeriod} />
-      {!isHarian && <ReflectionSection startStr={startStr} endStr={endStr} period={summaryPeriod} />}
     </div>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Check, Minus, Mosque, BookOpen, GlassWater, Repeat, Heart, Sparkles, Shield, Moon, ArrowRight, Brain } from 'lucide-react'
+import { Check, Minus, Mosque, BookOpen, GlassWater, Repeat, Sparkles, Shield, Moon, ArrowRight, Brain } from 'lucide-react'
 import { format, differenceInCalendarDays } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { JAM_TIDUR_OPTIONS } from '@/lib/tidur-options'
@@ -131,7 +131,6 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
   const totalMl = (waterEntries as any[]).reduce((sum, e) => sum + (e.jumlah_ml || 0), 0)
   const gelas = Math.round(totalMl / ML_PER_GELAS)
   const targetGelasPeriod = TARGET_GELAS * daysElapsed
-  const avgGelas = Math.round(gelas / daysElapsed)
   const waterPerSesi = WATER_SESSIONS.map(s =>
     (waterEntries as any[]).filter(e => e.waktu_baca === s.key && e.status === 'sudah').length
   )
@@ -260,18 +259,16 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
             </p>
             <div className="mt-2 flex items-center gap-4 flex-wrap text-sm">
               <div className="flex items-center gap-1.5">
-                <Heart className="h-3.5 w-3.5 text-emerald-500" />
-                <span className="text-slate-700">Bersyukur</span>
                 <span className={cn('font-semibold tabular-nums', checklist[0].days >= daysElapsed ? 'text-emerald-600' : 'text-slate-500')}>
                   {checklist[0].days}/{daysElapsed}
                 </span>
+                <span className="text-slate-700">Bersyukur</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-emerald-500" />
-                <span className="text-slate-700">Mendoakan orang lain</span>
                 <span className={cn('font-semibold tabular-nums', checklist[1].days >= daysElapsed ? 'text-emerald-600' : 'text-slate-500')}>
                   {checklist[1].days}/{daysElapsed}
                 </span>
+                <span className="text-slate-700">Mendoakan orang lain</span>
               </div>
             </div>
           </div>
@@ -288,11 +285,11 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                 <p className="text-lg font-bold text-slate-900 tabular-nums">
                   {gelas}<span className="text-sm font-medium text-slate-500">/{targetGelasPeriod} gelas</span>
                 </p>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {isHarian
-                    ? (gelas >= TARGET_GELAS ? 'Target tercapai 🎉' : `${Math.max(0, TARGET_GELAS - gelas)} gelas tersisa`)
-                    : `Rata-rata ${avgGelas} gelas per hari`}
-                </p>
+                {isHarian && (
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {gelas >= TARGET_GELAS ? 'Target tercapai 🎉' : `${Math.max(0, TARGET_GELAS - gelas)} gelas tersisa`}
+                  </p>
+                )}
               </div>
               <div className="grid grid-cols-5 gap-1.5 shrink-0">
                 {WATER_SESSIONS.map((s, i) => {
@@ -330,9 +327,9 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                 <p className="text-lg font-bold text-slate-900 tabular-nums">
                   {checklist[3].days}<span className="text-sm font-medium text-slate-500">/{daysElapsed} tepat</span>
                 </p>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {tidurTopJam ? `Jam tidur terbanyak: ${tidurTopJam.replace(':', '.')}` : 'Belum ada data'}
-                </p>
+                {!tidurTopJam && (
+                  <p className="text-xs text-slate-500 mt-0.5">Belum ada data</p>
+                )}
               </div>
               <div className="grid grid-cols-5 gap-1.5 shrink-0">
                 {JAM_TIDUR_OPTIONS.map(o => (

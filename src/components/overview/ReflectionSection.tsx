@@ -61,6 +61,7 @@ export function ReflectionCard({
 }
 
 // ─── Revisi batch 22: card Refleksi + Kesenangan digabung jadi satu card "Mental" ───
+// ─── Revisi batch 26: icon ungu pindah ke kanan atas + garis pembatas Refleksi/Kesenangan Ditunda ───
 export function MentalCard({
   tint,
   icon: Icon,
@@ -89,14 +90,12 @@ export function MentalCard({
   return (
     <div className={cn('rounded-xl border p-4 flex flex-col', tint)}>
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="p-1.5 rounded-lg bg-slate-100 shrink-0">
-            <Icon className={cn('h-4 w-4', iconColor)} />
-          </div>
-          <p className="text-sm font-semibold text-slate-700 truncate">{title}</p>
+        <p className="text-sm font-semibold text-slate-700 truncate">{title}</p>
+        <div className="p-1.5 rounded-lg bg-slate-100 shrink-0">
+          <Icon className={cn('h-4 w-4', iconColor)} />
         </div>
       </div>
-      <div className="mt-3 grid gap-4 sm:grid-cols-2">
+      <div className="mt-3 grid gap-4 sm:grid-cols-2 divide-y divide-slate-200 sm:divide-y-0 sm:divide-x">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1"><Shield className="h-3.5 w-3.5 text-purple-500" /> Refleksi</p>
           {masalahItems.length > 0 ? (
@@ -133,6 +132,8 @@ export function MentalCard({
 }
 
 // ─── Revisi batch 22: ReflectionSection kini hanya merender satu card "Mental" ───
+// ─── Revisi batch 26: tidak lagi dirender di halaman Overview (card Mental duplikat
+//     untuk mingguan/bulanan/tahunan dihapus); card Mental cukup dari RoutineTodaySection. ───
 export function ReflectionSection({ startStr, endStr }: { startStr: string; endStr: string; period: OverviewPeriod }) {
   // Masalah dalam rentang periode
   const { data: masalahEntries = [] } = useMasalahLogRange(startStr, endStr)
