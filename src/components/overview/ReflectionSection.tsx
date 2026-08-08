@@ -9,7 +9,7 @@ import { type OverviewPeriod } from './FocusTodaySection'
 
 // ─── Revisi batch 18: section "Catatan & Refleksi" untuk tab Overview (tema hitam-putih) ───
 
-function ReflectionCard({
+export function ReflectionCard({
   tint,
   icon: Icon,
   iconColor,

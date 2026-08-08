@@ -12,7 +12,7 @@ import {
   endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, Moon, Check, X, Trash2 } from 'lucide-react'
+import { Calendar, Moon, Check, X, Trash2, Clock } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { useTableLock } from '@/components/ui/table-lock'
@@ -26,6 +26,14 @@ const StatusAnalytics = dynamic(() => import('@/components/analytics/StatusAnaly
 
 // Revisi 4 (batch 5): alasan begadang
 const BEGADANG_REASONS = ['Tak Bisa Tidur', 'Gabut', 'Kerja', 'Main Game', 'Minum Kopi', 'Nongkrong', 'Lapar']
+
+const JAM_TIDUR_OPTIONS = [
+  { value: '22:00', label: '22.00', status: 'tepat' as const },
+  { value: '23:00', label: '23.00', status: 'tepat' as const },
+  { value: '23:30', label: '23.30', status: 'begadang' as const },
+  { value: '00:00', label: '00.00', status: 'begadang' as const },
+  { value: '01:30', label: '01.30', status: 'begadang' as const },
+]
 
 const DAY_BADGE_COLORS: Record<string, string> = {
   Senin: 'bg-yellow-100 text-yellow-800 border-yellow-200',
@@ -124,6 +132,10 @@ export default function TidurPage() {
     })
   }
 
+  const handleSetJamTidur = async (tanggal: string, jamTidur: string, status: 'tepat' | 'begadang') => {
+    await upsertTidurLog.mutateAsync({ tanggal, status, jam_tidur: jamTidur })
+  }
+
   // Revisi 6: data untuk Analytics & Insight
   const analyticsEntries = useMemo(() => {
     return (logs as TidurLogEntry[]).map(l => ({
@@ -141,7 +153,7 @@ export default function TidurPage() {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
       {/* Tabel gaya Quran: Tanggal | Hari | Status */}
       <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)] landscape:max-lg:max-h-none rounded-lg border bg-white', TABLE_BORDER)}>
         <table className="w-full border-collapse text-xs sm:text-sm">
@@ -156,6 +168,12 @@ export default function TidurPage() {
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[64px] sm:min-w-[90px] dt-col-stick sm:sticky sm:left-[100px] sm:z-30 sm:bg-white', TABLE_BORDER)}>
                 Hari
               </th>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[80px] sm:min-w-[100px]', TABLE_BORDER)}>
+                <div className="flex items-center justify-center gap-1">
+                  <Clock className="h-3.5 w-3.5 text-indigo-500" />
+                  Jam Tidur
+                </div>
+              </th>
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
                   <Moon className="h-3.5 w-3.5 text-indigo-500" />
@@ -167,7 +185,7 @@ export default function TidurPage() {
           <tbody className={cn(effectiveLocked && 'pointer-events-none select-none')}>
             {isLoading ? (
               <tr>
-                <td colSpan={3} className="text-center py-12 text-slate-400">
+                <td colSpan={4} className="text-center py-12 text-slate-400">
                   <div className="flex flex-col items-center gap-2">
                     <div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" />
                     <span className="text-sm">Memuat data...</span>
@@ -176,7 +194,7 @@ export default function TidurPage() {
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan={3} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td>
+                <td colSpan={4} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td>
               </tr>
             ) : (
               dates.map((dateStr, rowIdx) => {
@@ -203,6 +221,38 @@ export default function TidurPage() {
                       <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs border font-medium', DAY_BADGE_COLORS[dayName] || 'bg-slate-100 text-slate-700 border-slate-200')}>
                         {dayName}
                       </span>
+                    </td>
+                    <td className={cn('px-2 sm:px-3 py-2 text-center border-r', TABLE_BORDER)}>
+                      <div className="flex items-center justify-center min-h-[36px]">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              className={cn(
+                                'inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium border transition-colors cursor-pointer whitespace-nowrap',
+                                entry?.jam_tidur
+                                  ? 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
+                                  : 'text-slate-400 border-dashed border-slate-300 hover:bg-slate-50 hover:text-slate-600'
+                              )}
+                            >
+                              <Clock className="h-3.5 w-3.5 shrink-0" />
+                              {entry?.jam_tidur ? entry.jam_tidur.replace(':', '.') : 'Pilih'}
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="center" className="w-32">
+                            {JAM_TIDUR_OPTIONS.map(opt => (
+                              <DropdownMenuItem
+                                key={opt.value}
+                                onClick={() => handleSetJamTidur(dateStr, opt.value, opt.status)}
+                                className="flex items-center gap-2"
+                              >
+                                {opt.status === 'tepat' ? <Check className="h-4 w-4 text-green-600" /> : <X className="h-4 w-4 text-red-500" />}
+                                {opt.label}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </td>
                     <td className={cn('px-2 sm:px-3 py-2 text-center', TABLE_BORDER)}>
                       <div className="flex items-center justify-center min-h-[36px]">

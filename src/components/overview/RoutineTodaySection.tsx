@@ -1,9 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { Check, Minus, Mosque, BookOpen, GlassWater, ClipboardCheck, Repeat, Heart, Sparkles, Shield, Moon, ArrowRight } from 'lucide-react'
-import { format, startOfWeek, differenceInCalendarDays } from 'date-fns'
-import { id } from 'date-fns/locale'
+import { Check, Minus, Mosque, BookOpen, GlassWater, ClipboardCheck, Repeat, Heart, Sparkles, Shield, Moon, ArrowRight, Frown, Clock } from 'lucide-react'
+import { format, differenceInCalendarDays } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { usePrayerLogRange } from '@/hooks/usePrayerLogs'
 import { useQuranLogRange } from '@/hooks/useQuranLogs'
@@ -12,7 +11,10 @@ import { useSyukurLogRange } from '@/hooks/useSyukurLogs'
 import { useDoaLogRange } from '@/hooks/useDoaLogs'
 import { usePmoLogRange } from '@/hooks/usePmoLogs'
 import { useTidurLogRange } from '@/hooks/useTidurLogs'
+import { useMasalahLogRange } from '@/hooks/useMasalahLogs'
+import { useKesenanganRange } from '@/hooks/useKesenangan'
 import { PERIOD_LABEL, type OverviewPeriod, FocusTodayCard } from './FocusTodaySection'
+import { ReflectionCard } from './ReflectionSection'
 
 // ─── Revisi batch 18: section "Rutinitas" untuk tab Overview (tema hitam-putih) ───
 
@@ -39,6 +41,21 @@ const WATER_SESSIONS = [
   { key: 'setelah_maghrib', label: 'Setelah Maghrib' },
   { key: 'sebelum_tidur', label: 'Sebelum Tidur' },
 ] as const
+
+const SYUKUR_ALASAN_LABELS: Record<string, string> = {
+  sibuk: 'Sibuk', malas: 'Malas', tidak_fokus: 'Tidak Fokus', lupa: 'Lupa', tidak_terpikir: 'Tidak Terpikir', lainnya: 'Lainnya',
+}
+
+function topReasonFn(entries: any[], match: (e: any) => boolean, extract: (e: any) => string | null): string | null {
+  const counts = new Map<string, number>()
+  for (const e of entries) {
+    if (!match(e)) continue
+    const r = extract(e)
+    if (r) counts.set(r, (counts.get(r) ?? 0) + 1)
+  }
+  if (counts.size === 0) return null
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0]
+}
 
 const TARGET_GELAS = 5
 const ML_PER_GELAS = 250
@@ -143,42 +160,33 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
     new Set((pmoEntries as any[]).filter(e => e.status === 'berhasil').map(e => e.tanggal)),
     new Set((tidurEntries as any[]).filter(e => e.status === 'tepat').map(e => e.tanggal)),
   ]
-  const checklistCards = [
-    { key: 'syukur', title: 'Syukur', days: checklist[0].days, doneDates: doneDateSets[0], tint: 'bg-white border-slate-200', icon: Heart, iconColor: 'text-violet-500', tileDone: 'bg-slate-100 border-slate-300', tileText: 'text-slate-600', linkColor: 'text-slate-500 hover:text-slate-700', href: '/syukur' },
-    { key: 'doa', title: 'Doa', days: checklist[1].days, doneDates: doneDateSets[1], tint: 'bg-white border-slate-200', icon: Sparkles, iconColor: 'text-rose-500', tileDone: 'bg-slate-100 border-slate-300', tileText: 'text-slate-600', linkColor: 'text-slate-500 hover:text-slate-700', href: '/doa' },
-    { key: 'pmo', title: 'PMO', days: checklist[2].days, doneDates: doneDateSets[2], tint: 'bg-white border-slate-200', icon: Shield, iconColor: 'text-orange-500', tileDone: 'bg-slate-100 border-slate-300', tileText: 'text-slate-600', linkColor: 'text-slate-500 hover:text-slate-700', href: '/pmo' },
-    { key: 'tidur', title: 'Tidur', days: checklist[3].days, doneDates: doneDateSets[3], tint: 'bg-white border-slate-200', icon: Moon, iconColor: 'text-indigo-500', tileDone: 'bg-slate-100 border-slate-300', tileText: 'text-slate-600', linkColor: 'text-slate-500 hover:text-slate-700', href: '/tidur' },
-  ]
-  const bucketType = period === 'mingguan' ? 'day' : period === 'bulanan' ? 'week' : 'month'
-  const bucketTiles = (doneDates: Set<string>) => {
-    const map = new Map<string, { key: string; label: string; done: number; total: number }>()
-    const start = new Date(startStr + 'T00:00:00')
-    const end = new Date(cappedEnd + 'T00:00:00')
-    const cur = new Date(start)
-    let weekIdx = 1
-    while (cur <= end) {
-      let key: string, label: string
-      if (bucketType === 'day') {
-        key = format(cur, 'yyyy-MM-dd')
-        label = format(cur, 'EEE', { locale: id })
-      } else if (bucketType === 'week') {
-        const ws = startOfWeek(cur, { weekStartsOn: 1 })
-        key = format(ws, 'yyyy-MM-dd')
-        label = `P${weekIdx}`
-        if (format(cur, 'yyyy-MM-dd') === key) weekIdx++
-      } else {
-        key = format(cur, 'yyyy-MM')
-        label = format(cur, 'MMM', { locale: id })
-      }
-      const b = map.get(key) ?? { key, label, done: 0, total: 0 }
-      b.total++
-      if (doneDates.has(format(cur, 'yyyy-MM-dd'))) b.done++
-      map.set(key, b)
-      cur.setDate(cur.getDate() + 1)
-    }
-    return [...map.values()]
-  }
 
+  // Refleksi & Kesenangan Ditunda (harian/kemarin — sebaris dengan checklist)
+  const { data: masalahEntries = [] } = useMasalahLogRange(startStr, endStr)
+  const masalahList = (masalahEntries as any[]).map(e => e.masalah as string).filter(Boolean).slice(0, 3)
+  const { data: kesenanganEntries = [] } = useKesenanganRange(startStr, endStr)
+  const funList = (kesenanganEntries as any[]).filter(e => e.status === 'belum').map(e => e.kesenangan as string).filter(Boolean).slice(0, 3)
+
+  // Alasan terbanyak tak melakukan (mingguan/bulanan/tahunan)
+  const syukurTopReason = topReasonFn(syukurEntries as any[], e => e.status === 'belum', e => e.alasan_tidak ? (SYUKUR_ALASAN_LABELS[e.alasan_tidak] ?? e.alasan_tidak) : null)
+  const doaTopReason = topReasonFn(doaEntries as any[], e => e.status === 'belum', e => e.keterangan?.startsWith('Tidak doa:') ? e.keterangan.replace('Tidak doa: ', '').trim() : null)
+  const pmoTopReason = topReasonFn(pmoEntries as any[], e => e.status === 'relapse', e => e.catatan?.startsWith('Relapse:') ? e.catatan.replace('Relapse: ', '').trim() : null)
+
+  // Jam tidur terbanyak (untuk card tidur — mingguan/bulanan/tahunan)
+  const tidurTopJam = (() => {
+    const counts = new Map<string, number>()
+    for (const e of tidurEntries as any[]) {
+      if (e.jam_tidur) counts.set(e.jam_tidur, (counts.get(e.jam_tidur) ?? 0) + 1)
+    }
+    if (counts.size === 0) return null
+    return [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0]
+  })()
+  const checklistCards = [
+    { key: 'syukur', title: 'Syukur', days: checklist[0].days, doneDates: doneDateSets[0], tint: 'bg-white border-slate-200', icon: Heart, iconColor: 'text-violet-500', linkColor: 'text-slate-500 hover:text-slate-700', href: '/syukur', topReason: syukurTopReason, topJam: null as string | null },
+    { key: 'doa', title: 'Doa', days: checklist[1].days, doneDates: doneDateSets[1], tint: 'bg-white border-slate-200', icon: Sparkles, iconColor: 'text-rose-500', linkColor: 'text-slate-500 hover:text-slate-700', href: '/doa', topReason: doaTopReason, topJam: null as string | null },
+    { key: 'pmo', title: 'PMO', days: checklist[2].days, doneDateSets[2], tint: 'bg-white border-slate-200', icon: Shield, iconColor: 'text-orange-500', linkColor: 'text-slate-500 hover:text-slate-700', href: '/pmo', topReason: pmoTopReason, topJam: null as string | null },
+    { key: 'tidur', title: 'Tidur', days: checklist[3].days, doneDates: doneDateSets[3], tint: 'bg-white border-slate-200', icon: Moon, iconColor: 'text-indigo-500', linkColor: 'text-slate-500 hover:text-slate-700', href: '/tidur', topReason: null as string | null, topJam: tidurTopJam },
+  ]
   const label = PERIOD_LABEL[period]
 
   return (
@@ -297,6 +305,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
 
         {/* Checklist: harian = 1 kartu agregat; mingguan/bulanan = 4 kartu */}
         {isHarian ? (
+          <>
           <RoutineCard tint="bg-white border-slate-200" icon={ClipboardCheck} iconColor="text-violet-500" title="Checklist Harian">
             <p className="text-2xl font-bold text-slate-900 mt-1.5">
               {checklistDone}/4 <span className="text-sm font-medium text-slate-500">selesai</span>
@@ -316,33 +325,45 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
               ))}
             </div>
           </RoutineCard>
+          <ReflectionCard
+            tint="bg-white border-slate-200"
+            icon={Frown}
+            iconColor="text-purple-500"
+            dotColor="bg-slate-400"
+            linkColor="text-slate-500 hover:text-slate-700"
+            title="Refleksi"
+            items={masalahList}
+            emptyText="Tidak ada refleksi tercatat."
+            href="/masalah"
+          />
+          <ReflectionCard
+            tint="bg-white border-slate-200"
+            icon={Clock}
+            iconColor="text-amber-500"
+            dotColor="bg-slate-400"
+            linkColor="text-slate-500 hover:text-slate-700"
+            title="Kesenangan Ditunda"
+            items={funList}
+            emptyText="Tidak ada kesenangan ditunda."
+            href="/kesenangan"
+          />
+          </>
         ) : (
           checklistCards.map(c => {
-            const tiles = bucketTiles(c.doneDates)
             return (
               <RoutineCard key={c.key} tint={c.tint} icon={c.icon} iconColor={c.iconColor} title={c.title} href={c.href} linkColor={c.linkColor}>
                 <p className="text-2xl font-bold text-slate-900 mt-1.5">
                   {c.days}<span className="text-sm font-medium text-slate-500">/{daysElapsed} hari</span>
                 </p>
                 <p className="text-xs text-slate-500">{c.days} hari dilakukan • {Math.max(0, daysElapsed - c.days)} tidak</p>
-                <div className="flex flex-wrap gap-1.5 mt-3">
-                  {tiles.map(t => {
-                    const done = t.total > 0 && t.done === t.total
-                    return (
-                      <div
-                        key={t.key}
-                        className={cn(
-                          'rounded-lg border py-1.5 px-0.5 flex flex-col items-center gap-0.5 flex-1 min-w-[30px]',
-                          done ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
-                        )}
-                      >
-                        <span className="text-[10px] leading-tight text-center text-slate-600">{t.label}</span>
-                        {done
-                          ? <Check className="h-3 w-3 text-slate-700" />
-                          : <span className="text-[10px] font-semibold tabular-nums text-slate-500">{t.done}/{t.total}</span>}
-                      </div>
-                    )
-                  })}
+                <div className="mt-3 pt-3 border-t border-slate-100">
+                  {c.topReason ? (
+                    <p className="text-xs text-slate-500">Alasan terbanyak: <span className="font-medium text-slate-700">{c.topReason}</span></p>
+                  ) : c.topJam ? (
+                    <p className="text-xs text-slate-500">Jam tidur terbanyak: <span className="font-medium text-slate-700">{c.topJam.replace(':', '.')}</span></p>
+                  ) : (
+                    <p className="text-xs text-slate-400">Belum ada data</p>
+                  )}
                 </div>
               </RoutineCard>
             )

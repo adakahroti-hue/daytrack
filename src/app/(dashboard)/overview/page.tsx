@@ -33,10 +33,12 @@ export default function OverviewPage() {
   const startStr = format(rangeStart, 'yyyy-MM-dd')
   const endStr = format(rangeEnd, 'yyyy-MM-dd')
 
+  const isHarian = summaryPeriod === 'harian' || summaryPeriod === 'kemarin'
+
   return (
     <div className="space-y-8">
       <RoutineTodaySection startStr={startStr} endStr={endStr} period={summaryPeriod} />
-      <ReflectionSection startStr={startStr} endStr={endStr} period={summaryPeriod} />
+      {!isHarian && <ReflectionSection startStr={startStr} endStr={endStr} period={summaryPeriod} />}
     </div>
   )
 }
