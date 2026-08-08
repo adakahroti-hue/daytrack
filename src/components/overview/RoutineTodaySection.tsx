@@ -42,19 +42,23 @@ const WATER_SESSIONS = [
   { key: 'sebelum_tidur', label: 'Sebelum Tidur' },
 ] as const
 
-const SYUKUR_ALASAN_LABELS: Record<string, string> = {
-  sibuk: 'Sibuk', malas: 'Malas', tidak_fokus: 'Tidak Fokus', lupa: 'Lupa', tidak_terpikir: 'Tidak Terpikir', lainnya: 'Lainnya',
+// Revisi batch 23 (mockup): jadwal jam tidur + label pendek pill
+const JAM_TIDUR_OPTIONS = [
+  { value: '22:00', label: '22.00', status: 'tepat' as const },
+  { value: '23:00', label: '23.00', status: 'tepat' as const },
+  { value: '23:30', label: '23.30', status: 'begadang' as const },
+  { value: '00:00', label: '00.00', status: 'begadang' as const },
+  { value: '01:30', label: '01.30', status: 'begadang' as const },
+]
+
+const WATER_PILL_LABELS: Record<string, string> = {
+  setelah_bangun: 'Bangun', setelah_dzuhur: 'Dzuhur', setelah_ashar: 'Ashar',
+  setelah_maghrib: 'Maghrib', sebelum_tidur: 'Tidur',
 }
 
-function topReasonFn(entries: any[], match: (e: any) => boolean, extract: (e: any) => string | null): string | null {
-  const counts = new Map<string, number>()
-  for (const e of entries) {
-    if (!match(e)) continue
-    const r = extract(e)
-    if (r) counts.set(r, (counts.get(r) ?? 0) + 1)
-  }
-  if (counts.size === 0) return null
-  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0]
+const QURAN_PILL_LABELS: Record<string, string> = {
+  setelah_subuh: 'Subuh', setelah_dzuhur: 'Dzuhur', setelah_ashar: 'Ashar',
+  setelah_maghrib: 'Maghrib', setelah_isya: 'Isya',
 }
 
 const TARGET_GELAS = 5
@@ -153,26 +157,11 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
     { label: 'Bebas PMO', days: countDays(pmoEntries as any[], e => e.status === 'berhasil') },
     { label: 'Tidur tepat waktu', days: countDays(tidurEntries as any[], e => e.status === 'tepat') },
   ]
-  const checklistWithDone = checklist.map(c => ({ ...c, done: c.days >= daysElapsed }))
-  const checklistDone = checklistWithDone.filter(c => c.done).length
-
-  const doneDateSets = [
-    new Set((syukurEntries as any[]).filter(e => e.status === 'sudah').map(e => e.tanggal)),
-    new Set((doaEntries as any[]).filter(e => e.status === 'sudah').map(e => e.tanggal)),
-    new Set((pmoEntries as any[]).filter(e => e.status === 'berhasil').map(e => e.tanggal)),
-    new Set((tidurEntries as any[]).filter(e => e.status === 'tepat').map(e => e.tanggal)),
-  ]
-
   // Refleksi & Kesenangan Ditunda (harian/kemarin — sebaris dengan checklist)
   const { data: masalahEntries = [] } = useMasalahLogRange(startStr, endStr)
   const masalahList = (masalahEntries as any[]).map(e => e.masalah as string).filter(Boolean).slice(0, 3)
   const { data: kesenanganEntries = [] } = useKesenanganRange(startStr, endStr)
   const funList = (kesenanganEntries as any[]).filter(e => e.status === 'belum').map(e => e.kesenangan as string).filter(Boolean).slice(0, 3)
-
-  // Alasan terbanyak tak melakukan (mingguan/bulanan/tahunan)
-  const syukurTopReason = topReasonFn(syukurEntries as any[], e => e.status === 'belum', e => e.alasan_tidak ? (SYUKUR_ALASAN_LABELS[e.alasan_tidak] ?? e.alasan_tidak) : null)
-  const doaTopReason = topReasonFn(doaEntries as any[], e => e.status === 'belum', e => e.keterangan?.startsWith('Tidak doa:') ? e.keterangan.replace('Tidak doa: ', '').trim() : null)
-  const pmoTopReason = topReasonFn(pmoEntries as any[], e => e.status === 'relapse', e => e.catatan?.startsWith('Relapse:') ? e.catatan.replace('Relapse: ', '').trim() : null)
 
   // Jam tidur terbanyak (untuk card tidur — mingguan/bulanan/tahunan)
   const tidurTopJam = (() => {
@@ -183,12 +172,8 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
     if (counts.size === 0) return null
     return [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0]
   })()
-  const checklistCards = [
-    { key: 'syukur', title: 'Syukur', days: checklist[0].days, doneDates: doneDateSets[0], tint: 'bg-white border-slate-200', icon: Heart, iconColor: 'text-violet-500', linkColor: 'text-slate-500 hover:text-slate-700', href: '/syukur', topReason: syukurTopReason, topJam: null as string | null },
-    { key: 'doa', title: 'Doa', days: checklist[1].days, doneDates: doneDateSets[1], tint: 'bg-white border-slate-200', icon: Sparkles, iconColor: 'text-rose-500', linkColor: 'text-slate-500 hover:text-slate-700', href: '/doa', topReason: doaTopReason, topJam: null as string | null },
-    { key: 'pmo', title: 'PMO', days: checklist[2].days, doneDates: doneDateSets[2], tint: 'bg-white border-slate-200', icon: Shield, iconColor: 'text-orange-500', linkColor: 'text-slate-500 hover:text-slate-700', href: '/pmo', topReason: pmoTopReason, topJam: null as string | null },
-    { key: 'tidur', title: 'Tidur', days: checklist[3].days, doneDates: doneDateSets[3], tint: 'bg-white border-slate-200', icon: Moon, iconColor: 'text-indigo-500', linkColor: 'text-slate-500 hover:text-slate-700', href: '/tidur', topReason: null as string | null, topJam: tidurTopJam },
-  ]
+  // Rekor PMO — hari_ke terbesar dalam rentang (streak terpanjang tercatat)
+  const pmoRekor = (pmoEntries as any[]).reduce((m, e) => Math.max(m, e.hari_ke || 0), 0)
   const label = PERIOD_LABEL[period]
 
   return (
@@ -198,198 +183,216 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
         <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Rutinitas {label}</h2>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {/* Kartu Tugas — revisi batch 18: digabung ke grid rutinitas */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Kartu Tugas — full width (mockup batch 23) */}
         <div className="col-span-full">
           <FocusTodayCard startStr={startStr} endStr={endStr} period={period} />
         </div>
 
-        {/* Ibadah — revisi batch 22: card Sholat + Quran digabung jadi satu */}
-        <RoutineCard tint="bg-white border-slate-200" icon={Mosque} iconColor="text-emerald-500" title="Ibadah" href="/sholat" linkColor="text-slate-500 hover:text-slate-700" className="xl:col-span-2">
-          <div className="mt-1.5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1">
+        {/* Ibadah — revisi batch 23: mengikuti mockup (angka kiri, pill kanan) */}
+        <RoutineCard tint="bg-white border-slate-200" icon={Mosque} iconColor="text-emerald-500" title="Ibadah" href="/sholat" linkColor="text-slate-500 hover:text-slate-700">
+          <div className="mt-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1">
               <Mosque className="h-3.5 w-3.5" /> Sholat 5 Waktu
             </p>
-            <p className="text-lg font-bold text-slate-900 mt-1">
-              {sholatCount}/{sholatTarget} <span className="text-sm font-medium text-slate-500">sholat</span>
-            </p>
-            <div className="grid grid-cols-5 gap-1.5 mt-2">
-              {SHOLAT_5.map((s, i) => {
-                const done = isHarian ? sholatPerWaktu[i] > 0 : sholatPerWaktu[i] >= daysElapsed
-                return (
-                  <div
-                    key={s.key}
-                    className={cn(
-                      'rounded-lg border py-2 px-1 flex flex-col items-center gap-1',
-                      done ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
-                    )}
-                  >
-                    <span className="text-[10px] leading-tight text-center text-slate-600">{s.label}</span>
-                    {isHarian ? (
-                      done
-                        ? <Check className="h-3.5 w-3.5 text-emerald-600" />
-                        : <Minus className="h-3.5 w-3.5 text-slate-300" />
-                    ) : (
-                      <span className={cn('text-[10px] font-semibold tabular-nums', done ? 'text-emerald-600' : 'text-slate-400')}>
-                        {sholatPerWaktu[i]}/{daysElapsed}
-                      </span>
-                    )}
-                  </div>
-                )
-              })}
+            <div className="mt-2 flex items-end justify-between gap-3">
+              <p className="text-lg font-bold text-slate-900 tabular-nums">
+                {sholatCount}<span className="text-sm font-medium text-slate-500">/{sholatTarget} sholat</span>
+              </p>
+              <div className="grid grid-cols-5 gap-1.5">
+                {SHOLAT_5.map((s, i) => {
+                  const done = isHarian ? sholatPerWaktu[i] > 0 : sholatPerWaktu[i] >= daysElapsed
+                  return (
+                    <div
+                      key={s.key}
+                      className={cn(
+                        'rounded-lg border py-1.5 px-0.5 min-w-0 flex flex-col items-center gap-0.5',
+                        done ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
+                      )}
+                    >
+                      <span className="text-[9px] leading-tight text-slate-600">{s.label}</span>
+                      {isHarian ? (
+                        done
+                          ? <Check className="h-3 w-3 text-emerald-600" />
+                          : <Minus className="h-3 w-3 text-slate-300" />
+                      ) : (
+                        <span className={cn('text-[10px] font-semibold tabular-nums', done ? 'text-emerald-600' : 'text-slate-400')}>
+                          {sholatPerWaktu[i]}/{daysElapsed}
+                        </span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           </div>
           <div className="mt-3 pt-3 border-t border-slate-100">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1">
               <BookOpen className="h-3.5 w-3.5" /> Baca Quran
             </p>
-            <p className="text-lg font-bold text-slate-900 mt-1">
-              {quranCount}/{quranTarget} <span className="text-sm font-medium text-slate-500">sesi quran</span>
-            </p>
-            <div className="grid grid-cols-5 gap-1.5 mt-2">
-              {QURAN_SESSIONS.map((s, i) => {
-                const done = isHarian ? quranPerSesi[i] > 0 : quranPerSesi[i] >= daysElapsed
-                return (
-                  <div
-                    key={s.key}
-                    className={cn(
-                      'rounded-lg border py-2 px-1 flex flex-col items-center gap-1',
-                      done ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
-                    )}
-                  >
-                    <span className="text-[10px] leading-tight text-center text-slate-600">{s.label}</span>
-                    {isHarian ? (
-                      done
-                        ? <Check className="h-3.5 w-3.5 text-teal-600" />
-                        : <Minus className="h-3.5 w-3.5 text-slate-300" />
-                    ) : (
-                      <span className={cn('text-[10px] font-semibold tabular-nums', done ? 'text-teal-600' : 'text-slate-400')}>
-                        {quranPerSesi[i]}/{daysElapsed}
-                      </span>
-                    )}
-                  </div>
-                )
-              })}
+            <div className="mt-2 flex items-end justify-between gap-3">
+              <p className="text-lg font-bold text-slate-900 tabular-nums">
+                {quranCount}<span className="text-sm font-medium text-slate-500">/{quranTarget} sesi</span>
+              </p>
+              <div className="grid grid-cols-5 gap-1.5">
+                {QURAN_SESSIONS.map((s, i) => {
+                  const done = isHarian ? quranPerSesi[i] > 0 : quranPerSesi[i] >= daysElapsed
+                  return (
+                    <div
+                      key={s.key}
+                      className={cn(
+                        'rounded-lg border py-1.5 px-0.5 min-w-0 flex flex-col items-center gap-0.5',
+                        done ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
+                      )}
+                    >
+                      <span className="text-[9px] leading-tight text-slate-600">{QURAN_PILL_LABELS[s.key] ?? s.label}</span>
+                      {isHarian ? (
+                        done
+                          ? <Check className="h-3 w-3 text-teal-600" />
+                          : <Minus className="h-3 w-3 text-slate-300" />
+                      ) : (
+                        <span className={cn('text-[10px] font-semibold tabular-nums', done ? 'text-teal-600' : 'text-slate-400')}>
+                          {quranPerSesi[i]}/{daysElapsed}
+                        </span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           </div>
         </RoutineCard>
 
-        {/* Minum Air + Checklist Harian — revisi batch 22: digabung jadi satu card (harian/kemarin).
-            Mingguan/bulanan/tahunan: Minum Air tetap sendiri + 4 kartu checklist. */}
-        {isHarian ? (
-          <>
-          <RoutineCard tint="bg-white border-slate-200" icon={GlassWater} iconColor="text-sky-500" title="Minum Air & Checklist" className="xl:col-span-2">
-            <p className="text-2xl font-bold text-slate-900 mt-1.5">
-              {gelas}/{targetGelasPeriod} <span className="text-sm font-medium text-slate-500">gelas</span>
+        {/* Kesehatan — Minum Air + Waktu Tidur + Bebas PMO (mockup batch 23: kolom kanan) */}
+        <RoutineCard tint="bg-white border-slate-200" icon={GlassWater} iconColor="text-sky-500" title="Kesehatan" href="/minum-air" linkColor="text-slate-500 hover:text-slate-700">
+          <div className="mt-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1">
+              <GlassWater className="h-3.5 w-3.5" /> Minum Air
             </p>
-            <p className="text-xs text-slate-500">
-              {gelas >= TARGET_GELAS ? 'Target tercapai 🎉' : `${Math.max(0, TARGET_GELAS - gelas)} gelas tersisa`}
+            <div className="mt-2 flex items-end justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-lg font-bold text-slate-900 tabular-nums">
+                  {gelas}<span className="text-sm font-medium text-slate-500">/{targetGelasPeriod} gelas</span>
+                </p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {isHarian
+                    ? (gelas >= TARGET_GELAS ? 'Target tercapai 🎉' : `${Math.max(0, TARGET_GELAS - gelas)} gelas tersisa`)
+                    : `Rata-rata ${avgGelas} gelas per hari`}
+                </p>
+              </div>
+              <div className="grid grid-cols-5 gap-1.5 shrink-0">
+                {WATER_SESSIONS.map((s, i) => {
+                  const done = isHarian ? waterPerSesi[i] > 0 : waterPerSesi[i] >= daysElapsed
+                  return (
+                    <div
+                      key={s.key}
+                      className={cn(
+                        'rounded-lg border py-1.5 px-0.5 min-w-0 flex flex-col items-center gap-0.5',
+                        done ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
+                      )}
+                    >
+                      <span className="text-[9px] leading-tight text-slate-600">{WATER_PILL_LABELS[s.key] ?? s.label}</span>
+                      {isHarian ? (
+                        done
+                          ? <Check className="h-3 w-3 text-sky-600" />
+                          : <Minus className="h-3 w-3 text-slate-300" />
+                      ) : (
+                        <span className={cn('text-[10px] font-semibold tabular-nums', done ? 'text-sky-600' : 'text-slate-400')}>
+                          {waterPerSesi[i]}/{daysElapsed}
+                        </span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-slate-100">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1">
+              <Moon className="h-3.5 w-3.5" /> Waktu Tidur
             </p>
-            <div className="grid grid-cols-5 gap-1.5 mt-3">
-              {WATER_SESSIONS.map((s, i) => {
-                const done = waterPerSesi[i] > 0
-                return (
+            <div className="mt-2 flex items-end justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-lg font-bold text-slate-900 tabular-nums">
+                  {checklist[3].days}<span className="text-sm font-medium text-slate-500">/{daysElapsed} tepat</span>
+                </p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {tidurTopJam ? `Jam tidur terbanyak: ${tidurTopJam.replace(':', '.')}` : 'Belum ada data'}
+                </p>
+              </div>
+              <div className="grid grid-cols-5 gap-1.5 shrink-0">
+                {JAM_TIDUR_OPTIONS.map(o => (
                   <div
-                    key={s.key}
+                    key={o.value}
                     className={cn(
-                      'rounded-lg border py-2 px-1 flex flex-col items-center gap-1',
-                      done ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
+                      'rounded-lg border py-1.5 px-0.5 min-w-0 flex flex-col items-center gap-0.5',
+                      o.status === 'tepat' ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
                     )}
                   >
-                    <span className="text-[10px] leading-tight text-center text-slate-600">{s.label}</span>
-                    {done
-                      ? <Check className="h-3.5 w-3.5 text-sky-600" />
-                      : <Minus className="h-3.5 w-3.5 text-slate-300" />}
-                  </div>
-                )
-              })}
-            </div>
-            <div className="mt-3 pt-3 border-t border-slate-100">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1">
-                  <ClipboardCheck className="h-3.5 w-3.5" /> Checklist Harian
-                </p>
-                <p className="text-xs font-medium text-slate-500">{checklistDone}/4 selesai</p>
-              </div>
-              <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
-                {checklistWithDone.map(c => (
-                  <div key={c.label} className="flex items-center gap-2.5">
-                    <span className={cn(
-                      'flex h-4 w-4 items-center justify-center rounded border shrink-0',
-                      c.done ? 'bg-slate-700 border-slate-700' : 'bg-white border-slate-300'
-                    )}>
-                      {c.done && <Check className="h-3 w-3 text-white" />}
-                    </span>
-                    <span className={cn('text-sm', c.done ? 'text-slate-700' : 'text-slate-500')}>{c.label}</span>
+                    <span className="text-[9px] leading-tight text-slate-600">{o.label}</span>
+                    {o.status === 'tepat'
+                      ? <Check className="h-3 w-3 text-indigo-600" />
+                      : <Minus className="h-3 w-3 text-slate-300" />}
                   </div>
                 ))}
               </div>
             </div>
-          </RoutineCard>
-          <div className="col-span-full">
-            <MentalCard
-              tint="bg-white border-slate-200"
-              icon={Brain}
-              iconColor="text-purple-500"
-              dotColor="bg-slate-400"
-              linkColor="text-slate-500 hover:text-slate-700"
-              title="Mental"
-              masalahItems={masalahList}
-              funItems={funList}
-              masalahEmptyText="Tidak ada refleksi tercatat."
-              funEmptyText="Tidak ada kesenangan ditunda."
-              href="/masalah"
-            />
           </div>
-          </>
-        ) : (
-          <>
-          <RoutineCard tint="bg-white border-slate-200" icon={GlassWater} iconColor="text-sky-500" title="Minum Air" href="/minum-air" linkColor="text-slate-500 hover:text-slate-700">
-            <p className="text-2xl font-bold text-slate-900 mt-1.5">
-              {gelas}/{targetGelasPeriod} <span className="text-sm font-medium text-slate-500">gelas</span>
+          <div className="mt-3 pt-3 border-t border-slate-100">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1">
+              <Shield className="h-3.5 w-3.5" /> Bebas PMO
             </p>
-            <p className="text-xs text-slate-500">Rata-rata {avgGelas} gelas per hari</p>
-            <div className="grid grid-cols-5 gap-1.5 mt-3">
-              {WATER_SESSIONS.map((s, i) => {
-                const done = waterPerSesi[i] >= daysElapsed
-                return (
-                  <div
-                    key={s.key}
-                    className={cn(
-                      'rounded-lg border py-2 px-1 flex flex-col items-center gap-1',
-                      done ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
-                    )}
-                  >
-                    <span className="text-[10px] leading-tight text-center text-slate-600">{s.label}</span>
-                    <span className={cn('text-[10px] font-semibold tabular-nums', done ? 'text-sky-600' : 'text-slate-400')}>
-                      {waterPerSesi[i]}/{daysElapsed}
-                    </span>
-                  </div>
-                )
-              })}
+            <div className="mt-2 flex items-end justify-between gap-3">
+              <p className="text-lg font-bold text-slate-900 tabular-nums">
+                {checklist[2].days}<span className="text-sm font-medium text-slate-500">/{daysElapsed} berhasil</span>
+              </p>
+              <div className="text-right">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Rekor</p>
+                <p className="text-sm font-bold text-slate-900 tabular-nums">{pmoRekor} <span className="text-xs font-medium text-slate-500">hari</span></p>
+              </div>
             </div>
-          </RoutineCard>
-          {checklistCards.map(c => {
-            return (
-              <RoutineCard key={c.key} tint={c.tint} icon={c.icon} iconColor={c.iconColor} title={c.title} href={c.href} linkColor={c.linkColor}>
-                <p className="text-2xl font-bold text-slate-900 mt-1.5">
-                  {c.days}<span className="text-sm font-medium text-slate-500">/{daysElapsed} hari</span>
-                </p>
-                <p className="text-xs text-slate-500">{c.days} hari dilakukan • {Math.max(0, daysElapsed - c.days)} tidak</p>
-                <div className="mt-3 pt-3 border-t border-slate-100">
-                  {c.topReason ? (
-                    <p className="text-xs text-slate-500">Alasan terbanyak: <span className="font-medium text-slate-700">{c.topReason}</span></p>
-                  ) : c.topJam ? (
-                    <p className="text-xs text-slate-500">Jam tidur terbanyak: <span className="font-medium text-slate-700">{c.topJam.replace(':', '.')}</span></p>
-                  ) : (
-                    <p className="text-xs text-slate-400">Belum ada data</p>
-                  )}
+          </div>
+        </RoutineCard>
+
+        {/* Optimasi Hidup — Syukur + Doa (mockup batch 23: kolom kiri bawah) */}
+        <RoutineCard tint="bg-white border-slate-200" icon={ClipboardCheck} iconColor="text-violet-500" title="Optimasi Hidup" href="/syukur" linkColor="text-slate-500 hover:text-slate-700">
+          <div className="mt-3 space-y-2">
+            {[
+              { key: 'syukur', label: 'Bersyukur', days: checklist[0].days, icon: Heart, iconColor: 'text-violet-500' },
+              { key: 'doa', label: 'Mendoakan orang', days: checklist[1].days, icon: Sparkles, iconColor: 'text-rose-500' },
+            ].map(it => {
+              const done = it.days >= daysElapsed
+              return (
+                <div key={it.key} className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <it.icon className={cn('h-4 w-4 shrink-0', it.iconColor)} />
+                    <span className="text-sm text-slate-700 truncate">{it.label}</span>
+                  </div>
+                  <span className={cn('text-sm font-semibold tabular-nums', done ? 'text-emerald-600' : 'text-slate-500')}>
+                    {it.days}/{daysElapsed}
+                  </span>
                 </div>
-              </RoutineCard>
-            )
-          })}
-          </>
-        )}
+              )
+            })}
+          </div>
+        </RoutineCard>
+
+        {/* Mental — full width (mockup batch 23: bawah) */}
+        <div className="col-span-full">
+          <MentalCard
+            tint="bg-white border-slate-200"
+            icon={Brain}
+            iconColor="text-purple-500"
+            dotColor="bg-slate-400"
+            linkColor="text-slate-500 hover:text-slate-700"
+            title="Mental"
+            masalahItems={masalahList}
+            funItems={funList}
+            masalahEmptyText="Tidak ada refleksi tercatat."
+            funEmptyText="Tidak ada kesenangan ditunda."
+            href="/masalah"
+          />
+        </div>
       </div>
     </section>
   )
