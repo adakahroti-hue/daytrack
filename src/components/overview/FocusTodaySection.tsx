@@ -87,7 +87,7 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
             <div className="h-2 rounded-full bg-slate-100 flex-1 overflow-hidden">
               <div className="h-full rounded-full bg-slate-800 transition-all" style={{ width: `${progressPct}%` }} />
             </div>
-            <span className="text-xs font-medium text-slate-500 tabular-nums shrink-0">{selesai} tugas selesai</span>
+            <span className="text-xs font-bold text-emerald-600 tabular-nums shrink-0">{selesai} tugas selesai</span>
           </div>
         </div>
         {/* Kanan: sedang dikerjakan — dipisahkan garis pembatas tipis (revisi batch 25).
@@ -98,12 +98,12 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
           <p className="text-xs font-medium text-slate-500">Sedang dikerjakan</p>
           {featured ? (
             <>
-              <p className="text-sm font-semibold text-slate-900 mt-1 py-0.5 line-clamp-2">{featured.nama}</p>
+              <p className="text-sm font-semibold text-slate-900 mt-1 py-1 line-clamp-2">{featured.nama}</p>
               <div className="flex items-center gap-3 text-xs text-slate-500 mt-2 flex-wrap">
                 <p className="flex items-center gap-1.5">
                   <Clock className="h-3.5 w-3.5" /> Estimasi: {getEstimasiText(featured.estimasi_menit)}
                 </p>
-                <p className="flex items-center gap-1.5">
+                <p className="flex items-center gap-1.5 text-orange-500 animate-pulse">
                   <Timer className="h-3.5 w-3.5" /> Berjalan: {formatSedang(featured)}
                 </p>
               </div>
