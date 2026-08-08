@@ -80,7 +80,7 @@ function AnalyticsCard({
   insightTone,
 }: {
   title: string
-  subtitle: string
+  subtitle?: string
   children: React.ReactNode
   insight: string | null
   insightTone: 'red' | 'amber' | 'blue'
@@ -99,7 +99,7 @@ function AnalyticsCard({
             {title}
             <Info className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
           </h3>
-          <p className="text-xs text-slate-500 mt-1">{subtitle}</p>
+          {subtitle && <p className="text-xs text-slate-500 mt-1">{subtitle}</p>}
         </div>
       </div>
       <div className="min-h-[200px]">{children}</div>
@@ -135,7 +135,7 @@ function MissedTooltip({ active, payload }: any) {
     <TooltipShell>
       <p className="font-semibold text-slate-800 dark:text-slate-100">{d.name}</p>
       <p className="text-slate-500">
-        {d.missed} dari {d.total} kali tidak dilakukan
+        {d.total - d.missed} dari {d.total} kali dilakukan
       </p>
       <p className="font-medium text-slate-700 dark:text-slate-200">{d.percent}%</p>
     </TooltipShell>
@@ -157,7 +157,7 @@ function ReasonTooltip({ active, payload }: any) {
 // ─── Main component ───────────────────────────────────────
 
 export function MinumAirAnalytics({ logMap, columns }: MinumAirAnalyticsProps) {
-  // Card 1: persentase tidak minum per waktu
+  // Card 1: persentase minum per waktu
   const missedStats = useMemo(() => {
     return columns
       .map(col => {
@@ -174,11 +174,11 @@ export function MinumAirAnalytics({ logMap, columns }: MinumAirAnalyticsProps) {
           name: col.label,
           missed,
           total,
-          percent: total > 0 ? Math.round((missed / total) * 100) : 0,
+          percent: total > 0 ? Math.round(((total - missed) / total) * 100) : 0,
         }
       })
       .filter(s => s.total > 0)
-      .sort((a, b) => b.percent - a.percent || b.missed - a.missed)
+      .sort((a, b) => b.missed - a.missed || b.total - a.total)
   }, [logMap, columns])
 
   // Card 2: alasan terbanyak tidak minum (dari catatan "Tidak minum: ...")
@@ -220,8 +220,7 @@ export function MinumAirAnalytics({ logMap, columns }: MinumAirAnalyticsProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
         {/* ── Card 1: Tingkat Kesulitan Minum Air ── */}
         <AnalyticsCard
-          title="Tingkat Kesulitan Minum Air"
-          subtitle="Berdasarkan frekuensi lupa / tidak minum"
+          title="Minum air terbanyak"
           insight={
             hasMissedData && topMissed && topMissed.missed > 0
               ? `${topMissed.name} adalah waktu yang paling sering terlewat.`
@@ -262,8 +261,7 @@ export function MinumAirAnalytics({ logMap, columns }: MinumAirAnalyticsProps) {
 
         {/* ── Card 2: Alasan Terbanyak Tidak Minum ── */}
         <AnalyticsCard
-          title="Alasan Terbanyak Tidak Minum"
-          subtitle="Berdasarkan alasan yang dipilih saat melewatkan waktu minum"
+          title="Alasan Tak Minum"
           insight={topReason ? `${topReason.name} adalah alasan paling sering.` : null}
           insightTone="blue"
         >

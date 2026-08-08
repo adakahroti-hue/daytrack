@@ -269,10 +269,8 @@ export default function SyukurPage() {
       {/* Revisi 5: Analytics & Insight */}
       <StatusAnalytics
         entries={analyticsEntries}
-        difficultyTitle="Tingkat Kesulitan Bersyukur"
-        difficultySubtitle="Berdasarkan frekuensi tidak bersyukur per hari"
-        reasonTitle="Alasan Terbanyak Tidak Bersyukur"
-        reasonSubtitle="Berdasarkan alasan yang dipilih saat tidak bersyukur"
+        difficultyTitle="Bersyukur Terbanyak"
+        reasonTitle="Alasan Tak Bersyukur"
         missedNoun="terlewat"
       />
     </div>

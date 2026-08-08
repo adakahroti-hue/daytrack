@@ -3,13 +3,13 @@
 import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, AlertTriangle, Droplets, LayoutDashboard, BookOpen, Mosque, Heart, Moon, GlassWater, Shield, Brain, Smile, Lightbulb, Sparkles, History } from 'lucide-react'
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns'
+import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, Mosque, Heart, Moon, GlassWater, Shield, Brain, Smile, Lightbulb, Sparkles, History } from 'lucide-react'
+import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
 import { useHeaderControls, formatDateForPeriod, formatIndonesianDate, formatIbadahPeriodLabel, GROUP_MODES } from './HeaderControls'
 import { useTasks } from '@/hooks/useTasks'
-import { useWaterLogRange } from '@/hooks/useMinumAirLogs'
+import { usePmoLogRange } from '@/hooks/usePmoLogs'
 import { getEstimasiText } from '@/lib/utils'
 
 interface HeaderProps {
@@ -57,28 +57,18 @@ function HariIniMissionSentence() {
 
 // Inline stats for Semua tab - Total (excluding completed), Terlambat, Proses
 import { isBefore, startOfDay } from 'date-fns'
-function SemuaHeaderStats() {
+// Revisi batch 19: jumlah tugas terlambat — tampil di belakang teks filter Lambat
+function SemuaOverdueCount() {
   const { data: allTasks = [] } = useTasks()
-  
-  const total = allTasks.filter((t: any) => t.status !== 'selesai').length
   const overdue = allTasks.filter((t: any) => {
     const taskDate = new Date(t.tanggal)
     return isBefore(taskDate, startOfDay(new Date())) && t.status !== 'selesai'
   }).length
-
+  if (overdue === 0) return null
   return (
-    <div className="hidden md:flex items-center gap-2">
-      <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg">
-        <Calendar className="h-3.5 w-3.5 text-slate-600" />
-        <span className="text-xs font-semibold text-slate-700">{total}</span>
-        <span className="text-[10px] text-slate-500/70">Total</span>
-      </div>
-      <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-red-50 border border-red-200 rounded-lg">
-        <AlertTriangle className="h-3.5 w-3.5 text-red-600" />
-        <span className="text-xs font-semibold text-red-700">{overdue}</span>
-        <span className="text-[10px] text-red-600/70">Terlambat</span>
-      </div>
-    </div>
+    <span className="ml-1 rounded-full bg-red-500 text-white text-[9px] leading-none px-1 py-0.5 font-bold">
+      {overdue}
+    </span>
   )
 }
 
@@ -125,50 +115,28 @@ const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   '/saran-perbaikan': Lightbulb,
 }
 
-const GLASS_ML = 250
-
-function startOfDaySafe(d: Date): Date {
-  const x = new Date(d)
-  x.setHours(0, 0, 0, 0)
-  return x
-}
-
-// Revisi 4: card jumlah gelas air — dipindah ke header, di kiri navigasi tanggal tab Minum Air
-function MinumAirHeaderStats() {
-  const { ibadahPeriod, ibadahDate } = useHeaderControls()
-  const today = new Date()
-  const { rangeStart, rangeEnd } = useMemo(() => {
-    let start: Date
-    let end: Date
-    if (ibadahPeriod === 'daily') {
-      start = startOfDaySafe(ibadahDate)
-      end = ibadahDate
-    } else if (ibadahPeriod === 'weekly') {
-      start = startOfWeek(ibadahDate, { weekStartsOn: 1 })
-      end = endOfWeek(ibadahDate, { weekStartsOn: 1 })
-    } else if (ibadahPeriod === 'monthly') {
-      start = startOfMonth(ibadahDate)
-      end = endOfMonth(ibadahDate)
-    } else {
-      start = startOfYear(ibadahDate)
-      end = endOfYear(ibadahDate)
+// Revisi batch 19: rekor terbaik PMO — dipindah dari halaman ke header, di kiri navigasi tanggal
+function PmoHeaderStats() {
+  const { data: allLogs = [] } = usePmoLogRange('2000-01-01', format(new Date(), 'yyyy-MM-dd'))
+  const bestStreak = useMemo(() => {
+    const sorted = [...(allLogs as any[])].sort((a: any, b: any) => a.tanggal.localeCompare(b.tanggal))
+    let cur = 0
+    let best = 0
+    for (const e of sorted) {
+      if (e.status === 'berhasil') {
+        cur += 1
+        if (cur > best) best = cur
+      } else if (e.status === 'relapse') {
+        cur = 0
+      }
     }
-    const cappedEnd = end > today ? today : end
-    return { rangeStart: start, rangeEnd: cappedEnd }
-  }, [ibadahPeriod, ibadahDate, today])
-
-  const startDate = format(rangeStart, 'yyyy-MM-dd')
-  const endDate = format(rangeEnd, 'yyyy-MM-dd')
-  const { data: waterLogs = [] } = useWaterLogRange(startDate, endDate)
-  const totalGelas = Math.round(
-    (waterLogs as any[]).reduce((sum, l) => sum + (l.jumlah_ml || 0), 0) / GLASS_ML
-  )
-
+    return best
+  }, [allLogs])
   return (
-    <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 border border-blue-200 rounded-lg shrink-0">
-      <Droplets className="h-3.5 w-3.5 text-blue-600" />
-      <span className="text-xs font-semibold text-blue-700">{totalGelas}</span>
-      <span className="text-[10px] text-blue-600/70">gelas</span>
+    <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg shrink-0">
+      <Trophy className="h-3.5 w-3.5 text-amber-600" />
+      <span className="text-xs font-semibold text-slate-700">{bestStreak}</span>
+      <span className="text-[10px] text-slate-500/70">Rekor</span>
     </div>
   )
 }
@@ -278,10 +246,8 @@ export function Header({ onMenuClick }: HeaderProps) {
         {/* Hari Ini Stats — only on tugas/hari-ini */}
         {isHariIni && <HariIniHeaderStats />}
 
-        {/* Semua Stats — only on tugas/semua */}
-        {isSemua && <SemuaHeaderStats />}
 
-        {/* Revisi 1: toggle group (Prioritas/Tanggal/Durasi/Lambat) — di header, kanan card Terlambat */}
+        {/* Revisi 1: toggle group (Prioritas/Tanggal/Durasi/Badge/Lambat) — di header */}
         {isSemua && (
           <div className="hidden md:flex items-center gap-0.5 p-0.5 bg-muted/50 rounded-lg border border-border shrink-0">
             {GROUP_MODES.map((gm) => (
@@ -298,6 +264,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               >
                 <gm.icon className="h-3.5 w-3.5" />
                 <span className="hidden lg:inline">{gm.label}</span>
+                {gm.value === 'lambat' && <SemuaOverdueCount />}
               </button>
             ))}
           </div>
@@ -383,8 +350,8 @@ export function Header({ onMenuClick }: HeaderProps) {
         {/* Sholat, Quran & Minum Air toolbar — navigasi tanggal (kiri) + toggle group (kanan) di header */}
         {isTableTab && (
           <div className="flex items-center gap-1 sm:gap-2 max-md:portrait:hidden">
-            {/* Revisi 4: jumlah gelas di kiri navigasi tanggal (tab Minum Air) */}
-            {isMinumAir && <MinumAirHeaderStats />}
+            {/* Revisi batch 19: rekor terbaik PMO di kiri navigasi tanggal (tab PMO) */}
+            {isPmo && <PmoHeaderStats />}
             <div className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 bg-muted/50 rounded-lg border border-border">
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateIbadah('prev')} aria-label="Periode sebelumnya">
                 <ChevronLeft className="h-4 w-4" />
@@ -479,6 +446,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 >
                   <gm.icon className="h-3.5 w-3.5 shrink-0" />
                   <span>{gm.label}</span>
+                  {gm.value === 'lambat' && <SemuaOverdueCount />}
                 </button>
               ))}
             </div>

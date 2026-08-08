@@ -248,10 +248,8 @@ export default function DoaPage() {
       {/* Revisi 4: Analytics & Insight */}
       <StatusAnalytics
         entries={analyticsEntries}
-        difficultyTitle="Tingkat Kesulitan Mendoakan Orang"
-        difficultySubtitle="Berdasarkan frekuensi tidak mendoakan per hari"
-        reasonTitle="Alasan Terbanyak Tidak Mendoakan Orang"
-        reasonSubtitle="Berdasarkan alasan yang dipilih saat tidak mendoakan"
+        difficultyTitle="Doa Terbanyak"
+        reasonTitle="Alasan Tak Mendoakan"
         missedNoun="terlewat"
       />
     </div>

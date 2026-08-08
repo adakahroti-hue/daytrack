@@ -28,9 +28,9 @@ export interface StatusAnalyticsEntry {
 interface StatusAnalyticsProps {
   entries: StatusAnalyticsEntry[]
   difficultyTitle: string
-  difficultySubtitle: string
+  difficultySubtitle?: string
   reasonTitle: string
-  reasonSubtitle: string
+  reasonSubtitle?: string
   missedNoun: string // mis. 'terlewat' | 'begadang' | 'relapse'
 }
 
@@ -80,7 +80,7 @@ function AnalyticsCard({
   insightTone,
 }: {
   title: string
-  subtitle: string
+  subtitle?: string
   children: React.ReactNode
   insight: string | null
   insightTone: 'red' | 'amber' | 'blue'
@@ -99,7 +99,7 @@ function AnalyticsCard({
             {title}
             <Info className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
           </h3>
-          <p className="text-xs text-slate-500 mt-1">{subtitle}</p>
+          {subtitle && <p className="text-xs text-slate-500 mt-1">{subtitle}</p>}
         </div>
       </div>
       <div className="min-h-[200px]">{children}</div>
@@ -134,7 +134,7 @@ function MissedTooltip({ active, payload }: any) {
   return (
     <TooltipShell>
       <p className="font-semibold text-slate-800 dark:text-slate-100">{d.name}</p>
-      <p className="text-slate-500">{d.missed} dari {d.total} kali {d.noun}</p>
+      <p className="text-slate-500">{d.total - d.missed} dari {d.total} hari tanpa {d.noun}</p>
       <p className="font-medium text-slate-700 dark:text-slate-200">{d.percent}%</p>
     </TooltipShell>
   )
@@ -167,7 +167,7 @@ export function StatusAnalytics({
   reasonSubtitle,
   missedNoun,
 }: StatusAnalyticsProps) {
-  // Card 1: % tidak dilakukan per hari (Senin..Minggu)
+  // Card 1: % dilakukan per hari (Senin..Minggu)
   const missedStats = useMemo(() => {
     const byDay = new Map<string, { missed: number; total: number }>()
     for (const e of entries) {
@@ -185,11 +185,11 @@ export function StatusAnalytics({
           name: d,
           missed: v.missed,
           total: v.total,
-          percent: v.total > 0 ? Math.round((v.missed / v.total) * 100) : 0,
+          percent: v.total > 0 ? Math.round(((v.total - v.missed) / v.total) * 100) : 0,
           noun: missedNoun,
         }
       })
-      .sort((a, b) => b.percent - a.percent || b.missed - a.missed)
+      .sort((a, b) => b.missed - a.missed || b.total - a.total)
   }, [entries, missedNoun])
 
   // Card 2: alasan terbanyak

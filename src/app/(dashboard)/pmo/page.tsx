@@ -12,7 +12,7 @@ import {
   endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, Brain, Check, X, Trash2, Trophy } from 'lucide-react'
+import { Calendar, Brain, Check, X, Trash2 } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { useTableLock } from '@/components/ui/table-lock'
@@ -118,22 +118,6 @@ export default function PmoPage() {
     return map
   }, [allLogs])
 
-  // Revisi: rekor streak terbaik — hari berturut-turut tanpa PMO (status 'berhasil')
-  const bestStreak = useMemo(() => {
-    const sorted = [...(allLogs as PmoLogEntry[])].sort((a, b) => a.tanggal.localeCompare(b.tanggal))
-    let cur = 0
-    let best = 0
-    for (const e of sorted) {
-      if (e.status === 'berhasil') {
-        cur += 1
-        if (cur > best) best = cur
-      } else if (e.status === 'relapse') {
-        cur = 0
-      }
-    }
-    return best
-  }, [allLogs])
-
   // Daftar tanggal dalam rentang (ascending — terbaru paling bawah)
   const dates = useMemo(() => {
     if (rangeEnd < rangeStart) return []
@@ -175,18 +159,7 @@ export default function PmoPage() {
 
   return (
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
-      {/* Revisi: card rekor hari berturut-turut tanpa PMO (card Streak Saat Ini dihapus) */}
-      <div className="grid grid-cols-1 gap-3 sm:gap-4">
-        <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-4 flex items-center gap-2.5 sm:gap-3 min-w-0">
-          <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
-            <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-amber-600" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-[11px] sm:text-xs text-slate-500 truncate">Rekor Terbaik</p>
-            <p className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">{bestStreak} <span className="text-xs sm:text-sm font-medium text-slate-500">hari</span></p>
-          </div>
-        </div>
-      </div>
+      {/* Revisi batch 19: card Rekor Terbaik dipindah ke header (kiri navigasi tanggal) */}
 
       {/* Tabel gaya Quran: Tanggal | Hari | Status */}
       <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-320px)] landscape:max-lg:max-h-none rounded-lg border bg-white', TABLE_BORDER)}>
@@ -302,10 +275,8 @@ export default function PmoPage() {
       {/* Revisi 7: Analytics & Insight */}
       <StatusAnalytics
         entries={analyticsEntries}
-        difficultyTitle="Tingkat Kesulitan Bertahan PMO"
-        difficultySubtitle="Berdasarkan frekuensi relapse per hari"
-        reasonTitle="Alasan Terbanyak Relapse PMO"
-        reasonSubtitle="Berdasarkan alasan yang dipilih saat relapse"
+        difficultyTitle="Tahan PMO Terlama"
+        reasonTitle="Alasan Relapse"
         missedNoun="relapse"
       />
     </div>

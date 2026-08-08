@@ -81,7 +81,7 @@ function AnalyticsCard({
   insightTone,
 }: {
   title: string
-  subtitle: string
+  subtitle?: string
   children: React.ReactNode
   insight: string | null
   insightTone: 'red' | 'amber' | 'blue'
@@ -100,7 +100,7 @@ function AnalyticsCard({
             {title}
             <Info className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
           </h3>
-          <p className="text-xs text-slate-500 mt-1">{subtitle}</p>
+          {subtitle && <p className="text-xs text-slate-500 mt-1">{subtitle}</p>}
         </div>
       </div>
       <div className="min-h-[200px]">{children}</div>
@@ -138,7 +138,7 @@ function MissedTooltip({ active, payload }: any) {
     <TooltipShell>
       <p className="font-semibold text-slate-800 dark:text-slate-100">{d.name}</p>
       <p className="text-slate-500">
-        {d.missed} dari {d.total} kali tidak dilakukan
+        {d.total - d.missed} dari {d.total} kali dilakukan
       </p>
       <p className="font-medium text-slate-700 dark:text-slate-200">{d.percent}%</p>
     </TooltipShell>
@@ -178,7 +178,7 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
     [dates, sholatMap]
   )
 
-  // Card 1: persentase tidak dilakukan per sholat
+  // Card 1: persentase dilakukan per sholat
   const missedStats = useMemo(() => {
     return columns
       .map(col => {
@@ -196,11 +196,11 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
           name: col.label,
           missed,
           total,
-          percent: total > 0 ? Math.round((missed / total) * 100) : 0,
+          percent: total > 0 ? Math.round(((total - missed) / total) * 100) : 0,
         }
       })
       .filter(s => s.total > 0)
-      .sort((a, b) => b.percent - a.percent || b.missed - a.missed)
+      .sort((a, b) => b.missed - a.missed || b.total - a.total)
   }, [rows, columns])
 
   // Card 2: rata-rata rating kekhusyukan per sholat (skip null)
@@ -297,8 +297,7 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
         {/* ── Card 1: Sholat Paling Sulit Dilakukan ── */}
         <AnalyticsCard
-          title="Tingkat Kesulitan Sholat"
-          subtitle="Berdasarkan frekuensi tidak dikerjakan"
+          title="Sholat Terbanyak"
           insight={
             hasMissedData && topMissed && topMissed.missed > 0
               ? `${topMissed.name} adalah sholat yang paling sering terlewat.`
@@ -339,8 +338,7 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
 
         {/* ── Card 2: Sholat Paling Tidak Khusyuk ── */}
         <AnalyticsCard
-          title="Tingkat Kekhusyukan Sholat"
-          subtitle="Rata-rata rating kekhusyukan (1 = sangat tidak khusyuk, 5 = sangat khusyuk)"
+          title="Sholat Terkhusyuk"
           insight={topLowRating ? `${topLowRating.name} memiliki tingkat kekhusyukan terendah.` : null}
           insightTone="amber"
         >
@@ -380,8 +378,7 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
 
         {/* ── Card 3: Alasan Terbanyak Tidak Sholat ── */}
         <AnalyticsCard
-          title="Alasan Terbanyak Tidak Sholat"
-          subtitle="Berdasarkan alasan yang dipilih saat melewatkan sholat"
+          title="Alasan Tak Sholat"
           insight={topReason ? `${topReason.name} adalah alasan paling sering.` : null}
           insightTone="blue"
         >

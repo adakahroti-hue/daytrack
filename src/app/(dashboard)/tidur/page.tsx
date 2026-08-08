@@ -256,10 +256,8 @@ export default function TidurPage() {
       {/* Revisi 6: Analytics & Insight */}
       <StatusAnalytics
         entries={analyticsEntries}
-        difficultyTitle="Tingkat Kesulitan Tidur"
-        difficultySubtitle="Berdasarkan frekuensi begadang per hari"
-        reasonTitle="Alasan Terbanyak Begadang"
-        reasonSubtitle="Berdasarkan alasan yang dipilih saat begadang"
+        difficultyTitle="Tidur Terbaik"
+        reasonTitle="Alasan Begadang"
         missedNoun="begadang"
       />
     </div>

@@ -40,7 +40,7 @@ const WATER_SESSIONS = [
   { key: 'sebelum_tidur', label: 'Sebelum Tidur' },
 ] as const
 
-const TARGET_GELAS = 8
+const TARGET_GELAS = 5
 const ML_PER_GELAS = 250
 
 function RoutineCard({
