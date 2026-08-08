@@ -383,7 +383,7 @@ function SemuaPageClient() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<EditingTask | null>(null)
   // groupMode ditinggikan ke HeaderControls — toggle-nya kini tampil di header (kanan card Terlambat)
-  const { groupMode } = useHeaderControls()
+  const { groupMode, setGroupMode } = useHeaderControls()
   const [isMounted, setIsMounted] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [bulkDate, setBulkDate] = useState(format(new Date(), 'yyyy-MM-dd'))
@@ -393,6 +393,11 @@ function SemuaPageClient() {
   useEffect(() => {
     setIsMounted(true)
   }, [])
+
+  // Revisi: setiap tab Semua dibuka, filter default kembali ke Prioritas
+  useEffect(() => {
+    setGroupMode('prioritas')
+  }, [setGroupMode])
 
   // Fetch ALL tasks - ALWAYS called
   const { data: allTasks = [], isLoading, error } = useTasks(undefined)
@@ -453,9 +458,14 @@ function SemuaPageClient() {
   // Today (for relative group labels)
   const today = format(new Date(), 'yyyy-MM-dd')
 
-  // Board ini hanya menampilkan tugas 'belum' (bukan hari ini — punya tab sendiri) — proses disembunyikan, selesai punya tab sendiri
+  // Revisi: board menampilkan tugas 'belum' + tugas 'proses' yang sudah terlambat;
+  // tugas 'proses' yang belum terlambat tetap disembunyikan; selesai punya tab sendiri
   const filteredTasks = useMemo(() => {
-    return allTasks.filter(t => t.status === 'belum' && t.tanggal !== today)
+    const todayStart = startOfDay(new Date())
+    return allTasks.filter(t => (
+      (t.status === 'belum' || (t.status === 'proses' && isBefore(new Date(t.tanggal), todayStart)))
+      && t.tanggal !== today
+    ))
   }, [allTasks, today])
 
   // Group tasks by selected mode — ALWAYS memoized

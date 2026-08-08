@@ -385,10 +385,8 @@ function SidebarContent({
             )
           })}
         </ul>
-      </nav>
-
-      {/* User Profile — bottom */}
-      <div className={cn('border-t', isCollapsed ? 'p-2' : 'p-3')}>
+        {/* User Profile — mengalir bersama nav (tidak sticky) */}
+        <div className={cn('mt-2 border-t', isCollapsed ? 'p-2' : 'p-3')}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -438,7 +436,8 @@ function SidebarContent({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
+        </div>
+      </nav>
     </div>
   )
 }

@@ -147,7 +147,8 @@ export default function MinumAirPage() {
 
   const dates = useMemo(() => {
     if (rangeEnd < rangeStart) return []
-    return eachDayOfInterval({ start: rangeStart, end: rangeEnd }).reverse().map(d => format(d, 'yyyy-MM-dd'))
+    // Revisi: urutan tanggal dari atas ke bawah — tanggal baru muncul di bawah
+    return eachDayOfInterval({ start: rangeStart, end: rangeEnd }).map(d => format(d, 'yyyy-MM-dd'))
   }, [rangeStart, rangeEnd])
 
   const handleSetStatus = async (tanggal: string, key: WaterKey, status: 'sudah' | 'lupa', reason?: string) => {

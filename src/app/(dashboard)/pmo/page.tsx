@@ -12,7 +12,7 @@ import {
   endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, Brain, Check, X, Trash2, Flame, Trophy } from 'lucide-react'
+import { Calendar, Brain, Check, X, Trash2, Trophy } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { useTableLock } from '@/components/ui/table-lock'
@@ -117,8 +117,8 @@ export default function PmoPage() {
     return map
   }, [allLogs])
 
-  // Revisi 3: rekor streak — hari berturut-turut tanpa PMO (status 'berhasil')
-  const { currentStreak, bestStreak } = useMemo(() => {
+  // Revisi: rekor streak terbaik — hari berturut-turut tanpa PMO (status 'berhasil')
+  const bestStreak = useMemo(() => {
     const sorted = [...(allLogs as PmoLogEntry[])].sort((a, b) => a.tanggal.localeCompare(b.tanggal))
     let cur = 0
     let best = 0
@@ -130,7 +130,7 @@ export default function PmoPage() {
         cur = 0
       }
     }
-    return { currentStreak: cur, bestStreak: best }
+    return best
   }, [allLogs])
 
   // Daftar tanggal dalam rentang (ascending — terbaru paling bawah)
@@ -174,17 +174,8 @@ export default function PmoPage() {
 
   return (
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
-      {/* Revisi 3: card rekor hari berturut-turut tanpa PMO */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4">
-        <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-4 flex items-center gap-2.5 sm:gap-3 min-w-0">
-          <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
-            <Flame className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-[11px] sm:text-xs text-slate-500 truncate">Streak Saat Ini</p>
-            <p className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">{currentStreak} <span className="text-xs sm:text-sm font-medium text-slate-500">hari</span></p>
-          </div>
-        </div>
+      {/* Revisi: card rekor hari berturut-turut tanpa PMO (card Streak Saat Ini dihapus) */}
+      <div className="grid grid-cols-1 gap-3 sm:gap-4">
         <div className="bg-white rounded-xl border border-slate-200 p-3 sm:p-4 flex items-center gap-2.5 sm:gap-3 min-w-0">
           <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
             <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-amber-600" />

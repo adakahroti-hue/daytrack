@@ -29,12 +29,23 @@ const RIBBON_COLORS = [
   'bg-violet-500',
   'bg-pink-500',
   'bg-teal-500',
+  'bg-orange-500',
+  'bg-lime-500',
+  'bg-cyan-500',
+  'bg-fuchsia-500',
 ]
 
+// Revisi: warna paket dialokasikan per group_id — parent & child satu paket berbagi warna,
+// dan setiap parent baru mendapat warna yang belum dipakai group lain (tanpa bentrok).
+const groupColorAlloc: Record<string, string> = {}
+
 export function ribbonColorFor(groupId: string): string {
-  let hash = 0
-  for (let i = 0; i < groupId.length; i++) hash = (hash * 31 + groupId.charCodeAt(i)) >>> 0
-  return RIBBON_COLORS[hash % RIBBON_COLORS.length]
+  const existing = groupColorAlloc[groupId]
+  if (existing) return existing
+  const used = new Set(Object.values(groupColorAlloc))
+  const free = RIBBON_COLORS.find(c => !used.has(c))
+  groupColorAlloc[groupId] = free ?? RIBBON_COLORS[groupId.length % RIBBON_COLORS.length]
+  return groupColorAlloc[groupId]
 }
 
 /** Pita penanda paket di pojok kiri atas card tugas. */

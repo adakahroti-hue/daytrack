@@ -1,9 +1,9 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, Clock, CalendarDays, CalendarRange, CheckCircle2, AlertTriangle, Droplets, LayoutDashboard, BookOpen, Mosque, Heart, Moon, GlassWater, Shield, Brain, Smile, Lightbulb, Sparkles, History } from 'lucide-react'
+import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, AlertTriangle, Droplets, LayoutDashboard, BookOpen, Mosque, Heart, Moon, GlassWater, Shield, Brain, Smile, Lightbulb, Sparkles, History } from 'lucide-react'
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
@@ -47,7 +47,9 @@ function HariIniMissionSentence() {
     <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg">
       <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
       <span className="text-sm font-medium text-green-800 whitespace-nowrap">
-        {completedMissions} misi sudah dituntaskan, tinggal {remainingMissions} misi penting lagi.
+        {completedMissions === 0
+          ? 'Cukup selesaikan 1 misi saja hari ini'
+          : `${completedMissions} misi penting selesai, tinggal ${remainingMissions} misi lagi.`}
       </span>
     </div>
   )
@@ -209,6 +211,8 @@ export function Header({ onMenuClick }: HeaderProps) {
   const isSaranPerbaikan = pathname === '/saran-perbaikan'
   // Semua tab bergaya tabel Quran memakai toolbar navigasi tanggal + toggle periode di header
   const isTableTab = isSholat || isQuran || isMinumAir || isDoa || isSyukur || isTidur || isPmo || isMasalah || isKesenangan || isSaranPerbaikan
+  // Revisi: tombol show/hide filter tanggal — toggle & navigasi tanggal mobile baru tampil setelah diklik
+  const [showMobileControls, setShowMobileControls] = useState(false)
 
   const periodLabels = {
     yesterday: { label: 'Kemarin', icon: History },
@@ -302,6 +306,19 @@ export function Header({ onMenuClick }: HeaderProps) {
         {/* Selesai Stats — only on tugas/selesai */}
         {isSelesai && <SelesaiHeaderStats />}
 
+        {/* Revisi: tombol show/hide filter tanggal — kanan atas header (mobile saja) */}
+        {(isOverviewPage || isTableTab) && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden h-9 w-9 flex-shrink-0"
+            onClick={() => setShowMobileControls(v => !v)}
+            aria-label={showMobileControls ? 'Sembunyikan filter tanggal' : 'Tampilkan filter tanggal'}
+          >
+            {showMobileControls ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </Button>
+        )}
+
         {/* Date Navigation — hidden on Hari Ini, Semua, Selesai, and Sholat tabs */}
         {isOverviewPage && (
         <div className="flex-1 flex items-center justify-start gap-2 min-w-0">
@@ -312,7 +329,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             </Button>
             <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium whitespace-nowrap">
+              <span className="text-xs font-medium whitespace-nowrap">
                 {formatDateForPeriod(currentDate, period)}
               </span>
             </div>
@@ -326,7 +343,8 @@ export function Header({ onMenuClick }: HeaderProps) {
             )}
           </div>
 
-          {/* Mobile date display */}
+          {/* Mobile date display — hanya tampil setelah tombol show/hide ditekan */}
+          {showMobileControls && (
           <div className="sm:hidden flex items-center gap-2 px-2 py-1 bg-muted/50 rounded-lg border border-border">
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium">
@@ -339,6 +357,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 : format(currentDate, 'd MMM', { locale: id })}
             </span>
           </div>
+          )}
         </div>
         )}
 
@@ -372,7 +391,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               </Button>
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium whitespace-nowrap hidden sm:inline">
+                <span className="text-xs font-medium whitespace-nowrap hidden sm:inline">
                   {formatIbadahPeriodLabel(ibadahDate, ibadahPeriod)}
                 </span>
                 <span className="text-xs font-medium whitespace-nowrap sm:hidden">
@@ -408,7 +427,7 @@ export function Header({ onMenuClick }: HeaderProps) {
       {(isSemua || isTableTab || isOverviewPage) && (
         <div className="hidden max-md:portrait:flex flex-col gap-2 px-3 pb-3">
           {/* Tab Overview: toggle periode 5 opsi (atas) + navigasi tanggal (bawah), full width — khusus mobile portrait */}
-          {isOverviewPage && (
+          {isOverviewPage && showMobileControls && (
             <>
               <div className="flex items-center gap-0.5 p-0.5 bg-muted/50 rounded-lg border border-border w-full">
                 {Object.entries(periodLabels).map(([key, { label }]) => (
@@ -433,7 +452,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 </Button>
                 <div className="flex items-center gap-1.5 min-w-0">
                   <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span className="text-sm font-medium truncate">
+                  <span className="text-[11px] font-medium truncate">
                     {formatDateForPeriod(currentDate, period)}
                   </span>
                 </div>
@@ -465,7 +484,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             </div>
           )}
           {/* Tab tabel (rev 3 & 4): card navigasi tanggal + toggle periode, masing-masing full width */}
-          {isTableTab && (
+          {isTableTab && showMobileControls && (
             <>
               {/* Revisi batch 10: toggle periode di ATAS, navigasi tanggal di BAWAH (khusus mobile) */}
               <div className="flex items-center gap-0.5 p-0.5 bg-muted/50 rounded-lg border border-border w-full">
@@ -490,7 +509,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 </Button>
                 <div className="flex items-center gap-1.5 min-w-0">
                   <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span className="text-sm font-medium truncate">
+                  <span className="text-xs font-medium truncate">
                     {formatIbadahPeriodLabel(ibadahDate, ibadahPeriod)}
                   </span>
                 </div>
