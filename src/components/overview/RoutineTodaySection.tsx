@@ -116,7 +116,6 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
   )
   const sholatCount = sholatPerWaktu.reduce((a, b) => a + b, 0)
   const sholatTarget = 5 * daysElapsed
-  const sholatPct = sholatTarget > 0 ? Math.round((sholatCount / sholatTarget) * 100) : 0
 
   // Baca Quran
   const { data: quranEntries = [] } = useQuranLogRange(startStr, endStr)
@@ -126,14 +125,12 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
   )
   const quranCount = quranPerSesi.reduce((a, b) => a + b, 0)
   const quranTarget = 5 * daysElapsed
-  const quranPct = quranTarget > 0 ? Math.round((quranCount / quranTarget) * 100) : 0
 
   // Minum Air
   const { data: waterEntries = [] } = useWaterLogRange(startStr, endStr)
   const totalMl = (waterEntries as any[]).reduce((sum, e) => sum + (e.jumlah_ml || 0), 0)
   const gelas = Math.round(totalMl / ML_PER_GELAS)
   const targetGelasPeriod = TARGET_GELAS * daysElapsed
-  const waterPct = targetGelasPeriod > 0 ? Math.round((gelas / targetGelasPeriod) * 100) : 0
   const waterPerSesi = WATER_SESSIONS.map(s =>
     (waterEntries as any[]).filter(e => e.waktu_baca === s.key && e.status === 'sudah').length
   )
@@ -191,15 +188,9 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
                   <Mosque className="h-3.5 w-3.5 text-emerald-500" /> Sholat 5 Waktu
                 </p>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <p className="text-lg font-bold text-slate-900 tabular-nums">
-                    {sholatCount}<span className="text-sm font-medium text-slate-500">/{sholatTarget} sholat</span>
-                  </p>
-                  <span className="text-xs text-slate-500 tabular-nums">{sholatPct}%</span>
-                </div>
-                <div className="mt-1.5 h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                  <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${sholatPct}%` }} />
-                </div>
+                <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">
+                  {sholatCount}<span className="text-sm font-medium text-slate-500">/{sholatTarget} sholat</span>
+                </p>
               </div>
               <div className="flex items-center gap-2.5 shrink-0">
                 {SHOLAT_5.map((s, i) => {
@@ -222,21 +213,15 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
               </div>
             </div>
           </div>
-          <div className="mt-2 pt-2 border-t border-slate-100">
+          <div className="mt-3 pt-3 border-t border-slate-100">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
                   <BookOpen className="h-3.5 w-3.5 text-emerald-500" /> Baca Quran
                 </p>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <p className="text-lg font-bold text-slate-900 tabular-nums">
-                    {quranCount}<span className="text-sm font-medium text-slate-500">/{quranTarget} sesi</span>
-                  </p>
-                  <span className="text-xs text-slate-500 tabular-nums">{quranPct}%</span>
-                </div>
-                <div className="mt-1.5 h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                  <div className="h-full rounded-full bg-teal-500 transition-all" style={{ width: `${quranPct}%` }} />
-                </div>
+                <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">
+                  {quranCount}<span className="text-sm font-medium text-slate-500">/{quranTarget} sesi</span>
+                </p>
               </div>
               <div className="flex items-center gap-2.5 shrink-0">
                 {QURAN_SESSIONS.map((s, i) => {
@@ -260,7 +245,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
             </div>
           </div>
           {/* #3: Optimasi Hoki — isi card Optimasi Hidup dipindahkan sini (batch 25) */}
-          <div className="mt-2 pt-2 border-t border-slate-100">
+          <div className="mt-3 pt-3 border-t border-slate-100">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
               <Sparkles className="h-3.5 w-3.5 text-emerald-500" /> Optimasi Hoki
             </p>
@@ -282,22 +267,16 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
         </RoutineCard>
 
         {/* Kesehatan — Minum Air + Waktu Tidur + Bebas PMO (mockup batch 23: kolom kanan) */}
-        <RoutineCard tint="bg-white border-slate-200" icon={GlassWater} iconColor="text-sky-500" title="Kesehatan">
+        <RoutineCard tint="bg-white border-slate-200" icon={Shield} iconColor="text-sky-500" title="Kesehatan">
           <div className="mt-2">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
                   <GlassWater className="h-3.5 w-3.5 text-sky-500" /> Minum Air
                 </p>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <p className="text-lg font-bold text-slate-900 tabular-nums">
-                    {gelas}<span className="text-sm font-medium text-slate-500">/{targetGelasPeriod} gelas</span>
-                  </p>
-                  <span className="text-xs text-slate-500 tabular-nums">{waterPct}%</span>
-                </div>
-                <div className="mt-1.5 h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                  <div className="h-full rounded-full bg-sky-500 transition-all" style={{ width: `${waterPct}%` }} />
-                </div>
+                <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">
+                  {gelas}<span className="text-sm font-medium text-slate-500">/{targetGelasPeriod} gelas</span>
+                </p>
                 {isHarian && (
                   <p className="text-xs text-slate-500 mt-1">
                     {gelas >= TARGET_GELAS ? 'Target tercapai 🎉' : `${Math.max(0, TARGET_GELAS - gelas)} gelas tersisa`}
@@ -325,7 +304,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
               </div>
             </div>
           </div>
-          <div className="mt-2 pt-2 border-t border-slate-100">
+          <div className="mt-3 pt-3 border-t border-slate-100">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
               <Moon className="h-3.5 w-3.5 text-sky-500" /> Waktu Tidur
             </p>
@@ -350,7 +329,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
               </div>
             </div>
           </div>
-          <div className="mt-2 pt-2 border-t border-slate-100">
+          <div className="mt-3 pt-3 border-t border-slate-100">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
               <Shield className="h-3.5 w-3.5 text-sky-500" /> Bebas PMO
             </p>

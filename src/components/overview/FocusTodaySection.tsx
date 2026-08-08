@@ -48,7 +48,8 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
 
   const total = tasks.length
   const belum = tasks.filter(t => t.status === 'belum').length
-  const progressPct = total > 0 ? Math.round(((total - belum) / total) * 100) : 0
+  const selesai = total - belum
+  const progressPct = total > 0 ? Math.round((selesai / total) * 100) : 0
 
   // Tick halus agar durasi "Berjalan: ..." ikut berjalan (per 30 detik)
   const featuredId = featured?.id
@@ -86,7 +87,7 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
             <div className="h-2 rounded-full bg-slate-100 flex-1 overflow-hidden">
               <div className="h-full rounded-full bg-slate-800 transition-all" style={{ width: `${progressPct}%` }} />
             </div>
-            <span className="text-xs font-medium text-slate-500 tabular-nums shrink-0">{progressPct}% selesai</span>
+            <span className="text-xs font-medium text-slate-500 tabular-nums shrink-0">{selesai} tugas selesai</span>
           </div>
         </div>
         {/* Kanan: sedang dikerjakan — dipisahkan garis pembatas tipis (revisi batch 25).

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Brain, ArrowRight, NotebookPen, Hourglass } from 'lucide-react'
+import { Brain, ArrowRight, NotebookPen, Hourglass, PersonStanding } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useMasalahLogRange } from '@/hooks/useMasalahLogs'
 import { useKesenanganRange } from '@/hooks/useKesenangan'
@@ -97,12 +97,9 @@ export function MentalCard({
       </div>
       <div className="mt-2 grid gap-3 sm:grid-cols-2 items-start divide-y divide-slate-200 sm:divide-y-0 sm:divide-x">
         <div>
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1"><Brain className="h-3.5 w-3.5 text-purple-500" /> Refleksi</p>
-            <span className="text-xs font-medium text-slate-400 tabular-nums shrink-0">{masalahItems.length} refleksi</span>
-          </div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1"><PersonStanding className="h-3.5 w-3.5 text-purple-500" /> Refleksi</p>
           {masalahItems.length > 0 ? (
-            <ul className="mt-1 space-y-1">
+            <ul className="mt-2 space-y-1">
               {masalahItems.map(item => (
                 <li key={item} className="flex items-start gap-2 text-sm text-slate-600">
                   <span className={cn('mt-1.5 h-1 w-1 rounded-full shrink-0', dotColor)} />
@@ -111,16 +108,13 @@ export function MentalCard({
               ))}
             </ul>
           ) : (
-            <p className="mt-1 text-sm text-slate-500">{masalahEmptyText}</p>
+            <p className="mt-2 text-sm text-slate-500">{masalahEmptyText}</p>
           )}
         </div>
         <div>
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1"><Hourglass className="h-3.5 w-3.5 text-purple-500" /> Kesenangan Ditunda</p>
-            <span className="text-xs font-medium text-slate-400 tabular-nums shrink-0">{funItems.length} kesenangan</span>
-          </div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1"><Hourglass className="h-3.5 w-3.5 text-purple-500" /> Kesenangan Ditunda</p>
           {funItems.length > 0 ? (
-            <ul className="mt-1 space-y-1">
+            <ul className="mt-2 space-y-1">
               {funItems.map(item => (
                 <li key={item} className="flex items-start gap-2 text-sm text-slate-600">
                   <span className={cn('mt-1.5 h-1 w-1 rounded-full shrink-0', dotColor)} />
@@ -129,7 +123,7 @@ export function MentalCard({
               ))}
             </ul>
           ) : (
-            <p className="mt-1 text-sm text-slate-500">{funEmptyText}</p>
+            <p className="mt-2 text-sm text-slate-500">{funEmptyText}</p>
           )}
         </div>
       </div>
