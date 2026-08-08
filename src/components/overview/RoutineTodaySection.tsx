@@ -213,7 +213,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
               </div>
             </div>
           </div>
-          <div className="mt-3 pt-3 border-t border-slate-100">
+          <div className="mt-4 pt-4 border-t border-slate-100">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -251,13 +251,13 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
             </p>
             <div className="mt-1.5 flex items-center gap-4 flex-wrap text-sm">
               <div className="flex items-center gap-1.5">
-                <span className={cn('font-semibold tabular-nums', checklist[0].days >= daysElapsed ? 'text-emerald-600' : 'text-slate-500')}>
+                <span className="text-[11px] font-semibold tabular-nums text-slate-900">
                   {checklist[0].days}/{daysElapsed}
                 </span>
                 <span className="text-slate-700">Bersyukur</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className={cn('font-semibold tabular-nums', checklist[1].days >= daysElapsed ? 'text-emerald-600' : 'text-slate-500')}>
+                <span className="text-[11px] font-semibold tabular-nums text-slate-900">
                   {checklist[1].days}/{daysElapsed}
                 </span>
                 <span className="text-slate-700">Mendoakan orang lain</span>
@@ -277,9 +277,9 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                 <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">
                   {gelas}<span className="text-sm font-medium text-slate-500">/{targetGelasPeriod} gelas</span>
                 </p>
-                {isHarian && (
+                {isHarian && gelas >= TARGET_GELAS && (
                   <p className="text-xs text-slate-500 mt-1">
-                    {gelas >= TARGET_GELAS ? 'Target tercapai 🎉' : `${Math.max(0, TARGET_GELAS - gelas)} gelas tersisa`}
+                    Target tercapai 🎉
                   </p>
                 )}
               </div>
@@ -304,7 +304,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
               </div>
             </div>
           </div>
-          <div className="mt-3 pt-3 border-t border-slate-100">
+          <div className="mt-4 pt-4 border-t border-slate-100">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
               <Moon className="h-3.5 w-3.5 text-sky-500" /> Waktu Tidur
             </p>
