@@ -75,7 +75,7 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
-      <div className="mt-2 flex gap-4">
+      <div className="mt-3 flex gap-4">
         {/* Kiri: total + bar pendek */}
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-2">

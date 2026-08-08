@@ -95,7 +95,7 @@ export function MentalCard({
           <Icon className={cn('h-4 w-4', iconColor)} />
         </div>
       </div>
-      <div className="mt-2 grid gap-3 sm:grid-cols-2 items-start divide-y divide-slate-200 sm:divide-y-0 sm:divide-x">
+      <div className="mt-3 grid gap-3 sm:grid-cols-2 items-start divide-y divide-slate-200 sm:divide-y-0 sm:divide-x">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1"><PersonStanding className="h-3.5 w-3.5 text-purple-500" /> Refleksi</p>
           {masalahItems.length > 0 ? (

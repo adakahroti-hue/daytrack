@@ -182,7 +182,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
 
         {/* Ibadah — revisi batch 23: mengikuti mockup (angka kiri, pill kanan) */}
         <RoutineCard tint="bg-white border-slate-200" icon={Mosque} iconColor="text-emerald-500" title="Ibadah">
-          <div className="mt-2">
+          <div className="mt-3">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -266,7 +266,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
 
         {/* Kesehatan — Minum Air + Waktu Tidur + Bebas PMO (mockup batch 23: kolom kanan) */}
         <RoutineCard tint="bg-white border-slate-200" icon={Shield} iconColor="text-sky-500" title="Kesehatan">
-          <div className="mt-2">
+          <div className="mt-3">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
