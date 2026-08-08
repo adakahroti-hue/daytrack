@@ -184,7 +184,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
   const checklistCards = [
     { key: 'syukur', title: 'Syukur', days: checklist[0].days, doneDates: doneDateSets[0], tint: 'bg-white border-slate-200', icon: Heart, iconColor: 'text-violet-500', linkColor: 'text-slate-500 hover:text-slate-700', href: '/syukur', topReason: syukurTopReason, topJam: null as string | null },
     { key: 'doa', title: 'Doa', days: checklist[1].days, doneDates: doneDateSets[1], tint: 'bg-white border-slate-200', icon: Sparkles, iconColor: 'text-rose-500', linkColor: 'text-slate-500 hover:text-slate-700', href: '/doa', topReason: doaTopReason, topJam: null as string | null },
-    { key: 'pmo', title: 'PMO', days: checklist[2].days, doneDateSets[2], tint: 'bg-white border-slate-200', icon: Shield, iconColor: 'text-orange-500', linkColor: 'text-slate-500 hover:text-slate-700', href: '/pmo', topReason: pmoTopReason, topJam: null as string | null },
+    { key: 'pmo', title: 'PMO', days: checklist[2].days, doneDates: doneDateSets[2], tint: 'bg-white border-slate-200', icon: Shield, iconColor: 'text-orange-500', linkColor: 'text-slate-500 hover:text-slate-700', href: '/pmo', topReason: pmoTopReason, topJam: null as string | null },
     { key: 'tidur', title: 'Tidur', days: checklist[3].days, doneDates: doneDateSets[3], tint: 'bg-white border-slate-200', icon: Moon, iconColor: 'text-indigo-500', linkColor: 'text-slate-500 hover:text-slate-700', href: '/tidur', topReason: null as string | null, topJam: tidurTopJam },
   ]
   const label = PERIOD_LABEL[period]
