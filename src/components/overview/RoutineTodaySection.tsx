@@ -190,8 +190,8 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
         {/* Ibadah — revisi batch 23: mengikuti mockup (angka kiri, pill kanan) */}
         <RoutineCard tint="bg-white border-slate-200" icon={Mosque} iconColor="text-emerald-500" title="Ibadah">
           <div className="mt-3">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0 flex-1">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className="min-w-0 lg:flex-1">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
                   <Mosque className="h-3.5 w-3.5 text-emerald-500" /> Sholat 5 Waktu
                 </p>
@@ -200,7 +200,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                   <span className="text-sm font-medium text-slate-500">sholat</span>
                 </p>
               </div>
-              <div className="grid grid-cols-5 gap-x-5 shrink-0">
+              <div className="grid grid-cols-5 gap-x-2 lg:gap-x-5 shrink-0 w-full lg:w-auto">
                 {SHOLAT_5.map((s, i) => {
                   const done = isHarian ? sholatPerWaktu[i] > 0 : sholatPerWaktu[i] >= daysElapsed
                   return (
@@ -222,8 +222,8 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
             </div>
           </div>
           <div className="mt-4 pt-4 border-t border-slate-100">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0 flex-1">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className="min-w-0 lg:flex-1">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
                   <BookOpen className="h-3.5 w-3.5 text-emerald-500" /> Baca Quran
                 </p>
@@ -232,7 +232,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                   <span className="text-sm font-medium text-slate-500">sesi</span>
                 </p>
               </div>
-              <div className="grid grid-cols-5 gap-x-5 shrink-0">
+              <div className="grid grid-cols-5 gap-x-2 lg:gap-x-5 shrink-0 w-full lg:w-auto">
                 {QURAN_SESSIONS.map((s, i) => {
                   const done = isHarian ? quranPerSesi[i] > 0 : quranPerSesi[i] >= daysElapsed
                   return (
@@ -274,8 +274,8 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
         {/* Kesehatan — Minum Air + Waktu Tidur + Bebas PMO (mockup batch 23: kolom kanan) */}
         <RoutineCard tint="bg-white border-slate-200" icon={Shield} iconColor="text-sky-500" title="Kesehatan">
           <div className="mt-3">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0 flex-1">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className="min-w-0 lg:flex-1">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
                   <GlassWater className="h-3.5 w-3.5 text-sky-500" /> Minum Air
                 </p>
@@ -289,7 +289,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                   </p>
                 )}
               </div>
-              <div className="grid grid-cols-5 gap-x-5 shrink-0">
+              <div className="grid grid-cols-5 gap-x-2 lg:gap-x-5 shrink-0 w-full lg:w-auto">
                 {WATER_SESSIONS.map((s, i) => {
                   const done = isHarian ? waterPerSesi[i] > 0 : waterPerSesi[i] >= daysElapsed
                   return (
@@ -314,7 +314,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
               <Moon className="h-3.5 w-3.5 text-sky-500" /> Waktu Tidur
             </p>
-            <div className="mt-1.5 flex items-end justify-between gap-3">
+            <div className="mt-1.5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div className="min-w-0">
                 <p className="pl-[18px] flex items-baseline gap-1.5 leading-none">
                   <span className={cn('text-[22px] font-bold tabular-nums', numColor(checklist[3].days >= daysElapsed))}>{checklist[3].days}<span className={cn('text-lg', numColorSoft(checklist[3].days >= daysElapsed))}>/{daysElapsed}</span></span>
@@ -324,7 +324,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                   <p className="text-xs text-slate-500 mt-0.5">Belum ada data</p>
                 )}
               </div>
-              <div className="grid grid-cols-5 gap-x-5 shrink-0">
+              <div className="grid grid-cols-5 gap-x-2 lg:gap-x-5 shrink-0 w-full lg:w-auto">
                 {JAM_TIDUR_OPTIONS.map(o => (
                   <div key={o.value} className="flex flex-col items-center gap-0.5 min-w-0">
                     <span className="text-[10px] leading-tight text-slate-500">{o.label}</span>
