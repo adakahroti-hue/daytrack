@@ -63,7 +63,7 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
   const label = PERIOD_LABEL[period]
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 flex flex-col">
+    <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 flex flex-col">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-slate-700">Tugas {label}</p>
         <Link
@@ -74,16 +74,19 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
-      <div className="mt-3 flex gap-4">
+      <div className="mt-2 flex gap-4">
         {/* Kiri: total + bar pendek */}
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-2">
-            <p className="text-3xl font-bold text-slate-900">{total}</p>
+            <p className="text-2xl font-bold text-slate-900">{total}</p>
             <p className="text-xs text-slate-500">Total tugas</p>
           </div>
-          <p className="text-xs text-slate-500 mt-1">{belum} belum dikerjakan</p>
-          <div className="h-1.5 rounded-full bg-slate-100 mt-1.5 overflow-hidden">
-            <div className="h-full rounded-full bg-slate-800 transition-all" style={{ width: `${progressPct}%` }} />
+          <p className="text-xs text-slate-500 mt-0.5">{belum} belum dikerjakan</p>
+          <div className="mt-1.5 flex items-center gap-2">
+            <div className="h-2 rounded-full bg-slate-100 flex-1 overflow-hidden">
+              <div className="h-full rounded-full bg-slate-800 transition-all" style={{ width: `${progressPct}%` }} />
+            </div>
+            <span className="text-xs font-medium text-slate-500 tabular-nums shrink-0">{progressPct}% selesai</span>
           </div>
         </div>
         {/* Kanan: sedang dikerjakan — dipisahkan garis pembatas tipis (revisi batch 25).
@@ -91,7 +94,7 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
             card Tugas Hari Ini di semua filter (placeholder saat tidak ada tugas berjalan). */}
         <div className="w-px bg-slate-100 shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-slate-400">Sedang dikerjakan</p>
+          <p className="text-xs font-medium text-slate-500">Sedang dikerjakan</p>
           {featured ? (
             <>
               <p className="text-sm font-semibold text-slate-900 mt-0.5 line-clamp-2">{featured.nama}</p>
@@ -105,7 +108,7 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
               </div>
             </>
           ) : (
-            <p className="text-sm text-slate-400 mt-0.5">Tidak ada tugas berjalan</p>
+            <p className="text-sm text-slate-500 mt-0.5">Tidak ada tugas berjalan</p>
           )}
         </div>
       </div>

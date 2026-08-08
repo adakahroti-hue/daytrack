@@ -31,7 +31,7 @@ export function ReflectionCard({
   href: string
 }) {
   return (
-    <div className={cn('rounded-xl border p-4 flex flex-col', tint)}>
+    <div className={cn('rounded-xl border px-4 py-3 flex flex-col', tint)}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <div className="p-1.5 rounded-lg bg-slate-100 shrink-0">
@@ -47,7 +47,7 @@ export function ReflectionCard({
         <ul className="mt-3 space-y-1.5">
           {items.map(item => (
             <li key={item} className="flex items-start gap-2 text-sm text-slate-600">
-              <span className={cn('mt-2 h-1 w-1 rounded-full shrink-0', dotColor)} />
+              <span className={cn('mt-1.5 h-1 w-1 rounded-full shrink-0', dotColor)} />
               <span className="line-clamp-2">{item}</span>
             </li>
           ))}
@@ -88,42 +88,48 @@ export function MentalCard({
   href: string
 }) {
   return (
-    <div className={cn('rounded-xl border p-4 flex flex-col', tint)}>
+    <div className={cn('rounded-xl border px-4 py-3 flex flex-col', tint)}>
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm font-semibold text-slate-700 truncate">{title}</p>
         <div className="p-1.5 rounded-lg bg-slate-100 shrink-0">
           <Icon className={cn('h-4 w-4', iconColor)} />
         </div>
       </div>
-      <div className="mt-3 grid gap-4 sm:grid-cols-2 divide-y divide-slate-200 sm:divide-y-0 sm:divide-x">
+      <div className="mt-2 grid gap-3 sm:grid-cols-2 items-start divide-y divide-slate-200 sm:divide-y-0 sm:divide-x">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1"><Brain className="h-3.5 w-3.5 text-purple-500" /> Refleksi</p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1"><Brain className="h-3.5 w-3.5 text-purple-500" /> Refleksi</p>
+            <span className="text-xs font-medium text-slate-400 tabular-nums shrink-0">{masalahItems.length} refleksi</span>
+          </div>
           {masalahItems.length > 0 ? (
-            <ul className="mt-2 space-y-1.5">
+            <ul className="mt-1 space-y-1">
               {masalahItems.map(item => (
                 <li key={item} className="flex items-start gap-2 text-sm text-slate-600">
-                  <span className={cn('mt-2 h-1 w-1 rounded-full shrink-0', dotColor)} />
+                  <span className={cn('mt-1.5 h-1 w-1 rounded-full shrink-0', dotColor)} />
                   <span className="line-clamp-2">{item}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="mt-2 text-sm text-slate-400">{masalahEmptyText}</p>
+            <p className="mt-1 text-sm text-slate-500">{masalahEmptyText}</p>
           )}
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1"><Hourglass className="h-3.5 w-3.5 text-purple-500" /> Kesenangan Ditunda</p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1"><Hourglass className="h-3.5 w-3.5 text-purple-500" /> Kesenangan Ditunda</p>
+            <span className="text-xs font-medium text-slate-400 tabular-nums shrink-0">{funItems.length} kesenangan</span>
+          </div>
           {funItems.length > 0 ? (
-            <ul className="mt-2 space-y-1.5">
+            <ul className="mt-1 space-y-1">
               {funItems.map(item => (
                 <li key={item} className="flex items-start gap-2 text-sm text-slate-600">
-                  <span className={cn('mt-2 h-1 w-1 rounded-full shrink-0', dotColor)} />
+                  <span className={cn('mt-1.5 h-1 w-1 rounded-full shrink-0', dotColor)} />
                   <span className="line-clamp-2">{item}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="mt-2 text-sm text-slate-400">{funEmptyText}</p>
+            <p className="mt-1 text-sm text-slate-500">{funEmptyText}</p>
           )}
         </div>
       </div>
