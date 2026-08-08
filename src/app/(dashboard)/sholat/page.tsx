@@ -22,8 +22,8 @@ import { useTableLock } from '@/components/ui/table-lock'
 import { usePrayerLogRange, useTogglePrayer, useUpdatePrayerQuality } from '@/hooks/usePrayerLogs'
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
-import dynamic from 'next/dynamic'
-const SholatAnalytics = dynamic(() => import('@/components/sholat/SholatAnalytics').then(m => m.SholatAnalytics), { ssr: false, loading: () => null })
+import nextDynamic from 'next/dynamic'
+const SholatAnalytics = nextDynamic(() => import('@/components/sholat/SholatAnalytics').then(m => m.SholatAnalytics), { ssr: false, loading: () => null })
 
 // ─── Constants ────────────────────────────────────
 
