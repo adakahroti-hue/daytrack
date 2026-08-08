@@ -99,7 +99,7 @@ export function MentalCard({
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1"><PersonStanding className="h-3.5 w-3.5 text-purple-500" /> Refleksi</p>
           {masalahItems.length > 0 ? (
-            <ul className="mt-2 space-y-1">
+            <ul className="mt-2 space-y-1 pl-[18px]">
               {masalahItems.map(item => (
                 <li key={item} className="flex items-start gap-2 text-sm text-slate-600">
                   <span className={cn('mt-1.5 h-1 w-1 rounded-full shrink-0', dotColor)} />
@@ -108,13 +108,13 @@ export function MentalCard({
               ))}
             </ul>
           ) : (
-            <p className="mt-2 text-sm text-slate-500">{masalahEmptyText}</p>
+            <p className="mt-2 pl-[18px] text-sm text-slate-500">{masalahEmptyText}</p>
           )}
         </div>
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1"><Hourglass className="h-3.5 w-3.5 text-purple-500" /> Kesenangan Ditunda</p>
           {funItems.length > 0 ? (
-            <ul className="mt-2 space-y-1">
+            <ul className="mt-2 space-y-1 pl-[18px]">
               {funItems.map(item => (
                 <li key={item} className="flex items-start gap-2 text-sm text-slate-600">
                   <span className={cn('mt-1.5 h-1 w-1 rounded-full shrink-0', dotColor)} />
@@ -123,7 +123,7 @@ export function MentalCard({
               ))}
             </ul>
           ) : (
-            <p className="mt-2 text-sm text-slate-500">{funEmptyText}</p>
+            <p className="mt-2 pl-[18px] text-sm text-slate-500">{funEmptyText}</p>
           )}
         </div>
       </div>
