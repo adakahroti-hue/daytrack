@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Check, Minus, Mosque, BookOpen, GlassWater, Repeat, Sparkles, Shield, Moon, ArrowRight, Brain } from 'lucide-react'
+import { Check, Minus, Mosque, BookOpen, GlassWater, Repeat, Sparkles, Shield, Moon, ArrowRight, Flower } from 'lucide-react'
 import { format, differenceInCalendarDays } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { JAM_TIDUR_OPTIONS } from '@/lib/tidur-options'
@@ -196,10 +196,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                   return (
                     <div
                       key={s.key}
-                      className={cn(
-                        'rounded-lg border py-1.5 px-0.5 min-w-0 flex flex-col items-center gap-0.5',
-                        done ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
-                      )}
+                      className="flex flex-col items-center gap-0.5 min-w-0"
                     >
                       <span className="text-[9px] leading-tight text-slate-600">{s.label}</span>
                       {isHarian ? (
@@ -231,10 +228,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                   return (
                     <div
                       key={s.key}
-                      className={cn(
-                        'rounded-lg border py-1.5 px-0.5 min-w-0 flex flex-col items-center gap-0.5',
-                        done ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
-                      )}
+                      className="flex flex-col items-center gap-0.5 min-w-0"
                     >
                       <span className="text-[9px] leading-tight text-slate-600">{QURAN_PILL_LABELS[s.key] ?? s.label}</span>
                       {isHarian ? (
@@ -297,10 +291,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                   return (
                     <div
                       key={s.key}
-                      className={cn(
-                        'rounded-lg border py-1.5 px-0.5 min-w-0 flex flex-col items-center gap-0.5',
-                        done ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
-                      )}
+                      className="flex flex-col items-center gap-0.5 min-w-0"
                     >
                       <span className="text-[9px] leading-tight text-slate-600">{WATER_PILL_LABELS[s.key] ?? s.label}</span>
                       {isHarian ? (
@@ -335,10 +326,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                 {JAM_TIDUR_OPTIONS.map(o => (
                   <div
                     key={o.value}
-                    className={cn(
-                      'rounded-lg border py-1.5 px-0.5 min-w-0 flex flex-col items-center gap-0.5',
-                      o.status === 'tepat' ? 'bg-slate-100 border-slate-300' : 'bg-slate-50 border-slate-200'
-                    )}
+                    className="flex flex-col items-center gap-0.5 min-w-0"
                   >
                     <span className="text-[9px] leading-tight text-slate-600">{o.label}</span>
                     {o.status === 'tepat'
@@ -369,7 +357,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
         <div className="col-span-full">
           <MentalCard
             tint="bg-white border-slate-200"
-            icon={Brain}
+            icon={Flower}
             iconColor="text-purple-500"
             dotColor="bg-slate-400"
             linkColor="text-slate-500 hover:text-slate-700"

@@ -44,7 +44,6 @@ import {
   Loader2,
   User,
   CheckCircle2,
-  Brain,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useTasks } from '@/hooks/useTasks'
@@ -107,7 +106,7 @@ const navigation: NavSection[] = [
     icon: Heart,
     items: [
       { title: 'Minum Air', href: '/minum-air', icon: GlassWater },
-      { title: 'PMO', href: '/pmo', icon: Brain },
+      { title: 'PMO', href: '/pmo', icon: Shield },
       { title: 'Tidur', href: '/tidur', icon: Moon },
     ],
   },

@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, Mosque, Heart, Moon, GlassWater, Shield, Brain, Smile, Lightbulb, Sparkles, History } from 'lucide-react'
+import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, Mosque, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, History } from 'lucide-react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
@@ -97,7 +97,7 @@ function SelesaiHeaderStats() {
   )
 }
 
-// Ikon per tab — mengikuti icon sidebar (revisi 7). PMO memakai Brain (revisi 8, dibedakan dari Masalah/Shield)
+// Ikon per tab — mengikuti icon sidebar (revisi 7). PMO memakai Shield (revisi batch 27)
 const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   '/overview': LayoutDashboard,
   '/tugas/hari-ini': Clock,
@@ -110,7 +110,7 @@ const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   '/tidur': Moon,
   '/minum-air': GlassWater,
   '/masalah': Shield,
-  '/pmo': Brain,
+  '/pmo': Shield,
   '/kesenangan': Smile,
   '/saran-perbaikan': Lightbulb,
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Brain, ArrowRight, NotebookPen, Shield, Smile } from 'lucide-react'
+import { Brain, ArrowRight, NotebookPen, Hourglass } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useMasalahLogRange } from '@/hooks/useMasalahLogs'
 import { useKesenanganRange } from '@/hooks/useKesenangan'
@@ -97,7 +97,7 @@ export function MentalCard({
       </div>
       <div className="mt-3 grid gap-4 sm:grid-cols-2 divide-y divide-slate-200 sm:divide-y-0 sm:divide-x">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1"><Shield className="h-3.5 w-3.5 text-purple-500" /> Refleksi</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1"><Brain className="h-3.5 w-3.5 text-purple-500" /> Refleksi</p>
           {masalahItems.length > 0 ? (
             <ul className="mt-2 space-y-1.5">
               {masalahItems.map(item => (
@@ -112,7 +112,7 @@ export function MentalCard({
           )}
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1"><Smile className="h-3.5 w-3.5 text-purple-500" /> Kesenangan Ditunda</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 flex items-center gap-1"><Hourglass className="h-3.5 w-3.5 text-purple-500" /> Kesenangan Ditunda</p>
           {funItems.length > 0 ? (
             <ul className="mt-2 space-y-1.5">
               {funItems.map(item => (

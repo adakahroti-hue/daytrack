@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { FileText, Clock, Timer, ArrowRight } from 'lucide-react'
+import { Clock, Timer, ArrowRight } from 'lucide-react'
 import { getEstimasiText, getTaskActiveSeconds } from '@/lib/utils'
 import { useTasks } from '@/hooks/useTasks'
 
@@ -66,18 +66,13 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
     <div className="rounded-xl border border-slate-200 bg-white p-4 flex flex-col">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-slate-700">Tugas {label}</p>
-        <div className="flex items-center gap-1.5">
-          <Link
-            href="/tugas/hari-ini"
-            aria-label="Lihat tugas"
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-          >
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-          <div className="p-1.5 rounded-lg bg-slate-100">
-            <FileText className="h-4 w-4 text-slate-500" />
-          </div>
-        </div>
+        <Link
+          href="/tugas/hari-ini"
+          aria-label="Lihat tugas"
+          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+        >
+          <ArrowRight className="h-4 w-4" />
+        </Link>
       </div>
       <div className="mt-3 flex gap-4">
         {/* Kiri: total + bar pendek */}
