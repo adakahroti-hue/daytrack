@@ -152,7 +152,7 @@ export default function MasalahPage() {
   return (
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
 
-      {/* Tabel gaya Quran: Tanggal | Hari | Masalah | Status | Solusi */}
+      {/* Tabel gaya Quran: Tanggal | Hari | Refleksi | Status | Solusi */}
       <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-280px)] landscape:max-lg:max-h-none rounded-lg border bg-white', TABLE_BORDER)}>
         <table className="w-full border-collapse text-xs sm:text-sm">
           <thead className="sticky top-0 z-20 bg-white">
@@ -169,7 +169,7 @@ export default function MasalahPage() {
               <th className={cn('px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 border-r min-w-[160px] sm:min-w-[220px]', TABLE_BORDER)}>
                 <div className="flex items-center gap-1">
                   <Shield className="h-3.5 w-3.5 text-slate-500" />
-                  Masalah
+                  Refleksi
                 </div>
               </th>
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[96px] sm:min-w-[110px]', TABLE_BORDER)}>
@@ -196,7 +196,7 @@ export default function MasalahPage() {
               </tr>
             ) : entries.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-center py-12 text-slate-400 text-sm">Belum ada masalah tercatat pada periode ini.</td>
+                <td colSpan={5} className="text-center py-12 text-slate-400 text-sm">Belum ada refleksi tercatat pada periode ini.</td>
               </tr>
             ) : (
               entries.map((entry, rowIdx) => {
@@ -277,7 +277,7 @@ export default function MasalahPage() {
       <Button
         onClick={openAdd}
         size="icon"
-        aria-label="Tambah Masalah"
+        aria-label="Tambah Refleksi"
         className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-white shadow-lg"
       >
         <Plus className="h-6 w-6" />
@@ -287,7 +287,7 @@ export default function MasalahPage() {
       <Dialog open={!!editState} onOpenChange={(open) => !open && setEditState(null)}>
         <DialogContent className="max-w-[92vw] sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{editState?.id ? 'Edit Masalah' : 'Tambah Masalah'}</DialogTitle>
+            <DialogTitle>{editState?.id ? 'Edit Refleksi' : 'Tambah Refleksi'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
@@ -300,7 +300,7 @@ export default function MasalahPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="masalah-teks">Masalah</Label>
+              <Label htmlFor="masalah-teks">Refleksi</Label>
               <Textarea
                 id="masalah-teks"
                 placeholder="Tulis masalah yang sedang dihadapi…"

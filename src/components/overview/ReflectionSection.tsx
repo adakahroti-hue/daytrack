@@ -90,9 +90,9 @@ export function ReflectionSection({ startStr, endStr }: { startStr: string; endS
           iconColor="text-purple-500"
           dotColor="bg-purple-400"
           linkColor="text-purple-600 hover:text-purple-700"
-          title="Masalah"
+          title="Refleksi"
           items={masalahList}
-          emptyText="Tidak ada masalah tercatat pada periode ini."
+          emptyText="Tidak ada refleksi tercatat pada periode ini."
           href="/masalah"
         />
         <ReflectionCard

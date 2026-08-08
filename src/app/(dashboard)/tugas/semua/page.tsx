@@ -473,6 +473,11 @@ function SemuaPageClient() {
     const byPrioritySort = (a: Task, b: Task) => {
       const p = PRIORITY_ORDER.indexOf(a.prioritas) - PRIORITY_ORDER.indexOf(b.prioritas)
       if (p !== 0) return p
+      // Revisi: anggota satu paket berurutan sesuai nomor urut (parent=1 dulu)
+      if (a.group_id && b.group_id && a.group_id === b.group_id) {
+        const go = (a.group_order ?? 99) - (b.group_order ?? 99)
+        if (go !== 0) return go
+      }
       const s = STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status)
       if (s !== 0) return s
       return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
@@ -520,6 +525,40 @@ function SemuaPageClient() {
       const terlambat = [...overdueTasks].sort(byPrioritySort)
       if (terlambat.length > 0) {
         groups.push({ key: 'terlambat', title: 'Terlambat', description: `${terlambat.length} tugas melewati tanggal`, icon: AlertTriangle, iconColor: 'text-red-600 dark:text-red-400', tasks: terlambat })
+      }
+    } else if (groupMode === 'badge') {
+      // Revisi: filter Badge — setiap paket (parent+child) satu group, yang tanpa badge disatukan
+      const byGroup = new Map<string, Task[]>()
+      const singles: Task[] = []
+      for (const t of onTimeTasks) {
+        if (t.group_id) {
+          if (!byGroup.has(t.group_id)) byGroup.set(t.group_id, [])
+          byGroup.get(t.group_id)!.push(t)
+        } else {
+          singles.push(t)
+        }
+      }
+      for (const gid of byGroup.keys()) {
+        const tasks = byGroup.get(gid)!.sort((a, b) => (a.group_order ?? 99) - (b.group_order ?? 99))
+        const parent = tasks.find(t => t.group_order === 1)
+        groups.push({
+          key: `paket-${gid}`,
+          title: parent ? parent.nama : 'Paket',
+          description: `${tasks.length} tugas dalam satu paket`,
+          icon: Layers,
+          iconColor: 'text-violet-600 dark:text-violet-400',
+          tasks,
+        })
+      }
+      if (singles.length > 0) {
+        groups.push({
+          key: 'tanpa-badge',
+          title: 'Tanpa Badge',
+          description: `${singles.length} tugas tanpa paket`,
+          icon: Flag,
+          iconColor: 'text-slate-500 dark:text-slate-400',
+          tasks: singles.sort(byPrioritySort),
+        })
       }
     } else {
       // Group by prioritas (default — same look as Hari Ini tab)

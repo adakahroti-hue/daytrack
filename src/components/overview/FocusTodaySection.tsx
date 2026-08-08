@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Target, FileText, Clock, Timer, Pause, Play, Check, ArrowRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Target, FileText, Clock, Timer, ArrowRight } from 'lucide-react'
 import { cn, getEstimasiText, getTaskActiveSeconds, getMissionPriorityLabel, getMissionPriorityColor } from '@/lib/utils'
-import { useTasks, useToggleTaskStatus, usePauseTask, useResumeTask } from '@/hooks/useTasks'
+import { useTasks } from '@/hooks/useTasks'
 
 // ─── Revisi batch 9, 11 & 13: section "Fokus" untuk tab Overview ───
 
@@ -57,9 +56,6 @@ export function FocusTodaySection({ startStr, endStr, period }: { startStr: stri
   const allTasks = (data ?? []) as OverviewTask[]
   // Filter tugas ke rentang periode terpilih (harian = 1 tanggal)
   const tasks = allTasks.filter(t => t.tanggal >= startStr && t.tanggal <= endStr)
-  const toggleStatus = useToggleTaskStatus()
-  const pauseTask = usePauseTask()
-  const resumeTask = useResumeTask()
 
   const featured = tasks.find(t => t.status === 'proses')
   const backlog = tasks
@@ -137,23 +133,6 @@ export function FocusTodaySection({ startStr, endStr, period }: { startStr: stri
                 <Timer className="h-3.5 w-3.5" /> Sedang: {formatSedang(t)}
               </p>
             </div>
-            <div className="mt-auto pt-3 flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => t.is_paused ? resumeTask.mutate(t.id) : pauseTask.mutate(t.id)}
-              >
-                {t.is_paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-                {t.is_paused ? 'Lanjutkan' : 'Pause'}
-              </Button>
-              <Button
-                size="sm"
-                className="bg-green-600 hover:bg-green-700 text-white"
-                onClick={() => toggleStatus.mutate({ id: t.id, status: 'selesai' })}
-              >
-                <Check className="h-4 w-4" /> Tandai Selesai
-              </Button>
-            </div>
           </div>
         ) : (
           // Kartu tugas backlog per prioritas
@@ -171,25 +150,6 @@ export function FocusTodaySection({ startStr, endStr, period }: { startStr: stri
             <span className="mt-2 w-fit inline-flex rounded-md bg-white/80 border border-slate-200 px-2 py-0.5 text-[11px] font-medium text-slate-600">
               {t.status === 'proses' ? 'Proses' : 'Belum'}
             </span>
-            <div className="mt-auto pt-3">
-              {t.status === 'proses' ? (
-                <Button
-                  size="sm"
-                  className="w-full bg-green-600 hover:bg-green-700 text-white"
-                  onClick={() => toggleStatus.mutate({ id: t.id, status: 'selesai' })}
-                >
-                  <Check className="h-4 w-4" /> Tandai Selesai
-                </Button>
-              ) : (
-                <Button
-                  size="sm"
-                  className="w-full bg-[#0F172A] hover:bg-slate-800 text-white"
-                  onClick={() => toggleStatus.mutate({ id: t.id, status: 'proses' })}
-                >
-                  <Play className="h-4 w-4" /> Ambil Misi
-                </Button>
-              )}
-            </div>
           </div>
         ))}
 

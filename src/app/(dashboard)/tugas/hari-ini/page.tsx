@@ -370,7 +370,14 @@ function HariIniPageClient() {
   const inProgressTasks = useMemo(() => {
     return todayTasks
       .filter((t: Task) => t.status === 'proses')
-      .sort((a: Task, b: Task) => new Date(a.started_at || a.created_at).getTime() - new Date(b.started_at || b.created_at).getTime())
+      .sort((a: Task, b: Task) => {
+        // Revisi: anggota satu paket berurutan sesuai nomor urut (parent=1 dulu)
+        if (a.group_id && b.group_id && a.group_id === b.group_id) {
+          const go = (a.group_order ?? 99) - (b.group_order ?? 99)
+          if (go !== 0) return go
+        }
+        return new Date(a.started_at || a.created_at).getTime() - new Date(b.started_at || b.created_at).getTime()
+      })
   }, [todayTasks])
 
   // Remaining pending tasks grouped by priority ('proses' tasks live in "Sedang Dikerjakan")
@@ -378,7 +385,14 @@ function HariIniPageClient() {
     return PRIORITY_ORDER.map(priority => {
       const tasks = todayTasks
         .filter((t: Task) => t.prioritas === priority && t.status === 'belum')
-        .sort((a: Task, b: Task) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+        .sort((a: Task, b: Task) => {
+          // Revisi: anggota satu paket berurutan sesuai nomor urut (parent=1 dulu)
+          if (a.group_id && b.group_id && a.group_id === b.group_id) {
+            const go = (a.group_order ?? 99) - (b.group_order ?? 99)
+            if (go !== 0) return go
+          }
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        })
       return { priority, tasks }
     })
   }, [todayTasks])
