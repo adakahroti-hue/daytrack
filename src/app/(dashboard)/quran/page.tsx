@@ -25,7 +25,8 @@ import { useQuranLogRange, useUpsertQuranLog, useDeleteQuranLog } from '@/hooks/
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
 import dynamic from 'next/dynamic'
-const QuranAnalytics = dynamic(() => import('@/components/quran/QuranAnalytics').then(m => m.QuranAnalytics), { ssr: false, loading: () => null })
+import { AnalyticsSkeleton } from '@/components/ui/analytics-skeleton'
+const QuranAnalytics = dynamic(() => import('@/components/quran/QuranAnalytics').then(m => m.QuranAnalytics), { ssr: false, loading: () => <AnalyticsSkeleton /> })
 
 // ─── Constants ────────────────────────────────────
 

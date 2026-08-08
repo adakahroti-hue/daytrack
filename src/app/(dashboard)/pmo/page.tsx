@@ -20,7 +20,8 @@ import { usePmoLogRange, useUpsertPmoLog, useDeletePmoLog } from '@/hooks/usePmo
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
 import dynamic from 'next/dynamic'
-const StatusAnalytics = dynamic(() => import('@/components/analytics/StatusAnalytics').then(m => m.StatusAnalytics), { ssr: false, loading: () => null })
+import { AnalyticsSkeleton } from '@/components/ui/analytics-skeleton'
+const StatusAnalytics = dynamic(() => import('@/components/analytics/StatusAnalytics').then(m => m.StatusAnalytics), { ssr: false, loading: () => <AnalyticsSkeleton /> })
 
 // ─── Constants ────────────────────────────────────
 

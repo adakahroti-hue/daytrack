@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Check, Minus, Mosque, BookOpen, GlassWater, ClipboardCheck, Repeat, Heart, Sparkles, Shield, Moon, ArrowRight, Brain } from 'lucide-react'
 import { format, differenceInCalendarDays } from 'date-fns'
 import { cn } from '@/lib/utils'
+import { JAM_TIDUR_OPTIONS } from '@/lib/tidur-options'
 import { usePrayerLogRange } from '@/hooks/usePrayerLogs'
 import { useQuranLogRange } from '@/hooks/useQuranLogs'
 import { useWaterLogRange } from '@/hooks/useMinumAirLogs'
@@ -41,15 +42,6 @@ const WATER_SESSIONS = [
   { key: 'setelah_maghrib', label: 'Setelah Maghrib' },
   { key: 'sebelum_tidur', label: 'Sebelum Tidur' },
 ] as const
-
-// Revisi batch 23 (mockup): jadwal jam tidur + label pendek pill
-const JAM_TIDUR_OPTIONS = [
-  { value: '22:00', label: '22.00', status: 'tepat' as const },
-  { value: '23:00', label: '23.00', status: 'tepat' as const },
-  { value: '23:30', label: '23.30', status: 'begadang' as const },
-  { value: '00:00', label: '00.00', status: 'begadang' as const },
-  { value: '01:30', label: '01.30', status: 'begadang' as const },
-]
 
 const WATER_PILL_LABELS: Record<string, string> = {
   setelah_bangun: 'Bangun', setelah_dzuhur: 'Dzuhur', setelah_ashar: 'Ashar',

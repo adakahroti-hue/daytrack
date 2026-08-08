@@ -20,20 +20,16 @@ import { useTidurLogRange, useUpsertTidurLog, useDeleteTidurLog } from '@/hooks/
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
 import dynamic from 'next/dynamic'
-const StatusAnalytics = dynamic(() => import('@/components/analytics/StatusAnalytics').then(m => m.StatusAnalytics), { ssr: false, loading: () => null })
+import { AnalyticsSkeleton } from '@/components/ui/analytics-skeleton'
+import { JAM_TIDUR_OPTIONS } from '@/lib/tidur-options'
+const StatusAnalytics = dynamic(() => import('@/components/analytics/StatusAnalytics').then(m => m.StatusAnalytics), { ssr: false, loading: () => <AnalyticsSkeleton /> })
 
 // ─── Constants ────────────────────────────────────
 
 // Revisi 4 (batch 5): alasan begadang
 const BEGADANG_REASONS = ['Tak Bisa Tidur', 'Gabut', 'Kerja', 'Main Game', 'Minum Kopi', 'Nongkrong', 'Lapar']
 
-const JAM_TIDUR_OPTIONS = [
-  { value: '22:00', label: '22.00', status: 'tepat' as const },
-  { value: '23:00', label: '23.00', status: 'tepat' as const },
-  { value: '23:30', label: '23.30', status: 'begadang' as const },
-  { value: '00:00', label: '00.00', status: 'begadang' as const },
-  { value: '01:30', label: '01.30', status: 'begadang' as const },
-]
+// JAM_TIDUR_OPTIONS dipindah ke src/lib/tidur-options.ts (dipakai juga di Overview — batch 24)
 
 const DAY_BADGE_COLORS: Record<string, string> = {
   Senin: 'bg-yellow-100 text-yellow-800 border-yellow-200',

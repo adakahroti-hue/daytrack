@@ -23,7 +23,8 @@ import { usePrayerLogRange, useTogglePrayer, useUpdatePrayerQuality } from '@/ho
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
 import nextDynamic from 'next/dynamic'
-const SholatAnalytics = nextDynamic(() => import('@/components/sholat/SholatAnalytics').then(m => m.SholatAnalytics), { ssr: false, loading: () => null })
+import { AnalyticsSkeleton } from '@/components/ui/analytics-skeleton'
+const SholatAnalytics = nextDynamic(() => import('@/components/sholat/SholatAnalytics').then(m => m.SholatAnalytics), { ssr: false, loading: () => <AnalyticsSkeleton /> })
 
 // ─── Constants ────────────────────────────────────
 

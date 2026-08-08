@@ -25,7 +25,8 @@ import { useWaterLogRange, useUpsertWaterLog, useDeleteWaterLog } from '@/hooks/
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
 import dynamic from 'next/dynamic'
-const MinumAirAnalytics = dynamic(() => import('@/components/minum-air/MinumAirAnalytics').then(m => m.MinumAirAnalytics), { ssr: false, loading: () => null })
+import { AnalyticsSkeleton } from '@/components/ui/analytics-skeleton'
+const MinumAirAnalytics = dynamic(() => import('@/components/minum-air/MinumAirAnalytics').then(m => m.MinumAirAnalytics), { ssr: false, loading: () => <AnalyticsSkeleton /> })
 
 // ─── Constants ────────────────────────────────────
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, Fragment } from 'react'
+import { useState, Fragment, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
@@ -36,7 +36,6 @@ import {
   Lightbulb,
   Sparkles,
   ChevronDown,
-  ChevronRight,
   Menu,
   X,
   PanelLeft,
@@ -107,21 +106,21 @@ const navigation: NavSection[] = [
     title: 'Kesehatan',
     icon: Heart,
     items: [
-      { title: 'Tidur', href: '/tidur', icon: Moon },
       { title: 'Minum Air', href: '/minum-air', icon: GlassWater },
       { title: 'PMO', href: '/pmo', icon: Brain },
+      { title: 'Tidur', href: '/tidur', icon: Moon },
     ],
   },
   {
     title: 'Mental',
     icon: Shield,
     items: [
-      { title: 'Refleksi', href: '/masalah', icon: Shield },
       { title: 'Kesenangan', href: '/kesenangan', icon: Smile },
+      { title: 'Refleksi', href: '/masalah', icon: Shield },
     ],
   },
   {
-    title: 'Maintenance Daytrack',
+    title: 'Pengaturan',
     icon: Sparkles,
     items: [
       { title: 'Masukan', href: '/saran-perbaikan', icon: Lightbulb },
@@ -247,6 +246,13 @@ function SidebarContent({
   showMobileClose?: boolean
   onCloseMobile?: () => void
 }) {
+  // Profil asli (revisi batch 24): ganti placeholder "Pengguna" / "user@daytrack.app"
+  const [userEmail, setUserEmail] = useState<string | null>(null)
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => setUserEmail(data.user?.email ?? null)).catch(() => setUserEmail(null))
+  }, [])
+
   return (
     <div className="flex h-full flex-col">
       {/* Logo header */}
@@ -385,8 +391,8 @@ function SidebarContent({
             )
           })}
         </ul>
-        {/* User Profile — mengalir bersama nav (tidak sticky) */}
-        <div className={cn('mt-2 border-t', isCollapsed ? 'p-2' : 'p-3')}>
+        {/* User Profile — compact + email asli (revisi batch 24) */}
+        <div className={cn('mt-1.5 border-t', isCollapsed ? 'p-1.5' : 'p-2')}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -394,31 +400,24 @@ function SidebarContent({
               className={cn(
                 'rounded-lg',
                 isCollapsed
-                  ? 'w-10 h-10 p-0 justify-center'
-                  : 'w-full justify-start gap-3 h-12'
+                  ? 'w-9 h-9 p-0 justify-center'
+                  : 'w-full justify-start gap-2.5 h-9 px-2'
               )}
             >
-              <Avatar className="h-8 w-8 flex-shrink-0">
+              <Avatar className="h-7 w-7 flex-shrink-0">
                 <AvatarImage src="/avatar.png" alt="" />
-                <AvatarFallback>
-                  <User className="h-5 w-5" />
+                <AvatarFallback className="text-xs">
+                  {userEmail ? userEmail[0].toUpperCase() : <User className="h-4 w-4" />}
                 </AvatarFallback>
               </Avatar>
               {!isCollapsed && (
-                <div className="flex-1 text-left min-w-0">
-                  <p className="text-sm font-medium truncate">Pengguna</p>
-                  <p className="text-xs text-muted-foreground truncate">user@daytrack.app</p>
-                </div>
+                <span className="flex-1 text-left text-sm font-medium truncate">{userEmail ?? 'Pengguna'}</span>
               )}
-              {!isCollapsed && <ChevronRight className="h-4 w-4 text-muted-foreground" />}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="end" forceMount sideOffset={5}>
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">Pengguna</p>
-                <p className="text-xs leading-none text-muted-foreground">user@daytrack.app</p>
-              </div>
+            <DropdownMenuLabel className="font-normal py-2">
+              <p className="text-sm font-medium leading-none truncate">{userEmail ?? 'Pengguna'}</p>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={onSignOut} disabled={isLoading}>
