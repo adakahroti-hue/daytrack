@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { Brain, NotebookPen, Hourglass, PersonStanding } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useMasalahLogRange } from '@/hooks/useMasalahLogs'

@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { Checkbox } from '@/components/ui/checkbox'
-import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, getMissionGroupName, getMissionPriorityShortLabel, getMissionGroupDescriptionWithCount, CARD_BASE, CARD_HOVER, BRAND_COLORS, PRIORITY_COLORS, getActualDurationText, compareEstimasiVsActual, getLiveDurationText } from '@/lib/utils'
+import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, getMissionGroupName, getMissionGroupDescriptionWithCount, CARD_BASE, CARD_HOVER, BRAND_COLORS, PRIORITY_COLORS, getActualDurationText, compareEstimasiVsActual, getLiveDurationText } from '@/lib/utils'
 import { TaskForm } from '@/components/tasks/TaskForm'
 import { TaskGroupRibbon, TaskGroupDialog } from '@/components/tasks/task-group'
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus, useBulkDeleteTasks, useBulkResetTasks } from '@/hooks/useTasks'
@@ -62,12 +62,6 @@ const STATUS_SHORT_LABELS: Record<Task['status'], string> = {
   selesai: 'Selesai',
 }
 
-const PRIORITY_ICONS: Record<Task['prioritas'], string> = {
-  p1: '🔥',
-  p2: '⚡',
-  p3: '📌',
-  p4: '🌱',
-}
 const PRIORITY_CARD_COLORS: Record<string, string> = {
   p1: 'bg-rose-50 border-rose-300 hover:border-rose-400 dark:bg-rose-950/40 dark:border-rose-800',
   p2: 'bg-amber-50 border-amber-300 hover:border-amber-400 dark:bg-amber-950/40 dark:border-amber-800',

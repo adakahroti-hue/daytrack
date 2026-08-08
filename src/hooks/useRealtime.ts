@@ -108,7 +108,7 @@ export function useRealtime({
   const handlerIdRef = useRef<string>('')
   const entryRef = useRef<ChannelEntry | null>(null)
 
-  const handleRealtimeEvent = useCallback((_payload: any) => {
+  const handleRealtimeEvent = useCallback((payload: any) => {
     
     queryKeys.forEach(key => {
       queryClient.invalidateQueries({ queryKey: key })
