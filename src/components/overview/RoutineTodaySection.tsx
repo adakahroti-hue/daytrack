@@ -326,7 +326,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
               </div>
               <div className="grid grid-cols-5 gap-x-2 lg:gap-x-5 shrink-0 w-full lg:w-auto">
                 {JAM_TIDUR_OPTIONS.map(o => (
-                  <div key={o.value} className={cn("flex flex-col items-center gap-0.5 min-w-0", o.value.startsWith('01') && "pt-1")}>
+                  <div key={o.value} className={cn("flex flex-col items-center gap-0.5 min-w-0", o.value.startsWith('01') && "pt-2")}>
                     <span className="text-[10px] leading-tight text-slate-500">{o.label}</span>
                     {o.status === 'tepat'
                       ? <Check className="h-3 w-3 text-indigo-600" />
