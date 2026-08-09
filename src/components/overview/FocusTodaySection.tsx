@@ -95,7 +95,7 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
         <div className="w-px bg-slate-100 shrink-0" />
         <div className="flex-1 min-w-0">
           {sedang > 0 ? (
-            <p className="text-xs font-medium text-slate-500">{sedang} tugas sedang dikerjakan</p>
+            <p className="text-xs font-medium text-slate-500">{sedang} Tugas Diproses</p>
           ) : (
             <p className="text-xs font-medium text-slate-500">Tidak ada tugas berjalan</p>
           )}
