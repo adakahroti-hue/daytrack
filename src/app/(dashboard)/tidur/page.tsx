@@ -272,7 +272,7 @@ export default function TidurPage() {
                         <DropdownMenuTrigger asChild>
                           <button
                             type="button"
-                            className="text-slate-700 cursor-pointer hover:text-blue-700 hover:underline"
+                            className="font-medium text-slate-700 cursor-pointer hover:text-blue-700 hover:underline"
                           >
                             {entry?.jam_tidur ? entry.jam_tidur.slice(0, 5) : 'Pilih'}
                           </button>
@@ -297,7 +297,7 @@ export default function TidurPage() {
                           <DropdownMenuTrigger asChild>
                             <button
                               type="button"
-                              className="text-slate-700 cursor-pointer hover:text-blue-700 hover:underline"
+                              className="font-medium text-slate-700 cursor-pointer hover:text-blue-700 hover:underline"
                             >
                               {begadangLabel}
                             </button>
@@ -315,7 +315,7 @@ export default function TidurPage() {
                           <DropdownMenuTrigger asChild>
                             <button
                               type="button"
-                              className="text-slate-400 cursor-pointer hover:text-blue-700 hover:underline"
+                              className="font-medium text-slate-400 cursor-pointer hover:text-blue-700 hover:underline"
                             >
                               Pilih alasan
                             </button>
