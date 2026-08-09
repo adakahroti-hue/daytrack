@@ -101,7 +101,7 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
           )}
           {featured ? (
             <>
-              <p className="text-sm font-semibold text-slate-900 line-clamp-2">{featured.nama}</p>
+              <p className="text-sm font-semibold text-slate-900 line-clamp-2 pt-1">{featured.nama}</p>
               <div className="flex items-center gap-3 text-xs text-slate-500 mt-2 flex-wrap">
                 <p className="flex items-center gap-1.5">
                   <Clock className="h-3.5 w-3.5" /> Estimasi: {getEstimasiText(featured.estimasi_menit)}
