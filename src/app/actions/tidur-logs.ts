@@ -10,7 +10,7 @@ const tidurLogSchema = z.object({
   jam_tidur: z.string().optional(),
   jam_bangun: z.string().optional(),
   kualitas: z.number().int().min(1).max(5).optional(),
-  catatan: z.string().optional(),
+  catatan: z.string().nullable().optional(),
   alasan_tidak: z.enum(["sibuk", "insomnia", "malam_minggu", "lainnya"]).optional(),
 })
 

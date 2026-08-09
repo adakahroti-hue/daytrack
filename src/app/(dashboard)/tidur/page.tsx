@@ -121,7 +121,7 @@ export default function TidurPage() {
   }, [rangeStart, rangeEnd])
 
   const handleSetStatus = async (tanggal: string, status: 'tepat' | 'begadang') => {
-    await upsertTidurLog.mutateAsync({ tanggal, status })
+    await upsertTidurLog.mutateAsync({ tanggal, status, ...(status === 'tepat' ? { catatan: null as any } : {}) })
   }
 
   const handleSetAlasan = async (tanggal: string, reason: string) => {
