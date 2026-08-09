@@ -266,9 +266,9 @@ export default function TidurPage() {
                         <DropdownMenuTrigger asChild>
                           <button
                             type="button"
-                            className="text-xs text-slate-700 cursor-pointer hover:text-blue-700 hover:underline"
+                            className="text-slate-700 cursor-pointer hover:text-blue-700 hover:underline"
                           >
-                            {entry?.jam_tidur ? entry.jam_tidur.replace(':', '.') : 'Pilih'}
+                            {entry?.jam_tidur || 'Pilih'}
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="center" className="w-32">
@@ -291,7 +291,7 @@ export default function TidurPage() {
                           <DropdownMenuTrigger asChild>
                             <button
                               type="button"
-                              className="text-xs text-slate-700 cursor-pointer hover:text-blue-700 hover:underline"
+                              className="text-slate-700 cursor-pointer hover:text-blue-700 hover:underline"
                             >
                               {begadangLabel}
                             </button>
@@ -309,7 +309,7 @@ export default function TidurPage() {
                           <DropdownMenuTrigger asChild>
                             <button
                               type="button"
-                              className="text-xs text-slate-400 cursor-pointer hover:text-blue-700 hover:underline"
+                              className="text-slate-400 cursor-pointer hover:text-blue-700 hover:underline"
                             >
                               Pilih alasan
                             </button>
@@ -323,7 +323,7 @@ export default function TidurPage() {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       ) : (
-                        <span className="text-xs text-slate-400">-</span>
+                        <span className="text-slate-400">-</span>
                       )}
                     </td>
                   </tr>
