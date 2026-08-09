@@ -164,16 +164,16 @@ export default function TidurPage() {
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[64px] sm:min-w-[90px] dt-col-stick sm:sticky sm:left-[100px] sm:z-30 sm:bg-white', TABLE_BORDER)}>
                 Hari
               </th>
-              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[80px] sm:min-w-[100px]', TABLE_BORDER)}>
-                <div className="flex items-center justify-center gap-1">
-                  <Clock className="h-3.5 w-3.5 text-indigo-500" />
-                  Jam Tidur
-                </div>
-              </th>
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
                   <Moon className="h-3.5 w-3.5 text-indigo-500" />
                   Status
+                </div>
+              </th>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[80px] sm:min-w-[100px]', TABLE_BORDER)}>
+                <div className="flex items-center justify-center gap-1">
+                  <Clock className="h-3.5 w-3.5 text-indigo-500" />
+                  Jam Tidur
                 </div>
               </th>
               <th className={cn('px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
@@ -228,38 +228,6 @@ export default function TidurPage() {
                             <button
                               type="button"
                               className={cn(
-                                'inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium border transition-colors cursor-pointer whitespace-nowrap',
-                                entry?.jam_tidur
-                                  ? 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
-                                  : 'text-slate-400 border-dashed border-slate-300 hover:bg-slate-50 hover:text-slate-600'
-                              )}
-                            >
-                              <Clock className="h-3.5 w-3.5 shrink-0" />
-                              {entry?.jam_tidur ? entry.jam_tidur.replace(':', '.') : 'Pilih'}
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="center" className="w-32">
-                            {JAM_TIDUR_OPTIONS.map(opt => (
-                              <DropdownMenuItem
-                                key={opt.value}
-                                onClick={() => handleSetJamTidur(dateStr, opt.value, opt.status)}
-                                className="flex items-center gap-2"
-                              >
-                                {opt.status === 'tepat' ? <Check className="h-4 w-4 text-green-600" /> : <X className="h-4 w-4 text-red-500" />}
-                                {opt.label}
-                              </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </td>
-                    <td className={cn('px-2 sm:px-3 py-2 text-center border-r', TABLE_BORDER)}>
-                      <div className="flex items-center justify-center min-h-[36px]">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button
-                              type="button"
-                              className={cn(
                                 'inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium border transition-colors cursor-pointer whitespace-normal leading-tight text-center',
                                 isBegadang
                                   ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'
@@ -287,6 +255,38 @@ export default function TidurPage() {
                                 </DropdownMenuItem>
                               </>
                             )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </td>
+                    <td className={cn('px-2 sm:px-3 py-2 text-center border-r', TABLE_BORDER)}>
+                      <div className="flex items-center justify-center min-h-[36px]">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              className={cn(
+                                'inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium border transition-colors cursor-pointer whitespace-nowrap',
+                                entry?.jam_tidur
+                                  ? 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
+                                  : 'text-slate-400 border-dashed border-slate-300 hover:bg-slate-50 hover:text-slate-600'
+                              )}
+                            >
+                              <Clock className="h-3.5 w-3.5 shrink-0" />
+                              {entry?.jam_tidur ? entry.jam_tidur.replace(':', '.') : 'Pilih'}
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="center" className="w-32">
+                            {JAM_TIDUR_OPTIONS.map(opt => (
+                              <DropdownMenuItem
+                                key={opt.value}
+                                onClick={() => handleSetJamTidur(dateStr, opt.value, opt.status)}
+                                className="flex items-center gap-2"
+                              >
+                                {opt.status === 'tepat' ? <Check className="h-4 w-4 text-green-600" /> : <X className="h-4 w-4 text-red-500" />}
+                                {opt.label}
+                              </DropdownMenuItem>
+                            ))}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
