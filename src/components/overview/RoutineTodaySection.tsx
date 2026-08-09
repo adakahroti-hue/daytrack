@@ -200,12 +200,12 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                   <span className="text-sm font-medium text-slate-500">sholat</span>
                 </p>
               </div>
-              <div className="grid grid-cols-5 gap-x-2 lg:gap-x-5 shrink-0 w-full lg:w-auto">
+              <div className="grid grid-cols-5 gap-x-2 lg:gap-x-6 shrink-0 w-full lg:w-auto">
                 {SHOLAT_5.map((s, i) => {
                   const done = isHarian ? sholatPerWaktu[i] > 0 : sholatPerWaktu[i] >= daysElapsed
                   return (
                     <div key={s.key} className="flex flex-col items-center gap-0.5 min-w-0">
-                      <span className="text-[10px] leading-tight text-slate-500">{s.label}</span>
+                      <span className="text-xs leading-tight text-slate-500">{s.label}</span>
                       {isHarian ? (
                         done
                           ? <Check className="h-3 w-3 text-emerald-600" />
@@ -232,12 +232,12 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                   <span className="text-sm font-medium text-slate-500">sesi</span>
                 </p>
               </div>
-              <div className="grid grid-cols-5 gap-x-2 lg:gap-x-5 shrink-0 w-full lg:w-auto">
+              <div className="grid grid-cols-5 gap-x-2 lg:gap-x-6 shrink-0 w-full lg:w-auto">
                 {QURAN_SESSIONS.map((s, i) => {
                   const done = isHarian ? quranPerSesi[i] > 0 : quranPerSesi[i] >= daysElapsed
                   return (
                     <div key={s.key} className="flex flex-col items-center gap-0.5 min-w-0">
-                      <span className="text-[10px] leading-tight text-slate-500">{QURAN_PILL_LABELS[s.key] ?? s.label}</span>
+                      <span className="text-xs leading-tight text-slate-500">{QURAN_PILL_LABELS[s.key] ?? s.label}</span>
                       {isHarian ? (
                         done
                           ? <Check className="h-3 w-3 text-teal-600" />
@@ -261,11 +261,11 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
             <div className="mt-1.5 pl-[18px] flex items-center gap-4 lg:gap-6 flex-wrap text-sm">
               <div className="flex items-center gap-1.5">
                 <span className={cn('text-[22px] font-bold leading-none tabular-nums', numColor(checklist[0].days >= daysElapsed))}>{checklist[0].days}<span className={cn('text-lg', numColorSoft(checklist[0].days >= daysElapsed))}>/{daysElapsed}</span></span>
-                <span className="text-slate-700">Bersyukur</span>
+                <span className="text-xs text-slate-700">Bersyukur</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className={cn('text-[22px] font-bold leading-none tabular-nums', numColor(checklist[1].days >= daysElapsed))}>{checklist[1].days}<span className={cn('text-lg', numColorSoft(checklist[1].days >= daysElapsed))}>/{daysElapsed}</span></span>
-                <span className="text-slate-700">Mendoakan orang lain</span>
+                <span className="text-xs text-slate-700">Mendoakan orang lain</span>
               </div>
             </div>
           </div>
@@ -289,12 +289,12 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                   </p>
                 )}
               </div>
-              <div className="grid grid-cols-5 gap-x-2 lg:gap-x-5 shrink-0 w-full lg:w-auto">
+              <div className="grid grid-cols-5 gap-x-2 lg:gap-x-6 shrink-0 w-full lg:w-auto">
                 {WATER_SESSIONS.map((s, i) => {
                   const done = isHarian ? waterPerSesi[i] > 0 : waterPerSesi[i] >= daysElapsed
                   return (
                     <div key={s.key} className="flex flex-col items-center gap-0.5 min-w-0">
-                      <span className="text-[10px] leading-tight text-slate-500">{WATER_PILL_LABELS[s.key] ?? s.label}</span>
+                      <span className="text-xs leading-tight text-slate-500">{WATER_PILL_LABELS[s.key] ?? s.label}</span>
                       {isHarian ? (
                         done
                           ? <Check className="h-3 w-3 text-sky-600" />
