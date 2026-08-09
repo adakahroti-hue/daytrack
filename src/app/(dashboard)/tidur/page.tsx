@@ -292,7 +292,7 @@ export default function TidurPage() {
                       </div>
                     </td>
                     <td className={cn('px-2 sm:px-3 py-2 text-left', TABLE_BORDER)}>
-                      {isBegadang ? (
+                      {isBegadang && entry?.catatan?.startsWith('Begadang:') ? (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <button
@@ -300,6 +300,24 @@ export default function TidurPage() {
                               className="inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium border transition-colors cursor-pointer whitespace-normal leading-tight text-center bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
                             >
                               {begadangLabel}
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start" className="w-44">
+                            {BEGADANG_REASONS.map(r => (
+                              <DropdownMenuItem key={r} onClick={() => handleSetAlasan(dateStr, r)} className="flex items-center gap-2">
+                                {r}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : isBegadang ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              className="inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium border transition-colors cursor-pointer whitespace-normal leading-tight text-center text-slate-400 border-dashed border-slate-300 hover:bg-slate-50 hover:text-slate-600"
+                            >
+                              Pilih alasan
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="start" className="w-44">
