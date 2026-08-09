@@ -260,36 +260,28 @@ export default function TidurPage() {
                       </div>
                     </td>
                     <td className={cn('px-2 sm:px-3 py-2 text-center border-r', TABLE_BORDER)}>
-                      <div className="flex items-center justify-center min-h-[36px]">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button
-                              type="button"
-                              className={cn(
-                                'inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium border transition-colors cursor-pointer whitespace-nowrap',
-                                entry?.jam_tidur
-                                  ? 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
-                                  : 'text-slate-400 border-dashed border-slate-300 hover:bg-slate-50 hover:text-slate-600'
-                              )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            type="button"
+                            className="text-xs text-slate-700 cursor-pointer hover:text-blue-700 hover:underline"
+                          >
+                            {entry?.jam_tidur ? entry.jam_tidur.replace(':', '.') : 'Pilih'}
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="center" className="w-32">
+                          {JAM_TIDUR_OPTIONS.map(opt => (
+                            <DropdownMenuItem
+                              key={opt.value}
+                              onClick={() => handleSetJamTidur(dateStr, opt.value, opt.status)}
+                              className="flex items-center gap-2"
                             >
-                              <Clock className="h-3.5 w-3.5 shrink-0" />
-                              {entry?.jam_tidur ? entry.jam_tidur.replace(':', '.') : 'Pilih'}
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="center" className="w-32">
-                            {JAM_TIDUR_OPTIONS.map(opt => (
-                              <DropdownMenuItem
-                                key={opt.value}
-                                onClick={() => handleSetJamTidur(dateStr, opt.value, opt.status)}
-                                className="flex items-center gap-2"
-                              >
-                                {opt.status === 'tepat' ? <Check className="h-4 w-4 text-green-600" /> : <X className="h-4 w-4 text-red-500" />}
-                                {opt.label}
-                              </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
+                              {opt.status === 'tepat' ? <Check className="h-4 w-4 text-green-600" /> : <X className="h-4 w-4 text-red-500" />}
+                              {opt.label}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                     <td className={cn('px-2 sm:px-3 py-2 text-left', TABLE_BORDER)}>
                       {isBegadang && entry?.catatan?.startsWith('Begadang:') ? (
@@ -297,7 +289,7 @@ export default function TidurPage() {
                           <DropdownMenuTrigger asChild>
                             <button
                               type="button"
-                              className="inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium border transition-colors cursor-pointer whitespace-normal leading-tight text-center bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
+                              className="text-xs text-slate-700 cursor-pointer hover:text-blue-700 hover:underline"
                             >
                               {begadangLabel}
                             </button>
@@ -315,7 +307,7 @@ export default function TidurPage() {
                           <DropdownMenuTrigger asChild>
                             <button
                               type="button"
-                              className="inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium border transition-colors cursor-pointer whitespace-normal leading-tight text-center text-slate-400 border-dashed border-slate-300 hover:bg-slate-50 hover:text-slate-600"
+                              className="text-xs text-slate-400 cursor-pointer hover:text-blue-700 hover:underline"
                             >
                               Pilih alasan
                             </button>
@@ -329,7 +321,7 @@ export default function TidurPage() {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       ) : (
-                        <span className="text-slate-400">-</span>
+                        <span className="text-xs text-slate-400">-</span>
                       )}
                     </td>
                   </tr>
