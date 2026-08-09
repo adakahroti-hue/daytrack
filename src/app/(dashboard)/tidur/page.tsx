@@ -170,18 +170,21 @@ export default function TidurPage() {
                   Jam Tidur
                 </div>
               </th>
-              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
                   <Moon className="h-3.5 w-3.5 text-indigo-500" />
                   Status
                 </div>
+              </th>
+              <th className={cn('px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
+                Alasan
               </th>
             </tr>
           </thead>
           <tbody className={cn(effectiveLocked && 'pointer-events-none select-none')}>
             {isLoading ? (
               <tr>
-                <td colSpan={4} className="text-center py-12 text-slate-400">
+                <td colSpan={5} className="text-center py-12 text-slate-400">
                   <div className="flex flex-col items-center gap-2">
                     <div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" />
                     <span className="text-sm">Memuat data...</span>
@@ -190,7 +193,7 @@ export default function TidurPage() {
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan={4} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td>
+                <td colSpan={5} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td>
               </tr>
             ) : (
               dates.map((dateStr, rowIdx) => {
@@ -250,7 +253,7 @@ export default function TidurPage() {
                         </DropdownMenu>
                       </div>
                     </td>
-                    <td className={cn('px-2 sm:px-3 py-2 text-center', TABLE_BORDER)}>
+                    <td className={cn('px-2 sm:px-3 py-2 text-center border-r', TABLE_BORDER)}>
                       <div className="flex items-center justify-center min-h-[36px]">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -289,6 +292,11 @@ export default function TidurPage() {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
+                    </td>
+                    <td className={cn('px-2 sm:px-3 py-2 text-left', TABLE_BORDER)}>
+                      <span className="text-slate-700 whitespace-normal break-words leading-snug">
+                        {isBegadang ? begadangLabel : '-'}
+                      </span>
                     </td>
                   </tr>
                 )
