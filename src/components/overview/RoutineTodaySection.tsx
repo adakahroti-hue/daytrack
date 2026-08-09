@@ -258,7 +258,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
               <Sparkles className="h-3.5 w-3.5 text-emerald-500" /> Optimasi Hoki
             </p>
-            <div className="mt-1.5 pl-[18px] flex items-center gap-6 lg:gap-8 flex-wrap text-sm">
+            <div className="mt-1.5 pl-[18px] flex items-center gap-8 lg:gap-10 flex-wrap text-sm">
               <div className="flex items-center gap-1.5">
                 <span className={cn('text-[22px] font-bold leading-none tabular-nums', numColor(checklist[0].days >= daysElapsed))}>{checklist[0].days}<span className={cn('text-lg', numColorSoft(checklist[0].days >= daysElapsed))}>/{daysElapsed}</span></span>
                 <span className="text-xs text-slate-700">Bersyukur</span>
