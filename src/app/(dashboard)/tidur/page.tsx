@@ -12,7 +12,7 @@ import {
   endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, Moon, Check, X, Trash2, Clock } from 'lucide-react'
+import { Calendar, CalendarDays, Moon, Check, X, Trash2, Clock, MessageCircle } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { useTableLock } from '@/components/ui/table-lock'
@@ -164,7 +164,10 @@ export default function TidurPage() {
                 </div>
               </th>
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[64px] sm:min-w-[90px] dt-col-stick sm:sticky sm:left-[100px] sm:z-30 sm:bg-white', TABLE_BORDER)}>
-                Hari
+                <div className="flex items-center justify-center gap-1">
+                  <CalendarDays className="h-3.5 w-3.5 text-orange-500" />
+                  Hari
+                </div>
               </th>
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
@@ -179,7 +182,10 @@ export default function TidurPage() {
                 </div>
               </th>
               <th className={cn('px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
-                Alasan
+                <div className="flex items-center gap-1">
+                  <MessageCircle className="h-3.5 w-3.5 text-amber-500" />
+                  Alasan
+                </div>
               </th>
             </tr>
           </thead>
