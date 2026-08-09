@@ -121,11 +121,13 @@ export default function TidurPage() {
   }, [rangeStart, rangeEnd])
 
   const handleSetStatus = async (tanggal: string, status: 'tepat' | 'begadang') => {
-    await upsertTidurLog.mutateAsync({ tanggal, status, ...(status === 'tepat' ? { catatan: null as any } : {}) })
+    const entry = logMap[tanggal]
+    await upsertTidurLog.mutateAsync({ tanggal, status, jam_tidur: entry?.jam_tidur || undefined, ...(status === 'tepat' ? { catatan: null as any } : {}) })
   }
 
   const handleSetAlasan = async (tanggal: string, reason: string) => {
-    await upsertTidurLog.mutateAsync({ tanggal, status: 'begadang', catatan: `Begadang: ${reason}` })
+    const entry = logMap[tanggal]
+    await upsertTidurLog.mutateAsync({ tanggal, status: 'begadang', catatan: `Begadang: ${reason}`, jam_tidur: entry?.jam_tidur || undefined })
   }
 
   const handleSetJamTidur = async (tanggal: string, jamTidur: string, status: 'tepat' | 'begadang') => {
