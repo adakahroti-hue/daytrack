@@ -120,12 +120,12 @@ export default function TidurPage() {
     return eachDayOfInterval({ start: rangeStart, end: rangeEnd }).map(d => format(d, 'yyyy-MM-dd'))
   }, [rangeStart, rangeEnd])
 
-  const handleSetStatus = async (tanggal: string, status: 'tepat' | 'begadang', reason?: string) => {
-    await upsertTidurLog.mutateAsync({
-      tanggal,
-      status,
-      catatan: status === 'begadang' && reason ? `Begadang: ${reason}` : undefined,
-    })
+  const handleSetStatus = async (tanggal: string, status: 'tepat' | 'begadang') => {
+    await upsertTidurLog.mutateAsync({ tanggal, status })
+  }
+
+  const handleSetAlasan = async (tanggal: string, reason: string) => {
+    await upsertTidurLog.mutateAsync({ tanggal, status: 'begadang', catatan: `Begadang: ${reason}` })
   }
 
   const handleSetJamTidur = async (tanggal: string, jamTidur: string, status: 'tepat' | 'begadang') => {
@@ -269,18 +269,16 @@ export default function TidurPage() {
                               )}
                             >
                               {isDone && <Check className="h-3.5 w-3.5 shrink-0" />}
-                              {isDone ? 'Tepat Waktu' : isBegadang ? begadangLabel : 'Belum'}
+                              {isDone ? 'Tepat Waktu' : isBegadang ? 'Begadang' : 'Belum'}
                             </button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="center" className="w-44">
+                          <DropdownMenuContent align="center" className="w-40">
                             <DropdownMenuItem onClick={() => handleSetStatus(dateStr, 'tepat')} className="flex items-center gap-2">
                               <Check className="h-4 w-4 text-green-600" /> Tepat Waktu
                             </DropdownMenuItem>
-                            {BEGADANG_REASONS.map(r => (
-                              <DropdownMenuItem key={r} onClick={() => handleSetStatus(dateStr, 'begadang', r)} className="flex items-center gap-2">
-                                <X className="h-4 w-4 text-red-500" /> {r}
-                              </DropdownMenuItem>
-                            ))}
+                            <DropdownMenuItem onClick={() => handleSetStatus(dateStr, 'begadang')} className="flex items-center gap-2">
+                              <X className="h-4 w-4 text-red-500" /> Begadang
+                            </DropdownMenuItem>
                             {entry && (
                               <>
                                 <DropdownMenuSeparator />
@@ -294,9 +292,27 @@ export default function TidurPage() {
                       </div>
                     </td>
                     <td className={cn('px-2 sm:px-3 py-2 text-left', TABLE_BORDER)}>
-                      <span className="text-slate-700 whitespace-normal break-words leading-snug">
-                        {isBegadang ? begadangLabel : '-'}
-                      </span>
+                      {isBegadang ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              className="inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium border transition-colors cursor-pointer whitespace-normal leading-tight text-center bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
+                            >
+                              {begadangLabel}
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start" className="w-44">
+                            {BEGADANG_REASONS.map(r => (
+                              <DropdownMenuItem key={r} onClick={() => handleSetAlasan(dateStr, r)} className="flex items-center gap-2">
+                                {r}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : (
+                        <span className="text-slate-400">-</span>
+                      )}
                     </td>
                   </tr>
                 )
