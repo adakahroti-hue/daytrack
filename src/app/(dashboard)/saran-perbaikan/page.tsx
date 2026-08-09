@@ -11,9 +11,8 @@ import {
   endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, Lightbulb, Check, X, Trash2, Plus, Pencil } from 'lucide-react'
+import { Calendar, Lightbulb, Trash2, Plus, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -53,7 +52,6 @@ interface EditState {
   id: string | null // null = tambah baru
   tanggal: string
   saran: string
-  tujuan: string
 }
 
 function startOfDaySafe(d: Date): Date {
@@ -115,8 +113,8 @@ export default function SaranPerbaikanPage() {
     return [...(logs as SaranEntry[])].sort((a, b) => b.tanggal.localeCompare(a.tanggal))
   }, [logs])
 
-  const openAdd = () => setEditState({ id: null, tanggal: todayStr, saran: '', tujuan: '' })
-  const openEdit = (e: SaranEntry) => setEditState({ id: e.id, tanggal: e.tanggal, saran: e.saran, tujuan: e.keterangan || '' })
+  const openAdd = () => setEditState({ id: null, tanggal: todayStr, saran: '' })
+  const openEdit = (e: SaranEntry) => setEditState({ id: e.id, tanggal: e.tanggal, saran: e.saran })
 
   const handleSave = async () => {
     if (!editState) return
@@ -125,14 +123,13 @@ export default function SaranPerbaikanPage() {
     if (editState.id) {
       await updateSaranPerbaikan.mutateAsync({
         id: editState.id,
-        data: { tanggal: editState.tanggal, hari, saran: editState.saran.trim(), keterangan: editState.tujuan.trim() },
+        data: { tanggal: editState.tanggal, hari, saran: editState.saran.trim() },
       })
     } else {
       await createSaranPerbaikan.mutateAsync({
         tanggal: editState.tanggal,
         hari,
         saran: editState.saran.trim(),
-        keterangan: editState.tujuan.trim() || undefined,
         status: 'belum',
       })
     }
@@ -143,10 +140,6 @@ export default function SaranPerbaikanPage() {
     if (!editState?.id) return
     await deleteSaranPerbaikan.mutateAsync(editState.id)
     setEditState(null)
-  }
-
-  const handleSetStatus = async (entry: SaranEntry, done: boolean) => {
-    await updateSaranPerbaikan.mutateAsync({ id: entry.id, data: { status: done ? 'selesai' : 'belum' } })
   }
 
   return (
@@ -165,24 +158,18 @@ export default function SaranPerbaikanPage() {
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[64px] sm:min-w-[90px]', TABLE_BORDER)}>
                 Hari
               </th>
-              <th className={cn('px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 border-r min-w-[160px] sm:min-w-[220px]', TABLE_BORDER)}>
+              <th className={cn('px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 min-w-[160px] sm:min-w-[220px]', TABLE_BORDER)}>
                 <div className="flex items-center gap-1">
                   <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
                   Saran Perbaikan
                 </div>
-              </th>
-              <th className={cn('px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 border-r min-w-[140px] sm:min-w-[200px]', TABLE_BORDER)}>
-                Tujuan
-              </th>
-              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[96px] sm:min-w-[110px]', TABLE_BORDER)}>
-                Status
               </th>
             </tr>
           </thead>
           <tbody className={cn(effectiveLocked && 'pointer-events-none select-none')}>
             {isLoading ? (
               <tr>
-                <td colSpan={5} className="text-center py-12 text-slate-400">
+                <td colSpan={3} className="text-center py-12 text-slate-400">
                   <div className="flex flex-col items-center gap-2">
                     <div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" />
                     <span className="text-sm">Memuat data...</span>
@@ -191,11 +178,11 @@ export default function SaranPerbaikanPage() {
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan={5} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td>
+                <td colSpan={3} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td>
               </tr>
             ) : entries.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-center py-12 text-slate-400 text-sm">
+                <td colSpan={3} className="text-center py-12 text-slate-400 text-sm">
                   Belum ada masukan. Tekan tombol + untuk menambah.
                 </td>
               </tr>
@@ -204,7 +191,6 @@ export default function SaranPerbaikanPage() {
                 const date = new Date(entry.tanggal + 'T00:00:00')
                 const dayName = format(date, 'EEEE', { locale: id })
                 const dateDisplay = format(date, 'd MMMM', { locale: id })
-                const isDone = entry.status === 'selesai'
 
                 return (
                   <tr
@@ -225,47 +211,6 @@ export default function SaranPerbaikanPage() {
                         <span className="text-slate-800 whitespace-normal break-words leading-snug group-hover:text-blue-700">{entry.saran}</span>
                         <Pencil className="inline-block h-3 w-3 ml-1.5 text-slate-300 group-hover:text-blue-500 align-middle" />
                       </button>
-                    </td>
-                    <td className={cn('px-2 sm:px-3 py-2 border-r', TABLE_BORDER)}>
-                      <button type="button" onClick={() => openEdit(entry)} className="w-full text-left">
-                        {entry.keterangan ? (
-                          <span className="text-slate-700 whitespace-normal break-words leading-snug">{entry.keterangan}</span>
-                        ) : (
-                          <span className="text-slate-400 italic">Tujuan…</span>
-                        )}
-                      </button>
-                    </td>
-                    <td className={cn('px-2 sm:px-3 py-2 text-center', TABLE_BORDER)}>
-                      <div className="flex items-center justify-center min-h-[36px]">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button
-                              type="button"
-                              className={cn(
-                                'inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium border transition-colors cursor-pointer whitespace-normal leading-tight text-center',
-                                isDone
-                                  ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200'
-                                  : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
-                              )}
-                            >
-                              {isDone && <Check className="h-3.5 w-3.5 shrink-0" />}
-                              {isDone ? 'Sudah' : 'Belum'}
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="center" className="w-36">
-                            <DropdownMenuItem onClick={() => handleSetStatus(entry, false)} className="flex items-center gap-2">
-                              <X className="h-4 w-4 text-amber-500" /> Belum
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleSetStatus(entry, true)} className="flex items-center gap-2">
-                              <Check className="h-4 w-4 text-green-600" /> Sudah
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => openEdit(entry)} className="flex items-center gap-2">
-                              <Pencil className="h-4 w-4 text-slate-500" /> Edit
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
                     </td>
                   </tr>
                 )
@@ -310,16 +255,6 @@ export default function SaranPerbaikanPage() {
                 value={editState?.saran ?? ''}
                 onChange={(e) => setEditState(prev => prev ? { ...prev, saran: e.target.value } : prev)}
                 rows={3}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="saran-tujuan">Tujuan</Label>
-              <Textarea
-                id="saran-tujuan"
-                placeholder="Apa tujuan dari masukan ini? (opsional)"
-                value={editState?.tujuan ?? ''}
-                onChange={(e) => setEditState(prev => prev ? { ...prev, tujuan: e.target.value } : prev)}
-                rows={2}
               />
             </div>
             <div className="flex items-center justify-between gap-2 pt-1">
