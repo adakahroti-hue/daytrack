@@ -320,9 +320,6 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                   <span className={cn('text-[22px] font-bold tabular-nums', numColor(checklist[3].days >= daysElapsed))}>{checklist[3].days}<span className={cn('text-lg', numColorSoft(checklist[3].days >= daysElapsed))}>/{daysElapsed}</span></span>
                   <span className="text-sm font-medium text-slate-500">tepat</span>
                 </p>
-                {!tidurTopJam && (
-                  <span className="text-sm font-medium text-slate-500 mt-0.5">-</span>
-                )}
               </div>
               <div className="grid grid-cols-5 lg:grid-cols-7 gap-x-2 lg:gap-x-6 shrink-0 w-full lg:w-auto">
                 {JAM_TIDUR_OPTIONS.map(o => (
