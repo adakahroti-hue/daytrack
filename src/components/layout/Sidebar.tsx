@@ -45,6 +45,7 @@ import {
   Loader2,
   User,
   CheckCircle2,
+  Dices,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useTasks } from '@/hooks/useTasks'
@@ -98,6 +99,12 @@ const navigation: NavSection[] = [
     items: [
       { title: 'Sholat', href: '/sholat', icon: Mosque },
       { title: 'Quran', href: '/quran', icon: BookOpen },
+    ],
+  },
+  {
+    title: 'Hoki',
+    icon: Dices,
+    items: [
       { title: 'Doa', href: '/doa', icon: Heart },
       { title: 'Syukur', href: '/syukur', icon: Sparkles },
     ],
