@@ -274,7 +274,7 @@ export default function TidurPage() {
                             type="button"
                             className="text-slate-700 cursor-pointer hover:text-blue-700 hover:underline"
                           >
-                            {entry?.jam_tidur || 'Pilih'}
+                            {entry?.jam_tidur ? entry.jam_tidur.slice(0, 5) : 'Pilih'}
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="center" className="w-32">
