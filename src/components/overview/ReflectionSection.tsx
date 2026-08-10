@@ -45,9 +45,9 @@ export function MentalCard({
         <div className="pb-3 sm:pb-0">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1"><PersonStanding className="h-3.5 w-3.5 text-purple-500" /> Refleksi</p>
           {masalahItems.length > 0 ? (
-            <ul className="mt-2 space-y-1 pl-[18px]">
+            <ul className="mt-2 space-y-1">
               {masalahItems.map(item => (
-                <li key={item} className="flex items-start gap-2 text-sm text-slate-600">
+                <li key={item} className="flex items-start gap-2 text-sm text-slate-600 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-purple-50/50 hover:border-purple-100 transition-colors">
                   <span className={cn('mt-1.5 h-1 w-1 rounded-full shrink-0', dotColor)} />
                   <span className="line-clamp-2">{item}</span>
                 </li>
@@ -60,9 +60,9 @@ export function MentalCard({
         <div className="pt-3 sm:pt-0">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1"><Hourglass className="h-3.5 w-3.5 text-purple-500" /> Kesenangan Ditunda</p>
           {funItems.length > 0 ? (
-            <ul className="mt-2 space-y-1 pl-[18px]">
+            <ul className="mt-2 space-y-1">
               {funItems.map(item => (
-                <li key={item} className="flex items-start gap-2 text-sm text-slate-600">
+                <li key={item} className="flex items-start gap-2 text-sm text-slate-600 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-purple-50/50 hover:border-purple-100 transition-colors">
                   <span className={cn('mt-1.5 h-1 w-1 rounded-full shrink-0', dotColor)} />
                   <span className="line-clamp-2">{item}</span>
                 </li>
