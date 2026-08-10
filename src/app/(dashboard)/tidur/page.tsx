@@ -51,7 +51,6 @@ interface TidurLogEntry {
   jam_tidur: string | null
   jam_bangun: string | null
   durasi_jam: number | null
-  catatan: string | null
   alasan_tidak: string | null
   created_at: string
   updated_at: string

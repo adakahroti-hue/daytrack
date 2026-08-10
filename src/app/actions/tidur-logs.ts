@@ -9,7 +9,6 @@ const tidurLogSchema = z.object({
   status: z.enum(["tepat", "begadang"]).default("tepat"),
   jam_tidur: z.string().optional(),
   jam_bangun: z.string().optional(),
-  catatan: z.string().nullable().optional(),
   alasan_tidak: z.enum(["sibuk", "insomnia", "malam_minggu", "lainnya"]).optional(),
 })
 
@@ -23,7 +22,6 @@ export interface TidurLogEntry {
   jam_tidur: string | null
   jam_bangun: string | null
   durasi_jam: number | null
-  catatan: string | null
   alasan_tidak: string | null
   created_at: string
   updated_at: string
@@ -60,7 +58,6 @@ export async function upsertTidurLog(formData: TidurLogFormData) {
   // Only overwrite fields that were explicitly provided (preserve existing values on partial updates)
   if (validated.jam_tidur !== undefined) insertData.jam_tidur = validated.jam_tidur || null
   if (validated.jam_bangun !== undefined) insertData.jam_bangun = validated.jam_bangun || null
-  if (validated.catatan !== undefined) insertData.catatan = validated.catatan || null
   if (validated.alasan_tidak !== undefined) insertData.alasan_tidak = validated.alasan_tidak || null
   // durasi_jam is always recalculated from jam_tidur + jam_bangun
   const effectiveJamTidur = validated.jam_tidur ?? existing?.jam_tidur ?? null
@@ -95,7 +92,7 @@ export async function getTidurLog(tanggal: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("tidur").select("id, tanggal, status, jam_tidur, catatan").eq("user_id", user.id).eq("tanggal", tanggal).single()
+  const { data, error } = await supabase.from("tidur").select("id, tanggal, status, jam_tidur").eq("user_id", user.id).eq("tanggal", tanggal).single()
   if (error && error.code !== "PGRST116") throw new Error(error.message)
   return data
 }
@@ -104,7 +101,7 @@ export async function getTidurLogRange(startDate: string, endDate: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("tidur").select("id, tanggal, status, jam_tidur, catatan").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate).order("tanggal", { ascending: false })
+  const { data, error } = await supabase.from("tidur").select("id, tanggal, status, jam_tidur").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate).order("tanggal", { ascending: false })
   if (error) throw new Error(error.message)
   return data || []
 }
