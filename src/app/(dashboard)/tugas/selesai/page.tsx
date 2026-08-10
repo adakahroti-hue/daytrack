@@ -313,7 +313,7 @@ function SelesaiPageClient() {
   // Fetch ALL tasks - filter selesai di client
   const { data: allTasks = [], isLoading, error } = useTasks()
 
-  useTasksRealtime([['tasks']])
+  useTasksRealtime([['tugas']])
 
   const createTask = useCreateTask()
   const updateTask = useUpdateTask()

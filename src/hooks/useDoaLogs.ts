@@ -9,21 +9,21 @@ import {
 import type { DoaLogFormData, DoaLogEntry } from "@/app/actions/doa-logs"
 export function useDoaLog(tanggal: string) {
   return useQuery({
-    queryKey: ["doa_logs", tanggal],
+    queryKey: ["doa", tanggal],
     queryFn: () => getDoaLog(tanggal),
     enabled: !!tanggal,
   })
 }
 export function useDoaLogRange(startDate: string, endDate: string) {
   return useQuery({
-    queryKey: ["doa_logs", "range", startDate, endDate],
+    queryKey: ["doa", "range", startDate, endDate],
     queryFn: () => getDoaLogRange(startDate, endDate),
     enabled: !!startDate && !!endDate,
   })
 }
 export function useDoaDailySummary(tanggal: string) {
   return useQuery({
-    queryKey: ["doa_logs", "summary", tanggal],
+    queryKey: ["doa", "summary", tanggal],
     queryFn: () => getDoaDailySummary(tanggal),
     enabled: !!tanggal,
   })
@@ -34,7 +34,7 @@ export function useUpsertDoaLog() {
   return useMutation({
     mutationFn: (data: DoaLogFormData) => upsertDoaLog(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["doa_logs"] })
+      queryClient.invalidateQueries({ queryKey: ["doa"] })
       queryClient.invalidateQueries({ queryKey: ["overview"] })
     },
   })
@@ -45,7 +45,7 @@ export function useDeleteDoaLog() {
   return useMutation({
     mutationFn: (id: string) => deleteDoaLog(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["doa_logs"] })
+      queryClient.invalidateQueries({ queryKey: ["doa"] })
       queryClient.invalidateQueries({ queryKey: ["overview"] })
     },
   })

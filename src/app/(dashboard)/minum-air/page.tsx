@@ -132,9 +132,9 @@ export default function MinumAirPage() {
   const deleteWaterLog = useDeleteWaterLog()
 
   useRealtime({
-    table: 'minum_air_logs',
+    table: 'minum_air',
     filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
-    queryKeys: [['minum_air_logs', 'range', startDate, endDate]],
+    queryKeys: [['minum_air', 'range', startDate, endDate]],
   })
 
   // Map: tanggal -> waktu_baca -> entry

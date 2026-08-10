@@ -28,7 +28,7 @@ export async function createTask(formData: TaskFormData) {
   const validated = taskSchema.parse(formData)
 
   const { data, error } = await supabase
-    .from("tasks")
+    .from("tugas")
     .insert({
       ...validated,
       user_id: user.id,
@@ -54,7 +54,7 @@ export async function updateTask(id: string, formData: Partial<TaskFormData>) {
   const validated = taskSchema.partial().parse(formData)
 
   const { data, error } = await supabase
-    .from("tasks")
+    .from("tugas")
     .update(validated)
     .eq("id", id)
     .eq("user_id", user.id)
@@ -77,7 +77,7 @@ export async function deleteTask(id: string) {
   if (!user) throw new Error("Unauthorized")
 
   const { error } = await supabase
-    .from("tasks")
+    .from("tugas")
     .delete()
     .eq("id", id)
     .eq("user_id", user.id)
@@ -98,7 +98,7 @@ export async function bulkDeleteTasks(ids: string[]) {
   if (!user) throw new Error("Unauthorized")
 
   const { error } = await supabase
-    .from("tasks")
+    .from("tugas")
     .delete()
     .in("id", ids)
     .eq("user_id", user.id)
@@ -120,7 +120,7 @@ export async function bulkResetTasks(ids: string[]) {
   if (!user) throw new Error("Unauthorized")
 
   const { error } = await supabase
-    .from("tasks")
+    .from("tugas")
     .update({ status: 'belum', started_at: null, completed_at: null, accumulated_seconds: 0, is_paused: false, last_resumed_at: null })
     .in("id", ids)
     .eq("user_id", user.id)
@@ -145,7 +145,7 @@ export async function bulkUpdateTaskDate(ids: string[], tanggal: string) {
   if (!ids || ids.length === 0) return { error: null }
 
   const { error } = await supabase
-    .from("tasks")
+    .from("tugas")
     .update({ tanggal })
     .in("id", ids)
     .eq("user_id", user.id)
@@ -207,7 +207,7 @@ export async function toggleTaskStatus(id: string, status: "proses" | "belum" | 
     updateData.last_resumed_at = null
     // Ambil data lama dulu agar accumulated_seconds akurat
     const { data: existing } = await supabase
-      .from("tasks")
+      .from("tugas")
       .select("accumulated_seconds, is_paused, last_resumed_at, group_id, group_order")
       .eq("id", id)
       .eq("user_id", user.id)
@@ -223,7 +223,7 @@ export async function toggleTaskStatus(id: string, status: "proses" | "belum" | 
   }
 
   const { data, error } = await supabase
-    .from("tasks")
+    .from("tugas")
     .update(updateData)
     .eq("id", id)
     .eq("user_id", user.id)
@@ -250,7 +250,7 @@ export async function pauseTask(id: string) {
   if (!user) throw new Error("Unauthorized")
 
   const { data: existing, error: fetchError } = await supabase
-    .from("tasks")
+    .from("tugas")
     .select("status, accumulated_seconds, is_paused, last_resumed_at, group_id, group_order")
     .eq("id", id)
     .eq("user_id", user.id)
@@ -264,7 +264,7 @@ export async function pauseTask(id: string) {
   const accumulated = computeActiveSeconds(existing)
 
   const { data, error } = await supabase
-    .from("tasks")
+    .from("tugas")
     .update({ is_paused: true, accumulated_seconds: accumulated, last_resumed_at: null })
     .eq("id", id)
     .eq("user_id", user.id)
@@ -290,7 +290,7 @@ export async function resumeTask(id: string) {
   if (!user) throw new Error("Unauthorized")
 
   const { data: existing, error: fetchError } = await supabase
-    .from("tasks")
+    .from("tugas")
     .select("status, is_paused")
     .eq("id", id)
     .eq("user_id", user.id)
@@ -304,7 +304,7 @@ export async function resumeTask(id: string) {
   const now = new Date().toISOString()
 
   const { data, error } = await supabase
-    .from("tasks")
+    .from("tugas")
     .update({ is_paused: false, last_resumed_at: now })
     .eq("id", id)
     .eq("user_id", user.id)
@@ -329,7 +329,7 @@ export async function rescheduleMissedTasks(today: string) {
   if (!user) throw new Error("Unauthorized")
 
   const { data: missed, error } = await supabase
-    .from("tasks")
+    .from("tugas")
     .select("id, tanggal")
     .eq("user_id", user.id)
     .neq("status", "selesai")
@@ -342,7 +342,7 @@ export async function rescheduleMissedTasks(today: string) {
   const results = await Promise.all(
     missed.map((t) =>
       supabase
-        .from("tasks")
+        .from("tugas")
         .update({ tanggal: today, terlewat_tanggal: t.tanggal })
         .eq("id", t.id)
         .eq("user_id", user.id)
@@ -361,7 +361,7 @@ export async function getTasks(date?: string, status?: string, limit?: number) {
   if (!user) throw new Error("Unauthorized")
 
   let query = supabase
-    .from("tasks")
+    .from("tugas")
     .select(TASK_SELECT)
     .eq("user_id", user.id)
 
@@ -394,7 +394,7 @@ export async function getTaskById(id: string) {
   if (!user) throw new Error("Unauthorized")
 
   const { data, error } = await supabase
-    .from("tasks")
+    .from("tugas")
     .select(TASK_SELECT)
     .eq("id", id)
     .eq("user_id", user.id)

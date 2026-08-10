@@ -9,14 +9,14 @@ import {
 import type { QuranLogFormData } from "@/app/actions/quran-logs"
 export function useQuranLog(tanggal: string) {
   return useQuery({
-    queryKey: ["quran_logs", tanggal],
+    queryKey: ["quran", tanggal],
     queryFn: () => getQuranLog(tanggal),
     enabled: !!tanggal,
   })
 }
 export function useQuranLogRange(startDate: string, endDate: string) {
   return useQuery({
-    queryKey: ["quran_logs", "range", startDate, endDate],
+    queryKey: ["quran", "range", startDate, endDate],
     queryFn: () => getQuranLogRange(startDate, endDate),
     enabled: !!startDate && !!endDate,
     placeholderData: keepPreviousData,
@@ -24,7 +24,7 @@ export function useQuranLogRange(startDate: string, endDate: string) {
 }
 export function useQuranDailySummary(tanggal: string) {
   return useQuery({
-    queryKey: ["quran_logs", "summary", tanggal],
+    queryKey: ["quran", "summary", tanggal],
     queryFn: () => getQuranDailySummary(tanggal),
     enabled: !!tanggal,
   })
@@ -35,7 +35,7 @@ export function useUpsertQuranLog() {
   return useMutation({
     mutationFn: (data: QuranLogFormData) => upsertQuranLog(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["quran_logs"] })
+      queryClient.invalidateQueries({ queryKey: ["quran"] })
       queryClient.invalidateQueries({ queryKey: ["overview"] })
     },
   })
@@ -46,7 +46,7 @@ export function useDeleteQuranLog() {
   return useMutation({
     mutationFn: (id: string) => deleteQuranLog(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["quran_logs"] })
+      queryClient.invalidateQueries({ queryKey: ["quran"] })
       queryClient.invalidateQueries({ queryKey: ["overview"] })
     },
   })

@@ -42,7 +42,7 @@ export async function upsertQuranLog(formData: QuranLogFormData) {
   const validated = quranLogSchema.parse(formData)
 
   const { data: existing } = await supabase
-    .from("quran_logs")
+    .from("quran")
     .select("id")
     .eq("user_id", user.id)
     .eq("tanggal", validated.tanggal)
@@ -72,7 +72,7 @@ export async function upsertQuranLog(formData: QuranLogFormData) {
   let data, error
   if (existing) {
     const result = await supabase
-      .from("quran_logs")
+      .from("quran")
       .update(insertData)
       .eq("id", existing.id)
       .eq("user_id", user.id)
@@ -82,7 +82,7 @@ export async function upsertQuranLog(formData: QuranLogFormData) {
     error = result.error
   } else {
     const result = await supabase
-      .from("quran_logs")
+      .from("quran")
       .insert(insertData)
       .select()
       .single()
@@ -107,7 +107,7 @@ export async function deleteQuranLog(id: string) {
   if (!user) throw new Error("Unauthorized")
 
   const { error } = await supabase
-    .from("quran_logs")
+    .from("quran")
     .delete()
     .eq("id", id)
     .eq("user_id", user.id)
@@ -129,7 +129,7 @@ export async function getQuranLog(tanggal: string) {
   if (!user) throw new Error("Unauthorized")
 
   const { data, error } = await supabase
-    .from("quran_logs")
+    .from("quran")
     .select("*")
     .eq("user_id", user.id)
     .eq("tanggal", tanggal)
@@ -146,7 +146,7 @@ export async function getQuranLogRange(startDate: string, endDate: string) {
   if (!user) throw new Error("Unauthorized")
 
   const { data, error } = await supabase
-    .from("quran_logs")
+    .from("quran")
     .select("id, tanggal, waktu_baca, surat, juz, halaman_mulai, halaman_selesai, jumlah_halaman, catatan, created_at, updated_at")
     .eq("user_id", user.id)
     .gte("tanggal", startDate)
@@ -164,7 +164,7 @@ export async function getQuranDailySummary(tanggal: string) {
   if (!user) throw new Error("Unauthorized")
 
   const { data, error } = await supabase
-    .from("quran_logs")
+    .from("quran")
     .select("jumlah_halaman")
     .eq("user_id", user.id)
     .eq("tanggal", tanggal)

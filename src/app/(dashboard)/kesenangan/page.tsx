@@ -97,9 +97,9 @@ export default function KesenanganPage() {
 
   const { data: logs = [], isLoading, error } = useKesenanganRange(startDate, endDate)
   useRealtime({
-    table: 'kesenangan',
+    table: 'senang',
     filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
-    queryKeys: [['kesenangan', 'range', startDate, endDate]],
+    queryKeys: [['senang', 'range', startDate, endDate]],
   })
 
   const createKesenangan = useCreateKesenangan()

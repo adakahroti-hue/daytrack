@@ -55,7 +55,7 @@ export async function upsertSyukurLog(formData: SyukurLogFormData) {
 
   // Check if record exists for this user, date
   const { data: existing } = await supabase
-    .from("syukur_logs")
+    .from("syukur")
     .select("id")
     .eq("user_id", user.id)
     .eq("tanggal", validated.tanggal)
@@ -74,7 +74,7 @@ export async function upsertSyukurLog(formData: SyukurLogFormData) {
   let data, error
   if (existing) {
     const result = await supabase
-      .from("syukur_logs")
+      .from("syukur")
       .update(insertData)
       .eq("id", existing.id)
       .eq("user_id", user.id)
@@ -84,7 +84,7 @@ export async function upsertSyukurLog(formData: SyukurLogFormData) {
     error = result.error
   } else {
     const result = await supabase
-      .from("syukur_logs")
+      .from("syukur")
       .insert(insertData)
       .select()
       .single()
@@ -109,7 +109,7 @@ export async function deleteSyukurLog(id: string) {
   if (!user) throw new Error("Unauthorized")
 
   const { error } = await supabase
-    .from("syukur_logs")
+    .from("syukur")
     .delete()
     .eq("id", id)
     .eq("user_id", user.id)
@@ -131,7 +131,7 @@ export async function getSyukurLog(tanggal: string) {
   if (!user) throw new Error("Unauthorized")
 
   const { data, error } = await supabase
-    .from("syukur_logs")
+    .from("syukur")
     .select("*")
     .eq("user_id", user.id)
     .eq("tanggal", tanggal)
@@ -148,7 +148,7 @@ export async function getSyukurLogRange(startDate: string, endDate: string) {
   if (!user) throw new Error("Unauthorized")
 
   const { data, error } = await supabase
-    .from("syukur_logs")
+    .from("syukur")
     .select("*")
     .eq("user_id", user.id)
     .gte("tanggal", startDate)
@@ -166,7 +166,7 @@ export async function getSyukurDailySummary(tanggal: string) {
   if (!user) throw new Error("Unauthorized")
 
   const { data, error } = await supabase
-    .from("syukur_logs")
+    .from("syukur")
     .select("status")
     .eq("user_id", user.id)
     .eq("tanggal", tanggal)

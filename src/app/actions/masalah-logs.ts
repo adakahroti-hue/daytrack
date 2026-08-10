@@ -38,7 +38,7 @@ export async function upsertMasalahLog(formData: MasalahLogFormData) {
   const validated = masalahLogSchema.parse(formData)
 
   const { data: existing } = await supabase
-    .from("masalah_logs")
+    .from("refleksi")
     .select("id")
     .eq("user_id", user.id)
     .eq("tanggal", validated.tanggal)
@@ -58,10 +58,10 @@ export async function upsertMasalahLog(formData: MasalahLogFormData) {
 
   let data, error
   if (existing) {
-    const result = await supabase.from("masalah_logs").update(insertData).eq("id", existing.id).eq("user_id", user.id).select().single()
+    const result = await supabase.from("refleksi").update(insertData).eq("id", existing.id).eq("user_id", user.id).select().single()
     data = result.data; error = result.error
   } else {
-    const result = await supabase.from("masalah_logs").insert(insertData).select().single()
+    const result = await supabase.from("refleksi").insert(insertData).select().single()
     data = result.data; error = result.error
   }
 
@@ -82,7 +82,7 @@ export async function updateMasalahLog(id: string, formData: { masalah?: string;
   if (formData.tanggal !== undefined) updateData.tanggal = formData.tanggal
 
   const { data, error } = await supabase
-    .from("masalah_logs")
+    .from("refleksi")
     .update(updateData)
     .eq("id", id)
     .eq("user_id", user.id)
@@ -98,7 +98,7 @@ export async function deleteMasalahLog(id: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { error } = await supabase.from("masalah_logs").delete().eq("id", id).eq("user_id", user.id)
+  const { error } = await supabase.from("refleksi").delete().eq("id", id).eq("user_id", user.id)
   if (error) throw new Error(error.message)
   revalidatePath("/masalah"); revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
   return { error: null }
@@ -108,7 +108,7 @@ export async function getMasalahLog(tanggal: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("masalah_logs").select("*").eq("user_id", user.id).eq("tanggal", tanggal).order("created_at", { ascending: false })
+  const { data, error } = await supabase.from("refleksi").select("*").eq("user_id", user.id).eq("tanggal", tanggal).order("created_at", { ascending: false })
   if (error) throw new Error(error.message)
   return data || []
 }
@@ -117,7 +117,7 @@ export async function getMasalahLogRange(startDate: string, endDate: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("masalah_logs").select("*").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate).order("tanggal", { ascending: false })
+  const { data, error } = await supabase.from("refleksi").select("*").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate).order("tanggal", { ascending: false })
   if (error) throw new Error(error.message)
   return data || []
 }
@@ -126,7 +126,7 @@ export async function getMasalahStats(startDate: string, endDate: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("masalah_logs").select("status, prioritas, kategori").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate)
+  const { data, error } = await supabase.from("refleksi").select("status, prioritas, kategori").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate)
   if (error) throw new Error(error.message)
   
   const logs = data || []

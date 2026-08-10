@@ -94,9 +94,9 @@ export default function PmoPage() {
 
   const { data: logs = [], isLoading, error } = usePmoLogRange(startDate, endDate)
   useRealtime({
-    table: 'pmo_logs',
+    table: 'pmo',
     filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
-    queryKeys: [['pmo_logs', 'range', startDate, endDate]],
+    queryKeys: [['pmo', 'range', startDate, endDate]],
   })
 
   // Data sepanjang waktu — untuk card rekor streak & perhitungan hari_ke

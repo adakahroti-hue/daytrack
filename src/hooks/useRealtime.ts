@@ -183,9 +183,9 @@ export function useRealtime({
 
   return { cleanup }
 }
-export function useTasksRealtime(queryKeys: string[][] = [['tasks']], filter?: string) {
+export function useTasksRealtime(queryKeys: string[][] = [['tugas']], filter?: string) {
   return useRealtime({
-    table: 'tasks',
+    table: 'tugas',
     queryKeys,
     filter,
   })
@@ -226,9 +226,9 @@ export function useMinumAirRealtime(queryKeys: string[][] = [['minum_air']]) {
   })
 }
 
-export function useMasalahRealtime(queryKeys: string[][] = [['masalah']]) {
+export function useMasalahRealtime(queryKeys: string[][] = [['refleksi']]) {
   return useRealtime({
-    table: 'masalah',
+    table: 'refleksi',
     queryKeys,
   })
 }
@@ -247,9 +247,9 @@ export function useSyukurRealtime(queryKeys: string[][] = [['syukur']]) {
   })
 }
 
-export function useKesenanganRealtime(queryKeys: string[][] = [['kesenangan']]) {
+export function useKesenanganRealtime(queryKeys: string[][] = [['senang']]) {
   return useRealtime({
-    table: 'kesenangan',
+    table: 'senang',
     queryKeys,
   })
 }
@@ -263,65 +263,65 @@ export function useSaranPerbaikanRealtime(queryKeys: string[][] = [['saran_perba
 
 export function usePrayerLogRealtime(dateKey: string) {
   return useRealtime({
-    table: 'prayer_logs',
+    table: 'sholat',
     filter: `tanggal=eq.${dateKey}`,
-    queryKeys: [['prayer_logs', dateKey], ['prayer_logs', 'range']],
+    queryKeys: [['sholat', dateKey], ['sholat', 'range']],
   })
 }
 
 export function useQuranLogRealtime(dateKey: string) {
   return useRealtime({
-    table: 'quran_logs',
+    table: 'quran',
     filter: `tanggal=eq.${dateKey}`,
-    queryKeys: [['quran_logs', dateKey], ['quran_logs', 'range']],
+    queryKeys: [['quran', dateKey], ['quran', 'range']],
   })
 }
 
 export function useDoaLogRealtime(dateKey: string) {
   return useRealtime({
-    table: 'doa_logs',
+    table: 'doa',
     filter: `tanggal=eq.${dateKey}`,
-    queryKeys: [['doa_logs', dateKey], ['doa_logs', 'range']],
+    queryKeys: [['doa', dateKey], ['doa', 'range']],
   })
 }
 
 export function useSyukurLogRealtime(dateKey: string) {
   return useRealtime({
-    table: 'syukur_logs',
+    table: 'syukur',
     filter: `tanggal=eq.${dateKey}`,
-    queryKeys: [['syukur_logs', dateKey], ['syukur_logs', 'range']],
+    queryKeys: [['syukur', dateKey], ['syukur', 'range']],
   })
 }
 
 export function useTidurLogRealtime(dateKey: string) {
   return useRealtime({
-    table: 'tidur_logs',
+    table: 'tidur',
     filter: `tanggal=eq.${dateKey}`,
-    queryKeys: [['tidur_logs', dateKey], ['tidur_logs', 'range']],
+    queryKeys: [['tidur', dateKey], ['tidur', 'range']],
   })
 }
 
 export function useMinumAirLogRealtime(dateKey: string) {
   return useRealtime({
-    table: 'minum_air_logs',
+    table: 'minum_air',
     filter: `tanggal=eq.${dateKey}`,
-    queryKeys: [['minum_air_logs', dateKey], ['minum_air_logs', 'range']],
+    queryKeys: [['minum_air', dateKey], ['minum_air', 'range']],
   })
 }
 
 export function useMasalahLogRealtime(dateKey: string) {
   return useRealtime({
-    table: 'masalah_logs',
+    table: 'refleksi',
     filter: `tanggal=eq.${dateKey}`,
-    queryKeys: [['masalah_logs', dateKey], ['masalah_logs', 'range']],
+    queryKeys: [['refleksi', dateKey], ['refleksi', 'range']],
   })
 }
 
 export function usePmoLogRealtime(dateKey: string) {
   return useRealtime({
-    table: 'pmo_logs',
+    table: 'pmo',
     filter: `tanggal=eq.${dateKey}`,
-    queryKeys: [['pmo_logs', dateKey], ['pmo_logs', 'range']],
+    queryKeys: [['pmo', dateKey], ['pmo', 'range']],
   })
 }
 
@@ -348,7 +348,7 @@ export function useOverviewRealtime() {
 
   useEffect(() => {
     const supabase = supabaseRef.current
-    const tables = ['tasks', 'sholat', 'quran', 'doa', 'tidur_logs', 'minum_air_logs', 'masalah_logs', 'pmo_logs', 'syukur_logs', 'fun_queue', 'improvement_backlog']
+    const tables = ['tugas', 'sholat', 'quran', 'doa', 'tidur', 'minum_air', 'refleksi', 'pmo', 'syukur', 'fun_queue', 'improvement_backlog']
     
     // Use stable channel name
     const channelName = `daytrack:overview:all`

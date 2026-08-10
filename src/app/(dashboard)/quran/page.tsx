@@ -355,9 +355,9 @@ export default function QuranPage() {
   const deleteQuranLog = useDeleteQuranLog()
 
   useRealtime({
-    table: 'quran_logs',
+    table: 'quran',
     filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
-    queryKeys: [['quran_logs', 'range', startDate, endDate]],
+    queryKeys: [['quran', 'range', startDate, endDate]],
   })
 
   // Map: tanggal -> waktu_baca -> entry
@@ -407,7 +407,7 @@ export default function QuranPage() {
   // Optimistic update supaya pilihan langsung tercatat di UI
   const optimisticallySet = useCallback(
     (tanggal: string, waktuKey: WaktuBacaKey, updater: (entry: QuranLogEntry | undefined) => QuranLogEntry | null) => {
-      queryClient.setQueryData(['quran_logs', 'range', startDate, endDate], (old: QuranLogEntry[] | undefined) => {
+      queryClient.setQueryData(['quran', 'range', startDate, endDate], (old: QuranLogEntry[] | undefined) => {
         if (!old) return old
         const existing = old.find(l => l.tanggal === tanggal && l.waktu_baca === waktuKey)
         const next = updater(existing)
@@ -449,7 +449,7 @@ export default function QuranPage() {
           catatan: keepNote,
         })
       } catch {
-        queryClient.invalidateQueries({ queryKey: ['quran_logs'] })
+        queryClient.invalidateQueries({ queryKey: ['quran'] })
       }
       // Jangan tutup dropdown — biarkan user pilih rating
       return
@@ -487,7 +487,7 @@ export default function QuranPage() {
         catatan: `Tidak membaca: ${option.label}`,
       })
     } catch {
-      queryClient.invalidateQueries({ queryKey: ['quran_logs'] })
+      queryClient.invalidateQueries({ queryKey: ['quran'] })
     }
   }
 
@@ -514,7 +514,7 @@ export default function QuranPage() {
         catatan: existing?.catatan || 'Sudah baca',
       })
     } catch {
-      queryClient.invalidateQueries({ queryKey: ['quran_logs'] })
+      queryClient.invalidateQueries({ queryKey: ['quran'] })
     }
   }
 
@@ -528,7 +528,7 @@ export default function QuranPage() {
       try {
         await deleteQuranLog.mutateAsync(existing.id)
       } catch {
-        queryClient.invalidateQueries({ queryKey: ['quran_logs'] })
+        queryClient.invalidateQueries({ queryKey: ['quran'] })
       }
     }
   }

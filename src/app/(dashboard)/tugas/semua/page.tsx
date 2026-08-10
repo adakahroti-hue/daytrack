@@ -403,7 +403,7 @@ function SemuaPageClient() {
   const { data: allTasks = [], isLoading, error } = useTasks(undefined)
 
   // Subscribe to realtime - ALWAYS called
-  useTasksRealtime([['tasks']])
+  useTasksRealtime([['tugas']])
 
   const createTask = useCreateTask()
   const updateTask = useUpdateTask()

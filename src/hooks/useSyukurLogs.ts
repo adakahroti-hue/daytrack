@@ -9,21 +9,21 @@ import {
 import type { SyukurLogFormData, SyukurLogEntry } from "@/app/actions/syukur-logs"
 export function useSyukurLog(tanggal: string) {
   return useQuery({
-    queryKey: ["syukur_logs", tanggal],
+    queryKey: ["syukur", tanggal],
     queryFn: () => getSyukurLog(tanggal),
     enabled: !!tanggal,
   })
 }
 export function useSyukurLogRange(startDate: string, endDate: string) {
   return useQuery({
-    queryKey: ["syukur_logs", "range", startDate, endDate],
+    queryKey: ["syukur", "range", startDate, endDate],
     queryFn: () => getSyukurLogRange(startDate, endDate),
     enabled: !!startDate && !!endDate,
   })
 }
 export function useSyukurDailySummary(tanggal: string) {
   return useQuery({
-    queryKey: ["syukur_logs", "summary", tanggal],
+    queryKey: ["syukur", "summary", tanggal],
     queryFn: () => getSyukurDailySummary(tanggal),
     enabled: !!tanggal,
   })
@@ -34,7 +34,7 @@ export function useUpsertSyukurLog() {
   return useMutation({
     mutationFn: (data: SyukurLogFormData) => upsertSyukurLog(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["syukur_logs"] })
+      queryClient.invalidateQueries({ queryKey: ["syukur"] })
       queryClient.invalidateQueries({ queryKey: ["overview"] })
     },
   })
@@ -45,7 +45,7 @@ export function useDeleteSyukurLog() {
   return useMutation({
     mutationFn: (id: string) => deleteSyukurLog(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["syukur_logs"] })
+      queryClient.invalidateQueries({ queryKey: ["syukur"] })
       queryClient.invalidateQueries({ queryKey: ["overview"] })
     },
   })

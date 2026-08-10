@@ -37,7 +37,7 @@ export async function upsertWaterLog(formData: WaterLogFormData) {
   const validated = waterLogSchema.parse(formData)
 
   const { data: existing } = await supabase
-    .from("minum_air_logs")
+    .from("minum_air")
     .select("id")
     .eq("user_id", user.id)
     .eq("tanggal", validated.tanggal)
@@ -55,10 +55,10 @@ export async function upsertWaterLog(formData: WaterLogFormData) {
 
   let data, error
   if (existing) {
-    const result = await supabase.from("minum_air_logs").update(insertData).eq("id", existing.id).eq("user_id", user.id).select().single()
+    const result = await supabase.from("minum_air").update(insertData).eq("id", existing.id).eq("user_id", user.id).select().single()
     data = result.data; error = result.error
   } else {
-    const result = await supabase.from("minum_air_logs").insert(insertData).select().single()
+    const result = await supabase.from("minum_air").insert(insertData).select().single()
     data = result.data; error = result.error
   }
 
@@ -71,7 +71,7 @@ export async function deleteWaterLog(id: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { error } = await supabase.from("minum_air_logs").delete().eq("id", id).eq("user_id", user.id)
+  const { error } = await supabase.from("minum_air").delete().eq("id", id).eq("user_id", user.id)
   if (error) throw new Error(error.message)
   revalidatePath("/minum-air"); revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
   return { error: null }
@@ -81,7 +81,7 @@ export async function getWaterLog(tanggal: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("minum_air_logs").select("*").eq("user_id", user.id).eq("tanggal", tanggal).order("waktu_baca")
+  const { data, error } = await supabase.from("minum_air").select("*").eq("user_id", user.id).eq("tanggal", tanggal).order("waktu_baca")
   if (error) throw new Error(error.message)
   return data || []
 }
@@ -90,7 +90,7 @@ export async function getWaterLogRange(startDate: string, endDate: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("minum_air_logs").select("id, tanggal, waktu_baca, jumlah_ml, catatan, status, created_at, updated_at").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate).order("tanggal", { ascending: false })
+  const { data, error } = await supabase.from("minum_air").select("id, tanggal, waktu_baca, jumlah_ml, catatan, status, created_at, updated_at").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate).order("tanggal", { ascending: false })
   if (error) throw new Error(error.message)
   return data || []
 }
@@ -99,7 +99,7 @@ export async function getWaterDailySummary(tanggal: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("minum_air_logs").select("jumlah_ml").eq("user_id", user.id).eq("tanggal", tanggal)
+  const { data, error } = await supabase.from("minum_air").select("jumlah_ml").eq("user_id", user.id).eq("tanggal", tanggal)
   if (error) throw new Error(error.message)
   
   const totalMl = data?.reduce((sum, log) => sum + (log.jumlah_ml || 0), 0) || 0
@@ -113,7 +113,7 @@ export async function getWaterStats(startDate: string, endDate: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("minum_air_logs").select("tanggal, jumlah_ml").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate)
+  const { data, error } = await supabase.from("minum_air").select("tanggal, jumlah_ml").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate)
   if (error) throw new Error(error.message)
   
   const logs = data || []

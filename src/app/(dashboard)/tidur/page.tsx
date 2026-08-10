@@ -99,9 +99,9 @@ export default function TidurPage() {
 
   const { data: logs = [], isLoading, error } = useTidurLogRange(startDate, endDate)
   useRealtime({
-    table: 'tidur_logs',
+    table: 'tidur',
     filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
-    queryKeys: [['tidur_logs', 'range', startDate, endDate]],
+    queryKeys: [['tidur', 'range', startDate, endDate]],
   })
 
   const upsertTidurLog = useUpsertTidurLog()

@@ -10,7 +10,7 @@ import {
 import type { PrayerLogFormData } from "@/app/actions/prayer-logs"
 export function usePrayerLog(tanggal: string) {
   return useQuery({
-    queryKey: ["prayer_logs", tanggal],
+    queryKey: ["sholat", tanggal],
     queryFn: () => getPrayerLog(tanggal),
     enabled: !!tanggal,
     staleTime: 30_000, // 30 detik — tidak fetch ulang kalau data masih fresh
@@ -24,7 +24,7 @@ async function fetchPrayerLogRangeDirect(startDate: string, endDate: string) {
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) throw new Error("Unauthorized")
   const { data, error } = await supabase
-    .from("prayer_logs")
+    .from("sholat")
     .select("*")
     .eq("user_id", session.user.id)
     .gte("tanggal", startDate)
@@ -36,12 +36,11 @@ async function fetchPrayerLogRangeDirect(startDate: string, endDate: string) {
 
 export function usePrayerLogRange(startDate: string, endDate: string) {
   return useQuery({
-    queryKey: ["prayer_logs", "range", startDate, endDate],
+    queryKey: ["sholat", "range", startDate, endDate],
     queryFn: () => fetchPrayerLogRangeDirect(startDate, endDate),
     enabled: !!startDate && !!endDate,
     staleTime: 30 * 1000,
     refetchOnWindowFocus: false,
-    placeholderData: (previousData) => previousData,
     gcTime: 5 * 60 * 1000,
   })
 }
@@ -51,7 +50,7 @@ export function useUpsertPrayerLog() {
   return useMutation({
     mutationFn: (data: PrayerLogFormData) => upsertPrayerLog(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["prayer_logs"] })
+      queryClient.invalidateQueries({ queryKey: ["sholat"] })
       queryClient.invalidateQueries({ queryKey: ["overview"] })
     },
     onError: (error) => {
@@ -70,7 +69,7 @@ export function useTogglePrayer() {
       reason?: string 
     }) => togglePrayer(tanggal, prayerTime, value, reason),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["prayer_logs"] })
+      queryClient.invalidateQueries({ queryKey: ["sholat"] })
       queryClient.invalidateQueries({ queryKey: ["overview"] })
     },
     onError: (error) => {
@@ -89,14 +88,14 @@ export function useUpdatePrayerQuality() {
     }) => updatePrayerQuality(tanggal, prayerTime, quality),
     onSuccess: (data, variables) => {
       // Optimistically update the cache so the UI responds instantly
-      queryClient.setQueryData(["prayer_logs", variables.tanggal], (old: any) => {
+      queryClient.setQueryData(["sholat", variables.tanggal], (old: any) => {
         if (!old) return old
         return {
           ...old,
           [`kualitas_${variables.prayerTime}`]: variables.quality,
         }
       })
-      queryClient.invalidateQueries({ queryKey: ["prayer_logs"] })
+      queryClient.invalidateQueries({ queryKey: ["sholat"] })
     },
     onError: (error) => {
       console.error("Failed to update prayer quality:", error)

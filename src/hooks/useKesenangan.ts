@@ -11,7 +11,7 @@ import type { KesenanganFormData } from "@/app/actions/kesenangan"
 
 export function useKesenangan(tanggal: string) {
   return useQuery({
-    queryKey: ["kesenangan", tanggal],
+    queryKey: ["senang", tanggal],
     queryFn: () => getKesenangan(tanggal),
     enabled: !!tanggal,
   })
@@ -19,7 +19,7 @@ export function useKesenangan(tanggal: string) {
 
 export function useKesenanganRange(startDate: string, endDate: string) {
   return useQuery({
-    queryKey: ["kesenangan", "range", startDate, endDate],
+    queryKey: ["senang", "range", startDate, endDate],
     queryFn: () => getKesenanganRange(startDate, endDate),
     enabled: !!startDate && !!endDate,
   })
@@ -31,7 +31,7 @@ export function useUpsertKesenangan() {
   return useMutation({
     mutationFn: (data: KesenanganFormData) => upsertKesenangan(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["kesenangan"] })
+      queryClient.invalidateQueries({ queryKey: ["senang"] })
       queryClient.invalidateQueries({ queryKey: ["overview"] })
     },
   })
@@ -43,7 +43,7 @@ export function useDeleteKesenangan() {
   return useMutation({
     mutationFn: (id: string) => deleteKesenangan(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["kesenangan"] })
+      queryClient.invalidateQueries({ queryKey: ["senang"] })
       queryClient.invalidateQueries({ queryKey: ["overview"] })
     },
   })
@@ -54,7 +54,7 @@ export function useCreateKesenangan() {
   return useMutation({
     mutationFn: (data: Parameters<typeof createKesenangan>[0]) => createKesenangan(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["kesenangan"] })
+      queryClient.invalidateQueries({ queryKey: ["senang"] })
       queryClient.invalidateQueries({ queryKey: ["overview"] })
     },
   })
@@ -65,7 +65,7 @@ export function useUpdateKesenangan() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: { tanggal?: string; hari?: string; kesenangan?: string; status?: "belum" | "sudah" } }) => updateKesenangan(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["kesenangan"] })
+      queryClient.invalidateQueries({ queryKey: ["senang"] })
       queryClient.invalidateQueries({ queryKey: ["overview"] })
     },
   })

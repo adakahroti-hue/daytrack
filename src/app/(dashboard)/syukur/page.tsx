@@ -109,9 +109,9 @@ export default function SyukurPage() {
 
   const { data: logs = [], isLoading, error } = useSyukurLogRange(startDate, endDate)
   useRealtime({
-    table: 'syukur_logs',
+    table: 'syukur',
     filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
-    queryKeys: [['syukur_logs', 'range', startDate, endDate]],
+    queryKeys: [['syukur', 'range', startDate, endDate]],
   })
 
   const upsertSyukurLog = useUpsertSyukurLog()

@@ -11,7 +11,7 @@ import { TaskFormData } from "@/app/actions/tasks"
 async function fetchTasksDirect(date?: string, status?: string, limit?: number) {
   const supabase = createClient()
   // select("*"): aman sebelum migrasi & otomatis memuat kolom baru (terlewat_tanggal)
-  let query = supabase.from("tasks").select("*")
+  let query = supabase.from("tugas").select("*")
   if (date) {
     query = query.eq("tanggal", date).order("created_at", { ascending: true })
   } else {
@@ -25,7 +25,7 @@ async function fetchTasksDirect(date?: string, status?: string, limit?: number) 
 
 export function useTasks(date?: string, status?: string) {
   return useQuery({
-    queryKey: ["tasks", date, status],
+    queryKey: ["tugas", date, status],
     queryFn: () => fetchTasksDirect(date, status, date ? undefined : 200),
     staleTime: 60 * 1000, // 1 menit — hindari refetch berulang saat pindah tab
     refetchOnWindowFocus: false,
@@ -41,7 +41,7 @@ export function useCreateTask() {
     mutationFn: (data: TaskFormData) => createTask(data),
     onSuccess: () => {
       // Only invalidate the specific task queries, not all of them
-      queryClient.invalidateQueries({ queryKey: ["tasks"] })
+      queryClient.invalidateQueries({ queryKey: ["tugas"] })
     },
   })
 }
@@ -52,9 +52,9 @@ export function useUpdateTask() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<TaskFormData> }) => updateTask(id, data),
     onMutate: async ({ id, data }) => {
-      await queryClient.cancelQueries({ queryKey: ["tasks"] })
-      const previousTasks = queryClient.getQueriesData({ queryKey: ["tasks"] })
-      queryClient.setQueriesData({ queryKey: ["tasks"] }, (old: any) => {
+      await queryClient.cancelQueries({ queryKey: ["tugas"] })
+      const previousTasks = queryClient.getQueriesData({ queryKey: ["tugas"] })
+      queryClient.setQueriesData({ queryKey: ["tugas"] }, (old: any) => {
         if (!old) return old
         return old.map((task: any) => task.id === id ? { ...task, ...data, updated_at: new Date().toISOString() } : task)
       })
@@ -67,7 +67,7 @@ export function useUpdateTask() {
     },
     onSettled: () => {
       // Only invalidate, no refetch if data is fresh (staleTime: 30s)
-      queryClient.invalidateQueries({ queryKey: ["tasks"] })
+      queryClient.invalidateQueries({ queryKey: ["tugas"] })
     },
   })
 }
@@ -78,9 +78,9 @@ export function useDeleteTask() {
   return useMutation({
     mutationFn: (id: string) => deleteTask(id),
     onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: ["tasks"] })
-      const previousTasks = queryClient.getQueriesData({ queryKey: ["tasks"] })
-      queryClient.setQueriesData({ queryKey: ["tasks"] }, (old: any) => {
+      await queryClient.cancelQueries({ queryKey: ["tugas"] })
+      const previousTasks = queryClient.getQueriesData({ queryKey: ["tugas"] })
+      queryClient.setQueriesData({ queryKey: ["tugas"] }, (old: any) => {
         if (!old) return old
         return old.filter((task: any) => task.id !== id)
       })
@@ -92,7 +92,7 @@ export function useDeleteTask() {
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"] })
+      queryClient.invalidateQueries({ queryKey: ["tugas"] })
     },
   })
 }
@@ -103,10 +103,10 @@ export function useToggleTaskStatus() {
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: "proses" | "belum" | "selesai" }) => toggleTaskStatus(id, status),
     onMutate: async ({ id, status }) => {
-      await queryClient.cancelQueries({ queryKey: ["tasks"] })
-      const previousTasks = queryClient.getQueriesData({ queryKey: ["tasks"] })
+      await queryClient.cancelQueries({ queryKey: ["tugas"] })
+      const previousTasks = queryClient.getQueriesData({ queryKey: ["tugas"] })
       const now = new Date().toISOString()
-      queryClient.setQueriesData({ queryKey: ["tasks"] }, (old: any) => {
+      queryClient.setQueriesData({ queryKey: ["tugas"] }, (old: any) => {
         if (!old) return old
         return old.map((task: any) => {
           if (task.id !== id) return task
@@ -142,7 +142,7 @@ export function useToggleTaskStatus() {
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"] })
+      queryClient.invalidateQueries({ queryKey: ["tugas"] })
     },
   })
 }
@@ -153,10 +153,10 @@ export function usePauseTask() {
   return useMutation({
     mutationFn: (id: string) => pauseTask(id),
     onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: ["tasks"] })
-      const previousTasks = queryClient.getQueriesData({ queryKey: ["tasks"] })
+      await queryClient.cancelQueries({ queryKey: ["tugas"] })
+      const previousTasks = queryClient.getQueriesData({ queryKey: ["tugas"] })
       const now = new Date().toISOString()
-      queryClient.setQueriesData({ queryKey: ["tasks"] }, (old: any) => {
+      queryClient.setQueriesData({ queryKey: ["tugas"] }, (old: any) => {
         if (!old) return old
         return old.map((task: any) => {
           if (task.id !== id) return task
@@ -171,7 +171,7 @@ export function usePauseTask() {
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"] })
+      queryClient.invalidateQueries({ queryKey: ["tugas"] })
     },
   })
 }
@@ -182,10 +182,10 @@ export function useResumeTask() {
   return useMutation({
     mutationFn: (id: string) => resumeTask(id),
     onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: ["tasks"] })
-      const previousTasks = queryClient.getQueriesData({ queryKey: ["tasks"] })
+      await queryClient.cancelQueries({ queryKey: ["tugas"] })
+      const previousTasks = queryClient.getQueriesData({ queryKey: ["tugas"] })
       const now = new Date().toISOString()
-      queryClient.setQueriesData({ queryKey: ["tasks"] }, (old: any) => {
+      queryClient.setQueriesData({ queryKey: ["tugas"] }, (old: any) => {
         if (!old) return old
         return old.map((task: any) => {
           if (task.id !== id) return task
@@ -200,14 +200,14 @@ export function useResumeTask() {
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"] })
+      queryClient.invalidateQueries({ queryKey: ["tugas"] })
     },
   })
 }
 
 export function useTaskById(id: string) {
   return useQuery({
-    queryKey: ["tasks", id],
+    queryKey: ["tugas", id],
     queryFn: () => getTaskById(id),
     enabled: !!id,
   })
@@ -219,7 +219,7 @@ export function useBulkDeleteTasks() {
   return useMutation({
     mutationFn: (ids: string[]) => bulkDeleteTasks(ids),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"] })
+      queryClient.invalidateQueries({ queryKey: ["tugas"] })
     },
   })
 }
@@ -230,7 +230,7 @@ export function useBulkResetTasks() {
   return useMutation({
     mutationFn: (ids: string[]) => bulkResetTasks(ids),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"] })
+      queryClient.invalidateQueries({ queryKey: ["tugas"] })
     },
   })
 }
@@ -241,7 +241,7 @@ export function useBulkUpdateTaskDate() {
   return useMutation({
     mutationFn: ({ ids, tanggal }: { ids: string[]; tanggal: string }) => bulkUpdateTaskDate(ids, tanggal),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"] })
+      queryClient.invalidateQueries({ queryKey: ["tugas"] })
     },
   })
 }

@@ -98,9 +98,9 @@ export default function MasalahPage() {
 
   const { data: logs = [], isLoading, error } = useMasalahLogRange(startDate, endDate)
   useRealtime({
-    table: 'masalah_logs',
+    table: 'refleksi',
     filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
-    queryKeys: [['masalah_logs', 'range', startDate, endDate]],
+    queryKeys: [['refleksi', 'range', startDate, endDate]],
   })
 
   const upsertMasalahLog = useUpsertMasalahLog()

@@ -89,9 +89,9 @@ export default function DoaPage() {
 
   const { data: logs = [], isLoading, error } = useDoaLogRange(startDate, endDate)
   useRealtime({
-    table: 'doa_logs',
+    table: 'doa',
     filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
-    queryKeys: [['doa_logs', 'range', startDate, endDate]],
+    queryKeys: [['doa', 'range', startDate, endDate]],
   })
 
   const upsertDoaLog = useUpsertDoaLog()

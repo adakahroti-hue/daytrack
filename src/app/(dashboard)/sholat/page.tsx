@@ -416,9 +416,9 @@ export default function SholatPage() {
 
   const { data: sholatRows = [], isLoading, error } = usePrayerLogRange(startDate, endDate)
   useRealtime({
-    table: 'prayer_logs',
+    table: 'sholat',
     filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
-    queryKeys: [['prayer_logs', 'range', startDate, endDate]],
+    queryKeys: [['sholat', 'range', startDate, endDate]],
   })
 
   const updateCell = useTogglePrayer()
@@ -460,7 +460,7 @@ export default function SholatPage() {
   // Optimistic update helper
   const optimisticallyUpdateCell = useCallback(
     (tanggal: string, key: SholatKey, status: CellStatus, reason: string | null) => {
-      queryClient.setQueryData(['prayer_logs', 'range', startDate, endDate], (old: SholatRow[] | undefined) => {
+      queryClient.setQueryData(['sholat', 'range', startDate, endDate], (old: SholatRow[] | undefined) => {
         if (!old) return old
         const existing = old.find(r => r.tanggal === tanggal)
         if (existing) {
@@ -493,7 +493,7 @@ export default function SholatPage() {
 
   const optimisticallyUpdateQuality = useCallback(
     (tanggal: string, key: SholatKey, quality: number) => {
-      queryClient.setQueryData(['prayer_logs', 'range', startDate, endDate], (old: SholatRow[] | undefined) => {
+      queryClient.setQueryData(['sholat', 'range', startDate, endDate], (old: SholatRow[] | undefined) => {
         if (!old) return old
         return old.map(r => (r.tanggal === tanggal ? ({ ...r, [`kualitas_${key}`]: quality } as SholatRow) : r))
       })
@@ -510,7 +510,7 @@ export default function SholatPage() {
       try {
         await updateCell.mutateAsync({ tanggal, prayerTime: sholatKey, value: true })
       } catch {
-        queryClient.invalidateQueries({ queryKey: ['prayer_logs'] })
+        queryClient.invalidateQueries({ queryKey: ['sholat'] })
       }
       // Jangan tutup dropdown — biarkan user langsung pilih rating kualitas
       return
@@ -522,7 +522,7 @@ export default function SholatPage() {
     try {
       await updateCell.mutateAsync({ tanggal, prayerTime: sholatKey, value: false, reason })
     } catch {
-      queryClient.invalidateQueries({ queryKey: ['prayer_logs'] })
+      queryClient.invalidateQueries({ queryKey: ['sholat'] })
     }
   }
 
@@ -533,7 +533,7 @@ export default function SholatPage() {
     try {
       await updateQuality.mutateAsync({ tanggal, prayerTime: sholatKey, quality })
     } catch {
-      queryClient.invalidateQueries({ queryKey: ['prayer_logs'] })
+      queryClient.invalidateQueries({ queryKey: ['sholat'] })
     }
   }
 
@@ -547,7 +547,7 @@ export default function SholatPage() {
     try {
       await updateCell.mutateAsync({ tanggal, prayerTime: sholatKey, value: false })
     } catch {
-      queryClient.invalidateQueries({ queryKey: ['prayer_logs'] })
+      queryClient.invalidateQueries({ queryKey: ['sholat'] })
     }
   }
 

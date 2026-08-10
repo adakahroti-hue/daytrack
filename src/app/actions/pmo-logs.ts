@@ -36,7 +36,7 @@ export async function upsertPmoLog(formData: PmoLogFormData) {
   const validated = pmoLogSchema.parse(formData)
 
   const { data: existing } = await supabase
-    .from("pmo_logs")
+    .from("pmo")
     .select("id")
     .eq("user_id", user.id)
     .eq("tanggal", validated.tanggal)
@@ -54,10 +54,10 @@ export async function upsertPmoLog(formData: PmoLogFormData) {
 
   let data, error
   if (existing) {
-    const result = await supabase.from("pmo_logs").update(insertData).eq("id", existing.id).eq("user_id", user.id).select().single()
+    const result = await supabase.from("pmo").update(insertData).eq("id", existing.id).eq("user_id", user.id).select().single()
     data = result.data; error = result.error
   } else {
-    const result = await supabase.from("pmo_logs").insert(insertData).select().single()
+    const result = await supabase.from("pmo").insert(insertData).select().single()
     data = result.data; error = result.error
   }
 
@@ -70,7 +70,7 @@ export async function deletePmoLog(id: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { error } = await supabase.from("pmo_logs").delete().eq("id", id).eq("user_id", user.id)
+  const { error } = await supabase.from("pmo").delete().eq("id", id).eq("user_id", user.id)
   if (error) throw new Error(error.message)
   revalidatePath("/pmo"); revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
   return { error: null }
@@ -80,7 +80,7 @@ export async function getPmoLog(tanggal: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("pmo_logs").select("*").eq("user_id", user.id).eq("tanggal", tanggal).single()
+  const { data, error } = await supabase.from("pmo").select("*").eq("user_id", user.id).eq("tanggal", tanggal).single()
   if (error && error.code !== "PGRST116") throw new Error(error.message)
   return data
 }
@@ -89,7 +89,7 @@ export async function getPmoLogRange(startDate: string, endDate: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("pmo_logs").select("*").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate).order("tanggal", { ascending: true })
+  const { data, error } = await supabase.from("pmo").select("*").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate).order("tanggal", { ascending: true })
   if (error) throw new Error(error.message)
   return data || []
 }
@@ -98,7 +98,7 @@ export async function getPmoStats(startDate: string, endDate: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("pmo_logs").select("status, hari_ke, trigger").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate).order("tanggal", { ascending: true })
+  const { data, error } = await supabase.from("pmo").select("status, hari_ke, trigger").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate).order("tanggal", { ascending: true })
   if (error) throw new Error(error.message)
   
   const logs = data || []

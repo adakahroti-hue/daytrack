@@ -26,7 +26,7 @@ export async function upsertDoaLog(formData: DoaLogFormData) {
   const validated = doaLogSchema.parse(formData)
   // Check if record exists for this user and date
   const { data: existing } = await supabase
-    .from("doa_logs")
+    .from("doa")
     .select("id")
     .eq("user_id", user.id)
     .eq("tanggal", validated.tanggal)
@@ -41,7 +41,7 @@ export async function upsertDoaLog(formData: DoaLogFormData) {
   let data, error
   if (existing) {
     const result = await supabase
-      .from("doa_logs")
+      .from("doa")
       .update(insertData)
       .eq("id", existing.id)
       .eq("user_id", user.id)
@@ -51,7 +51,7 @@ export async function upsertDoaLog(formData: DoaLogFormData) {
     error = result.error
   } else {
     const result = await supabase
-      .from("doa_logs")
+      .from("doa")
       .insert(insertData)
       .select()
       .single()
@@ -70,7 +70,7 @@ export async function deleteDoaLog(id: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
   const { error } = await supabase
-    .from("doa_logs")
+    .from("doa")
     .delete()
     .eq("id", id)
     .eq("user_id", user.id)
@@ -86,7 +86,7 @@ export async function getDoaLog(tanggal: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
   const { data, error } = await supabase
-    .from("doa_logs")
+    .from("doa")
     .select("*")
     .eq("user_id", user.id)
     .eq("tanggal", tanggal)
@@ -99,7 +99,7 @@ export async function getDoaLogRange(startDate: string, endDate: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
   const { data, error } = await supabase
-    .from("doa_logs")
+    .from("doa")
     .select("*")
     .eq("user_id", user.id)
     .gte("tanggal", startDate)
@@ -114,7 +114,7 @@ export async function getDoaDailySummary(tanggal: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
   const { data, error } = await supabase
-    .from("doa_logs")
+    .from("doa")
     .select("status")
     .eq("user_id", user.id)
     .eq("tanggal", tanggal)

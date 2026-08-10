@@ -32,14 +32,14 @@ interface SholatAnalyticsProps {
   alasanLabels: Record<string, string>
 }
 
-// Palet pastel lembut konsisten dengan tema Daytrack
+// Palet hitam untuk diagram batang
 const PASTEL_BAR_COLORS = [
-  '#FDA4AF', // soft rose
-  '#93C5FD', // soft blue
-  '#FCD34D', // soft amber
-  '#86EFAC', // soft green
-  '#C4B5FD', // soft violet
-  '#7DD3FC', // soft sky
+  '#1E293B', // slate-800
+  '#334155', // slate-700
+  '#475569', // slate-600
+  '#1E293B', // slate-800
+  '#334155', // slate-700
+  '#475569', // slate-600
 ]
 
 const PASTEL_DONUT_COLORS = [
@@ -174,7 +174,13 @@ function ReasonTooltip({ active, payload }: any) {
 export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: SholatAnalyticsProps) {
   // Kumpulkan hanya baris yang benar-benar tercatat (ada datanya)
   const rows = useMemo(
-    () => dates.map(d => sholatMap[d]).filter((r): r is SholatLogRow => !!r),
+    () => dates.map(d => sholatMap[d]).filter((r): r is SholatLogRow => {
+      if (!r) return false
+      // Filter baris kosong: semua sholat false + semua alasan null
+      const hasAnyTrue = [r.sholat_subuh, r.sholat_dhuha, r.sholat_dzuhur, r.sholat_ashar, r.sholat_maghrib, r.sholat_isya].some(v => v === true)
+      const hasAnyReason = [r.alasan_subuh, r.alasan_dhuha, r.alasan_dzuhur, r.alasan_ashar, r.alasan_maghrib, r.alasan_isya].some(v => v != null && v !== '')
+      return hasAnyTrue || hasAnyReason
+    }),
     [dates, sholatMap]
   )
 

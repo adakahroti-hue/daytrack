@@ -301,7 +301,7 @@ function HariIniPageClient() {
 
   const { data: todayTasks = [], isLoading, error } = useTasks(todayStr)
 
-  useTasksRealtime([['tasks', todayStr]], `tanggal=eq.${todayStr}`)
+  useTasksRealtime([['tugas', todayStr]], `tanggal=eq.${todayStr}`)
 
   const createTask = useCreateTask()
   const updateTask = useUpdateTask()

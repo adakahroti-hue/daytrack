@@ -19,7 +19,7 @@ function RescheduleMissedTasks() {
     rescheduleMissedTasks(today)
       .then((res) => {
         if (res && res.rescheduled > 0) {
-          queryClient.invalidateQueries({ queryKey: ["tasks"] })
+          queryClient.invalidateQueries({ queryKey: ["tugas"] })
         }
       })
       .catch(() => {
