@@ -139,7 +139,7 @@ export default function PmoPage() {
       tanggal,
       hari_ke: hariKe,
       status,
-      catatan: status === 'berhasil' ? null : (entry?.catatan || null),
+      catatan: status === 'berhasil' ? undefined : (entry?.catatan || undefined),
     })
   }
 
