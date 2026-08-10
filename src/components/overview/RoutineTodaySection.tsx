@@ -359,7 +359,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
             tint="bg-white border-slate-200"
             icon={Flower}
             iconColor="text-purple-500"
-            dotColor="bg-slate-400"
+            dotColor="bg-purple-500"
             linkColor="text-slate-500 hover:text-slate-700"
             title="Mental"
             masalahItems={masalahList}
