@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import {
   format,
   eachDayOfInterval,
@@ -116,6 +116,7 @@ export default function SyukurPage() {
 
   const upsertSyukurLog = useUpsertSyukurLog()
   const deleteSyukurLog = useDeleteSyukurLog()
+  const [showReasons, setShowReasons] = useState<Record<string, boolean>>({})
 
   // Map tanggal -> entry
   const logMap = useMemo(() => {
@@ -247,14 +248,24 @@ export default function SyukurPage() {
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="center" className="w-44">
-                            <DropdownMenuItem onClick={() => handleSetStatus(dateStr, 'sudah')} className="flex items-center gap-2">
+                            <DropdownMenuItem onClick={() => { setShowReasons(prev => ({ ...prev, [dateStr]: false })); handleSetStatus(dateStr, 'sudah') }} className="flex items-center gap-2">
                               <Check className="h-4 w-4 text-green-600" /> Sudah
                             </DropdownMenuItem>
-                            {SYUKUR_REASONS.map(r => (
-                              <DropdownMenuItem key={r.value} onClick={() => handleSetStatus(dateStr, 'belum', r.value)} className="flex items-center gap-2">
-                                <X className="h-4 w-4 text-red-500" /> {r.label}
-                              </DropdownMenuItem>
-                            ))}
+                            <DropdownMenuItem onClick={() => setShowReasons(prev => ({ ...prev, [dateStr]: true }))} className="flex items-center gap-2">
+                              {showReasons[dateStr] && !isDone ? <X className="h-4 w-4 text-red-500" /> : <span className="w-4 h-4" />}
+                              Tidak
+                            </DropdownMenuItem>
+                            {showReasons[dateStr] && !isDone && (
+                              <>
+                                <DropdownMenuSeparator />
+                                {SYUKUR_REASONS.map(r => (
+                                  <DropdownMenuItem key={r.value} onClick={() => { setShowReasons(prev => ({ ...prev, [dateStr]: false })); handleSetStatus(dateStr, 'belum', r.value) }} className="flex items-center gap-2 pl-6">
+                                    {missedLabel === r.label ? <Check className="h-4 w-4 text-green-600" /> : <span className="w-4 h-4" />}
+                                    {r.label}
+                                  </DropdownMenuItem>
+                                ))}
+                              </>
+                            )}
                             {entry && (
                               <>
                                 <DropdownMenuSeparator />
