@@ -260,7 +260,7 @@ export default function PmoPage() {
                               )}
                             >
                               {isDone && <Check className="h-3.5 w-3.5 shrink-0" />}
-                              {isDone ? `Berhasil${entry?.hari_ke ? ` (H${entry.hari_ke})` : ''}` : isRelapse ? 'Relapse' : 'Belum'}
+                              {isDone ? 'Berhasil' : isRelapse ? 'Relapse' : 'Belum'}
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="center" className="w-48">
