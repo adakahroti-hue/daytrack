@@ -42,7 +42,7 @@ export function MentalCard({
         </div>
       </div>
       <div className="mt-3 grid gap-3 sm:grid-cols-2 items-start divide-y divide-slate-200 sm:divide-y-0 sm:divide-x">
-        <div className="pb-3 sm:pb-0">
+        <div className="pb-3 sm:pb-0 sm:pr-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1"><PersonStanding className="h-3.5 w-3.5 text-purple-500" /> Refleksi</p>
           {masalahItems.length > 0 ? (
             <ul className="mt-2 space-y-1">
