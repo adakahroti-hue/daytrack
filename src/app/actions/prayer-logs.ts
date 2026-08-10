@@ -21,7 +21,6 @@ const prayerLogSchema = z.object({
   alasan_ashar: prayerReasonSchema.nullable().optional(),
   alasan_maghrib: prayerReasonSchema.nullable().optional(),
   alasan_isya: prayerReasonSchema.nullable().optional(),
-  refleksi: z.string().optional(),
 })
 
 export type PrayerLogFormData = z.infer<typeof prayerLogSchema>
@@ -62,7 +61,6 @@ export async function upsertPrayerLog(formData: PrayerLogFormData) {
     alasan_ashar: validated.alasan_ashar || null,
     alasan_maghrib: validated.alasan_maghrib || null,
     alasan_isya: validated.alasan_isya || null,
-    refleksi: validated.refleksi || null,
   }
 
   let data, error
