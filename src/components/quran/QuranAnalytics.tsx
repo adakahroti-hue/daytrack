@@ -21,12 +21,8 @@ export interface QuranLogEntry {
   id: string
   tanggal: string
   waktu_baca: string
-  surat: string | null
-  juz: number | null
-  halaman_mulai: number | null
-  halaman_selesai: number | null
-  jumlah_halaman: number | null
-  catatan: string | null
+  status: string | null
+  kualitas: number | null
 }
 
 interface QuranColumn {
@@ -157,6 +153,25 @@ function ReasonTooltip({ active, payload }: any) {
   )
 }
 
+// ─── Helper: check if entry is "tidak baca" ────────────────
+function isTidakBaca(status: string | null | undefined): boolean {
+  if (!status) return false
+  return status === 'tidak_baca' || status.startsWith('tidak_baca:') || status.startsWith('Tidak membaca:')
+}
+
+function getTidakBacaReason(status: string | null | undefined): string | null {
+  if (!status) return null
+  // New format: 'tidak_baca: <reason>'
+  if (status.startsWith('tidak_baca:')) {
+    return status.replace('tidak_baca: ', '').trim()
+  }
+  // Legacy format: 'Tidak membaca: <reason>'
+  if (status.startsWith('Tidak membaca:')) {
+    return status.replace('Tidak membaca: ', '').trim()
+  }
+  return null
+}
+
 // ─── Main component ───────────────────────────────────────
 
 export function QuranAnalytics({ logMap, columns }: QuranAnalyticsProps) {
@@ -170,7 +185,7 @@ export function QuranAnalytics({ logMap, columns }: QuranAnalyticsProps) {
           const entry = logMap[tanggal]?.[col.key]
           if (!entry) continue
           total += 1
-          if (entry.catatan?.startsWith('Tidak membaca:')) missed += 1
+          if (isTidakBaca(entry.status)) missed += 1
         }
         return {
           key: col.key,
@@ -190,8 +205,8 @@ export function QuranAnalytics({ logMap, columns }: QuranAnalyticsProps) {
     for (const tanggal of Object.keys(logMap)) {
       for (const col of columns) {
         const entry = logMap[tanggal]?.[col.key]
-        if (!entry?.catatan?.startsWith('Tidak membaca:')) continue
-        const reason = entry.catatan.replace('Tidak membaca: ', '').trim()
+        if (!entry || !isTidakBaca(entry.status)) continue
+        const reason = getTidakBacaReason(entry.status)
         if (reason) counts.set(reason, (counts.get(reason) ?? 0) + 1)
       }
     }

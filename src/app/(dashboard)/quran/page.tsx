@@ -103,12 +103,7 @@ interface QuranLogEntry {
   user_id: string
   tanggal: string
   waktu_baca: WaktuBacaKey
-  surat: string | null
-  juz: number | null
-  halaman_mulai: number | null
-  halaman_selesai: number | null
-  jumlah_halaman: number | null
-  catatan: string | null
+  status: string | null
   kualitas: number | null
   created_at: string
   updated_at: string
@@ -124,13 +119,21 @@ function startOfDaySafe(d: Date): Date {
 
 // ─── Helper: status cell dari entry ───────────────
 
-function getCellStatus(entry: QuranLogEntry | undefined): { status: 'done' | 'reason' | 'empty'; reason: string | null } {
-  if (!entry) return { status: 'empty', reason: null }
-  const note = entry.catatan || ''
-  if (note.startsWith('Tidak membaca:')) {
-    return { status: 'reason', reason: note.replace('Tidak membaca: ', '') }
+function getCellStatus(entry: QuranLogEntry | undefined): { cellStatus: 'done' | 'reason' | 'empty'; reason: string | null } {
+  if (!entry) return { cellStatus: 'empty', reason: null }
+  const st = entry.status || ''
+  if (st === 'sudah') return { cellStatus: 'done', reason: null }
+  if (st.startsWith('tidak_baca:')) {
+    const reasonKey = st.replace('tidak_baca: ', '').trim()
+    return { cellStatus: 'reason', reason: REASON_LABELS[reasonKey] || reasonKey }
   }
-  return { status: 'done', reason: null }
+  if (st.startsWith('Tidak membaca:')) {
+    // Legacy format fallback
+    return { cellStatus: 'reason', reason: st.replace('Tidak membaca: ', '') }
+  }
+  // If status is 'Sudah baca' (legacy) or any truthy value → done
+  if (st) return { cellStatus: 'done', reason: null }
+  return { cellStatus: 'empty', reason: null }
 }
 
 // ─── Dropdown Menu (gaya sholat) ──────────────────
@@ -182,9 +185,9 @@ function QuranDropdown({
   const { currentValue, currentQuality } = (() => {
     const entry = logMap[tanggal]?.[waktuKey]
     if (!entry) return { currentValue: null as string | null, currentQuality: null as number | null }
-    const { status, reason } = getCellStatus(entry)
-    if (status === 'done') return { currentValue: 'sudah', currentQuality: (entry as any).kualitas ?? null }
-    if (status === 'reason' && reason) {
+    const { cellStatus, reason } = getCellStatus(entry)
+    if (cellStatus === 'done') return { currentValue: 'sudah', currentQuality: entry.kualitas ?? null }
+    if (cellStatus === 'reason' && reason) {
       const found = Object.entries(REASON_LABELS).find(([, label]) => label === reason)
       return { currentValue: found ? found[0] : 'lainnya', currentQuality: null }
     }
@@ -376,11 +379,6 @@ export default function QuranPage() {
     return eachDayOfInterval({ start: rangeStart, end: rangeEnd }).map(d => format(d, 'yyyy-MM-dd'))
   }, [rangeStart, rangeEnd])
 
-  const totalHalaman = useMemo(
-    () => (quranLogs as QuranLogEntry[]).reduce((sum, l) => sum + (l.jumlah_halaman || 0), 0),
-    [quranLogs]
-  )
-
   // Tutup dropdown saat klik di luar tabel & di luar menu
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -426,27 +424,22 @@ export default function QuranPage() {
     if (option.isDone) {
       // Sudah baca — pertahankan detail yang sudah ada bila ada
       const existing = logMap[tanggal]?.[waktuKey]
-      const keepNote = existing?.catatan && !existing.catatan.startsWith('Tidak membaca') ? existing.catatan : 'Sudah baca'
       optimisticallySet(tanggal, waktuKey, (entry) => ({
         ...(entry || {
           id: 'temp-' + tanggal + '-' + waktuKey,
           user_id: '',
           tanggal,
           waktu_baca: waktuKey,
-          surat: null, juz: null, halaman_mulai: null, halaman_selesai: null,
-          jumlah_halaman: null, catatan: null, created_at: '', updated_at: '',
+          status: null, kualitas: null, created_at: '', updated_at: '',
         }),
-        catatan: keepNote,
+        status: 'sudah',
       } as QuranLogEntry))
       try {
         await upsertQuranLog.mutateAsync({
           tanggal,
           waktu_baca: waktuKey,
-          surat: existing?.surat || undefined,
-          juz: existing?.juz || undefined,
-          halaman_mulai: existing?.halaman_mulai || undefined,
-          halaman_selesai: existing?.halaman_selesai || undefined,
-          catatan: keepNote,
+          status: 'sudah',
+          kualitas: existing?.kualitas || undefined,
         })
       } catch {
         queryClient.invalidateQueries({ queryKey: ['quran'] })
@@ -464,27 +457,17 @@ export default function QuranPage() {
         user_id: '',
         tanggal,
         waktu_baca: waktuKey,
-        surat: null, juz: null, halaman_mulai: null, halaman_selesai: null,
-        jumlah_halaman: null, catatan: null, created_at: '', updated_at: '',
+        status: null, kualitas: null, created_at: '', updated_at: '',
       }),
-      surat: existing?.surat || null,
-      juz: existing?.juz || null,
-      halaman_mulai: existing?.halaman_mulai || null,
-      halaman_selesai: existing?.halaman_selesai || null,
-      jumlah_halaman: existing?.jumlah_halaman || null,
       kualitas: existing?.kualitas || null,
-      catatan: `Tidak membaca: ${option.label}`,
+      status: `tidak_baca: ${option.value}`,
     } as QuranLogEntry))
     try {
       await upsertQuranLog.mutateAsync({
         tanggal,
         waktu_baca: waktuKey,
-        surat: existing?.surat || undefined,
-        juz: existing?.juz || undefined,
-        halaman_mulai: existing?.halaman_mulai || undefined,
-        halaman_selesai: existing?.halaman_selesai || undefined,
-        kualitas: (existing as any)?.kualitas || undefined,
-        catatan: `Tidak membaca: ${option.label}`,
+        kualitas: existing?.kualitas || undefined,
+        status: `tidak_baca: ${option.value}`,
       })
     } catch {
       queryClient.invalidateQueries({ queryKey: ['quran'] })
@@ -501,8 +484,7 @@ export default function QuranPage() {
         user_id: '',
         tanggal,
         waktu_baca: waktuKey,
-        surat: null, juz: null, halaman_mulai: null, halaman_selesai: null,
-        jumlah_halaman: null, catatan: null, created_at: '', updated_at: '',
+        status: null, kualitas: null, created_at: '', updated_at: '',
       }),
       kualitas: quality,
     } as QuranLogEntry))
@@ -511,7 +493,7 @@ export default function QuranPage() {
         tanggal,
         waktu_baca: waktuKey,
         kualitas: quality,
-        catatan: existing?.catatan || 'Sudah baca',
+        status: existing?.status || 'sudah',
       })
     } catch {
       queryClient.invalidateQueries({ queryKey: ['quran'] })
@@ -599,7 +581,7 @@ export default function QuranPage() {
                       </td>
                       {WAKTU_BACA.map(col => {
                         const entry = logMap[dateStr]?.[col.key]
-                        const { status, reason } = getCellStatus(entry)
+                        const { cellStatus, reason } = getCellStatus(entry)
                         const isDropdownOpen = dropdown?.tanggal === dateStr && dropdown?.waktuKey === col.key
                         return (
                           <td
@@ -614,23 +596,23 @@ export default function QuranPage() {
                             onClick={(e) => handleCellClick(e, dateStr, col.key)}
                           >
                             <div className="flex flex-col items-center justify-center gap-1 min-h-[32px]">
-                              {status === 'done' && entry && (
+                              {cellStatus === 'done' && entry && (
                                 <>
                                   <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-600 border border-green-200">
                                     <Check className="h-3.5 w-3.5" />
                                   </span>
-                                  {(entry as any).kualitas && (entry as any).kualitas >= 1 && (entry as any).kualitas <= 5 && (
+                                  {entry.kualitas && entry.kualitas >= 1 && entry.kualitas <= 5 && (
                                     <span className={cn(
                                       'inline-flex items-center gap-0.5 px-1.5 py-px rounded-full border text-[10px] font-semibold leading-tight',
-                                      RATING_COLORS[(entry as any).kualitas] || 'bg-slate-100 text-slate-600 border-slate-200'
-                                    )} title={RATING_LABELS[(entry as any).kualitas]}>
+                                      RATING_COLORS[entry.kualitas] || 'bg-slate-100 text-slate-600 border-slate-200'
+                                    )} title={RATING_LABELS[entry.kualitas]}>
                                       <Star className="h-2.5 w-2.5 fill-current" />
-                                      {(entry as any).kualitas}
+                                      {entry.kualitas}
                                     </span>
                                   )}
                                 </>
                               )}
-                              {status === 'reason' && reason && (
+                              {cellStatus === 'reason' && reason && (
                                 <>
                                   <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-rose-100 text-rose-600 border border-rose-200">
                                     <X className="h-3.5 w-3.5" />
@@ -640,7 +622,7 @@ export default function QuranPage() {
                                   </span>
                                 </>
                               )}
-                              {status === 'empty' && (
+                              {cellStatus === 'empty' && (
                                 <span className="text-slate-300 text-xs">×</span>
                               )}
                             </div>

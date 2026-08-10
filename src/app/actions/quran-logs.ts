@@ -7,12 +7,7 @@ import { z } from "zod"
 const quranLogSchema = z.object({
   tanggal: z.string().min(1, "Tanggal wajib diisi"),
   waktu_baca: z.enum(["setelah_subuh", "setelah_dzuhur", "setelah_ashar", "setelah_maghrib", "setelah_isya"]),
-  surat: z.string().optional(),
-  juz: z.number().int().min(1).max(30).optional(),
-  halaman_mulai: z.number().int().min(1).max(604).optional(),
-  halaman_selesai: z.number().int().min(1).max(604).optional(),
-  jumlah_halaman: z.number().int().min(0).max(604).optional(),
-  catatan: z.string().optional(),
+  status: z.string().optional(),
   kualitas: z.number().int().min(1).max(5).optional(),
 })
 
@@ -23,12 +18,7 @@ export interface QuranLogEntry {
   user_id: string
   tanggal: string
   waktu_baca: string
-  surat: string | null
-  juz: number | null
-  halaman_mulai: number | null
-  halaman_selesai: number | null
-  jumlah_halaman: number | null
-  catatan: string | null
+  status: string | null
   kualitas: number | null
   created_at: string
   updated_at: string
@@ -50,23 +40,11 @@ export async function upsertQuranLog(formData: QuranLogFormData) {
     .eq("waktu_baca", validated.waktu_baca)
     .single()
 
-  // Hitung jumlah_halaman: pakai nilai eksplisit bila ada, else dari rentang halaman
-  const jumlahHalaman =
-    validated.jumlah_halaman ??
-    (validated.halaman_mulai && validated.halaman_selesai && validated.halaman_selesai >= validated.halaman_mulai
-      ? validated.halaman_selesai - validated.halaman_mulai + 1
-      : null)
-
   const insertData = {
     user_id: user.id,
     tanggal: validated.tanggal,
     waktu_baca: validated.waktu_baca,
-    surat: validated.surat || null,
-    juz: validated.juz || null,
-    halaman_mulai: validated.halaman_mulai || null,
-    halaman_selesai: validated.halaman_selesai || null,
-    jumlah_halaman: jumlahHalaman,
-    catatan: validated.catatan || null,
+    status: validated.status || null,
     kualitas: validated.kualitas || null,
   }
 
@@ -131,7 +109,7 @@ export async function getQuranLog(tanggal: string) {
 
   const { data, error } = await supabase
     .from("quran")
-    .select("*")
+    .select("id, user_id, tanggal, waktu_baca, status, kualitas, created_at, updated_at")
     .eq("user_id", user.id)
     .eq("tanggal", tanggal)
     .order("waktu_baca", { ascending: true })
@@ -148,7 +126,7 @@ export async function getQuranLogRange(startDate: string, endDate: string) {
 
   const { data, error } = await supabase
     .from("quran")
-    .select("id, tanggal, waktu_baca, surat, juz, halaman_mulai, halaman_selesai, jumlah_halaman, catatan, created_at, updated_at")
+    .select("id, user_id, tanggal, waktu_baca, status, kualitas, created_at, updated_at")
     .eq("user_id", user.id)
     .gte("tanggal", startDate)
     .lte("tanggal", endDate)
@@ -166,14 +144,14 @@ export async function getQuranDailySummary(tanggal: string) {
 
   const { data, error } = await supabase
     .from("quran")
-    .select("jumlah_halaman")
+    .select("status")
     .eq("user_id", user.id)
     .eq("tanggal", tanggal)
 
   if (error) throw new Error(error.message)
 
-  const totalHalaman = data?.reduce((sum, log) => sum + (log.jumlah_halaman || 0), 0) || 0
-  const totalBacaan = data?.length || 0
+  const sudahCount = data?.filter(d => d.status === 'sudah').length || 0
+  const totalCount = data?.length || 0
 
-  return { totalHalaman, totalBacaan }
+  return { sudahCount, totalCount, persentase: totalCount > 0 ? Math.round((sudahCount / totalCount) * 100) : 0 }
 }
