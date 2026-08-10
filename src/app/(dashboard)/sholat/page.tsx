@@ -574,7 +574,7 @@ export default function SholatPage() {
                     className={cn(
                       'border-b transition-colors',
                       TABLE_BORDER,
-                      dateStr === todayStr ? 'row-today-pulse' : (rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'),
+                      rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30',
                       'hover:bg-blue-50/40'
                     )}
                   >
