@@ -195,7 +195,7 @@ export default function TidurPage() {
                   Status
                 </div>
               </th>
-              <th className={cn('px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
+              <th className={cn('px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
                 <div className="flex items-center gap-1">
                   <MessageCircle className="h-3.5 w-3.5 text-blue-500" />
                   Alasan
@@ -204,7 +204,7 @@ export default function TidurPage() {
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[80px] sm:min-w-[100px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
                   <Moon className="h-3.5 w-3.5 text-blue-500" />
-                  Waktu Tidur
+                  Durasi Tidur
                 </div>
               </th>
             </tr>
@@ -340,7 +340,7 @@ export default function TidurPage() {
                       </div>
                     </td>
                     {/* Alasan */}
-                    <td className={cn('px-2 sm:px-3 py-2 text-left', TABLE_BORDER)}>
+                    <td className={cn('px-2 sm:px-3 py-2 text-left border-r', TABLE_BORDER)}>
                       {isBegadang && entry?.alasan_tidak ? (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
