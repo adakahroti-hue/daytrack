@@ -13,6 +13,7 @@ const quranLogSchema = z.object({
   halaman_selesai: z.number().int().min(1).max(604).optional(),
   jumlah_halaman: z.number().int().min(0).max(604).optional(),
   catatan: z.string().optional(),
+  kualitas: z.number().int().min(1).max(5).optional(),
 })
 
 export type QuranLogFormData = z.infer<typeof quranLogSchema>
@@ -65,6 +66,7 @@ export async function upsertQuranLog(formData: QuranLogFormData) {
     halaman_selesai: validated.halaman_selesai || null,
     jumlah_halaman: jumlahHalaman,
     catatan: validated.catatan || null,
+    kualitas: validated.kualitas || null,
   }
 
   let data, error
