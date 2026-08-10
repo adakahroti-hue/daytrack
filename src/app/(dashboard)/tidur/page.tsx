@@ -12,7 +12,7 @@ import {
   endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, CalendarDays, Moon, Check, X, Trash2, Clock, MessageCircle } from 'lucide-react'
+import { Calendar, CalendarDays, Moon, Check, X, Trash2, Clock, MessageCircle, Sunrise } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { useTableLock } from '@/components/ui/table-lock'
@@ -21,7 +21,7 @@ import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
 import dynamic from 'next/dynamic'
 import { AnalyticsSkeleton } from '@/components/ui/analytics-skeleton'
-import { JAM_TIDUR_OPTIONS } from '@/lib/tidur-options'
+import { JAM_TIDUR_OPTIONS, JAM_BANGUN_OPTIONS } from '@/lib/tidur-options'
 const StatusAnalytics = dynamic(() => import('@/components/analytics/StatusAnalytics').then(m => m.StatusAnalytics), { ssr: false, loading: () => <AnalyticsSkeleton /> })
 
 // ─── Constants ────────────────────────────────────
@@ -138,6 +138,11 @@ export default function TidurPage() {
     await upsertTidurLog.mutateAsync({ tanggal, status, jam_tidur: jamTidur })
   }
 
+  const handleSetJamBangun = async (tanggal: string, jamBangun: string) => {
+    const entry = logMap[tanggal]
+    await upsertTidurLog.mutateAsync({ tanggal, status: entry?.status || 'tepat', jam_bangun: jamBangun, jam_tidur: entry?.jam_tidur || undefined })
+  }
+
   // Revisi 6: data untuk Ringkasan
   const analyticsEntries = useMemo(() => {
     return (logs as TidurLogEntry[]).map(l => ({
@@ -173,10 +178,10 @@ export default function TidurPage() {
                   Hari
                 </div>
               </th>
-              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[80px] sm:min-w-[100px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
-                  <Moon className="h-3.5 w-3.5 text-blue-500" />
-                  Status
+                  <Sunrise className="h-3.5 w-3.5 text-blue-500" />
+                  Jam Bangun
                 </div>
               </th>
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[80px] sm:min-w-[100px]', TABLE_BORDER)}>
@@ -185,10 +190,22 @@ export default function TidurPage() {
                   Jam Tidur
                 </div>
               </th>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
+                <div className="flex items-center justify-center gap-1">
+                  <Moon className="h-3.5 w-3.5 text-blue-500" />
+                  Status
+                </div>
+              </th>
               <th className={cn('px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
                 <div className="flex items-center gap-1">
                   <MessageCircle className="h-3.5 w-3.5 text-blue-500" />
                   Alasan
+                </div>
+              </th>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[80px] sm:min-w-[100px]', TABLE_BORDER)}>
+                <div className="flex items-center justify-center gap-1">
+                  <Moon className="h-3.5 w-3.5 text-blue-500" />
+                  Waktu Tidur
                 </div>
               </th>
             </tr>
@@ -196,7 +213,7 @@ export default function TidurPage() {
           <tbody className={cn(effectiveLocked && 'pointer-events-none select-none')}>
             {isLoading ? (
               <tr>
-                <td colSpan={5} className="text-center py-12 text-slate-400">
+                <td colSpan={7} className="text-center py-12 text-slate-400">
                   <div className="flex flex-col items-center gap-2">
                     <div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" />
                     <span className="text-sm">Memuat data...</span>
@@ -205,7 +222,7 @@ export default function TidurPage() {
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan={5} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td>
+                <td colSpan={7} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td>
               </tr>
             ) : (
               dates.map((dateStr, rowIdx) => {
@@ -224,15 +241,67 @@ export default function TidurPage() {
                     key={dateStr}
                     className={cn('border-b transition-colors', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30', 'hover:bg-blue-50/40')}
                   >
+                    {/* Tanggal */}
                     <td className={cn('dt-col-stick sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
                       <span className="sm:hidden">{format(date, 'd MMM', { locale: id })}</span>
                       <span className="hidden sm:inline">{dateDisplay}</span>
                     </td>
+                    {/* Hari */}
                     <td className={cn('px-2 sm:px-3 py-2 text-center border-r dt-col-stick sm:sticky sm:left-[100px] sm:z-10 sm:bg-inherit', TABLE_BORDER)}>
                       <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs border font-medium', DAY_BADGE_COLORS[dayName] || 'bg-slate-100 text-slate-700 border-slate-200')}>
                         {dayName}
                       </span>
                     </td>
+                    {/* Jam Bangun */}
+                    <td className={cn('px-2 sm:px-3 py-2 text-center border-r', TABLE_BORDER)}>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            type="button"
+                            className="font-medium text-slate-700 cursor-pointer hover:text-blue-700 hover:underline"
+                          >
+                            {entry?.jam_bangun ? entry.jam_bangun.slice(0, 5) : 'Pilih'}
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="center" className="w-32">
+                          {JAM_BANGUN_OPTIONS.map(opt => (
+                            <DropdownMenuItem
+                              key={opt.value}
+                              onClick={() => handleSetJamBangun(dateStr, opt.value)}
+                              className="flex items-center gap-2"
+                            >
+                              {opt.label}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                    {/* Jam Tidur */}
+                    <td className={cn('px-2 sm:px-3 py-2 text-center border-r', TABLE_BORDER)}>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            type="button"
+                            className="font-medium text-slate-700 cursor-pointer hover:text-blue-700 hover:underline"
+                          >
+                            {entry?.jam_tidur ? entry.jam_tidur.slice(0, 5) : 'Pilih'}
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="center" className="w-32">
+                          {JAM_TIDUR_OPTIONS.map(opt => (
+                            <DropdownMenuItem
+                              key={opt.value}
+                              onClick={() => handleSetJamTidur(dateStr, opt.value, opt.status)}
+                              className="flex items-center gap-2"
+                            >
+                              {opt.status === 'tepat' ? <Check className="h-4 w-4 text-green-600" /> : <X className="h-4 w-4 text-red-500" />}
+                              {opt.label}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                    {/* Status */}
                     <td className={cn('px-2 sm:px-3 py-2 text-center border-r', TABLE_BORDER)}>
                       <div className="flex items-center justify-center min-h-[36px]">
                         <DropdownMenu>
@@ -271,30 +340,7 @@ export default function TidurPage() {
                         </DropdownMenu>
                       </div>
                     </td>
-                    <td className={cn('px-2 sm:px-3 py-2 text-center border-r', TABLE_BORDER)}>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button
-                            type="button"
-                            className="font-medium text-slate-700 cursor-pointer hover:text-blue-700 hover:underline"
-                          >
-                            {entry?.jam_tidur ? entry.jam_tidur.slice(0, 5) : 'Pilih'}
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="center" className="w-32">
-                          {JAM_TIDUR_OPTIONS.map(opt => (
-                            <DropdownMenuItem
-                              key={opt.value}
-                              onClick={() => handleSetJamTidur(dateStr, opt.value, opt.status)}
-                              className="flex items-center gap-2"
-                            >
-                              {opt.status === 'tepat' ? <Check className="h-4 w-4 text-green-600" /> : <X className="h-4 w-4 text-red-500" />}
-                              {opt.label}
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
+                    {/* Alasan */}
                     <td className={cn('px-2 sm:px-3 py-2 text-left', TABLE_BORDER)}>
                       {isBegadang && entry?.alasan_tidak ? (
                         <DropdownMenu>
@@ -336,6 +382,14 @@ export default function TidurPage() {
                         <span className="text-slate-400">-</span>
                       )}
                     </td>
+                    {/* Waktu Tidur (durasi) */}
+                    <td className={cn('px-2 sm:px-3 py-2 text-center', TABLE_BORDER)}>
+                      {entry?.durasi_jam != null ? (
+                        <span className="text-sm font-medium text-slate-700 tabular-nums">{entry.durasi_jam} jam</span>
+                      ) : (
+                        <span className="text-slate-400">-</span>
+                      )}
+                    </td>
                   </tr>
                 )
               })
@@ -351,6 +405,7 @@ export default function TidurPage() {
         difficultyTitle="Tidur Terbaik"
         reasonTitle="Alasan Begadang"
         missedNoun="begadang"
+        barColor="#1e293b"
       />
     </div>
   )

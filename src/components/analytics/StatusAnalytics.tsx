@@ -32,6 +32,7 @@ interface StatusAnalyticsProps {
   reasonTitle: string
   reasonSubtitle?: string
   missedNoun: string // mis. 'terlewat' | 'begadang' | 'relapse'
+  barColor?: string // custom bar color (default: pastel palette)
 }
 
 const PASTEL_BAR_COLORS = [
@@ -166,6 +167,7 @@ export function StatusAnalytics({
   reasonTitle,
   reasonSubtitle,
   missedNoun,
+  barColor,
 }: StatusAnalyticsProps) {
   // Card 1: % dilakukan per hari (Senin..Minggu)
   const missedStats = useMemo(() => {
@@ -244,7 +246,7 @@ export function StatusAnalytics({
                 <Tooltip content={<MissedTooltip />} cursor={{ fill: 'rgba(148,163,184,0.08)' }} />
                 <Bar dataKey="percent" radius={[6, 6, 0, 0]} maxBarSize={44} isAnimationActive animationDuration={500}>
                   {missedStats.map((entry, i) => (
-                    <Cell key={entry.key} fill={PASTEL_BAR_COLORS[i % PASTEL_BAR_COLORS.length]} />
+                    <Cell key={entry.key} fill={barColor || PASTEL_BAR_COLORS[i % PASTEL_BAR_COLORS.length]} />
                   ))}
                   <LabelList
                     dataKey="percent"

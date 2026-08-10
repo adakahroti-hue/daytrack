@@ -45,8 +45,6 @@ export async function upsertTidurLog(formData: TidurLogFormData) {
   if (!user) throw new Error("Unauthorized")
 
   const validated = tidurLogSchema.parse(formData)
-  const durasi = calculateDuration(validated.jam_tidur || null, validated.jam_bangun || null)
-
   const { data: existing } = await supabase
     .from("tidur")
     .select("id")
@@ -54,16 +52,20 @@ export async function upsertTidurLog(formData: TidurLogFormData) {
     .eq("tanggal", validated.tanggal)
     .single()
 
-  const insertData = {
+  const insertData: Record<string, any> = {
     user_id: user.id,
     tanggal: validated.tanggal,
     status: validated.status,
-    jam_tidur: validated.jam_tidur || null,
-    jam_bangun: validated.jam_bangun || null,
-    durasi_jam: durasi,
-    catatan: validated.catatan || null,
-    alasan_tidak: validated.alasan_tidak || null,
   }
+  // Only overwrite fields that were explicitly provided (preserve existing values on partial updates)
+  if (validated.jam_tidur !== undefined) insertData.jam_tidur = validated.jam_tidur || null
+  if (validated.jam_bangun !== undefined) insertData.jam_bangun = validated.jam_bangun || null
+  if (validated.catatan !== undefined) insertData.catatan = validated.catatan || null
+  if (validated.alasan_tidak !== undefined) insertData.alasan_tidak = validated.alasan_tidak || null
+  // durasi_jam is always recalculated from jam_tidur + jam_bangun
+  const effectiveJamTidur = validated.jam_tidur ?? existing?.jam_tidur ?? null
+  const effectiveJamBangun = validated.jam_bangun ?? existing?.jam_bangun ?? null
+  insertData.durasi_jam = calculateDuration(effectiveJamTidur, effectiveJamBangun)
 
   let data, error
   if (existing) {
