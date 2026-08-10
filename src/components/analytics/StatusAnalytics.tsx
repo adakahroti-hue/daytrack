@@ -36,12 +36,12 @@ interface StatusAnalyticsProps {
 }
 
 const PASTEL_BAR_COLORS = [
-  '#FDA4AF',
-  '#93C5FD',
-  '#FCD34D',
-  '#86EFAC',
-  '#C4B5FD',
-  '#7DD3FC',
+  '#1E293B',
+  '#334155',
+  '#475569',
+  '#64748B',
+  '#94A3B8',
+  '#CBD5E1',
 ]
 
 const PASTEL_DONUT_COLORS = [

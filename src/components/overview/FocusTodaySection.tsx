@@ -32,8 +32,10 @@ type OverviewTask = {
 
 function formatSedang(task: OverviewTask): string {
   const seconds = getTaskActiveSeconds(task)
-  const h = Math.floor(seconds / 3600)
+  const d = Math.floor(seconds / 86400)
+  const h = Math.floor((seconds % 86400) / 3600)
   const m = Math.floor((seconds % 3600) / 60)
+  if (d > 0) return `${d} hari ${h} jam ${m} menit`
   if (h > 0) return `${h} jam ${m} menit`
   if (m > 0) return `${m} menit`
   return 'baru mulai'
@@ -95,7 +97,7 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
         <div className="w-px bg-slate-100 shrink-0" />
         <div className="flex-1 min-w-0">
           {sedang > 0 ? (
-            <p className="text-xs font-medium text-slate-500">{sedang} Tugas Diproses</p>
+            <p className="text-xs font-bold text-orange-500">{sedang} Tugas Diproses</p>
           ) : (
             <p className="text-xs font-medium text-slate-500">Tidak ada tugas berjalan</p>
           )}
@@ -104,7 +106,7 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
               <p className="text-sm font-semibold text-slate-900 line-clamp-2 pt-4 capitalize">{featured.nama}</p>
               <div className="flex items-center gap-3 text-xs text-slate-500 mt-2 flex-wrap">
                 <p className="flex items-center gap-1.5">
-                  <Clock className="h-3.5 w-3.5" /> Estimasi: {getEstimasiText(featured.estimasi_menit)}
+                  <Clock className="h-3.5 w-3.5" /> {getEstimasiText(featured.estimasi_menit)}
                 </p>
                 <p className="flex items-center gap-1.5 text-orange-500 animate-pulse">
                   <Timer className="h-3.5 w-3.5" /> <span className="hidden lg:inline">{formatSedang(featured)}</span>

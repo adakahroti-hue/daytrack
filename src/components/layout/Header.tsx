@@ -48,7 +48,7 @@ function HariIniMissionSentence() {
       <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
       <span className="text-sm font-medium text-green-800 whitespace-nowrap">
         {completedMissions === 0
-          ? 'Cukup selesaikan 1 misi saja hari ini'
+          ? 'Selesaikan 1 misi ini secepat yang kamu bisa'
           : `${completedMissions} misi penting selesai, tinggal ${remainingMissions} misi lagi.`}
       </span>
     </div>

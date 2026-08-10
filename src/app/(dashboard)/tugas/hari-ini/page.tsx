@@ -203,7 +203,7 @@ const TaskCard = memo(({
         <div className="space-y-1">
           <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400">
             <Clock className="h-3.5 w-3.5 flex-shrink-0" />
-            <span>Estimasi: {getEstimasiText(task.estimasi_menit)}</span>
+            <span>{getEstimasiText(task.estimasi_menit)}</span>
             {isInProgress && task.started_at && (
               <span className={cn(
                 'flex items-center gap-1',

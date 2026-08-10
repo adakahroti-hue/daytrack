@@ -252,6 +252,16 @@ export function formatTime(date: Date | string): string {
 }
 
 export function getEstimasiText(menit: number): string {
+  if (menit >= 1440) {
+    const hari = Math.floor(menit / 1440)
+    const sisaMenit = menit % 1440
+    const jam = Math.floor(sisaMenit / 60)
+    const sisa = sisaMenit % 60
+    if (jam > 0 && sisa > 0) return `${hari} hari ${jam} jam ${sisa} menit`
+    if (jam > 0) return `${hari} hari ${jam} jam`
+    if (sisa > 0) return `${hari} hari ${sisa} menit`
+    return `${hari} hari`
+  }
   if (menit >= 60) {
     const jam = Math.floor(menit / 60)
     const sisa = menit % 60

@@ -215,7 +215,7 @@ const TaskCard = memo(({
           <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
             <div className="flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5 shrink-0" />
-              <span className="whitespace-nowrap">Estimasi: {getEstimasiText(task.estimasi_menit)}</span>
+              <span className="whitespace-nowrap">{getEstimasiText(task.estimasi_menit)}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Calendar className="h-3.5 w-3.5 shrink-0" />
