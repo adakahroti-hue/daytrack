@@ -8,7 +8,7 @@ const waterLogSchema = z.object({
   tanggal: z.string().min(1, "Tanggal wajib diisi"),
   waktu_baca: z.enum(['setelah_bangun', 'setelah_dzuhur', 'setelah_ashar', 'setelah_maghrib', 'sebelum_tidur']),
   jumlah_ml: z.number().int().min(0).max(1000).default(250),
-  catatan: z.string().optional(),
+  alasan: z.string().optional(),
   status: z.enum(['sudah', 'lupa']).optional().nullable(),
 })
 
@@ -20,7 +20,7 @@ export interface WaterLogEntry {
   tanggal: string
   waktu_baca: string
   jumlah_ml: number
-  catatan: string | null
+  alasan: string | null
   status: string | null
   created_at: string
   updated_at: string
@@ -49,7 +49,7 @@ export async function upsertWaterLog(formData: WaterLogFormData) {
     tanggal: validated.tanggal,
     waktu_baca: validated.waktu_baca,
     jumlah_ml: validated.jumlah_ml,
-    catatan: validated.catatan || null,
+    alasan: validated.alasan || null,
     status: validated.status || null,
   }
 
@@ -81,7 +81,7 @@ export async function getWaterLog(tanggal: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("minum_air").select("*").eq("user_id", user.id).eq("tanggal", tanggal).order("waktu_baca")
+  const { data, error } = await supabase.from("minum_air").select("id, user_id, tanggal, waktu_baca, jumlah_ml, alasan, status, created_at, updated_at").eq("user_id", user.id).eq("tanggal", tanggal).order("waktu_baca")
   if (error) throw new Error(error.message)
   return data || []
 }
@@ -90,7 +90,7 @@ export async function getWaterLogRange(startDate: string, endDate: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("minum_air").select("id, tanggal, waktu_baca, jumlah_ml, catatan, status, created_at, updated_at").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate).order("tanggal", { ascending: false })
+  const { data, error } = await supabase.from("minum_air").select("id, user_id, tanggal, waktu_baca, jumlah_ml, alasan, status, created_at, updated_at").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate).order("tanggal", { ascending: false })
   if (error) throw new Error(error.message)
   return data || []
 }
@@ -101,11 +101,11 @@ export async function getWaterDailySummary(tanggal: string) {
   if (!user) throw new Error("Unauthorized")
   const { data, error } = await supabase.from("minum_air").select("jumlah_ml").eq("user_id", user.id).eq("tanggal", tanggal)
   if (error) throw new Error(error.message)
-  
+
   const totalMl = data?.reduce((sum, log) => sum + (log.jumlah_ml || 0), 0) || 0
   const gelas = Math.round(totalMl / 250)
   const targetTercapai = totalMl >= TARGET_ML
-  
+
   return { totalMl, gelas, targetTercapai, persentase: Math.min(Math.round((totalMl / TARGET_ML) * 100), 100) }
 }
 
@@ -115,14 +115,14 @@ export async function getWaterStats(startDate: string, endDate: string) {
   if (!user) throw new Error("Unauthorized")
   const { data, error } = await supabase.from("minum_air").select("tanggal, jumlah_ml").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate)
   if (error) throw new Error(error.message)
-  
+
   const logs = data || []
   const byDate = new Map<string, number>()
   logs.forEach(l => byDate.set(l.tanggal, (byDate.get(l.tanggal) || 0) + l.jumlah_ml))
-  
+
   const days = Array.from(byDate.values())
   const avgMl = days.length ? Math.round(days.reduce((a, b) => a + b, 0) / days.length) : 0
   const targetDays = days.filter(d => d >= TARGET_ML).length
-  
+
   return { avgMl, targetDays, totalDays: days.length, rataGelas: Math.round(avgMl / 250) }
 }

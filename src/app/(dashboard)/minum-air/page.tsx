@@ -40,7 +40,7 @@ const WATER_TIMES: { key: WaterKey; label: string; icon: string; waktu: string }
   { key: 'sebelum_tidur', label: 'Sebelum Tidur', icon: '🌙', waktu: '21:30' },
 ]
 
-// Revisi 6: daftar alasan tidak minum (disimpan di kolom catatan: "Tidak minum: <alasan>")
+// Revisi 6: daftar alasan tidak minum
 const WATER_REASONS = ['Malas', 'Lupa', 'Sibuk', 'Sakit', 'Perjalanan', 'Tidak Ada Tempat', 'Bersama Teman', 'Lainnya']
 
 const DAY_BADGE_COLORS: Record<string, string> = {
@@ -70,7 +70,7 @@ interface WaterLogEntry {
   tanggal: string
   waktu_baca: string
   jumlah_ml: number
-  catatan: string | null
+  alasan: string | null
   status: string | null
   created_at: string
   updated_at: string
@@ -149,7 +149,6 @@ export default function MinumAirPage() {
 
   const dates = useMemo(() => {
     if (rangeEnd < rangeStart) return []
-    // Revisi: urutan tanggal dari atas ke bawah — tanggal baru muncul di bawah
     return eachDayOfInterval({ start: rangeStart, end: rangeEnd }).map(d => format(d, 'yyyy-MM-dd'))
   }, [rangeStart, rangeEnd])
 
@@ -159,7 +158,7 @@ export default function MinumAirPage() {
       waktu_baca: key,
       jumlah_ml: status === 'sudah' ? GLASS_ML : 0,
       status,
-      catatan: status === 'lupa' && reason ? `Tidak minum: ${reason}` : undefined,
+      alasan: status === 'lupa' && reason ? reason : undefined,
     })
     refetch()
   }
@@ -236,8 +235,8 @@ export default function MinumAirPage() {
                       const entry = logMap[dateStr]?.[col.key]
                       const isDone = !!entry && (entry.status === 'sudah' || entry.jumlah_ml > 0)
                       const isLupa = !!entry && entry.status === 'lupa'
-                      const lupaLabel = isLupa && entry?.catatan?.startsWith('Tidak minum:')
-                        ? entry.catatan.replace('Tidak minum: ', '')
+                      const lupaLabel = isLupa && entry?.alasan
+                        ? entry.alasan
                         : 'Lupa'
                       return (
                         <td

@@ -22,7 +22,7 @@ export interface WaterLogEntry {
   tanggal: string
   waktu_baca: string
   jumlah_ml: number
-  catatan: string | null
+  alasan: string | null
   status: string | null
 }
 
@@ -181,16 +181,14 @@ export function MinumAirAnalytics({ logMap, columns }: MinumAirAnalyticsProps) {
       .sort((a, b) => b.missed - a.missed || b.total - a.total)
   }, [logMap, columns])
 
-  // Card 2: alasan terbanyak tidak minum (dari catatan "Tidak minum: ...")
+  // Card 2: alasan terbanyak tidak minum
   const reasonStats = useMemo(() => {
     const counts = new Map<string, number>()
     for (const tanggal of Object.keys(logMap)) {
       for (const col of columns) {
         const entry = logMap[tanggal]?.[col.key]
         if (!entry || entry.status !== 'lupa') continue
-        const reason = entry.catatan?.startsWith('Tidak minum:')
-          ? entry.catatan.replace('Tidak minum: ', '').trim()
-          : 'Lupa'
+        const reason = entry.alasan || 'Lupa'
         if (reason) counts.set(reason, (counts.get(reason) ?? 0) + 1)
       }
     }
