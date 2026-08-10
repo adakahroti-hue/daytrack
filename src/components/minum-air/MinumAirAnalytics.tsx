@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils'
 export interface WaterLogEntry {
   id: string
   tanggal: string
-  waktu_baca: string
+  waktu_minum: string
   jumlah_ml: number
   alasan: string | null
   status: string | null

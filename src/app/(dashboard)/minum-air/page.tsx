@@ -68,7 +68,7 @@ interface WaterLogEntry {
   id: string
   user_id: string
   tanggal: string
-  waktu_baca: string
+  waktu_minum: string
   jumlah_ml: number
   alasan: string | null
   status: string | null
@@ -137,12 +137,12 @@ export default function MinumAirPage() {
     queryKeys: [['minum_air', 'range', startDate, endDate]],
   })
 
-  // Map: tanggal -> waktu_baca -> entry
+  // Map: tanggal -> waktu_minum -> entry
   const logMap = useMemo(() => {
     const map: Record<string, Record<string, WaterLogEntry>> = {}
     for (const log of waterLogs as WaterLogEntry[]) {
       if (!map[log.tanggal]) map[log.tanggal] = {}
-      map[log.tanggal][log.waktu_baca] = log
+      map[log.tanggal][log.waktu_minum] = log
     }
     return map
   }, [waterLogs])
@@ -155,7 +155,7 @@ export default function MinumAirPage() {
   const handleSetStatus = async (tanggal: string, key: WaterKey, status: 'sudah' | 'lupa', reason?: string) => {
     await upsertWaterLog.mutateAsync({
       tanggal,
-      waktu_baca: key,
+      waktu_minum: key,
       jumlah_ml: status === 'sudah' ? GLASS_ML : 0,
       status,
       alasan: status === 'lupa' && reason ? reason : undefined,

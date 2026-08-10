@@ -139,7 +139,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
   const gelas = Math.round(totalMl / ML_PER_GELAS)
   const targetGelasPeriod = TARGET_GELAS * daysElapsed
   const waterPerSesi = WATER_SESSIONS.map(s =>
-    (waterEntries as any[]).filter(e => e.waktu_baca === s.key && e.status === 'sudah').length
+    (waterEntries as any[]).filter(e => e.waktu_minum === s.key && e.status === 'sudah').length
   )
 
   // Checklist

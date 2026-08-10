@@ -6,7 +6,7 @@ import { z } from "zod"
 
 const waterLogSchema = z.object({
   tanggal: z.string().min(1, "Tanggal wajib diisi"),
-  waktu_baca: z.enum(['setelah_bangun', 'setelah_dzuhur', 'setelah_ashar', 'setelah_maghrib', 'sebelum_tidur']),
+  waktu_minum: z.enum(['setelah_bangun', 'setelah_dzuhur', 'setelah_ashar', 'setelah_maghrib', 'sebelum_tidur']),
   jumlah_ml: z.number().int().min(0).max(1000).default(250),
   alasan: z.string().optional(),
   status: z.enum(['sudah', 'lupa']).optional().nullable(),
@@ -18,7 +18,7 @@ export interface WaterLogEntry {
   id: string
   user_id: string
   tanggal: string
-  waktu_baca: string
+  waktu_minum: string
   jumlah_ml: number
   alasan: string | null
   status: string | null
@@ -41,13 +41,13 @@ export async function upsertWaterLog(formData: WaterLogFormData) {
     .select("id")
     .eq("user_id", user.id)
     .eq("tanggal", validated.tanggal)
-    .eq("waktu_baca", validated.waktu_baca)
+    .eq("waktu_minum", validated.waktu_minum)
     .single()
 
   const insertData = {
     user_id: user.id,
     tanggal: validated.tanggal,
-    waktu_baca: validated.waktu_baca,
+    waktu_minum: validated.waktu_minum,
     jumlah_ml: validated.jumlah_ml,
     alasan: validated.alasan || null,
     status: validated.status || null,
@@ -81,7 +81,7 @@ export async function getWaterLog(tanggal: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("minum_air").select("id, user_id, tanggal, waktu_baca, jumlah_ml, alasan, status, created_at, updated_at").eq("user_id", user.id).eq("tanggal", tanggal).order("waktu_baca")
+  const { data, error } = await supabase.from("minum_air").select("id, user_id, tanggal, waktu_minum, jumlah_ml, alasan, status, created_at, updated_at").eq("user_id", user.id).eq("tanggal", tanggal).order("waktu_minum")
   if (error) throw new Error(error.message)
   return data || []
 }
@@ -90,7 +90,7 @@ export async function getWaterLogRange(startDate: string, endDate: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("minum_air").select("id, user_id, tanggal, waktu_baca, jumlah_ml, alasan, status, created_at, updated_at").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate).order("tanggal", { ascending: false })
+  const { data, error } = await supabase.from("minum_air").select("id, user_id, tanggal, waktu_minum, jumlah_ml, alasan, status, created_at, updated_at").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate).order("tanggal", { ascending: false })
   if (error) throw new Error(error.message)
   return data || []
 }
