@@ -213,7 +213,7 @@ export function StatusAnalytics({
     <section className="space-y-4" aria-label="Analytics">
       <div className="pt-2">
         <h2 className="text-sm font-bold uppercase tracking-tight text-slate-700 dark:text-slate-200">
-          Analytics &amp; Insight
+          Ringkasan
         </h2>
       </div>
 
