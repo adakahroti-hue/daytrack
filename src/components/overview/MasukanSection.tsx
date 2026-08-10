@@ -12,7 +12,7 @@ interface MasukanSectionProps {
 export function MasukanSection({ startStr, endStr }: MasukanSectionProps) {
   const { data: entries = [], isLoading } = useSaranPerbaikanRange(startStr, endStr)
 
-  const sarans = (entries as any[]).filter((e: any) => e.saran).slice(0, 5)
+  const sarans = (entries as any[]).filter((e: any) => e.saran).slice(0, 3)
 
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
