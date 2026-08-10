@@ -9,7 +9,7 @@ const tidurLogSchema = z.object({
   status: z.enum(["tepat", "begadang"]).default("tepat"),
   jam_tidur: z.string().optional(),
   jam_bangun: z.string().optional(),
-  alasan_tidak: z.enum(["sibuk", "insomnia", "malam_minggu", "lainnya"]).optional(),
+  alasan_tidak: z.string().optional(),
 })
 
 export type TidurLogFormData = z.infer<typeof tidurLogSchema>
@@ -45,7 +45,7 @@ export async function upsertTidurLog(formData: TidurLogFormData) {
   const validated = tidurLogSchema.parse(formData)
   const { data: existing } = await supabase
     .from("tidur")
-    .select("id")
+    .select("id, jam_tidur, jam_bangun")
     .eq("user_id", user.id)
     .eq("tanggal", validated.tanggal)
     .single()
