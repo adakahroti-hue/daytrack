@@ -144,10 +144,11 @@ export default function PmoPage() {
   }
 
   const handleSetAlasan = async (tanggal: string, reason: string) => {
+    const entry = logMap[tanggal]
     await upsertPmoLog.mutateAsync({
       tanggal,
-      hari_ke: 1,
-      status: 'relapse',
+      hari_ke: entry?.hari_ke || 1,
+      status: entry?.status || 'relapse',
       catatan: `Relapse: ${reason}`,
     })
   }
