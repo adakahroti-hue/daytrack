@@ -8,7 +8,7 @@ const pmoLogSchema = z.object({
   tanggal: z.string().min(1, "Tanggal wajib diisi"),
   hari_ke: z.number().int().min(1).max(10000),
   status: z.enum(['berhasil', 'relapse']),
-  catatan: z.string().optional(),
+  alasan: z.string().optional(),
 })
 
 export type PmoLogFormData = z.infer<typeof pmoLogSchema>
@@ -19,7 +19,7 @@ export interface PmoLogEntry {
   tanggal: string
   hari_ke: number
   status: 'berhasil' | 'relapse'
-  catatan: string | null
+  alasan: string | null
   created_at: string
   updated_at: string
 }
@@ -43,7 +43,7 @@ export async function upsertPmoLog(formData: PmoLogFormData) {
     tanggal: validated.tanggal,
     hari_ke: validated.hari_ke,
     status: validated.status,
-    catatan: validated.catatan || null,
+    alasan: validated.alasan || null,
   }
 
   let data, error
@@ -74,7 +74,7 @@ export async function getPmoLog(tanggal: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("pmo").select("*").eq("user_id", user.id).eq("tanggal", tanggal).single()
+  const { data, error } = await supabase.from("pmo").select("id, user_id, tanggal, hari_ke, status, alasan, created_at, updated_at").eq("user_id", user.id).eq("tanggal", tanggal).single()
   if (error && error.code !== "PGRST116") throw new Error(error.message)
   return data
 }
@@ -83,7 +83,7 @@ export async function getPmoLogRange(startDate: string, endDate: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("pmo").select("*").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate).order("tanggal", { ascending: true })
+  const { data, error } = await supabase.from("pmo").select("id, user_id, tanggal, hari_ke, status, alasan, created_at, updated_at").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate).order("tanggal", { ascending: true })
   if (error) throw new Error(error.message)
   return data || []
 }
@@ -92,20 +92,20 @@ export async function getPmoStats(startDate: string, endDate: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("pmo").select("status, hari_ke, trigger").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate).order("tanggal", { ascending: true })
+  const { data, error } = await supabase.from("pmo").select("status, hari_ke").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate).order("tanggal", { ascending: true })
   if (error) throw new Error(error.message)
-  
+
   const logs = data || []
   const berhasil = logs.filter(l => l.status === 'berhasil').length
   const relapse = logs.filter(l => l.status === 'relapse').length
   const maxStreak = Math.max(...logs.filter(l => l.status === 'berhasil').map(l => l.hari_ke), 0)
-  
+
   // Calculate current streak
   let currentStreak = 0
   for (let i = logs.length - 1; i >= 0; i--) {
     if (logs[i].status === 'berhasil') currentStreak++
     else break
   }
-  
+
   return { berhasil, relapse, currentStreak, maxStreak, total: logs.length }
 }

@@ -46,7 +46,7 @@ interface PmoLogEntry {
   tanggal: string
   hari_ke: number
   status: 'berhasil' | 'relapse'
-  catatan: string | null
+  alasan: string | null
   created_at: string
   updated_at: string
 }
@@ -137,7 +137,7 @@ export default function PmoPage() {
       tanggal,
       hari_ke: hariKe,
       status,
-      catatan: status === 'berhasil' ? undefined : (entry?.catatan || undefined),
+      alasan: status === 'berhasil' ? undefined : (entry?.alasan || undefined),
     })
   }
 
@@ -147,7 +147,7 @@ export default function PmoPage() {
       tanggal,
       hari_ke: entry?.hari_ke || 1,
       status: entry?.status || 'relapse',
-      catatan: `Relapse: ${reason}`,
+      alasan: reason,
     })
   }
 
@@ -156,9 +156,9 @@ export default function PmoPage() {
     return (logs as PmoLogEntry[]).map(l => ({
       tanggal: l.tanggal,
       missed: l.status === 'relapse',
-      reason: l.status === 'relapse' && l.catatan?.startsWith('Relapse:')
-        ? l.catatan.replace('Relapse: ', '')
-        : (l.status === 'relapse' ? 'Relapse' : null),
+      reason: l.status === 'relapse'
+        ? (l.alasan || 'Relapse')
+        : null,
     }))
   }, [logs])
 
@@ -224,9 +224,6 @@ export default function PmoPage() {
                 const entry = logMap[dateStr]
                 const isDone = entry?.status === 'berhasil'
                 const isRelapse = entry?.status === 'relapse'
-                const relapseLabel = isRelapse && entry?.catatan?.startsWith('Relapse:')
-                  ? entry.catatan.replace('Relapse: ', '')
-                  : 'Relapse'
 
                 return (
                   <tr
@@ -281,14 +278,14 @@ export default function PmoPage() {
                       </div>
                     </td>
                     <td className={cn('px-2 sm:px-3 py-2 text-left', TABLE_BORDER)}>
-                      {isRelapse && entry?.catatan?.startsWith('Relapse:') ? (
+                      {isRelapse && entry?.alasan ? (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <button
                               type="button"
                               className="font-medium text-slate-700 cursor-pointer hover:text-blue-700 hover:underline"
                             >
-                              {relapseLabel}
+                              {entry.alasan}
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="start" className="w-44">
