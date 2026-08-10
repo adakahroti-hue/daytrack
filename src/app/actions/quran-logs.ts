@@ -29,6 +29,7 @@ export interface QuranLogEntry {
   halaman_selesai: number | null
   jumlah_halaman: number | null
   catatan: string | null
+  kualitas: number | null
   created_at: string
   updated_at: string
 }
