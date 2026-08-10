@@ -57,7 +57,7 @@ export function MentalCard({
             <p className="mt-2 pl-[18px] text-sm text-slate-500">{masalahEmptyText}</p>
           )}
         </div>
-        <div className="pt-3 sm:pt-0">
+        <div className="pt-3 sm:pt-0 sm:pl-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1"><Hourglass className="h-3.5 w-3.5 text-purple-500" /> Kesenangan Ditunda</p>
           {funItems.length > 0 ? (
             <ul className="mt-2 space-y-1">
