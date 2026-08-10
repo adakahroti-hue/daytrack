@@ -21,7 +21,7 @@ export function MasukanSection({ startStr, endStr }: MasukanSectionProps) {
       <div className="flex items-center gap-2 mb-3">
         <Lightbulb className="h-4 w-4 text-amber-500" />
         <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Masukan Perbaikan
+          Masukan DayTrack
         </h3>
         {allSarans.length > 0 && (
           <Link
