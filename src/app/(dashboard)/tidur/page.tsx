@@ -122,12 +122,17 @@ export default function TidurPage() {
 
   const handleSetStatus = async (tanggal: string, status: 'tepat' | 'begadang') => {
     const entry = logMap[tanggal]
-    await upsertTidurLog.mutateAsync({ tanggal, status, jam_tidur: entry?.jam_tidur || undefined, ...(status === 'tepat' ? { catatan: null as any } : {}) })
+    await upsertTidurLog.mutateAsync({
+      tanggal,
+      status,
+      jam_tidur: entry?.jam_tidur || undefined,
+      ...(status === 'tepat' ? { alasan_tidak: null as any } : {}),
+    })
   }
 
   const handleSetAlasan = async (tanggal: string, reason: string) => {
     const entry = logMap[tanggal]
-    await upsertTidurLog.mutateAsync({ tanggal, status: 'begadang', catatan: `Begadang: ${reason}`, jam_tidur: entry?.jam_tidur || undefined })
+    await upsertTidurLog.mutateAsync({ tanggal, status: 'begadang', alasan_tidak: reason, jam_tidur: entry?.jam_tidur || undefined })
   }
 
   const handleSetJamTidur = async (tanggal: string, jamTidur: string, status: 'tepat' | 'begadang') => {
@@ -139,8 +144,8 @@ export default function TidurPage() {
     return (logs as TidurLogEntry[]).map(l => ({
       tanggal: l.tanggal,
       missed: l.status === 'begadang',
-      reason: l.status === 'begadang' && l.catatan?.startsWith('Begadang:')
-        ? l.catatan.replace('Begadang: ', '')
+      reason: l.status === 'begadang' && l.alasan_tidak
+        ? l.alasan_tidak
         : (l.status === 'begadang' ? 'Begadang' : null),
     }))
   }, [logs])
@@ -211,8 +216,8 @@ export default function TidurPage() {
                 const entry = logMap[dateStr]
                 const isDone = entry?.status === 'tepat'
                 const isBegadang = entry?.status === 'begadang'
-                const begadangLabel = isBegadang && entry?.catatan?.startsWith('Begadang:')
-                  ? entry.catatan.replace('Begadang: ', '')
+                const begadangLabel = isBegadang && entry?.alasan_tidak
+                  ? entry.alasan_tidak
                   : 'Begadang'
 
                 return (
@@ -292,7 +297,7 @@ export default function TidurPage() {
                       </DropdownMenu>
                     </td>
                     <td className={cn('px-2 sm:px-3 py-2 text-left', TABLE_BORDER)}>
-                      {isBegadang && entry?.catatan?.startsWith('Begadang:') ? (
+                      {isBegadang && entry?.alasan_tidak ? (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <button
