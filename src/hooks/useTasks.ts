@@ -43,6 +43,19 @@ export function useCreateTask() {
       // Only invalidate the specific task queries, not all of them
       queryClient.invalidateQueries({ queryKey: ["tugas"] })
     },
+    onError: (error) => {
+      // Jangan biarkan error tertelan — tampilkan ke user agar ketahuan kalau simpan gagal
+      console.error("[createTask] gagal:", error)
+      try {
+        // toast dari sonner (sudah terpasang global di layout)
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        import("sonner").then(({ toast }) => {
+          toast.error(`Gagal menyimpan tugas: ${(error as Error)?.message || "unknown error"}`)
+        })
+      } catch {
+        alert(`Gagal menyimpan tugas: ${(error as Error)?.message || "unknown error"}`)
+      }
+    },
   })
 }
 
