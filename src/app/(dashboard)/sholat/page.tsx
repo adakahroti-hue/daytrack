@@ -15,7 +15,7 @@ import {
   endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Check, Sun, CloudSun, Sunset, Moon, Calendar, CalendarDays, Star } from 'lucide-react'
+import { Check, X, Sun, CloudSun, Sunset, Moon, Calendar, CalendarDays, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useTableLock } from '@/components/ui/table-lock'
@@ -205,6 +205,7 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
 }>(({ tanggal, sholatKey, sholatMap, onSelect, onRate, onClear, onClose }, ref) => {
   const menuRef = useRef<HTMLDivElement>(null)
   const [position, setPosition] = useState<{ top: number; left: number; maxHeight?: number } | null>(null)
+  const [showReasons, setShowReasons] = useState(false)
 
   useEffect(() => {
     const cell = document.querySelector(`[data-dropdown-cell="${tanggal}-${sholatKey}"]`) as HTMLElement
@@ -252,6 +253,7 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
   if (!position) return null
 
   const isDone = currentValue === 'sudah'
+  const isTidak = showReasons && !isDone
 
   return (
     <div
@@ -262,7 +264,7 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
     >
       {/* Step 1: Pilih status */}
       <button
-        onClick={() => onSelect({ value: 'sudah', label: 'Sudah Sholat', isDone: true })}
+        onClick={() => { setShowReasons(false); onSelect({ value: 'sudah', label: 'Sudah Sholat', isDone: true }) }}
         className={cn(
           'w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors',
           'hover:bg-blue-50 text-slate-700',
@@ -273,14 +275,14 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
         Sudah Sholat
       </button>
       <button
-        onClick={() => onSelect({ value: 'tidak', label: 'Tidak Sholat', isDone: false })}
+        onClick={() => setShowReasons(true)}
         className={cn(
           'w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors',
           'hover:bg-blue-50 text-slate-700',
-          !isDone && currentValue && currentValue !== 'sudah' && 'bg-blue-50 font-medium text-blue-700'
+          isTidak && 'bg-blue-50 font-medium text-blue-700'
         )}
       >
-        <span className="w-3.5 h-3.5 shrink-0" />
+        {isTidak ? <X className="h-3.5 w-3.5 text-red-500 shrink-0" /> : <span className="w-3.5 h-3.5 shrink-0" />}
         Tidak Sholat
       </button>
 
@@ -319,8 +321,8 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
         </>
       )}
 
-      {/* Step 2b: Alasan — muncul bila tidak sholat */}
-      {!isDone && currentValue && currentValue !== 'sudah' && (
+      {/* Step 2b: Alasan — muncul bila klik Tidak Sholat */}
+      {isTidak && (
         <>
           <div className="border-t border-slate-100 my-1" />
           <div className="px-3 py-1.5">
@@ -514,11 +516,6 @@ export default function SholatPage() {
       return
     }
 
-    if (option.value === 'tidak') {
-      // Jangan tutup dropdown — tampilkan opsi alasan
-      return
-    }
-
     setDropdown(null)
     const reason = option.value
     optimisticallyUpdateCell(tanggal, sholatKey, 'reason', reason)
@@ -666,9 +663,14 @@ export default function SholatPage() {
                               </>
                             )}
                             {status === 'reason' && reason && (
-                              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200 text-xs font-medium whitespace-nowrap">
-                                {REASON_LABELS[reason] || reason}
-                              </span>
+                              <>
+                                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-rose-100 text-rose-600 border border-rose-200">
+                                  <X className="h-3.5 w-3.5" />
+                                </span>
+                                <span className="inline-flex items-center justify-center px-1.5 py-px rounded-full bg-rose-50 text-rose-600 border border-rose-100 text-[10px] font-medium whitespace-nowrap">
+                                  {REASON_LABELS[reason] || reason}
+                                </span>
+                              </>
                             )}
                             {status === 'empty' && (
                               <span className="text-slate-300 text-xs">×</span>
