@@ -1,6 +1,7 @@
 'use client'
 
-import { Lightbulb } from 'lucide-react'
+import { Lightbulb, ArrowRight } from 'lucide-react'
+import Link from 'next/link'
 import { useSaranPerbaikanRange } from '@/hooks/useSaranPerbaikan'
 import { cn } from '@/lib/utils'
 
@@ -22,7 +23,14 @@ export function MasukanSection({ startStr, endStr }: MasukanSectionProps) {
           Masukan Perbaikan
         </h3>
         {sarans.length > 0 && (
-          <span className="ml-auto text-xs text-slate-400">{sarans.length} item</span>
+          <Link
+            href="/saran-perbaikan"
+            className="ml-auto group flex items-center gap-1 text-xs text-slate-400 hover:text-amber-600 transition-colors"
+            title="Selengkapnya"
+          >
+            <span className="hidden sm:inline">Selengkapnya</span>
+            <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+          </Link>
         )}
       </div>
 
