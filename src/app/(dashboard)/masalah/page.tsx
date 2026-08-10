@@ -42,11 +42,7 @@ interface MasalahLogEntry {
   user_id: string
   tanggal: string
   masalah: string
-  kategori: string | null
-  solusi: string | null
   status: 'belum' | 'proses' | 'selesai'
-  prioritas: string | null
-  catatan: string | null
   created_at: string
   updated_at: string
 }
@@ -130,7 +126,6 @@ export default function MasalahPage() {
         tanggal: editState.tanggal,
         masalah: editState.masalah.trim(),
         status: 'belum',
-        prioritas: 'sedang',
       })
     }
     setEditState(null)
@@ -145,7 +140,7 @@ export default function MasalahPage() {
   return (
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
 
-      {/* Tabel gaya Quran: Tanggal | Hari | Refleksi | Status | Solusi */}
+      {/* Tabel gaya Quran: Tanggal | Hari | Refleksi */}
       <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-280px)] landscape:max-lg:max-h-none rounded-lg border bg-white', TABLE_BORDER)}>
         <table className="w-full border-collapse text-xs sm:text-sm">
           <thead className="sticky top-0 z-20 bg-white">
@@ -250,7 +245,7 @@ export default function MasalahPage() {
               <Label htmlFor="masalah-teks">Refleksi</Label>
               <Textarea
                 id="masalah-teks"
-                placeholder="Tulis masalah yang sedang dihadapi…"
+                placeholder="Tulis masalah yang sedang dihadapi..."
                 value={editState?.masalah ?? ''}
                 onChange={(e) => setEditState(prev => prev ? { ...prev, masalah: e.target.value } : prev)}
                 rows={3}
