@@ -472,7 +472,7 @@ export default function QuranPage() {
       halaman_mulai: existing?.halaman_mulai || null,
       halaman_selesai: existing?.halaman_selesai || null,
       jumlah_halaman: existing?.jumlah_halaman || null,
-      kualitas: null,
+      kualitas: existing?.kualitas || null,
       catatan: `Tidak membaca: ${option.label}`,
     } as QuranLogEntry))
     try {
@@ -483,6 +483,7 @@ export default function QuranPage() {
         juz: existing?.juz || undefined,
         halaman_mulai: existing?.halaman_mulai || undefined,
         halaman_selesai: existing?.halaman_selesai || undefined,
+        kualitas: (existing as any)?.kualitas || undefined,
         catatan: `Tidak membaca: ${option.label}`,
       })
     } catch {
