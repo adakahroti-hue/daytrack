@@ -169,7 +169,10 @@ export default function KesenanganPage() {
                 </div>
               </th>
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[96px] sm:min-w-[110px]', TABLE_BORDER)}>
-                Status
+                <div className="flex items-center justify-center gap-1">
+                  <Check className="h-3.5 w-3.5 text-green-500" />
+                  Status
+                </div>
               </th>
             </tr>
           </thead>
