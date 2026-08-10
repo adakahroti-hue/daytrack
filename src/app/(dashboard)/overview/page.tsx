@@ -36,7 +36,7 @@ export default function OverviewPage() {
   const endStr = format(rangeEnd, 'yyyy-MM-dd')
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-3">
       <RoutineTodaySection startStr={startStr} endStr={endStr} period={summaryPeriod} />
       <MasukanSection startStr={startStr} endStr={endStr} />
     </div>
