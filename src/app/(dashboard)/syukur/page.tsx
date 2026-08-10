@@ -60,9 +60,6 @@ interface SyukurLogEntry {
   user_id: string
   tanggal: string
   status: 'sudah' | 'belum'
-  isi_syukur: string | null
-  kategori: string | null
-  catatan: string | null
   alasan_tidak: string | null
   created_at: string
   updated_at: string

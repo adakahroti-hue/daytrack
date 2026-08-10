@@ -7,9 +7,6 @@ import { z } from "zod"
 const syukurLogSchema = z.object({
   tanggal: z.string().min(1, "Tanggal wajib diisi"),
   status: z.enum(["sudah", "belum"]),
-  isi_syukur: z.string().optional(),
-  kategori: z.enum(["kesehatan", "keluarga", "rezeki", "pekerjaan", "ilmu", "hal_kecil", "lainnya"]).optional(),
-  catatan: z.string().optional(),
   alasan_tidak: z.enum(["lupa", "sibuk", "tidak_terpikir", "malas", "tidak_fokus", "lainnya"]).optional(),
 })
 
@@ -20,22 +17,9 @@ export interface SyukurLogEntry {
   user_id: string
   tanggal: string
   status: 'sudah' | 'belum'
-  isi_syukur: string | null
-  kategori: string | null
-  catatan: string | null
   alasan_tidak: string | null
   created_at: string
   updated_at: string
-}
-
-const KATEGORI_LABELS: Record<string, string> = {
-  kesehatan: "Kesehatan",
-  keluarga: "Keluarga",
-  rezeki: "Rezeki",
-  pekerjaan: "Pekerjaan",
-  ilmu: "Ilmu",
-  hal_kecil: "Hal Kecil",
-  lainnya: "Lainnya",
 }
 
 const ALASAN_LABELS: Record<string, string> = {
@@ -65,9 +49,6 @@ export async function upsertSyukurLog(formData: SyukurLogFormData) {
     user_id: user.id,
     tanggal: validated.tanggal,
     status: validated.status,
-    isi_syukur: validated.isi_syukur || null,
-    kategori: validated.kategori || null,
-    catatan: validated.catatan || null,
     alasan_tidak: validated.alasan_tidak || null,
   }
 
