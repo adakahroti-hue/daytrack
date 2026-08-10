@@ -9,7 +9,6 @@ const tidurLogSchema = z.object({
   status: z.enum(["tepat", "begadang"]).default("tepat"),
   jam_tidur: z.string().optional(),
   jam_bangun: z.string().optional(),
-  kualitas: z.number().int().min(1).max(5).optional(),
   catatan: z.string().nullable().optional(),
   alasan_tidak: z.enum(["sibuk", "insomnia", "malam_minggu", "lainnya"]).optional(),
 })
@@ -24,7 +23,6 @@ export interface TidurLogEntry {
   jam_tidur: string | null
   jam_bangun: string | null
   durasi_jam: number | null
-  kualitas: number | null
   catatan: string | null
   alasan_tidak: string | null
   created_at: string
@@ -63,7 +61,6 @@ export async function upsertTidurLog(formData: TidurLogFormData) {
     jam_tidur: validated.jam_tidur || null,
     jam_bangun: validated.jam_bangun || null,
     durasi_jam: durasi,
-    kualitas: validated.kualitas || null,
     catatan: validated.catatan || null,
     alasan_tidak: validated.alasan_tidak || null,
   }
@@ -114,14 +111,13 @@ export async function getTidurStats(startDate: string, endDate: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("tidur").select("tanggal, status, durasi_jam, kualitas").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate)
+  const { data, error } = await supabase.from("tidur").select("tanggal, status, durasi_jam").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate)
   if (error) throw new Error(error.message)
   
   const logs = data || []
   const tepat = logs.filter(l => l.status === 'tepat').length
   const begadang = logs.filter(l => l.status === 'begadang').length
   const avgDurasi = logs.filter(l => l.durasi_jam).reduce((sum, l) => sum + (l.durasi_jam || 0), 0) / logs.filter(l => l.durasi_jam).length || 0
-  const avgKualitas = logs.filter(l => l.kualitas).reduce((sum, l) => sum + (l.kualitas || 0), 0) / logs.filter(l => l.kualitas).length || 0
   
   // Calculate streak
   let streak = 0
@@ -132,5 +128,5 @@ export async function getTidurStats(startDate: string, endDate: string) {
     else break
   }
   
-  return { tepat, begadang, total: logs.length, avgDurasi: Math.round(avgDurasi * 10) / 10, avgKualitas: Math.round(avgKualitas * 10) / 10, streak }
+  return { tepat, begadang, total: logs.length, avgDurasi: Math.round(avgDurasi * 10) / 10, streak }
 }
