@@ -294,7 +294,7 @@ export default function MinumAirPage() {
       </div>
       {lockControl}
 
-      {/* Revisi 6: Analytics & Insight — tingkat kesulitan + alasan terbanyak tidak minum */}
+      {/* Revisi 6: Ringkasan — tingkat kesulitan + alasan terbanyak tidak minum */}
       <MinumAirAnalytics logMap={logMap} columns={WATER_TIMES} />
     </div>
   )

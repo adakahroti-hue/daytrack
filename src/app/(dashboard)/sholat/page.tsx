@@ -636,7 +636,7 @@ export default function SholatPage() {
       </div>
       {lockControl}
 
-      {/* ── Analytics & Insight — tepat di bawah tabel (dinamis per periode aktif) ── */}
+      {/* ── Ringkasan — tepat di bawah tabel (dinamis per periode aktif) ── */}
       <SholatAnalytics
         dates={dates}
         sholatMap={sholatMap}

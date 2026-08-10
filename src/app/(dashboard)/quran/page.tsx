@@ -572,7 +572,7 @@ export default function QuranPage() {
         </div>
       </div>
 
-      {/* Revisi 5: Analytics & Insight — tingkat kesulitan + alasan terbanyak tidak baca */}
+      {/* Revisi 5: Ringkasan — tingkat kesulitan + alasan terbanyak tidak baca */}
       <QuranAnalytics logMap={logMap} columns={WAKTU_BACA} />
 
       {/* Dropdown menu gaya sholat */}

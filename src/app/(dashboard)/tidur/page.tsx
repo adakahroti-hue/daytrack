@@ -134,7 +134,7 @@ export default function TidurPage() {
     await upsertTidurLog.mutateAsync({ tanggal, status, jam_tidur: jamTidur })
   }
 
-  // Revisi 6: data untuk Analytics & Insight
+  // Revisi 6: data untuk Ringkasan
   const analyticsEntries = useMemo(() => {
     return (logs as TidurLogEntry[]).map(l => ({
       tanggal: l.tanggal,
@@ -341,7 +341,7 @@ export default function TidurPage() {
       </div>
       {lockControl}
 
-      {/* Revisi 6: Analytics & Insight */}
+      {/* Revisi 6: Ringkasan */}
       <StatusAnalytics
         entries={analyticsEntries}
         difficultyTitle="Tidur Terbaik"

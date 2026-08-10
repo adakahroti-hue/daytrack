@@ -138,7 +138,7 @@ export default function SyukurPage() {
     })
   }
 
-  // Revisi 5: data untuk Analytics & Insight
+  // Revisi 5: data untuk Ringkasan
   const analyticsEntries = useMemo(() => {
     return (logs as SyukurLogEntry[]).map(l => ({
       tanggal: l.tanggal,
@@ -275,7 +275,7 @@ export default function SyukurPage() {
       </div>
       {lockControl}
 
-      {/* Revisi 5: Analytics & Insight */}
+      {/* Revisi 5: Ringkasan */}
       <StatusAnalytics
         entries={analyticsEntries}
         difficultyTitle="Bersyukur Terbanyak"

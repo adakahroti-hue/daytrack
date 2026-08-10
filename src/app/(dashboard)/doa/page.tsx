@@ -118,7 +118,7 @@ export default function DoaPage() {
     })
   }
 
-  // Revisi 4: data untuk Analytics & Insight
+  // Revisi 4: data untuk Ringkasan
   const analyticsEntries = useMemo(() => {
     return (logs as DoaLogEntry[]).map(l => ({
       tanggal: l.tanggal,
@@ -254,7 +254,7 @@ export default function DoaPage() {
         </table>
       </div>
 
-      {/* Revisi 4: Analytics & Insight */}
+      {/* Revisi 4: Ringkasan */}
       <StatusAnalytics
         entries={analyticsEntries}
         difficultyTitle="Doa Terbanyak"
