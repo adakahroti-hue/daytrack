@@ -1,30 +1,32 @@
 "use server"
+
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
+
 const doaLogSchema = z.object({
   tanggal: z.string().min(1, "Tanggal wajib diisi"),
   status: z.enum(["sudah", "belum"]),
-  untuk_siapa: z.string().optional(),
-  keterangan: z.string().optional(),
+  alasan: z.string().optional(),
 })
+
 export type DoaLogFormData = z.infer<typeof doaLogSchema>
+
 export interface DoaLogEntry {
   id: string
   user_id: string
   tanggal: string
   status: 'sudah' | 'belum'
-  untuk_siapa: string | null
-  keterangan: string | null
+  alasan: string | null
   created_at: string
   updated_at: string
 }
+
 export async function upsertDoaLog(formData: DoaLogFormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
   const validated = doaLogSchema.parse(formData)
-  // Check if record exists for this user and date
   const { data: existing } = await supabase
     .from("doa")
     .select("id")
@@ -35,8 +37,7 @@ export async function upsertDoaLog(formData: DoaLogFormData) {
     user_id: user.id,
     tanggal: validated.tanggal,
     status: validated.status,
-    untuk_siapa: validated.untuk_siapa || null,
-    keterangan: validated.keterangan || null,
+    alasan: validated.alasan || null,
   }
   let data, error
   if (existing) {
@@ -65,6 +66,7 @@ export async function upsertDoaLog(formData: DoaLogFormData) {
   revalidatePath("/overview/harian")
   return { data, error: null }
 }
+
 export async function deleteDoaLog(id: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -81,26 +83,28 @@ export async function deleteDoaLog(id: string) {
   revalidatePath("/overview/harian")
   return { error: null }
 }
+
 export async function getDoaLog(tanggal: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
   const { data, error } = await supabase
     .from("doa")
-    .select("*")
+    .select("id, user_id, tanggal, status, alasan, created_at, updated_at")
     .eq("user_id", user.id)
     .eq("tanggal", tanggal)
     .order("created_at", { ascending: true })
   if (error) throw new Error(error.message)
   return data || []
 }
+
 export async function getDoaLogRange(startDate: string, endDate: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
   const { data, error } = await supabase
     .from("doa")
-    .select("*")
+    .select("id, user_id, tanggal, status, alasan, created_at, updated_at")
     .eq("user_id", user.id)
     .gte("tanggal", startDate)
     .lte("tanggal", endDate)
@@ -109,6 +113,7 @@ export async function getDoaLogRange(startDate: string, endDate: string) {
   if (error) throw new Error(error.message)
   return data || []
 }
+
 export async function getDoaDailySummary(tanggal: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

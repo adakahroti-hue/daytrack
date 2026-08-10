@@ -44,8 +44,7 @@ interface DoaLogEntry {
   user_id: string
   tanggal: string
   status: 'sudah' | 'belum'
-  untuk_siapa: string | null
-  keterangan: string | null
+  alasan: string | null
   created_at: string
   updated_at: string
 }
@@ -115,7 +114,7 @@ export default function DoaPage() {
     await upsertDoaLog.mutateAsync({
       tanggal,
       status,
-      keterangan: status === 'belum' && reason ? `Tidak doa: ${reason}` : undefined,
+      alasan: status === 'belum' && reason ? reason : undefined,
     })
   }
 
@@ -124,9 +123,9 @@ export default function DoaPage() {
     return (logs as DoaLogEntry[]).map(l => ({
       tanggal: l.tanggal,
       missed: l.status === 'belum',
-      reason: l.status === 'belum' && l.keterangan?.startsWith('Tidak doa:')
-        ? l.keterangan.replace('Tidak doa: ', '')
-        : (l.status === 'belum' ? 'Tidak' : null),
+      reason: l.status === 'belum'
+        ? (l.alasan || 'Tidak')
+        : null,
     }))
   }, [logs])
 
@@ -190,8 +189,8 @@ export default function DoaPage() {
                 const entry = logMap[dateStr]
                 const isDone = entry?.status === 'sudah'
                 const isMissed = entry?.status === 'belum'
-                const missedLabel = isMissed && entry?.keterangan?.startsWith('Tidak doa:')
-                  ? entry.keterangan.replace('Tidak doa: ', '')
+                const missedLabel = isMissed && entry?.alasan
+                  ? entry.alasan
                   : 'Tidak'
 
                 return (
