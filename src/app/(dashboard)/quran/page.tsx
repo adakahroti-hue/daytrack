@@ -443,7 +443,7 @@ export default function QuranPage() {
           tanggal,
           waktu_baca: waktuKey,
           status: 'sudah',
-          alasan: null,
+          alasan: existing?.alasan || undefined,
           kualitas: existing?.kualitas || undefined,
         })
       } catch {
