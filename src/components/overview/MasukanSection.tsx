@@ -18,7 +18,7 @@ export function MasukanSection({ startStr, endStr }: MasukanSectionProps) {
     <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
       <div className="flex items-center gap-2 mb-3">
         <Lightbulb className="h-4 w-4 text-amber-500" />
-        <h3 className="text-sm font-bold uppercase tracking-wide text-slate-700">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
           Masukan Perbaikan
         </h3>
         {sarans.length > 0 && (
@@ -48,9 +48,6 @@ export function MasukanSection({ startStr, endStr }: MasukanSectionProps) {
               <div className="min-w-0 flex-1">
                 <p className="text-sm text-slate-700 leading-snug break-words">
                   {entry.saran}
-                </p>
-                <p className="text-[11px] text-slate-400 mt-0.5">
-                  {entry.tanggal}
                 </p>
               </div>
             </div>
