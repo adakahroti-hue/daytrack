@@ -13,7 +13,8 @@ interface MasukanSectionProps {
 export function MasukanSection({ startStr, endStr }: MasukanSectionProps) {
   const { data: entries = [], isLoading } = useSaranPerbaikanRange(startStr, endStr)
 
-  const sarans = (entries as any[]).filter((e: any) => e.saran).slice(0, 3)
+  const allSarans = (entries as any[]).filter((e: any) => e.saran)
+  const sarans = allSarans.slice(0, 3)
 
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
@@ -22,7 +23,7 @@ export function MasukanSection({ startStr, endStr }: MasukanSectionProps) {
         <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
           Masukan Perbaikan
         </h3>
-        {sarans.length > 0 && (
+        {allSarans.length > 0 && (
           <Link
             href="/saran-perbaikan"
             className="ml-auto group flex items-center gap-1 text-xs text-slate-400 hover:text-amber-600 transition-colors"
