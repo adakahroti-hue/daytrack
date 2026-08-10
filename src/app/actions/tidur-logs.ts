@@ -92,7 +92,7 @@ export async function getTidurLog(tanggal: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("tidur").select("id, tanggal, status, jam_tidur").eq("user_id", user.id).eq("tanggal", tanggal).single()
+  const { data, error } = await supabase.from("tidur").select("id, tanggal, status, jam_tidur, jam_bangun, durasi_jam, alasan_tidak").eq("user_id", user.id).eq("tanggal", tanggal).single()
   if (error && error.code !== "PGRST116") throw new Error(error.message)
   return data
 }
@@ -101,7 +101,7 @@ export async function getTidurLogRange(startDate: string, endDate: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("tidur").select("id, tanggal, status, jam_tidur").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate).order("tanggal", { ascending: false })
+  const { data, error } = await supabase.from("tidur").select("id, tanggal, status, jam_tidur, jam_bangun, durasi_jam, alasan_tidak").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate).order("tanggal", { ascending: false })
   if (error) throw new Error(error.message)
   return data || []
 }
