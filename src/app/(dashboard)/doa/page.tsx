@@ -12,7 +12,7 @@ import {
   endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, Heart, Check, X, Trash2 } from 'lucide-react'
+import { Calendar, CalendarDays, Heart, Check, X, Trash2, MessageCircle } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { useDoaLogRange, useUpsertDoaLog, useDeleteDoaLog } from '@/hooks/useDoaLogs'
@@ -143,21 +143,27 @@ export default function DoaPage() {
             <tr className={cn('border-b', TABLE_BORDER)}>
               <th className={cn('sticky left-0 z-30 bg-white px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[72px] sm:min-w-[100px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
-                  <Calendar className="h-3.5 w-3.5 text-blue-500" />
+                  <Calendar className="h-3.5 w-3.5 text-green-500" />
                   Tanggal
                 </div>
               </th>
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[64px] sm:min-w-[90px] sm:sticky sm:left-[100px] sm:z-30 sm:bg-white', TABLE_BORDER)}>
-                Hari
+                <div className="flex items-center justify-center gap-1">
+                  <CalendarDays className="h-3.5 w-3.5 text-green-500" />
+                  Hari
+                </div>
               </th>
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[150px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
-                  <Heart className="h-3.5 w-3.5 text-rose-500" />
+                  <Heart className="h-3.5 w-3.5 text-green-500" />
                   Status
                 </div>
               </th>
               <th className={cn('px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
-                Alasan
+                <div className="flex items-center justify-center gap-1">
+                  <MessageCircle className="h-3.5 w-3.5 text-green-500" />
+                  Alasan
+                </div>
               </th>
             </tr>
           </thead>
@@ -190,7 +196,7 @@ export default function DoaPage() {
                 return (
                   <tr
                     key={dateStr}
-                    className={cn('border-b transition-colors', TABLE_BORDER, dateStr === todayStr ? 'row-today-pulse' : (rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'), 'hover:bg-blue-50/40')}
+                    className={cn('border-b transition-colors', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30', 'hover:bg-blue-50/40')}
                   >
                     <td className={cn('sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
                       <span className="sm:hidden">{format(date, 'd MMM', { locale: id })}</span>
