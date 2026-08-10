@@ -125,7 +125,7 @@ export default function PmoPage() {
     return eachDayOfInterval({ start: rangeStart, end: rangeEnd }).map(d => format(d, 'yyyy-MM-dd'))
   }, [rangeStart, rangeEnd])
 
-  const handleSetStatus = async (tanggal: string, status: 'berhasil' | 'relapse', reason?: string) => {
+  const handleSetStatus = async (tanggal: string, status: 'berhasil' | 'relapse') => {
     // hari_ke: lanjutkan streak dari hari sebelumnya bila berhasil
     let hariKe = 1
     if (status === 'berhasil') {
@@ -134,15 +134,25 @@ export default function PmoPage() {
       const prevEntry = allLogMap[format(prev, 'yyyy-MM-dd')]
       hariKe = prevEntry?.status === 'berhasil' ? (prevEntry.hari_ke || 0) + 1 : 1
     }
+    const entry = logMap[tanggal]
     await upsertPmoLog.mutateAsync({
       tanggal,
       hari_ke: hariKe,
       status,
-      catatan: status === 'relapse' && reason ? `Relapse: ${reason}` : undefined,
+      catatan: status === 'berhasil' ? null : (entry?.catatan || null),
     })
   }
 
-  // Revisi 7: data untuk Analytics & Insight
+  const handleSetAlasan = async (tanggal: string, reason: string) => {
+    await upsertPmoLog.mutateAsync({
+      tanggal,
+      hari_ke: 1,
+      status: 'relapse',
+      catatan: `Relapse: ${reason}`,
+    })
+  }
+
+  // Data untuk Ringkasan
   const analyticsEntries = useMemo(() => {
     return (logs as PmoLogEntry[]).map(l => ({
       tanggal: l.tanggal,
@@ -256,11 +266,9 @@ export default function PmoPage() {
                             <DropdownMenuItem onClick={() => handleSetStatus(dateStr, 'berhasil')} className="flex items-center gap-2">
                               <Check className="h-4 w-4 text-green-600" /> Berhasil
                             </DropdownMenuItem>
-                            {RELAPSE_REASONS.map(r => (
-                              <DropdownMenuItem key={r} onClick={() => handleSetStatus(dateStr, 'relapse', r)} className="flex items-center gap-2">
-                                <X className="h-4 w-4 text-red-500" /> {r}
-                              </DropdownMenuItem>
-                            ))}
+                            <DropdownMenuItem onClick={() => handleSetStatus(dateStr, 'relapse')} className="flex items-center gap-2">
+                              <X className="h-4 w-4 text-red-500" /> Relapse
+                            </DropdownMenuItem>
                             {entry && (
                               <>
                                 <DropdownMenuSeparator />
@@ -274,9 +282,45 @@ export default function PmoPage() {
                       </div>
                     </td>
                     <td className={cn('px-2 sm:px-3 py-2 text-left', TABLE_BORDER)}>
-                      <span className="font-medium text-slate-700 whitespace-normal break-words leading-snug">
-                        {isRelapse ? relapseLabel : '-'}
-                      </span>
+                      {isRelapse && entry?.catatan?.startsWith('Relapse:') ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              className="font-medium text-slate-700 cursor-pointer hover:text-blue-700 hover:underline"
+                            >
+                              {relapseLabel}
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start" className="w-44">
+                            {RELAPSE_REASONS.map(r => (
+                              <DropdownMenuItem key={r} onClick={() => handleSetAlasan(dateStr, r)} className="flex items-center gap-2">
+                                {r}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : isRelapse ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              className="font-medium text-slate-400 cursor-pointer hover:text-blue-700 hover:underline"
+                            >
+                              Pilih alasan
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start" className="w-44">
+                            {RELAPSE_REASONS.map(r => (
+                              <DropdownMenuItem key={r} onClick={() => handleSetAlasan(dateStr, r)} className="flex items-center gap-2">
+                                {r}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : (
+                        <span className="font-medium text-slate-400">-</span>
+                      )}
                     </td>
                   </tr>
                 )
@@ -287,7 +331,7 @@ export default function PmoPage() {
       </div>
       {lockControl}
 
-      {/* Revisi 7: Analytics & Insight */}
+      {/* Ringkasan */}
       <StatusAnalytics
         entries={analyticsEntries}
         difficultyTitle="Tahan PMO Terlama"
