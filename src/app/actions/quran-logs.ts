@@ -8,6 +8,7 @@ const quranLogSchema = z.object({
   tanggal: z.string().min(1, "Tanggal wajib diisi"),
   waktu_baca: z.enum(["setelah_subuh", "setelah_dzuhur", "setelah_ashar", "setelah_maghrib", "setelah_isya"]),
   status: z.string().optional(),
+  alasan: z.string().optional(),
   kualitas: z.number().int().min(1).max(5).optional(),
 })
 
@@ -19,6 +20,7 @@ export interface QuranLogEntry {
   tanggal: string
   waktu_baca: string
   status: string | null
+  alasan: string | null
   kualitas: number | null
   created_at: string
   updated_at: string
@@ -45,6 +47,7 @@ export async function upsertQuranLog(formData: QuranLogFormData) {
     tanggal: validated.tanggal,
     waktu_baca: validated.waktu_baca,
     status: validated.status || null,
+    alasan: validated.alasan || null,
     kualitas: validated.kualitas || null,
   }
 
@@ -109,7 +112,7 @@ export async function getQuranLog(tanggal: string) {
 
   const { data, error } = await supabase
     .from("quran")
-    .select("id, user_id, tanggal, waktu_baca, status, kualitas, created_at, updated_at")
+    .select("id, user_id, tanggal, waktu_baca, status, alasan, kualitas, created_at, updated_at")
     .eq("user_id", user.id)
     .eq("tanggal", tanggal)
     .order("waktu_baca", { ascending: true })
@@ -126,7 +129,7 @@ export async function getQuranLogRange(startDate: string, endDate: string) {
 
   const { data, error } = await supabase
     .from("quran")
-    .select("id, user_id, tanggal, waktu_baca, status, kualitas, created_at, updated_at")
+    .select("id, user_id, tanggal, waktu_baca, status, alasan, kualitas, created_at, updated_at")
     .eq("user_id", user.id)
     .gte("tanggal", startDate)
     .lte("tanggal", endDate)

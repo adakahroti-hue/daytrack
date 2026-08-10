@@ -104,6 +104,7 @@ interface QuranLogEntry {
   tanggal: string
   waktu_baca: WaktuBacaKey
   status: string | null
+  alasan: string | null
   kualitas: number | null
   created_at: string
   updated_at: string
@@ -123,15 +124,17 @@ function getCellStatus(entry: QuranLogEntry | undefined): { cellStatus: 'done' |
   if (!entry) return { cellStatus: 'empty', reason: null }
   const st = entry.status || ''
   if (st === 'sudah') return { cellStatus: 'done', reason: null }
-  if (st.startsWith('tidak_baca:')) {
-    const reasonKey = st.replace('tidak_baca: ', '').trim()
-    return { cellStatus: 'reason', reason: REASON_LABELS[reasonKey] || reasonKey }
+  if (st === 'tidak_baca') {
+    const reasonKey = entry.alasan || ''
+    return { cellStatus: 'reason', reason: REASON_LABELS[reasonKey] || reasonKey || null }
   }
+  // Legacy format fallback
   if (st.startsWith('Tidak membaca:')) {
-    // Legacy format fallback
     return { cellStatus: 'reason', reason: st.replace('Tidak membaca: ', '') }
   }
-  // If status is 'Sudah baca' (legacy) or any truthy value → done
+  if (st.startsWith('tidak_baca:')) {
+    return { cellStatus: 'reason', reason: st.replace('tidak_baca: ', '').trim() }
+  }
   if (st) return { cellStatus: 'done', reason: null }
   return { cellStatus: 'empty', reason: null }
 }
@@ -185,11 +188,11 @@ function QuranDropdown({
   const { currentValue, currentQuality } = (() => {
     const entry = logMap[tanggal]?.[waktuKey]
     if (!entry) return { currentValue: null as string | null, currentQuality: null as number | null }
-    const { cellStatus, reason } = getCellStatus(entry)
+    const { cellStatus } = getCellStatus(entry)
     if (cellStatus === 'done') return { currentValue: 'sudah', currentQuality: entry.kualitas ?? null }
-    if (cellStatus === 'reason' && reason) {
-      const found = Object.entries(REASON_LABELS).find(([, label]) => label === reason)
-      return { currentValue: found ? found[0] : 'lainnya', currentQuality: null }
+    if (cellStatus === 'reason') {
+      // Read alasan directly from entry
+      return { currentValue: entry.alasan || null, currentQuality: null }
     }
     return { currentValue: null, currentQuality: null }
   })()
@@ -430,15 +433,17 @@ export default function QuranPage() {
           user_id: '',
           tanggal,
           waktu_baca: waktuKey,
-          status: null, kualitas: null, created_at: '', updated_at: '',
+          status: null, alasan: null, kualitas: null, created_at: '', updated_at: '',
         }),
         status: 'sudah',
+        alasan: null,
       } as QuranLogEntry))
       try {
         await upsertQuranLog.mutateAsync({
           tanggal,
           waktu_baca: waktuKey,
           status: 'sudah',
+          alasan: null,
           kualitas: existing?.kualitas || undefined,
         })
       } catch {
@@ -457,17 +462,19 @@ export default function QuranPage() {
         user_id: '',
         tanggal,
         waktu_baca: waktuKey,
-        status: null, kualitas: null, created_at: '', updated_at: '',
+        status: null, alasan: null, kualitas: null, created_at: '', updated_at: '',
       }),
       kualitas: existing?.kualitas || null,
-      status: `tidak_baca: ${option.value}`,
+      status: 'tidak_baca',
+      alasan: option.value,
     } as QuranLogEntry))
     try {
       await upsertQuranLog.mutateAsync({
         tanggal,
         waktu_baca: waktuKey,
         kualitas: existing?.kualitas || undefined,
-        status: `tidak_baca: ${option.value}`,
+        status: 'tidak_baca',
+        alasan: option.value,
       })
     } catch {
       queryClient.invalidateQueries({ queryKey: ['quran'] })
@@ -484,7 +491,7 @@ export default function QuranPage() {
         user_id: '',
         tanggal,
         waktu_baca: waktuKey,
-        status: null, kualitas: null, created_at: '', updated_at: '',
+        status: null, alasan: null, kualitas: null, created_at: '', updated_at: '',
       }),
       kualitas: quality,
     } as QuranLogEntry))
@@ -494,6 +501,7 @@ export default function QuranPage() {
         waktu_baca: waktuKey,
         kualitas: quality,
         status: existing?.status || 'sudah',
+        alasan: existing?.alasan || undefined,
       })
     } catch {
       queryClient.invalidateQueries({ queryKey: ['quran'] })

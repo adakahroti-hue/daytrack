@@ -128,7 +128,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
   const { data: quranEntries = [] } = useQuranLogRange(startStr, endStr)
   const quranRows = quranEntries as any[]
   const quranPerSesi = QURAN_SESSIONS.map(s =>
-    quranRows.filter(e => e.waktu_baca === s.key && !(e.status || '').startsWith('tidak_baca') && (e.status || '') !== 'Tidak membaca').length
+    quranRows.filter(e => e.waktu_baca === s.key && e.status === 'sudah').length
   )
   const quranCount = quranPerSesi.reduce((a, b) => a + b, 0)
   const quranTarget = 5 * daysElapsed

@@ -22,6 +22,7 @@ export interface QuranLogEntry {
   tanggal: string
   waktu_baca: string
   status: string | null
+  alasan: string | null
   kualitas: number | null
 }
 
@@ -159,15 +160,18 @@ function isTidakBaca(status: string | null | undefined): boolean {
   return status === 'tidak_baca' || status.startsWith('tidak_baca:') || status.startsWith('Tidak membaca:')
 }
 
-function getTidakBacaReason(status: string | null | undefined): string | null {
-  if (!status) return null
-  // New format: 'tidak_baca: <reason>'
-  if (status.startsWith('tidak_baca:')) {
-    return status.replace('tidak_baca: ', '').trim()
+function getTidakBacaReason(entry: { status: string | null; alasan: string | null }): string | null {
+  // New format: status='tidak_baca', alasan='reason'
+  if (entry.status === 'tidak_baca' && entry.alasan) {
+    return entry.alasan
   }
-  // Legacy format: 'Tidak membaca: <reason>'
-  if (status.startsWith('Tidak membaca:')) {
-    return status.replace('Tidak membaca: ', '').trim()
+  // Legacy format fallback: status='tidak_baca: reason' or 'Tidak membaca: reason'
+  const st = entry.status || ''
+  if (st.startsWith('tidak_baca:')) {
+    return st.replace('tidak_baca: ', '').trim()
+  }
+  if (st.startsWith('Tidak membaca:')) {
+    return st.replace('Tidak membaca: ', '').trim()
   }
   return null
 }
@@ -206,7 +210,7 @@ export function QuranAnalytics({ logMap, columns }: QuranAnalyticsProps) {
       for (const col of columns) {
         const entry = logMap[tanggal]?.[col.key]
         if (!entry || !isTidakBaca(entry.status)) continue
-        const reason = getTidakBacaReason(entry.status)
+        const reason = getTidakBacaReason(entry)
         if (reason) counts.set(reason, (counts.get(reason) ?? 0) + 1)
       }
     }
