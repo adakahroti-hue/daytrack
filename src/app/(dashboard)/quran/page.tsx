@@ -480,7 +480,8 @@ export default function QuranPage() {
     }
 
     setDropdown(null)
-    // Alasan tidak membaca
+    // Alasan tidak membaca — pertahankan data yang sudah ada
+    const existing = logMap[tanggal]?.[waktuKey]
     optimisticallySet(tanggal, waktuKey, (entry) => ({
       ...(entry || {
         id: 'temp-' + tanggal + '-' + waktuKey,
@@ -490,13 +491,22 @@ export default function QuranPage() {
         surat: null, juz: null, halaman_mulai: null, halaman_selesai: null,
         jumlah_halaman: null, catatan: null, created_at: '', updated_at: '',
       }),
-      surat: null, juz: null, halaman_mulai: null, halaman_selesai: null, jumlah_halaman: null,
+      surat: existing?.surat || null,
+      juz: existing?.juz || null,
+      halaman_mulai: existing?.halaman_mulai || null,
+      halaman_selesai: existing?.halaman_selesai || null,
+      jumlah_halaman: existing?.jumlah_halaman || null,
+      kualitas: null,
       catatan: `Tidak membaca: ${option.label}`,
     } as QuranLogEntry))
     try {
       await upsertQuranLog.mutateAsync({
         tanggal,
         waktu_baca: waktuKey,
+        surat: existing?.surat || undefined,
+        juz: existing?.juz || undefined,
+        halaman_mulai: existing?.halaman_mulai || undefined,
+        halaman_selesai: existing?.halaman_selesai || undefined,
         catatan: `Tidak membaca: ${option.label}`,
       })
     } catch {
