@@ -13,12 +13,7 @@ import {
   endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, CalendarDays, BookOpen, Check, X, Sun, CloudSun, Sunset, Moon, Edit2, Star } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import { Calendar, CalendarDays, BookOpen, Check, X, Sun, CloudSun, Sunset, Moon, Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTableLock } from '@/components/ui/table-lock'
 import { useQuranLogRange, useUpsertQuranLog, useDeleteQuranLog } from '@/hooks/useQuranLogs'
@@ -121,13 +116,6 @@ interface QuranLogEntry {
 
 type DropdownState = { tanggal: string; waktuKey: WaktuBacaKey } | null
 
-type EditState = {
-  open: boolean
-  tanggal: string
-  waktuBaca: WaktuBacaKey
-  entry: QuranLogEntry | null
-} | null
-
 function startOfDaySafe(d: Date): Date {
   const x = new Date(d)
   x.setHours(0, 0, 0, 0)
@@ -153,7 +141,6 @@ function QuranDropdown({
   logMap,
   onSelect,
   onRate,
-  onDetail,
   onClear,
   onClose,
 }: {
@@ -162,7 +149,6 @@ function QuranDropdown({
   logMap: Record<string, Record<string, QuranLogEntry>>
   onSelect: (option: { value: string; label: string; isDone: boolean }) => void
   onRate: (quality: number) => void
-  onDetail: () => void
   onClear: () => void
   onClose: () => void
 }) {
@@ -304,15 +290,6 @@ function QuranDropdown({
 
       <div className="border-t border-slate-100 my-1" />
 
-      {/* Catat detail surat/halaman */}
-      <button
-        onClick={onDetail}
-        className="w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors hover:bg-slate-50 text-slate-700"
-      >
-        <Edit2 className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-        Catat detail (surat/halaman)…
-      </button>
-
       {/* Kosongkan status */}
       <button
         onClick={onClear}
@@ -335,7 +312,6 @@ export default function QuranPage() {
   const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
   const todayStr = format(new Date(), 'yyyy-MM-dd')
   const [dropdown, setDropdown] = useState<DropdownState>(null)
-  const [editState, setEditState] = useState<EditState>(null)
   const tableContainerRef = useRef<HTMLDivElement>(null)
 
   const { rangeStart, rangeEnd, periodLabel, isCurrentPeriod } = useMemo(() => {
@@ -374,7 +350,7 @@ export default function QuranPage() {
   const startDate = format(rangeStart, 'yyyy-MM-dd')
   const endDate = format(rangeEnd, 'yyyy-MM-dd')
 
-  const { data: quranLogs = [], isLoading, error, refetch } = useQuranLogRange(startDate, endDate)
+  const { data: quranLogs = [], isLoading, error } = useQuranLogRange(startDate, endDate)
   const upsertQuranLog = useUpsertQuranLog()
   const deleteQuranLog = useDeleteQuranLog()
 
@@ -556,38 +532,6 @@ export default function QuranPage() {
     }
   }
 
-  const handleOpenDetail = () => {
-    if (!dropdown) return
-    const { tanggal, waktuKey } = dropdown
-    const existing = logMap[tanggal]?.[waktuKey] || null
-    setDropdown(null)
-    setEditState({ open: true, tanggal, waktuBaca: waktuKey, entry: existing })
-  }
-
-  const handleSubmit = async (form: { surat?: string; juz?: number; halaman_mulai?: number; halaman_selesai?: number; catatan?: string }) => {
-    if (!editState) return
-    await upsertQuranLog.mutateAsync({
-      tanggal: editState.tanggal,
-      waktu_baca: editState.waktuBaca,
-      surat: form.surat || undefined,
-      juz: form.juz || undefined,
-      halaman_mulai: form.halaman_mulai || undefined,
-      halaman_selesai: form.halaman_selesai || undefined,
-      catatan: form.catatan || undefined,
-    })
-    setEditState(null)
-    refetch()
-  }
-
-  const handleDelete = async () => {
-    if (!editState?.entry?.id) return
-    if (confirm('Yakin ingin menghapus catatan ini?')) {
-      await deleteQuranLog.mutateAsync(editState.entry.id)
-      setEditState(null)
-      refetch()
-    }
-  }
-
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
       {/* Table — gaya seperti tab sholat */}
@@ -674,7 +618,7 @@ export default function QuranPage() {
                                   <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-600 border border-green-200">
                                     <Check className="h-3.5 w-3.5" />
                                   </span>
-                                  {(entry as any).kualitas && (entry as any).kualitas >= 1 && (entry as any).kualitas <= 5 ? (
+                                  {(entry as any).kualitas && (entry as any).kualitas >= 1 && (entry as any).kualitas <= 5 && (
                                     <span className={cn(
                                       'inline-flex items-center gap-0.5 px-1.5 py-px rounded-full border text-[10px] font-semibold leading-tight',
                                       RATING_COLORS[(entry as any).kualitas] || 'bg-slate-100 text-slate-600 border-slate-200'
@@ -682,15 +626,7 @@ export default function QuranPage() {
                                       <Star className="h-2.5 w-2.5 fill-current" />
                                       {(entry as any).kualitas}
                                     </span>
-                                  ) : entry.jumlah_halaman ? (
-                                    <span className="inline-flex items-center px-1.5 py-px rounded-full bg-green-100 text-green-700 border border-green-200 text-[10px] font-semibold leading-tight">
-                                      {entry.jumlah_halaman} hlm
-                                    </span>
-                                  ) : entry.surat ? (
-                                    <span className="inline-flex items-center px-1.5 py-px rounded-full bg-green-50 text-green-700 border border-green-200 text-[10px] font-medium leading-tight max-w-[100px] truncate">
-                                      {entry.surat}
-                                    </span>
-                                  ) : null}
+                                  )}
                                 </>
                               )}
                               {status === 'reason' && reason && (
@@ -730,98 +666,11 @@ export default function QuranPage() {
           logMap={logMap}
           onSelect={handleSelectStatus}
           onRate={handleRateQuality}
-          onDetail={handleOpenDetail}
           onClear={handleClearStatus}
           onClose={() => setDropdown(null)}
         />
       )}
 
-      {/* Edit/Add Detail Dialog */}
-      <Dialog open={!!editState?.open} onOpenChange={(open) => !open && setEditState(null)}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{editState?.entry ? 'Edit Catatan Quran' : 'Catat Bacaan Quran'}</DialogTitle>
-            <DialogDescription>
-              {editState && `${format(new Date(editState.tanggal + 'T00:00:00'), 'EEEE, d MMMM yyyy', { locale: id })} • ${WAKTU_BACA.find(w => w.key === editState.waktuBaca)?.label}`}
-            </DialogDescription>
-          </DialogHeader>
-          {editState && (
-            <QuranEntryForm
-              key={`${editState.tanggal}-${editState.waktuBaca}`}
-              entry={editState.entry}
-              onSubmit={handleSubmit}
-              onDelete={editState.entry ? handleDelete : undefined}
-              onCancel={() => setEditState(null)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
-  )
-}
-
-// ─── Form Component ────────────────────────────────
-
-function QuranEntryForm({
-  entry,
-  onSubmit,
-  onDelete,
-  onCancel,
-}: {
-  entry: QuranLogEntry | null
-  onSubmit: (form: { surat?: string; juz?: number; halaman_mulai?: number; halaman_selesai?: number; catatan?: string }) => void
-  onDelete?: () => void
-  onCancel: () => void
-}) {
-  const [surat, setSurat] = useState(entry?.surat || '')
-  const [juz, setJuz] = useState(entry?.juz?.toString() || '')
-  const [halamanMulai, setHalamanMulai] = useState(entry?.halaman_mulai?.toString() || '')
-  const [halamanSelesai, setHalamanSelesai] = useState(entry?.halaman_selesai?.toString() || '')
-  const [catatan, setCatatan] = useState(entry?.catatan || '')
-
-  return (
-    <div className="grid gap-4 py-2">
-      <div className="grid gap-2 sm:grid-cols-2">
-        <div>
-          <Label>Surat</Label>
-          <Input value={surat} onChange={(e) => setSurat(e.target.value)} placeholder="Contoh: Al-Baqarah" />
-        </div>
-        <div>
-          <Label>Juz</Label>
-          <Input type="number" min={1} max={30} value={juz} onChange={(e) => setJuz(e.target.value)} placeholder="1-30" />
-        </div>
-      </div>
-      <div className="grid gap-2 sm:grid-cols-2">
-        <div>
-          <Label>Halaman Mulai</Label>
-          <Input type="number" min={1} max={604} value={halamanMulai} onChange={(e) => setHalamanMulai(e.target.value)} placeholder="1-604" />
-        </div>
-        <div>
-          <Label>Halaman Selesai</Label>
-          <Input type="number" min={1} max={604} value={halamanSelesai} onChange={(e) => setHalamanSelesai(e.target.value)} placeholder="1-604" />
-        </div>
-      </div>
-      <div>
-        <Label>Catatan (opsional)</Label>
-        <Textarea value={catatan} onChange={(e) => setCatatan(e.target.value)} placeholder="Tulis refleksi, ayat favorit, dll." rows={3} />
-      </div>
-      <div className="flex items-center justify-between gap-2 pt-2">
-        <div>
-          {onDelete && (
-            <Button variant="ghost" onClick={onDelete} className="text-destructive hover:bg-destructive/10">Hapus</Button>
-          )}
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={onCancel}>Batal</Button>
-          <Button onClick={() => onSubmit({
-            surat: surat || undefined,
-            juz: juz ? parseInt(juz) : undefined,
-            halaman_mulai: halamanMulai ? parseInt(halamanMulai) : undefined,
-            halaman_selesai: halamanSelesai ? parseInt(halamanSelesai) : undefined,
-            catatan: catatan || undefined,
-          })}>Simpan</Button>
-        </div>
-      </div>
     </div>
   )
 }
