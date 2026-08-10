@@ -8,8 +8,6 @@ const saranPerbaikanSchema = z.object({
   tanggal: z.string().min(1, "Tanggal wajib diisi"),
   hari: z.string().min(1, "Hari wajib diisi"),
   saran: z.string().optional(),
-  keterangan: z.string().optional(),
-  status: z.enum(["belum", "proses", "selesai"]).default("belum"),
 })
 
 export type SaranPerbaikanFormData = z.infer<typeof saranPerbaikanSchema>
@@ -34,8 +32,6 @@ export async function upsertSaranPerbaikan(formData: SaranPerbaikanFormData) {
     tanggal: validated.tanggal,
     hari: validated.hari,
     saran: validated.saran ?? "",
-    keterangan: validated.keterangan || null,
-    status: validated.status,
   }
 
   let data, error
@@ -58,30 +54,6 @@ export async function upsertSaranPerbaikan(formData: SaranPerbaikanFormData) {
     data = result.data
     error = result.error
   }
-
-  if (error) throw new Error(error.message)
-
-  revalidatePath("/saran-perbaikan")
-  revalidatePath("/overview/bulanan")
-  revalidatePath("/overview/mingguan")
-  revalidatePath("/overview/harian")
-  
-  return { data, error: null }
-}
-
-export async function updateSaranPerbaikanStatus(id: string, status: "belum" | "proses" | "selesai") {
-  const supabase = await createClient()
-  
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Unauthorized")
-
-  const { data, error } = await supabase
-    .from("saran_perbaikan")
-    .update({ status })
-    .eq("id", id)
-    .eq("user_id", user.id)
-    .select()
-    .single()
 
   if (error) throw new Error(error.message)
 
@@ -123,7 +95,7 @@ export async function getSaranPerbaikan(tanggal: string) {
 
   const { data, error } = await supabase
     .from("saran_perbaikan")
-    .select("*")
+    .select("id, user_id, tanggal, hari, saran, created_at")
     .eq("user_id", user.id)
     .eq("tanggal", tanggal)
     .single()
@@ -140,7 +112,7 @@ export async function getSaranPerbaikanRange(startDate: string, endDate: string)
 
   const { data, error } = await supabase
     .from("saran_perbaikan")
-    .select("*")
+    .select("id, user_id, tanggal, hari, saran, created_at")
     .eq("user_id", user.id)
     .gte("tanggal", startDate)
     .lte("tanggal", endDate)
@@ -150,7 +122,6 @@ export async function getSaranPerbaikanRange(startDate: string, endDate: string)
   return data || []
 }
 
-// Revisi 1 (batch 7): model entri — insert baru (bukan upsert per tanggal)
 export async function createSaranPerbaikan(formData: SaranPerbaikanFormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -161,8 +132,6 @@ export async function createSaranPerbaikan(formData: SaranPerbaikanFormData) {
     tanggal: validated.tanggal,
     hari: validated.hari,
     saran: validated.saran ?? "",
-    keterangan: validated.keterangan ?? null,
-    status: validated.status ?? "belum",
   }
   const { data, error } = await supabase.from("saran_perbaikan").insert(insertData).select().single()
   if (error) throw new Error(error.message)
@@ -170,7 +139,7 @@ export async function createSaranPerbaikan(formData: SaranPerbaikanFormData) {
   return { data, error: null }
 }
 
-export async function updateSaranPerbaikan(id: string, formData: { tanggal?: string; hari?: string; saran?: string; keterangan?: string; status?: "belum" | "proses" | "selesai" }) {
+export async function updateSaranPerbaikan(id: string, formData: { tanggal?: string; hari?: string; saran?: string }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
@@ -178,8 +147,6 @@ export async function updateSaranPerbaikan(id: string, formData: { tanggal?: str
   if (formData.tanggal !== undefined) updateData.tanggal = formData.tanggal
   if (formData.hari !== undefined) updateData.hari = formData.hari
   if (formData.saran !== undefined) updateData.saran = formData.saran
-  if (formData.keterangan !== undefined) updateData.keterangan = formData.keterangan
-  if (formData.status !== undefined) updateData.status = formData.status
   const { data, error } = await supabase.from("saran_perbaikan").update(updateData).eq("id", id).eq("user_id", user.id).select().single()
   if (error) throw new Error(error.message)
   revalidatePath("/saran-perbaikan")

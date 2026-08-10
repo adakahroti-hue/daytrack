@@ -43,8 +43,6 @@ interface SaranEntry {
   tanggal: string
   hari: string
   saran: string
-  keterangan: string | null
-  status: 'belum' | 'proses' | 'selesai'
   created_at: string
 }
 
@@ -130,7 +128,6 @@ export default function SaranPerbaikanPage() {
         tanggal: editState.tanggal,
         hari,
         saran: editState.saran.trim(),
-        status: 'belum',
       })
     }
     setEditState(null)
@@ -144,7 +141,7 @@ export default function SaranPerbaikanPage() {
 
   return (
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
-      {/* Tabel gaya Quran: Tanggal | Hari | Saran Perbaikan | Tujuan | Status — hanya entri yang ada */}
+      {/* Tabel gaya Quran: Tanggal | Hari | Saran Perbaikan — hanya entri yang ada */}
       <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)] landscape:max-lg:max-h-none rounded-lg border bg-white', TABLE_BORDER)}>
         <table className="w-full border-collapse text-xs sm:text-sm">
           <thead className="sticky top-0 z-20 bg-white">
@@ -251,7 +248,7 @@ export default function SaranPerbaikanPage() {
               <Label htmlFor="saran-teks">Saran Perbaikan</Label>
               <Textarea
                 id="saran-teks"
-                placeholder="Tulis masukan atau saran perbaikan…"
+                placeholder="Tulis masukan atau saran perbaikan..."
                 value={editState?.saran ?? ''}
                 onChange={(e) => setEditState(prev => prev ? { ...prev, saran: e.target.value } : prev)}
                 rows={3}
