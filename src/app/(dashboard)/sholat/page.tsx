@@ -69,6 +69,17 @@ const REASON_LABELS: Record<string, string> = {
   lainnya: 'Lainnya',
 }
 
+const REASON_OPTIONS: StatusOption[] = [
+  { value: 'malas', label: 'Malas', isDone: false },
+  { value: 'lupa', label: 'Lupa', isDone: false },
+  { value: 'sibuk', label: 'Sibuk', isDone: false },
+  { value: 'sakit', label: 'Sakit', isDone: false },
+  { value: 'perjalanan', label: 'Perjalanan', isDone: false },
+  { value: 'tak_ada_tempat', label: 'Tidak Ada Tempat Sholat', isDone: false },
+  { value: 'bersama_teman', label: 'Bersama Teman', isDone: false },
+  { value: 'lainnya', label: 'Lainnya', isDone: false },
+]
+
 // Rating kualitas sholat 1-5 dengan label kategori
 const RATING_OPTIONS: { value: number; label: string; desc: string }[] = [
   { value: 1, label: 'Kurang', desc: 'Sekadar menggugurkan kewajiban' },
@@ -249,26 +260,31 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
       className="fixed z-50 bg-white rounded-lg shadow-lg border border-slate-200 py-1 min-w-[240px] max-h-[460px] overflow-y-auto"
       style={{ top: position.top, left: position.left, maxHeight: position.maxHeight }}
     >
-      {STATUS_OPTIONS.map(option => (
-        <button
-          key={option.value}
-          onClick={() => onSelect(option)}
-          className={cn(
-            'w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors',
-            'hover:bg-blue-50 text-slate-700',
-            currentValue === option.value && 'bg-blue-50 font-medium text-blue-700'
-          )}
-        >
-          {option.isDone ? (
-            <Check className="h-3.5 w-3.5 text-green-500 shrink-0" />
-          ) : (
-            <span className="w-3.5 h-3.5 shrink-0" />
-          )}
-          {option.label}
-        </button>
-      ))}
+      {/* Step 1: Pilih status */}
+      <button
+        onClick={() => onSelect({ value: 'sudah', label: 'Sudah Sholat', isDone: true })}
+        className={cn(
+          'w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors',
+          'hover:bg-blue-50 text-slate-700',
+          isDone && 'bg-blue-50 font-medium text-blue-700'
+        )}
+      >
+        <Check className="h-3.5 w-3.5 text-green-500 shrink-0" />
+        Sudah Sholat
+      </button>
+      <button
+        onClick={() => onSelect({ value: 'tidak', label: 'Tidak Sholat', isDone: false })}
+        className={cn(
+          'w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors',
+          'hover:bg-blue-50 text-slate-700',
+          !isDone && currentValue && currentValue !== 'sudah' && 'bg-blue-50 font-medium text-blue-700'
+        )}
+      >
+        <span className="w-3.5 h-3.5 shrink-0" />
+        Tidak Sholat
+      </button>
 
-      {/* Rating kualitas — hanya muncul bila sudah sholat */}
+      {/* Step 2a: Rating kualitas — muncul bila sudah sholat */}
       {isDone && (
         <>
           <div className="border-t border-slate-100 my-1" />
@@ -296,6 +312,32 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
                     <span className="block text-[11px] text-slate-400 leading-tight truncate">{r.desc}</span>
                   </span>
                   {currentQuality === r.value && <Check className="h-3.5 w-3.5 text-blue-600 shrink-0" />}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Step 2b: Alasan — muncul bila tidak sholat */}
+      {!isDone && currentValue && currentValue !== 'sudah' && (
+        <>
+          <div className="border-t border-slate-100 my-1" />
+          <div className="px-3 py-1.5">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Alasan</p>
+            <div className="space-y-0.5">
+              {REASON_OPTIONS.map(r => (
+                <button
+                  key={r.value}
+                  onClick={() => onSelect(r)}
+                  className={cn(
+                    'w-full text-left px-2 py-1.5 rounded-md text-sm flex items-center gap-2 transition-colors',
+                    'hover:bg-blue-50',
+                    currentValue === r.value ? 'bg-blue-50 ring-1 ring-blue-200 font-medium text-blue-700' : 'text-slate-700'
+                  )}
+                >
+                  {r.label}
+                  {currentValue === r.value && <Check className="h-3.5 w-3.5 text-blue-600 shrink-0" />}
                 </button>
               ))}
             </div>
@@ -469,6 +511,11 @@ export default function SholatPage() {
         queryClient.invalidateQueries({ queryKey: ['prayer_logs'] })
       }
       // Jangan tutup dropdown — biarkan user langsung pilih rating kualitas
+      return
+    }
+
+    if (option.value === 'tidak') {
+      // Jangan tutup dropdown — tampilkan opsi alasan
       return
     }
 
