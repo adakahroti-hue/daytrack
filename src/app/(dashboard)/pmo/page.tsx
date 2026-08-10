@@ -46,8 +46,6 @@ interface PmoLogEntry {
   tanggal: string
   hari_ke: number
   status: 'berhasil' | 'relapse'
-  trigger: string | null
-  strategi: string | null
   catatan: string | null
   created_at: string
   updated_at: string

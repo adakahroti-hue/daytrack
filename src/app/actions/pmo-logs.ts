@@ -8,8 +8,6 @@ const pmoLogSchema = z.object({
   tanggal: z.string().min(1, "Tanggal wajib diisi"),
   hari_ke: z.number().int().min(1).max(10000),
   status: z.enum(['berhasil', 'relapse']),
-  trigger: z.enum(['stres', 'kebosanan', 'media', 'perasaan', 'lingkungan', 'lainnya']).optional(),
-  strategi: z.string().optional(),
   catatan: z.string().optional(),
 })
 
@@ -21,8 +19,6 @@ export interface PmoLogEntry {
   tanggal: string
   hari_ke: number
   status: 'berhasil' | 'relapse'
-  trigger: string | null
-  strategi: string | null
   catatan: string | null
   created_at: string
   updated_at: string
@@ -47,8 +43,6 @@ export async function upsertPmoLog(formData: PmoLogFormData) {
     tanggal: validated.tanggal,
     hari_ke: validated.hari_ke,
     status: validated.status,
-    trigger: validated.trigger || null,
-    strategi: validated.strategi || null,
     catatan: validated.catatan || null,
   }
 
