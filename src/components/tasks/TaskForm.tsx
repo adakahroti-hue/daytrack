@@ -44,9 +44,10 @@ interface TaskFormProps {
   initialData?: Partial<TaskFormData> | null
   onSubmit: (data: TaskFormData) => void
   onCancel: () => void
+  hideDate?: boolean
 }
 
-export function TaskForm({ initialData, onSubmit, onCancel }: TaskFormProps) {
+export function TaskForm({ initialData, onSubmit, onCancel, hideDate }: TaskFormProps) {
   const {
     register,
     handleSubmit,
@@ -103,14 +104,16 @@ export function TaskForm({ initialData, onSubmit, onCancel }: TaskFormProps) {
         {errors.nama && <p className="text-sm text-destructive">{errors.nama.message}</p>}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="tanggal">Tanggal *</Label>
-        <Input
-          id="tanggal"
-          type="date"
-          {...register('tanggal')}
-        />
-      </div>
+      {!hideDate && (
+        <div className="space-y-2">
+          <Label htmlFor="tanggal">Tanggal *</Label>
+          <Input
+            id="tanggal"
+            type="date"
+            {...register('tanggal')}
+          />
+        </div>
+      )}
 
       {/* Estimasi Pengerjaan — Timer Picker (stepper) */}
       <div className="space-y-2">

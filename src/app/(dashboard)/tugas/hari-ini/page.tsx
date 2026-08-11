@@ -362,7 +362,8 @@ function HariIniPageClient() {
   }
 
   const handleQuickAdd = () => {
-    setEditingTask({ id: '', nama: '', tanggal: todayStr, estimasi_menit: 30, prioritas: 'p3', status: 'belum' })
+    // Buka popup TAMBAH (bukan edit) — tanggal sudah fix hari ini, disembunyikan di form
+    setEditingTask(null)
     setIsFormOpen(true)
   }
 
@@ -584,7 +585,7 @@ function HariIniPageClient() {
         </DialogTrigger>
         <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>{editingTask ? 'Edit Tugas' : 'Tambah Tugas Baru'}</DialogTitle></DialogHeader>
-          <TaskForm initialData={editingTask} onSubmit={handleSubmit} onCancel={() => { setIsFormOpen(false); setEditingTask(null) }} />
+          <TaskForm initialData={editingTask} hideDate={!editingTask} onSubmit={handleSubmit} onCancel={() => { setIsFormOpen(false); setEditingTask(null) }} />
         </DialogContent>
       </Dialog>
       {/* Revisi batch 12: dialog penanda paket */}
