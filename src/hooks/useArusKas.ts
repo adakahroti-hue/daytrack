@@ -5,6 +5,7 @@ import {
   getArusKasRange,
   createArusKas,
   deleteArusKas,
+  updateArusKas,
 } from "@/app/actions/arus-kas"
 import type { ArusKasFormData } from "@/app/actions/arus-kas"
 
@@ -33,6 +34,17 @@ export function useDeleteArusKas() {
     mutationFn: (id: string) => deleteArusKas(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["arus-kas"] })
+    },
+  })
+}
+
+export function useUpdateArusKas() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: ArusKasFormData }) => updateArusKas(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["arus-kas"] })
+      queryClient.invalidateQueries({ queryKey: ["overview"] })
     },
   })
 }

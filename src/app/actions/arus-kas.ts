@@ -93,6 +93,30 @@ export async function deleteArusKas(id: string) {
   return { error: null }
 }
 
+// Revisi: update baris arus kas yang sudah ada (dipakai tombol Edit di kolom Aksi)
+export async function updateArusKas(id: string, formData: ArusKasFormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+  const validated = arusKasSchema.parse(formData)
+  const updateData = {
+    tanggal: validated.tanggal,
+    kategori: validated.kategori,
+    nominal: validated.nominal,
+    alasan: validated.alasan ?? null,
+  }
+  const { data, error } = await supabase
+    .from("arus_kas")
+    .update(updateData)
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .select()
+    .single()
+  if (error) throw new Error(error.message)
+  revalidatePath("/arus-kas")
+  return { data, error: null }
+}
+
 export async function getArusKasRange(startDate: string, endDate: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

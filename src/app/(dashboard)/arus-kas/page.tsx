@@ -22,7 +22,7 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { formatRupiah, parseRupiah } from "@/lib/utils"
 import { useTableLock } from "@/components/ui/table-lock"
-import { useArusKasRange, useCreateArusKas, useDeleteArusKas } from "@/hooks/useArusKas"
+import { useArusKasRange, useCreateArusKas, useDeleteArusKas, useUpdateArusKas } from "@/hooks/useArusKas"
 import { useRealtime } from "@/hooks/useRealtime"
 import { useHeaderControls } from "@/components/layout/HeaderControls"
 
@@ -100,6 +100,7 @@ export default function ArusKasPage() {
 
   const createArusKas = useCreateArusKas()
   const deleteArusKas = useDeleteArusKas()
+  const updateArusKas = useUpdateArusKas()
 
   const [editState, setEditState] = useState<EditState | null>(null)
   const [nominalInput, setNominalInput] = useState("")
@@ -125,17 +126,28 @@ export default function ArusKasPage() {
     setEditState({ id: null, tanggal: todayStr, kategori: "uang_masuk", nominal: 0, alasan: "" })
   }
 
+  const openEdit = (entry: ArusKasEntry) => {
+    setNominalInput(entry.nominal > 0 ? formatRupiah(entry.nominal) : "")
+    setEditState({ id: entry.id, tanggal: entry.tanggal, kategori: entry.kategori, nominal: entry.nominal, alasan: entry.alasan ?? "" })
+  }
+
   const handleSave = async () => {
     if (!editState) return
     if (!editState.alasan.trim()) return
-    const nominal = parseRupiah(nominalInput)
-    if (nominal <= 0) return
-    await createArusKas.mutateAsync({
+    if (editState.nominal <= 0) return
+    const payload = {
       tanggal: editState.tanggal,
       kategori: editState.kategori,
-      nominal,
+      nominal: editState.nominal,
       alasan: editState.alasan.trim(),
-    })
+    }
+    if (editState.id) {
+      // Mode edit
+      await updateArusKas.mutateAsync({ id: editState.id, data: payload })
+    } else {
+      // Mode tambah
+      await createArusKas.mutateAsync(payload)
+    }
     setEditState(null)
   }
 
@@ -187,19 +199,18 @@ export default function ArusKasPage() {
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[160px] sm:min-w-[220px]", TABLE_BORDER)}>
                 Alasan
               </th>
-              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[56px] sm:min-w-[64px]", TABLE_BORDER)}>
-                <span className="sr-only">Hapus</span>
-                <Trash2 className="h-3.5 w-3.5 text-slate-400 mx-auto" />
+              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]", TABLE_BORDER)}>
+                Aksi
               </th>
             </tr>
           </thead>
           <tbody className={cn(effectiveLocked && "pointer-events-none select-none")}>
             {isLoading ? (
-              <tr><td colSpan={6} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
+              <tr><td colSpan={5} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
             ) : error ? (
-              <tr><td colSpan={6} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
+              <tr><td colSpan={5} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
             ) : entries.length === 0 ? (
-              <tr><td colSpan={6} className="text-center py-12 text-slate-400 text-sm">Belum ada catatan arus kas pada periode ini.</td></tr>
+              <tr><td colSpan={5} className="text-center py-12 text-slate-400 text-sm">Belum ada catatan arus kas pada periode ini.</td></tr>
             ) : (
               entries.map((entry, rowIdx) => {
                 const date = new Date(entry.tanggal + "T00:00:00")
@@ -228,10 +239,17 @@ export default function ArusKasPage() {
                     <td className={cn("px-2 sm:px-3 py-2 border-r", TABLE_BORDER)}>
                       <span className="text-slate-800 whitespace-normal break-words leading-snug">{entry.alasan || "-"}</span>
                     </td>
-                    <td className={cn("px-2 sm:px-3 py-2 text-center", TABLE_BORDER)}>
-                      <Button variant="ghost" size="icon" aria-label="Hapus arus kas" onClick={() => handleDelete(entry.id)} className="h-8 w-8 text-slate-400 hover:text-destructive hover:bg-destructive/10">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                    <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
+                      <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                        <Button size="sm" aria-label="Edit arus kas" onClick={() => openEdit(entry)}
+                          className="bg-slate-600 hover:bg-slate-700 text-white gap-1">
+                          <Pencil className="h-3.5 w-3.5" /> Edit
+                        </Button>
+                        <Button size="sm" aria-label="Hapus arus kas" onClick={() => handleDelete(entry.id)}
+                          className="bg-red-600 hover:bg-red-700 text-white gap-1">
+                          <Trash2 className="h-3.5 w-3.5" /> Hapus
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 )
@@ -249,7 +267,7 @@ export default function ArusKasPage() {
       <Dialog open={!!editState} onOpenChange={(open) => !open && setEditState(null)}>
         <DialogContent className="max-w-[92vw] sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Tambah Arus Kas</DialogTitle>
+            <DialogTitle>{editState?.id ? "Edit Arus Kas" : "Tambah Arus Kas"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
