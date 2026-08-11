@@ -27,15 +27,10 @@ export async function createTask(formData: TaskFormData) {
 
   const validated = taskSchema.parse(formData)
 
-  // Derive hari (nama hari Indonesia) dari tanggal — kolom `hari` NOT NULL
-  // di tabel tugas (sama seperti tabel DayTrack lain: sholat, syukur, dll).
-  const hari = new Date(validated.tanggal + "T00:00:00").toLocaleDateString("id-ID", { weekday: "long" })
-
   const { data, error } = await supabase
     .from("tugas")
     .insert({
       ...validated,
-      hari,
       user_id: user.id,
     })
     .select()
@@ -58,21 +53,15 @@ export async function updateTask(id: string, formData: Partial<TaskFormData>) {
 
   const validated = taskSchema.partial().parse(formData)
 
-  // Sinkronkan hari bila tanggal ikut diubah (kolom `hari` NOT NULL)
-  const updateData: Record<string, unknown> = { ...validated }
-  if (validated.tanggal) {
-    updateData.hari = new Date(validated.tanggal + "T00:00:00").toLocaleDateString("id-ID", { weekday: "long" })
-  }
-
   const { data, error } = await supabase
     .from("tugas")
-    .update(updateData)
+    .update(validated)
     .eq("id", id)
     .eq("user_id", user.id)
     .select()
     .single()
 
-  if (error) throw new Error(error.message)
+  if (error) return { data: null, error: error.message as string }
 
   revalidatePath("/tugas/hari-ini")
   revalidatePath("/tugas/semua")
