@@ -173,11 +173,14 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
   )
 
   // Card 1: persentase dilakukan per sholat
+  // Hanya hitung sholat yang pernah dilakukan (true) — sholat yang belum pernah dicatat
+  // (selalu false karena default DB) dianggap "belum ada data" dan tidak ditampilkan.
   const missedStats = useMemo(() => {
     return columns
+      .filter(col => rows.some(r => r[`sholat_${col.key}`] === true))
       .map(col => {
         let missed = 0
-        let total = 0 // hanya kesempatan yang sudah dicatat (bukan null)
+        let total = 0 // hanya hari di mana sholat ini tercatat (true atau false)
         for (const row of rows) {
           const v = row[`sholat_${col.key}`]
           if (v === true || v === false) {
@@ -193,7 +196,6 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
           percent: total > 0 ? Math.round(((total - missed) / total) * 100) : 0,
         }
       })
-      .filter(s => s.total > 0)
       .sort((a, b) => b.missed - a.missed || b.total - a.total)
   }, [rows, columns])
 
