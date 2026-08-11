@@ -204,13 +204,13 @@ export default function ArusKasPage() {
           </div>
         ))}
         {/* Card Saldo (lebih besar, paling kanan) */}
-        <div className={cn("rounded-xl border bg-white p-4 col-span-2", TABLE_BORDER)}>
+        <div className={cn("rounded-xl border bg-white p-3 col-span-2", TABLE_BORDER)}>
           <div className="flex flex-col justify-center h-full gap-1">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
               <Wallet className="h-4 w-4" /> Saldo
             </p>
             <div className="flex items-baseline gap-3 flex-wrap">
-              <p className="text-2xl font-bold text-slate-800 tabular-nums">{formatRupiah(ringkasan.saldo)}</p>
+              <p className="text-xl font-bold text-slate-800 tabular-nums">{formatRupiah(ringkasan.saldo)}</p>
               <div className="flex items-center gap-3 text-[11px]">
                 <span className="text-green-600 font-medium flex items-center gap-1">
                   <ArrowUpRight className="h-3 w-3" /> Masuk {formatRupiah(ringkasan.masuk)}
