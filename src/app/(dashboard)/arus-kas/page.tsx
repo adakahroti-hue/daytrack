@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { formatRupiah, parseRupiah } from "@/lib/utils"
@@ -122,11 +123,16 @@ export default function ArusKasPage() {
 
   const [editState, setEditState] = useState<EditState | null>(null)
   const [nominalInput, setNominalInput] = useState("")
+  const [filterKategori, setFilterKategori] = useState<"semua" | "uang_masuk" | "uang_keluar">("semua")
+  const [filterDompet, setFilterDompet] = useState<"semua" | "kebutuhan" | "tabungan" | "self_reward" | "sedekah">("semua")
 
   const entries = useMemo(() => {
-    return [...(logs as ArusKasEntry[])].sort((a, b) =>
+    let list = [...(logs as ArusKasEntry[])]
+    if (filterKategori !== "semua") list = list.filter(l => l.kategori === filterKategori)
+    if (filterDompet !== "semua") list = list.filter(l => l.dompet === filterDompet)
+    return list.sort((a, b) =>
       a.tanggal.localeCompare(b.tanggal) || (a.created_at || "").localeCompare(b.created_at || ""))
-  }, [logs])
+  }, [logs, filterKategori, filterDompet])
 
   // Ringkasan
   const ringkasan = useMemo(() => {
@@ -222,6 +228,38 @@ export default function ArusKasPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Filter */}
+      <div className="flex flex-wrap items-center gap-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <ArrowUpRight className="h-3.5 w-3.5 text-green-600" />
+              {filterKategori === "semua" ? "Semua Kategori" : filterKategori === "uang_masuk" ? "Uang Masuk" : "Uang Keluar"}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => setFilterKategori("semua")}>Semua Kategori</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setFilterKategori("uang_masuk")}>Uang Masuk</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setFilterKategori("uang_keluar")}>Uang Keluar</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <Wallet className="h-3.5 w-3.5 text-indigo-500" />
+              {filterDompet === "semua" ? "Semua Dompet" : DOMPET_OPTIONS.find(d => d.value === filterDompet)?.label}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => setFilterDompet("semua")}>Semua Dompet</DropdownMenuItem>
+            {DOMPET_OPTIONS.map(opt => (
+              <DropdownMenuItem key={opt.value} onClick={() => setFilterDompet(opt.value)}>{opt.label}</DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Tabel */}
