@@ -56,7 +56,7 @@ export function AspectChart({ data }: AspectChartProps) {
             nameKey="name"
             cx="50%"
             cy="50%"
-            innerRadius={60}
+            innerRadius={0}
             outerRadius={110}
             label={({ name, percent }) => total > 0 ? `${name} ${(percent * 100).toFixed(0)}%` : ''}
             labelLine={false}

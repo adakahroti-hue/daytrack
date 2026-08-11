@@ -279,7 +279,7 @@ export function StatusAnalytics({
                       data={reasonStats}
                       dataKey="count"
                       nameKey="name"
-                      innerRadius={48}
+                      innerRadius={0}
                       outerRadius={78}
                       paddingAngle={2}
                       strokeWidth={2}
