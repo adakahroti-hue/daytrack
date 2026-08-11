@@ -13,7 +13,7 @@ import {
   endOfYear,
 } from "date-fns"
 import { id } from "date-fns/locale"
-import { Calendar, CalendarDays, Wallet, ArrowDownLeft, ArrowUpRight, Trash2, Plus, Pencil, Banknote, MessageSquare, Wrench } from "lucide-react"
+import { Calendar, CalendarDays, Wallet, ArrowDownLeft, ArrowUpRight, Trash2, Plus, Pencil, Banknote, MessageSquare, Wrench, ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils"
 import { formatRupiah, parseRupiah } from "@/lib/utils"
 import { useTableLock } from "@/components/ui/table-lock"
 import { useArusKasRange, useCreateArusKas, useDeleteArusKas, useUpdateArusKas } from "@/hooks/useArusKas"
+import { useKeranjangRange } from "@/hooks/useKeranjang"
 import { useRealtime } from "@/hooks/useRealtime"
 import { useHeaderControls } from "@/components/layout/HeaderControls"
 
@@ -111,6 +112,13 @@ export default function ArusKasPage() {
   const endDate = format(rangeEnd, "yyyy-MM-dd")
 
   const { data: logs = [], isLoading, error } = useArusKasRange(startDate, endDate)
+  const { data: keranjangLogs = [] } = useKeranjangRange(startDate, endDate)
+  const rencanaBelanja = useMemo(() => {
+    return (keranjangLogs as { id: string; nama_barang: string; harga: number; status: string }[])
+      .filter(l => l.status === "belum")
+      .sort((a, b) => a.nama_barang.localeCompare(b.nama_barang))
+  }, [keranjangLogs])
+  const totalRencana = useMemo(() => rencanaBelanja.reduce((s, l) => s + l.harga, 0), [rencanaBelanja])
   useRealtime({
     table: "arus_kas",
     filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
@@ -260,6 +268,28 @@ export default function ArusKasPage() {
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+      </div>
+
+      {/* Mini-card: rencana belanja dari tab Keranjang (minimalis) */}
+      <div className={cn("rounded-xl border bg-white p-3", TABLE_BORDER)}>
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
+            <ShoppingCart className="h-3.5 w-3.5 text-slate-400" /> Rencana Belanja
+          </p>
+          <span className="text-xs font-bold text-slate-700 tabular-nums">{formatRupiah(totalRencana)}</span>
+        </div>
+        {rencanaBelanja.length === 0 ? (
+          <p className="text-[11px] text-slate-400">Tidak ada rencana belanja.</p>
+        ) : (
+          <ul className="space-y-1">
+            {rencanaBelanja.map(item => (
+              <li key={item.id} className="flex items-center justify-between text-[11px]">
+                <span className="text-slate-700 truncate pr-2">{item.nama_barang}</span>
+                <span className="text-slate-500 tabular-nums shrink-0">{formatRupiah(item.harga)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {/* Tabel */}
