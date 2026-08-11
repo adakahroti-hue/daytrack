@@ -49,7 +49,7 @@ import {
   Dices,
   HandCoins,
   Wallet,
-  ArrowDownLeft,
+  DollarSign,
   ShoppingCart,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -129,7 +129,7 @@ const navigation: NavSection[] = [
     title: 'Keuangan',
     icon: Wallet,
     items: [
-      { title: 'Arus Kas', href: '/arus-kas', icon: ArrowDownLeft },
+      { title: 'Arus Kas', href: '/arus-kas', icon: DollarSign },
       { title: 'Keranjang', href: '/keranjang', icon: ShoppingCart },
     ],
   },
