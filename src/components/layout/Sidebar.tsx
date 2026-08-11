@@ -27,6 +27,7 @@ import {
   Calendar,
   CalendarDays,
   Mosque,
+  Sunrise,
   BookOpen,
   Heart,
   Hourglass,
@@ -97,7 +98,8 @@ const navigation: NavSection[] = [
     title: 'Ibadah',
     icon: Mosque,
     items: [
-      { title: 'Sholat', href: '/sholat', icon: Mosque },
+      { title: 'Sholat Wajib', href: '/sholat', icon: Mosque },
+      { title: 'Sholat Sunnah', href: '/sholat-sunnah', icon: Sunrise },
       { title: 'Quran', href: '/quran', icon: BookOpen },
     ],
   },

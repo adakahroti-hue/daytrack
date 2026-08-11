@@ -68,6 +68,7 @@ function getSubPageFromPath(pathname: string): string | null {
   if (pathname.startsWith('/tugas/hari-ini')) return 'hari-ini'
   if (pathname.startsWith('/tugas/semua')) return 'semua'
   if (pathname.startsWith('/tugas/selesai')) return 'selesai'
+  if (pathname.startsWith('/sholat-sunnah')) return 'sholat-sunnah'
   if (pathname.startsWith('/sholat')) return 'sholat'
   if (pathname.startsWith('/quran')) return 'quran'
   if (pathname.startsWith('/doa')) return 'doa'
@@ -94,7 +95,8 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
   // Sub-page specific titles
   if (category === 'ibadah' && subPage) {
     switch (subPage) {
-      case 'sholat': return 'Sholat'
+      case 'sholat': return 'Sholat Wajib'
+      case 'sholat-sunnah': return 'Sholat Sunnah'
       case 'quran': return 'Quran'
       case 'doa': return 'Doa'
       case 'syukur': return 'Syukur'
@@ -151,7 +153,8 @@ function getCategoryDescription(category: string, period: Period, subPage: strin
   // Sub-page specific descriptions
   if (category === 'ibadah' && subPage) {
     switch (subPage) {
-      case 'sholat': return 'Catat dan pantau sholat harian Anda'
+      case 'sholat': return 'Catat dan pantau sholat wajib harian Anda'
+      case 'sholat-sunnah': return 'Catat dan pantau sholat sunnah (Dhuha & Tahajud)'
       case 'quran': return 'Baca dan catat progres Quran'
       case 'doa': return 'Hafalkan dan catat doa harian'
       case 'syukur': return 'Catat rasa syukur hari ini'

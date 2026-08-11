@@ -15,27 +15,23 @@ import {
   endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Check, X, Sun, CloudSun, Sunset, Moon, Calendar, CalendarDays, Star } from 'lucide-react'
+import { Check, X, Sun, Moon, Calendar, CalendarDays, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useTableLock } from '@/components/ui/table-lock'
-import { usePrayerLogRange, useTogglePrayer, useUpdatePrayerQuality } from '@/hooks/usePrayerLogs'
+import { useSholatSunnahRange, useToggleSholatSunnah, useUpdateSholatSunnahQuality } from '@/hooks/useSholatSunnah'
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
 import nextDynamic from 'next/dynamic'
 import { AnalyticsSkeleton } from '@/components/ui/analytics-skeleton'
-const SholatAnalytics = nextDynamic(() => import('@/components/sholat/SholatAnalytics').then(m => m.SholatAnalytics), { ssr: false, loading: () => <AnalyticsSkeleton /> })
+const SholatSunnahAnalytics = nextDynamic(() => import('@/components/sholat/SholatSunnahAnalytics').then(m => m.SholatSunnahAnalytics), { ssr: false, loading: () => <AnalyticsSkeleton /> })
 
 // ─── Constants ────────────────────────────────────
-
-type SholatKey = 'subuh' | 'dhuha' | 'dzuhur' | 'ashar' | 'maghrib' | 'isya'
+type SholatKey = 'dhuha' | 'tahajud'
 
 const SHOLAT_COLUMNS: { key: SholatKey; label: string; icon: React.ComponentType<{ className?: string }>; color: string }[] = [
-  { key: 'subuh', label: 'Subuh', icon: Sun, color: 'text-amber-500' },
-  { key: 'dzuhur', label: 'Dzuhur', icon: Sun, color: 'text-yellow-500' },
-  { key: 'ashar', label: 'Ashar', icon: CloudSun, color: 'text-sky-500' },
-  { key: 'maghrib', label: 'Maghrib', icon: Sunset, color: 'text-rose-500' },
-  { key: 'isya', label: 'Isya', icon: Moon, color: 'text-indigo-500' },
+  { key: 'dhuha', label: 'Dhuha', icon: Sun, color: 'text-orange-400' },
+  { key: 'tahajud', label: 'Tahajud', icon: Moon, color: 'text-indigo-500' },
 ]
 
 type StatusOption = {
@@ -121,36 +117,15 @@ const TABLE_BORDER = 'border-slate-900'
 
 // ─── Types ─────────────────────────────────────────
 
-type PeriodMode = 'daily' | 'weekly' | 'monthly' | 'yearly'
-
-const PERIOD_OPTIONS: { value: PeriodMode; label: string }[] = [
-  { value: 'daily', label: 'Harian' },
-  { value: 'weekly', label: 'Mingguan' },
-  { value: 'monthly', label: 'Bulanan' },
-  { value: 'yearly', label: 'Tahunan' },
-]
-
-type SholatRow = {
+type SholatSunnahRow = {
   id: string
   tanggal: string
-  sholat_subuh: boolean
   sholat_dhuha: boolean
-  sholat_dzuhur: boolean
-  sholat_ashar: boolean
-  sholat_maghrib: boolean
-  sholat_isya: boolean
-  alasan_subuh: string | null
+  sholat_tahajud: boolean
   alasan_dhuha: string | null
-  alasan_dzuhur: string | null
-  alasan_ashar: string | null
-  alasan_maghrib: string | null
-  alasan_isya: string | null
-  kualitas_subuh: number | null
+  alasan_tahajud: string | null
   kualitas_dhuha: number | null
-  kualitas_dzuhur: number | null
-  kualitas_ashar: number | null
-  kualitas_maghrib: number | null
-  kualitas_isya: number | null
+  kualitas_tahajud: number | null
 }
 
 type CellStatus = 'done' | 'reason' | 'empty'
@@ -164,11 +139,11 @@ type DropdownState = {
 
 // ─── Helper: get cell status from row data ────────
 
-function getCellStatus(row: SholatRow | undefined, key: SholatKey): { status: CellStatus; reason: string | null; quality: number | null } {
+function getCellStatus(row: SholatSunnahRow | undefined, key: SholatKey): { status: CellStatus; reason: string | null; quality: number | null } {
   if (!row) return { status: 'empty', reason: null, quality: null }
-  const isDone = row[`sholat_${key}` as keyof SholatRow] as boolean
-  const reason = row[`alasan_${key}` as keyof SholatRow] as string | null
-  const quality = row[`kualitas_${key}` as keyof SholatRow] as number | null
+  const isDone = row[`sholat_${key}` as keyof SholatSunnahRow] as boolean
+  const reason = row[`alasan_${key}` as keyof SholatSunnahRow] as string | null
+  const quality = row[`kualitas_${key}` as keyof SholatSunnahRow] as number | null
   if (isDone) return { status: 'done', reason: null, quality: quality ?? null }
   if (reason) return { status: 'reason', reason, quality: null }
   return { status: 'empty', reason: null, quality: null }
@@ -196,7 +171,7 @@ function RatingBadge({ quality }: { quality: number }) {
 const DropdownMenuContent = forwardRef<HTMLDivElement, {
   tanggal: string
   sholatKey: SholatKey
-  sholatMap: Record<string, SholatRow>
+  sholatMap: Record<string, SholatSunnahRow>
   onSelect: (option: StatusOption) => void
   onRate: (quality: number) => void
   onClear: () => void
@@ -222,8 +197,6 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
     }
     if (left < 8) left = 8
 
-    // Revisi: popup selalu muncul di bawah cell — jangan flip ke atas.
-    // Bila ruang di bawah kurang, kecilkan maxHeight agar muat & bisa di-scroll.
     const availableBelow = window.innerHeight - top - 8
     const maxHeight = Math.max(160, Math.min(menuMaxHeight, availableBelow))
 
@@ -241,9 +214,9 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
   const { currentValue, currentQuality } = (() => {
     const row = sholatMap[tanggal]
     if (!row) return { currentValue: null as string | null, currentQuality: null as number | null }
-    const isDone = row[`sholat_${sholatKey}` as keyof SholatRow] as boolean
-    const reason = row[`alasan_${sholatKey}` as keyof SholatRow] as string | null
-    const quality = row[`kualitas_${sholatKey}` as keyof SholatRow] as number | null
+    const isDone = row[`sholat_${sholatKey}` as keyof SholatSunnahRow] as boolean
+    const reason = row[`alasan_${sholatKey}` as keyof SholatSunnahRow] as string | null
+    const quality = row[`kualitas_${sholatKey}` as keyof SholatSunnahRow] as number | null
     if (isDone) return { currentValue: 'sudah', currentQuality: quality ?? null }
     if (reason) return { currentValue: reason, currentQuality: null }
     return { currentValue: null, currentQuality: null }
@@ -257,11 +230,10 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
   return (
     <div
       ref={menuRef}
-      data-sholat-dropdown
+      data-sholat-sunnah-dropdown
       className="fixed z-50 bg-white rounded-lg shadow-lg border border-slate-200 py-1 min-w-[240px] max-h-[460px] overflow-y-auto"
       style={{ top: position.top, left: position.left, maxHeight: position.maxHeight }}
     >
-      {/* Step 1: Pilih status */}
       <button
         onClick={() => { setShowReasons(false); onSelect({ value: 'sudah', label: 'Sudah Sholat', isDone: true }) }}
         className={cn(
@@ -285,7 +257,6 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
         Tidak Sholat
       </button>
 
-      {/* Step 2a: Rating kualitas — muncul bila sudah sholat */}
       {isDone && (
         <>
           <div className="border-t border-slate-100 my-1" />
@@ -320,7 +291,6 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
         </>
       )}
 
-      {/* Step 2b: Alasan — muncul bila klik Tidak Sholat */}
       {isTidak && (
         <>
           <div className="border-t border-slate-100 my-1" />
@@ -346,9 +316,7 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
         </>
       )}
 
-      {/* Divider */}
       <div className="border-t border-slate-100 my-1" />
-      {/* Clear status */}
       <button
         onClick={onClear}
         className="w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors hover:bg-slate-50 text-slate-500"
@@ -363,19 +331,16 @@ DropdownMenuContent.displayName = 'DropdownMenuContent'
 
 // ─── Main Component ────────────────────────────────
 
-export default function SholatPage() {
-  // Revisi mobile (batch 8): lock/unlock tabel — khusus tampilan mobile
+export default function SholatSunnahPage() {
   const { effectiveLocked, lockControl } = useTableLock()
   const queryClient = useQueryClient()
   const [dropdown, setDropdown] = useState<DropdownState>(null)
   const tableContainerRef = useRef<HTMLDivElement>(null)
 
-  // ── Rev 10: periode & anchor date dari HeaderControls (toolbar di header) ──
   const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
   const todayStr = format(new Date(), 'yyyy-MM-dd')
 
-  // Hitung rentang tanggal berdasarkan periode + anchor
-  const { rangeStart, rangeEnd, periodLabel, isCurrentPeriod } = useMemo(() => {
+  const { rangeStart, rangeEnd } = useMemo(() => {
     const today = new Date()
     let start: Date
     let end: Date
@@ -392,60 +357,41 @@ export default function SholatPage() {
       start = startOfYear(anchorDate)
       end = endOfYear(anchorDate)
     }
-    // Batasi end ke hari ini bila periode mencakup hari ini (hindari ratusan baris kosong masa depan)
     const cappedEnd = end > today ? today : end
-    // Periode "saat ini" = rentang penuh (start..end) mencakup hari ini
-    const isCurrent = start <= today && end >= startOfDaySafe(today)
-
-    let label: string
-    if (period === 'daily') {
-      label = format(anchorDate, 'EEEE, d MMMM yyyy', { locale: id })
-    } else if (period === 'weekly') {
-      label = `${format(start, 'd MMM', { locale: id })} – ${format(end, 'd MMM yyyy', { locale: id })}`
-    } else if (period === 'monthly') {
-      label = format(anchorDate, 'MMMM yyyy', { locale: id })
-    } else {
-      label = format(anchorDate, 'yyyy', { locale: id })
-    }
-    return { rangeStart: start, rangeEnd: cappedEnd, periodLabel: label, isCurrentPeriod: isCurrent }
+    return { rangeStart: start, rangeEnd: cappedEnd }
   }, [period, anchorDate])
 
   const startDate = format(rangeStart, 'yyyy-MM-dd')
   const endDate = format(rangeEnd, 'yyyy-MM-dd')
 
-  const { data: sholatRows = [], isLoading, error } = usePrayerLogRange(startDate, endDate)
+  const { data: sholatRows = [], isLoading, error } = useSholatSunnahRange(startDate, endDate)
   useRealtime({
-    table: 'sholat',
+    table: 'sholat_sunnah',
     filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
-    queryKeys: [['sholat', 'range', startDate, endDate]],
+    queryKeys: [['sholat_sunnah', 'range', startDate, endDate]],
   })
 
-  const updateCell = useTogglePrayer()
-  const updateQuality = useUpdatePrayerQuality()
+  const updateCell = useToggleSholatSunnah()
+  const updateQuality = useUpdateSholatSunnahQuality()
 
-  // Build a map of tanggal -> row for quick lookup
   const sholatMap = useMemo(() => {
-    const map: Record<string, SholatRow> = {}
-    for (const row of sholatRows as SholatRow[]) {
+    const map: Record<string, SholatSunnahRow> = {}
+    for (const row of sholatRows as SholatSunnahRow[]) {
       map[row.tanggal] = row
     }
     return map
   }, [sholatRows])
 
-  // Generate all dates in range (descending — newest first)
   const dates = useMemo(() => {
     if (rangeEnd < rangeStart) return []
-    // Urutan tanggal dari atas ke bawah — terbaru paling bawah (ascending)
     return eachDayOfInterval({ start: rangeStart, end: rangeEnd }).map(d => format(d, 'yyyy-MM-dd'))
   }, [rangeStart, rangeEnd])
 
-  // Close dropdown on outside click — menu di-render fixed di luar table container,
-  // jadi cek juga apakah klik terjadi di dalam menu (via data attribute)
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       const target = e.target as HTMLElement
       const inTable = tableContainerRef.current?.contains(target)
-      const inMenu = !!target.closest?.('[data-sholat-dropdown]')
+      const inMenu = !!target.closest?.('[data-sholat-sunnah-dropdown]')
       if (!inTable && !inMenu) {
         setDropdown(null)
       }
@@ -456,10 +402,9 @@ export default function SholatPage() {
     }
   }, [dropdown])
 
-  // Optimistic update helper
   const optimisticallyUpdateCell = useCallback(
     (tanggal: string, key: SholatKey, status: CellStatus, reason: string | null) => {
-      queryClient.setQueryData(['sholat', 'range', startDate, endDate], (old: SholatRow[] | undefined) => {
+      queryClient.setQueryData(['sholat_sunnah', 'range', startDate, endDate], (old: SholatSunnahRow[] | undefined) => {
         if (!old) return old
         const existing = old.find(r => r.tanggal === tanggal)
         if (existing) {
@@ -469,21 +414,21 @@ export default function SholatPage() {
               ...r,
               [`sholat_${key}`]: status === 'done',
               [`alasan_${key}`]: status === 'reason' ? reason : null,
-            } as SholatRow
+            } as SholatSunnahRow
           })
         }
-        const newRow: SholatRow = {
+        const newRow: SholatSunnahRow = {
           id: 'temp-' + tanggal,
           tanggal,
-          sholat_subuh: false, sholat_dhuha: false, sholat_dzuhur: false,
-          sholat_ashar: false, sholat_maghrib: false, sholat_isya: false,
-          alasan_subuh: null, alasan_dhuha: null, alasan_dzuhur: null,
-          alasan_ashar: null, alasan_maghrib: null, alasan_isya: null,
-          kualitas_subuh: null, kualitas_dhuha: null, kualitas_dzuhur: null,
-          kualitas_ashar: null, kualitas_maghrib: null, kualitas_isya: null,
+          sholat_dhuha: false,
+          sholat_tahajud: false,
+          alasan_dhuha: null,
+          alasan_tahajud: null,
+          kualitas_dhuha: null,
+          kualitas_tahajud: null,
           [`sholat_${key}`]: status === 'done',
           [`alasan_${key}`]: status === 'reason' ? reason : null,
-        } as SholatRow
+        } as SholatSunnahRow
         return [...old, newRow]
       })
     },
@@ -492,9 +437,9 @@ export default function SholatPage() {
 
   const optimisticallyUpdateQuality = useCallback(
     (tanggal: string, key: SholatKey, quality: number) => {
-      queryClient.setQueryData(['sholat', 'range', startDate, endDate], (old: SholatRow[] | undefined) => {
+      queryClient.setQueryData(['sholat_sunnah', 'range', startDate, endDate], (old: SholatSunnahRow[] | undefined) => {
         if (!old) return old
-        return old.map(r => (r.tanggal === tanggal ? ({ ...r, [`kualitas_${key}`]: quality } as SholatRow) : r))
+        return old.map(r => (r.tanggal === tanggal ? ({ ...r, [`kualitas_${key}`]: quality } as SholatSunnahRow) : r))
       })
     },
     [queryClient, startDate, endDate]
@@ -509,9 +454,8 @@ export default function SholatPage() {
       try {
         await updateCell.mutateAsync({ tanggal, prayerTime: sholatKey, value: true })
       } catch {
-        queryClient.invalidateQueries({ queryKey: ['sholat'] })
+        queryClient.invalidateQueries({ queryKey: ['sholat_sunnah'] })
       }
-      // Jangan tutup dropdown — biarkan user langsung pilih rating kualitas
       return
     }
 
@@ -521,7 +465,7 @@ export default function SholatPage() {
     try {
       await updateCell.mutateAsync({ tanggal, prayerTime: sholatKey, value: false, reason })
     } catch {
-      queryClient.invalidateQueries({ queryKey: ['sholat'] })
+      queryClient.invalidateQueries({ queryKey: ['sholat_sunnah'] })
     }
   }
 
@@ -532,7 +476,7 @@ export default function SholatPage() {
     try {
       await updateQuality.mutateAsync({ tanggal, prayerTime: sholatKey, quality })
     } catch {
-      queryClient.invalidateQueries({ queryKey: ['sholat'] })
+      queryClient.invalidateQueries({ queryKey: ['sholat_sunnah'] })
     }
   }
 
@@ -546,7 +490,7 @@ export default function SholatPage() {
     try {
       await updateCell.mutateAsync({ tanggal, prayerTime: sholatKey, value: false })
     } catch {
-      queryClient.invalidateQueries({ queryKey: ['sholat'] })
+      queryClient.invalidateQueries({ queryKey: ['sholat_sunnah'] })
     }
   }
 
@@ -561,7 +505,6 @@ export default function SholatPage() {
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
-      {/* ── Rev 3: Table dengan garis hitam (daytrack style) ── */}
       <div
         ref={tableContainerRef}
         className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)] landscape:max-lg:max-h-none rounded-lg border bg-white', TABLE_BORDER)}
@@ -594,7 +537,7 @@ export default function SholatPage() {
           <tbody className={cn(effectiveLocked && 'pointer-events-none select-none')}>
             {isLoading ? (
               <tr>
-                <td colSpan={8} className="text-center py-12 text-slate-400">
+                <td colSpan={4} className="text-center py-12 text-slate-400">
                   <div className="flex flex-col items-center gap-2">
                     <div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" />
                     <span className="text-sm">Memuat data...</span>
@@ -603,7 +546,7 @@ export default function SholatPage() {
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan={8} className="text-center py-12 text-red-500">
+                <td colSpan={4} className="text-center py-12 text-red-500">
                   Gagal memuat data: {error.message}
                 </td>
               </tr>
@@ -687,15 +630,13 @@ export default function SholatPage() {
       </div>
       {lockControl}
 
-      {/* ── Ringkasan — tepat di bawah tabel (dinamis per periode aktif) ── */}
-      <SholatAnalytics
+      <SholatSunnahAnalytics
         dates={dates}
         sholatMap={sholatMap}
         columns={SHOLAT_COLUMNS}
         alasanLabels={REASON_LABELS}
       />
 
-      {/* Dropdown menu */}
       {dropdown && (
         <DropdownMenuContent
           ref={tableContainerRef}
