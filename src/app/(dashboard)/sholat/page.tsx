@@ -415,9 +415,9 @@ export default function SholatPage() {
 
   const { data: sholatRows = [], isLoading, error } = usePrayerLogRange(startDate, endDate)
   useRealtime({
-    table: 'sholat',
+    table: 'sholat_wajib',
     filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
-    queryKeys: [['sholat', 'range', startDate, endDate]],
+    queryKeys: [['sholat_wajib', 'range', startDate, endDate]],
   })
 
   const updateCell = useTogglePrayer()

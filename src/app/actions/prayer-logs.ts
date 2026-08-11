@@ -36,7 +36,7 @@ export async function upsertPrayerLog(formData: PrayerLogFormData) {
   const validated = prayerLogSchema.parse(formData)
 
   const { data: existing } = await supabase
-    .from("sholat")
+    .from("sholat_wajib")
     .select("id")
     .eq("user_id", user.id)
     .eq("tanggal", validated.tanggal)
@@ -66,7 +66,7 @@ export async function upsertPrayerLog(formData: PrayerLogFormData) {
   let data, error
   if (existing) {
     const result = await supabase
-      .from("sholat")
+      .from("sholat_wajib")
       .update(insertData)
       .eq("id", existing.id)
       .eq("user_id", user.id)
@@ -76,7 +76,7 @@ export async function upsertPrayerLog(formData: PrayerLogFormData) {
     error = result.error
   } else {
     const result = await supabase
-      .from("sholat")
+      .from("sholat_wajib")
       .insert(insertData)
       .select()
       .single()
@@ -123,7 +123,7 @@ export async function togglePrayer(tanggal: string, prayerTime: typeof PRAYER_TI
   if (!column) throw new Error("Invalid prayer time")
 
   const { data: existing } = await supabase
-    .from("sholat")
+    .from("sholat_wajib")
     .select("*")
     .eq("user_id", user.id)
     .eq("tanggal", tanggal)
@@ -156,7 +156,7 @@ export async function togglePrayer(tanggal: string, prayerTime: typeof PRAYER_TI
   let data, error
   if (existing) {
     const result = await supabase
-      .from("sholat")
+      .from("sholat_wajib")
       .update(updates)
       .eq("id", existing.id)
       .eq("user_id", user.id)
@@ -166,7 +166,7 @@ export async function togglePrayer(tanggal: string, prayerTime: typeof PRAYER_TI
     error = result.error
   } else {
     const result = await supabase
-      .from("sholat")
+      .from("sholat_wajib")
       .insert({
         user_id: user.id,
         tanggal,
@@ -196,7 +196,7 @@ export async function getPrayerLog(tanggal: string) {
   if (!user) throw new Error("Unauthorized")
 
   const { data, error } = await supabase
-    .from("sholat")
+    .from("sholat_wajib")
     .select("*")
     .eq("user_id", user.id)
     .eq("tanggal", tanggal)
@@ -213,7 +213,7 @@ export async function getPrayerLogRange(startDate: string, endDate: string) {
   if (!user) throw new Error("Unauthorized")
 
   const { data, error } = await supabase
-    .from("sholat")
+    .from("sholat_wajib")
     .select("*")
     .eq("user_id", user.id)
     .gte("tanggal", startDate)
@@ -247,7 +247,7 @@ export async function updatePrayerQuality(
   if (!column) throw new Error("Invalid prayer time")
 
   const { data: existing } = await supabase
-    .from("sholat")
+    .from("sholat_wajib")
     .select("id")
     .eq("user_id", user.id)
     .eq("tanggal", tanggal)
@@ -258,7 +258,7 @@ export async function updatePrayerQuality(
   let data, error
   if (existing) {
     const result = await supabase
-      .from("sholat")
+      .from("sholat_wajib")
       .update(updates)
       .eq("id", existing.id)
       .eq("user_id", user.id)
@@ -268,7 +268,7 @@ export async function updatePrayerQuality(
     error = result.error
   } else {
     const result = await supabase
-      .from("sholat")
+      .from("sholat_wajib")
       .insert({
         user_id: user.id,
         tanggal,

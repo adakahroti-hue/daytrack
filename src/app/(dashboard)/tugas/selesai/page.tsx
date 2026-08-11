@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, memo } from 'react'
 import { format, startOfDay, isBefore, differenceInDays } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { AlertTriangle, Plus, Edit, Trash2, X, Clock, Calendar, Play, Check, CheckCircle2, MoreHorizontal, Flag, RotateCcw, CheckSquare, Layers } from 'lucide-react'
+import { AlertTriangle, Edit, Trash2, X, Clock, Calendar, Play, Check, CheckCircle2, MoreHorizontal, Flag, RotateCcw, CheckSquare, Layers } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -613,16 +613,6 @@ function SelesaiPageClient() {
           </div>
         )}
       </div>
-
-      {/* Floating Action Button - Fixed bottom right */}
-      <Button
-        onClick={() => { setEditingTask({ id: '', nama: '', tanggal: format(new Date(), 'yyyy-MM-dd'), estimasi_menit: 30, prioritas: 'p3', status: 'belum' }); setIsFormOpen(true) }}
-        className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95"
-        aria-label="Tambah tugas baru"
-        size="icon"
-      >
-        <Plus className="h-6 w-6" />
-      </Button>
 
       {/* Add/Edit Task Dialog */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>

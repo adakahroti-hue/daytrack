@@ -35,7 +35,7 @@ export async function upsertSholat(formData: SholatFormData) {
   const validated = sholatSchema.parse(formData)
   
   const { data: existing } = await supabase
-    .from("sholat")
+    .from("sholat_wajib")
     .select("id")
     .eq("user_id", user.id)
     .eq("tanggal", validated.tanggal)
@@ -62,7 +62,7 @@ export async function upsertSholat(formData: SholatFormData) {
   let data, error
   if (existing) {
     const result = await supabase
-      .from("sholat")
+      .from("sholat_wajib")
       .update(insertData)
       .eq("id", existing.id)
       .eq("user_id", user.id)
@@ -72,7 +72,7 @@ export async function upsertSholat(formData: SholatFormData) {
     error = result.error
   } else {
     const result = await supabase
-      .from("sholat")
+      .from("sholat_wajib")
       .insert(insertData)
       .select()
       .single()
@@ -97,7 +97,7 @@ export async function toggleSholat(tanggal: string, sholatTime: typeof SHOLAT_TI
   if (!user) throw new Error("Unauthorized")
 
   const { data: existing } = await supabase
-    .from("sholat")
+    .from("sholat_wajib")
     .select("id")
     .eq("user_id", user.id)
     .eq("tanggal", tanggal)
@@ -111,7 +111,7 @@ export async function toggleSholat(tanggal: string, sholatTime: typeof SHOLAT_TI
   let data, error
   if (existing) {
     const result = await supabase
-      .from("sholat")
+      .from("sholat_wajib")
       .update(updateData)
       .eq("id", existing.id)
       .eq("user_id", user.id)
@@ -121,7 +121,7 @@ export async function toggleSholat(tanggal: string, sholatTime: typeof SHOLAT_TI
     error = result.error
   } else {
     const result = await supabase
-      .from("sholat")
+      .from("sholat_wajib")
       .insert({
         user_id: user.id,
         tanggal,
@@ -151,7 +151,7 @@ export async function getSholat(tanggal: string) {
   if (!user) return null
 
   const { data, error } = await supabase
-    .from("sholat")
+    .from("sholat_wajib")
     .select("*")
     .eq("user_id", user.id)
     .eq("tanggal", tanggal)
@@ -168,7 +168,7 @@ export async function getSholatRange(startDate: string, endDate: string) {
   if (!user) return []
 
   const { data, error } = await supabase
-    .from("sholat")
+    .from("sholat_wajib")
     .select("*")
     .eq("user_id", user.id)
     .gte("tanggal", startDate)
@@ -191,7 +191,7 @@ export async function updateSholatCell(
   if (!user) throw new Error("Unauthorized")
 
   const { data: existing } = await supabase
-    .from("sholat")
+    .from("sholat_wajib")
     .select("id")
     .eq("user_id", user.id)
     .eq("tanggal", tanggal)
@@ -205,7 +205,7 @@ export async function updateSholatCell(
   let data, error
   if (existing) {
     const result = await supabase
-      .from("sholat")
+      .from("sholat_wajib")
       .update(updateData)
       .eq("id", existing.id)
       .eq("user_id", user.id)
@@ -215,7 +215,7 @@ export async function updateSholatCell(
     error = result.error
   } else {
     const result = await supabase
-      .from("sholat")
+      .from("sholat_wajib")
       .insert({
         user_id: user.id,
         tanggal,
@@ -248,7 +248,7 @@ export async function clearSholatCell(
   if (!user) throw new Error("Unauthorized")
 
   const { data: existing } = await supabase
-    .from("sholat")
+    .from("sholat_wajib")
     .select("id")
     .eq("user_id", user.id)
     .eq("tanggal", tanggal)
@@ -262,7 +262,7 @@ export async function clearSholatCell(
   }
 
   const { data, error } = await supabase
-    .from("sholat")
+    .from("sholat_wajib")
     .update(updateData)
     .eq("id", existing.id)
     .eq("user_id", user.id)

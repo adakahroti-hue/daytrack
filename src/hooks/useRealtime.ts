@@ -191,9 +191,9 @@ export function useTasksRealtime(queryKeys: string[][] = [['tugas']], filter?: s
   })
 }
 
-export function useSholatRealtime(queryKeys: string[][] = [['sholat']]) {
+export function useSholatRealtime(queryKeys: string[][] = [['sholat_wajib']]) {
   return useRealtime({
-    table: 'sholat',
+    table: 'sholat_wajib',
     queryKeys,
   })
 }

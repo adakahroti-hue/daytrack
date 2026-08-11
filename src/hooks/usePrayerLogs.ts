@@ -24,7 +24,7 @@ async function fetchPrayerLogRangeDirect(startDate: string, endDate: string) {
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) throw new Error("Unauthorized")
   const { data, error } = await supabase
-    .from("sholat")
+    .from("sholat_wajib")
     .select("*")
     .eq("user_id", session.user.id)
     .gte("tanggal", startDate)
