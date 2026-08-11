@@ -16,7 +16,7 @@ import {
   subMonths,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, Check, X, Trash2 } from 'lucide-react'
+import { Calendar, CalendarDays, Check, X, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
@@ -185,7 +185,10 @@ export default function MinumAirPage() {
                 </div>
               </th>
               <th className={cn('px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[90px] dt-col-stick sm:sticky sm:left-[100px] sm:z-30 sm:bg-white', TABLE_BORDER)}>
-                Hari
+                <div className="flex items-center justify-center gap-1">
+                  <CalendarDays className="h-3.5 w-3.5 text-green-500" />
+                  Hari
+                </div>
               </th>
               {WATER_TIMES.map(col => (
                 <th key={col.key} className={cn('px-3 py-2 text-center font-semibold text-slate-700 border-r last:border-r-0 min-w-[96px]', TABLE_BORDER)}>
