@@ -191,6 +191,14 @@ export default function ArusKasPage() {
               <Wallet className="h-4 w-4" /> Saldo
             </p>
             <p className="text-2xl font-bold text-slate-800 tabular-nums">{formatRupiah(ringkasan.saldo)}</p>
+            <div className="mt-1 flex items-center gap-3 text-[11px]">
+              <span className="text-green-600 font-medium flex items-center gap-1">
+                <ArrowUpRight className="h-3 w-3" /> Masuk {formatRupiah(ringkasan.masuk)}
+              </span>
+              <span className="text-red-600 font-medium flex items-center gap-1">
+                <ArrowDownLeft className="h-3 w-3" /> Keluar {formatRupiah(ringkasan.keluar)}
+              </span>
+            </div>
           </div>
         </div>
       </div>
