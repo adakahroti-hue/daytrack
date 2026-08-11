@@ -147,11 +147,11 @@ export default function ArusKasPage() {
     return { masuk, keluar, saldo: masuk - keluar }
   }, [logs])
 
-  // Target tabungan: 1 barang belum dibeli pertama (urut nama) dari Keranjang
+  // Target tabungan: 1 barang belum dibeli termurah dari Keranjang
   const targetBelanja = useMemo(() => {
     const list = (keranjangLogs as { id: string; nama_barang: string; harga: number; status: string }[])
       .filter(l => l.status === "belum")
-      .sort((a, b) => a.nama_barang.localeCompare(b.nama_barang))
+      .sort((a, b) => a.harga - b.harga)
     return list[0] || null
   }, [keranjangLogs])
   // Sisa dompet Tabungan (10% uang masuk - pemakaian dompet tabungan)
