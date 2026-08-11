@@ -13,7 +13,7 @@ import {
   endOfYear,
 } from "date-fns"
 import { id } from "date-fns/locale"
-import { Calendar, CalendarDays, ShoppingCart, Trash2, Plus, Check, Pencil, Banknote, Wrench } from "lucide-react"
+import { Calendar, CalendarDays, ShoppingCart, Trash2, Plus, Check, Pencil, Banknote, Wrench, Wallet } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -44,6 +44,7 @@ interface KeranjangEntry {
   nama_barang: string
   harga: number
   status: "belum" | "sudah"
+  dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah"
   created_at: string
 }
 
@@ -52,6 +53,7 @@ interface EditState {
   tanggal: string
   nama_barang: string
   harga: number
+  dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah"
 }
 
 function startOfDaySafe(d: Date): Date {
@@ -103,8 +105,12 @@ export default function KeranjangPage() {
 
   const [editState, setEditState] = useState<EditState | null>(null)
   const [hargaInput, setHargaInput] = useState("")
-  const [pendingBeli, setPendingBeli] = useState<{ id: string; nama: string; harga: number } | null>(null)
-  const [pilihDompet, setPilihDompet] = useState<"kebutuhan" | "tabungan" | "self_reward" | "sedekah">("kebutuhan")
+  const DOMPET_OPTIONS: { value: "kebutuhan" | "tabungan" | "self_reward" | "sedekah"; label: string }[] = [
+    { value: "kebutuhan", label: "Kebutuhan" },
+    { value: "tabungan", label: "Tabungan" },
+    { value: "self_reward", label: "Self Reward" },
+    { value: "sedekah", label: "Sedekah" },
+  ]
 
   const entries = useMemo(() => {
     return [...(logs as KeranjangEntry[])].sort((a, b) =>
@@ -117,12 +123,12 @@ export default function KeranjangPage() {
 
   const openAdd = () => {
     setHargaInput("")
-    setEditState({ id: null, tanggal: todayStr, nama_barang: "", harga: 0 })
+    setEditState({ id: null, tanggal: todayStr, nama_barang: "", harga: 0, dompet: "kebutuhan" })
   }
 
   const openEdit = (entry: KeranjangEntry) => {
     setHargaInput(entry.harga > 0 ? formatRupiah(entry.harga) : "")
-    setEditState({ id: entry.id, tanggal: entry.tanggal, nama_barang: entry.nama_barang, harga: entry.harga })
+    setEditState({ id: entry.id, tanggal: entry.tanggal, nama_barang: entry.nama_barang, harga: entry.harga, dompet: entry.dompet })
   }
 
   const handleSave = async () => {
@@ -133,7 +139,7 @@ export default function KeranjangPage() {
       // Mode edit
       await updateKeranjang.mutateAsync({
         id: editState.id,
-        data: { tanggal: editState.tanggal, nama_barang: editState.nama_barang.trim(), harga: editState.harga },
+        data: { tanggal: editState.tanggal, nama_barang: editState.nama_barang.trim(), harga: editState.harga, dompet: editState.dompet },
       })
     } else {
       // Mode tambah
@@ -142,20 +148,14 @@ export default function KeranjangPage() {
         nama_barang: editState.nama_barang.trim(),
         harga: editState.harga,
         status: "belum",
+        dompet: editState.dompet,
       })
     }
     setEditState(null)
   }
 
-  const handleBeli = (entry: KeranjangEntry) => {
-    setPilihDompet("kebutuhan")
-    setPendingBeli({ id: entry.id, nama: entry.nama_barang, harga: entry.harga })
-  }
-
-  const confirmBeli = async () => {
-    if (!pendingBeli) return
-    await beliKeranjang.mutateAsync({ id: pendingBeli.id, dompet: pilihDompet })
-    setPendingBeli(null)
+  const handleBeli = (id: string) => {
+    beliKeranjang.mutateAsync(id)
   }
 
   const handleDelete = async (id: string) => {
@@ -188,6 +188,9 @@ export default function KeranjangPage() {
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[150px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><Banknote className="h-3.5 w-3.5 text-indigo-500" /> Harga</div>
               </th>
+              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[140px] sm:min-w-[160px]", TABLE_BORDER)}>
+                <div className="flex items-center justify-center gap-1"><Wallet className="h-3.5 w-3.5 text-indigo-500" /> Dompet</div>
+              </th>
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><Wrench className="h-3.5 w-3.5 text-indigo-500" /> Aksi</div>
               </th>
@@ -195,11 +198,11 @@ export default function KeranjangPage() {
           </thead>
           <tbody className={cn(effectiveLocked && "pointer-events-none select-none")}>
             {isLoading ? (
-              <tr><td colSpan={5} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
+              <tr><td colSpan={6} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
             ) : error ? (
-              <tr><td colSpan={5} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
+              <tr><td colSpan={6} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
             ) : entries.length === 0 ? (
-              <tr><td colSpan={5} className="text-center py-12 text-slate-400 text-sm">Belum ada barang di keranjang. Tekan tombol + untuk menambah.</td></tr>
+              <tr><td colSpan={6} className="text-center py-12 text-slate-400 text-sm">Belum ada barang di keranjang. Tekan tombol + untuk menambah.</td></tr>
             ) : (
               entries.map((entry, rowIdx) => {
                 const date = new Date(entry.tanggal + "T00:00:00")
@@ -221,10 +224,19 @@ export default function KeranjangPage() {
                     <td className={cn("px-2 sm:px-3 py-2 text-center border-r font-semibold tabular-nums text-slate-700", TABLE_BORDER)}>
                       {formatRupiah(entry.harga)}
                     </td>
+                    <td className={cn("px-2 sm:px-3 py-2 text-center border-r", TABLE_BORDER)}>
+                      <span className={cn("inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border",
+                        entry.dompet === "kebutuhan" && "bg-emerald-50 text-emerald-700 border-emerald-200",
+                        entry.dompet === "tabungan" && "bg-sky-50 text-sky-700 border-sky-200",
+                        entry.dompet === "self_reward" && "bg-amber-50 text-amber-700 border-amber-200",
+                        entry.dompet === "sedekah" && "bg-violet-50 text-violet-700 border-violet-200")}>
+                        {DOMPET_OPTIONS.find(d => d.value === entry.dompet)?.label}
+                      </span>
+                    </td>
                     <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
                       <div className="flex items-center justify-center gap-1 flex-wrap">
                         {isBelum ? (
-                          <Button size="sm" aria-label="Tandai sudah dibeli" onClick={() => handleBeli(entry)}
+                          <Button size="sm" aria-label="Tandai sudah dibeli" onClick={() => handleBeli(entry.id)}
                             className="h-6 gap-1 bg-green-600 hover:bg-green-700 text-white text-[11px] px-1.5">
                             <Check className="h-3 w-3" /> Sudah
                           </Button>
@@ -259,7 +271,7 @@ export default function KeranjangPage() {
       <Dialog open={!!editState} onOpenChange={(open) => !open && setEditState(null)}>
         <DialogContent className="max-w-[92vw] sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Tambah ke Keranjang</DialogTitle>
+            <DialogTitle>{editState?.id ? "Edit Keranjang" : "Tambah ke Keranjang"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
@@ -283,51 +295,26 @@ export default function KeranjangPage() {
                   setHargaInput(num > 0 ? formatRupiah(num) : '')
                 }} />
             </div>
+            <div className="space-y-1.5">
+              <Label>Sumber Dana (Dompet)</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {DOMPET_OPTIONS.map(opt => (
+                  <button key={opt.value} type="button"
+                    onClick={() => setEditState(prev => prev ? { ...prev, dompet: opt.value } : prev)}
+                    className={cn("rounded-lg border px-3 py-2 text-sm font-medium",
+                      editState?.dompet === opt.value
+                        ? "bg-indigo-100 text-indigo-700 border-indigo-300"
+                        : "border-slate-200 text-slate-500 hover:bg-slate-50")}>
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="flex justify-end gap-2 pt-1">
               <Button variant="outline" onClick={() => setEditState(null)}>Batal</Button>
               <Button onClick={handleSave} disabled={!editState?.nama_barang.trim() || parseRupiah(hargaInput) <= 0}>Simpan</Button>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Popup pilih dompet saat klik "Sudah" */}
-      <Dialog open={!!pendingBeli} onOpenChange={(open) => !open && setPendingBeli(null)}>
-        <DialogContent className="max-w-[92vw] sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Uang keluar dari dompet mana?</DialogTitle>
-          </DialogHeader>
-          {pendingBeli && (
-            <div className="space-y-4">
-              <p className="text-sm text-slate-600">
-                <span className="font-medium text-slate-800">{pendingBeli.nama}</span> · {formatRupiah(pendingBeli.harga)} akan dicatat sebagai uang keluar di Arus Kas.
-              </p>
-              <div className="space-y-1.5">
-                <Label>Sumber Dana (Dompet)</Label>
-                <div className="grid grid-cols-2 gap-2 mt-1">
-                  {([
-                    { value: "kebutuhan", label: "Kebutuhan" },
-                    { value: "tabungan", label: "Tabungan" },
-                    { value: "self_reward", label: "Self Reward" },
-                    { value: "sedekah", label: "Sedekah" },
-                  ] as const).map(opt => (
-                    <button key={opt.value} type="button"
-                      onClick={() => setPilihDompet(opt.value)}
-                      className={cn("rounded-lg border px-3 py-2 text-sm font-medium",
-                        pilihDompet === opt.value
-                          ? "bg-indigo-100 text-indigo-700 border-indigo-300"
-                          : "border-slate-200 text-slate-500 hover:bg-slate-50")}>
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="flex justify-end gap-2 pt-1">
-                <Button variant="outline" onClick={() => setPendingBeli(null)}>Batal</Button>
-                <Button onClick={confirmBeli}>Konfirmasi</Button>
-              </div>
-            </div>
-          )}
         </DialogContent>
       </Dialog>
     </div>

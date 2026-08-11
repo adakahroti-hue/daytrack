@@ -31,7 +31,7 @@ export function useCreateKeranjang() {
 export function useUpdateKeranjang() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { nama_barang?: string; harga?: number; tanggal?: string } }) =>
+    mutationFn: ({ id, data }: { id: string; data: { nama_barang?: string; harga?: number; tanggal?: string; dompet?: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" } }) =>
       updateKeranjang(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["keranjang"] })
@@ -52,7 +52,7 @@ export function useDeleteKeranjang() {
 export function useBeliKeranjang() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, dompet }: { id: string; dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" }) => beliKeranjang(id, dompet),
+    mutationFn: (id: string) => beliKeranjang(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["keranjang"] })
       queryClient.invalidateQueries({ queryKey: ["arus-kas"] })

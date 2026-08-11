@@ -9,6 +9,7 @@ const keranjangSchema = z.object({
   nama_barang: z.string().min(1, "Nama barang wajib diisi"),
   harga: z.number().int().nonnegative(),
   status: z.enum(["belum", "sudah"]).default("belum"),
+  dompet: z.enum(["kebutuhan", "tabungan", "self_reward", "sedekah"]).default("kebutuhan"),
 })
 
 export type KeranjangFormData = z.infer<typeof keranjangSchema>
@@ -45,6 +46,7 @@ export async function upsertKeranjang(formData: KeranjangFormData) {
     nama_barang: validated.nama_barang,
     harga: validated.harga,
     status: validated.status,
+    dompet: validated.dompet,
   }
 
   let data, error
@@ -72,6 +74,7 @@ export async function createKeranjang(formData: KeranjangFormData) {
     nama_barang: validated.nama_barang,
     harga: validated.harga,
     status: validated.status,
+    dompet: validated.dompet,
   }
   const { data, error } = await supabase.from("keranjang").insert(insertData).select().single()
   if (error) throw new Error(error.message)
@@ -109,7 +112,7 @@ export async function getKeranjangRange(startDate: string, endDate: string) {
   if (!user) throw new Error("Unauthorized")
   const { data, error } = await supabase
     .from("keranjang")
-    .select("id, user_id, tanggal, nama_barang, harga, status, created_at")
+    .select("id, user_id, tanggal, nama_barang, harga, status, dompet, created_at")
     .eq("user_id", user.id)
     .gte("tanggal", startDate)
     .lte("tanggal", endDate)
@@ -123,14 +126,14 @@ export async function getKeranjangRange(startDate: string, endDate: string) {
  *  - pindah ke arus_kas sebagai uang_keluar (nominal = harga, alasan = nama_barang)
  *  - hapus baris keranjang (langsung hilang dari tabel keranjang)
  */
-export async function beliKeranjang(id: string, dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" = "kebutuhan") {
+export async function beliKeranjang(id: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
 
   const { data: item, error: fetchErr } = await supabase
     .from("keranjang")
-    .select("id, tanggal, nama_barang, harga")
+    .select("id, tanggal, nama_barang, harga, dompet")
     .eq("id", id)
     .eq("user_id", user.id)
     .single()
@@ -138,7 +141,9 @@ export async function beliKeranjang(id: string, dompet: "kebutuhan" | "tabungan"
   if (fetchErr) throw new Error(fetchErr.message)
   if (!item) throw new Error("Item keranjang tidak ditemukan")
 
-  // 1. Insert ke arus_kas (uang_keluar) dengan dompet sumber dana
+  const dompet = (item.dompet as "kebutuhan" | "tabungan" | "self_reward" | "sedekah") || "kebutuhan"
+
+  // 1. Insert ke arus_kas (uang_keluar) dengan dompet sumber dana dari baris keranjang
   const { error: insertErr } = await supabase.from("arus_kas").insert({
     user_id: user.id,
     tanggal: item.tanggal,
