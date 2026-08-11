@@ -282,9 +282,9 @@ export default function ArusKasPage() {
         </DropdownMenu>
 
         {targetBelanja && (
-          <p className="text-[11px] text-slate-500 flex items-center gap-1 ml-auto">
-            <ShoppingCart className="h-3 w-3 text-slate-400" />
-            Butuh <span className="font-semibold text-slate-700 tabular-nums">{formatRupiah(butuhLagi)}</span> lagi untuk membeli <span className="font-medium text-slate-700">{targetBelanja.nama_barang}</span>
+          <p className="text-sm text-slate-500 flex items-center gap-1.5 ml-auto">
+            <ShoppingCart className="h-3.5 w-3.5 text-slate-400" />
+            Butuh <span className="font-bold text-slate-800 tabular-nums">{formatRupiah(butuhLagi)}</span> lagi untuk membeli <span className="font-semibold text-slate-700">{targetBelanja.nama_barang}</span>
           </p>
         )}
       </div>
