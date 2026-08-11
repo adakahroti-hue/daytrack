@@ -201,10 +201,9 @@ export default function ArusKasPage() {
         {alokasi.map((item) => (
           <div key={item.label} className={cn("rounded-xl border bg-white p-4", TABLE_BORDER)}>
             <p className={cn("text-xs font-semibold uppercase tracking-wide flex items-center gap-1", item.text)}>
-              {item.label}
+              {item.label} <span className="tabular-nums">{item.persen}%</span>
             </p>
             <p className="mt-1 text-lg font-bold text-slate-800 tabular-nums">{formatRupiah(item.nilai)}</p>
-            <p className={cn("mt-0.5 text-[11px] font-semibold tabular-nums", item.text)}>{item.persen}%</p>
           </div>
         ))}
       </div>
