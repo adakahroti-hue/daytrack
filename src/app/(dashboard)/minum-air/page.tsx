@@ -186,7 +186,7 @@ export default function MinumAirPage() {
               </th>
               <th className={cn('px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[90px] dt-col-stick sm:sticky sm:left-[100px] sm:z-30 sm:bg-white', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
-                  <CalendarDays className="h-3.5 w-3.5 text-green-500" />
+                  <CalendarDays className="h-3.5 w-3.5 text-blue-500" />
                   Hari
                 </div>
               </th>
