@@ -2,14 +2,9 @@
 
 import { useMemo } from 'react'
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
   Tooltip,
   ResponsiveContainer,
   Cell,
-  LabelList,
   PieChart,
   Pie,
 } from 'recharts'
@@ -32,8 +27,8 @@ interface SholatAnalyticsProps {
   alasanLabels: Record<string, string>
 }
 
-// Warna hitam pekat untuk diagram batang (seragam)
-const BAR_COLOR = '#0F172A' // slate-900 — hitam pekat
+// Warna hitam pekat untuk diagram batang (seragam) — sudah tidak dipakai setelah migrasi ke pie
+// const BAR_COLOR = '#0F172A' // slate-900 — hitam pekat
 
 const PASTEL_DONUT_COLORS = [
   '#FDA4AF',
@@ -263,27 +258,8 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
   const hasRatingData = ratingStats.some(r => r.hasData)
   const hasReasonData = reasonStats.length > 0
 
-  // Label "X.X ★" di ujung batang rating (inline seperti referensi)
-  const renderRatingLabel = (props: any) => {
-    const { x, y, width, height, index } = props
-    const entry = ratingStats[index]
-    if (!entry) return null
-    const lx = (x ?? 0) + (width ?? 0) + 6
-    const ly = (y ?? 0) + (height ?? 0) / 2
-    if (!entry.hasData) {
-      return (
-        <text x={lx} y={ly} dy={3} fontSize={11} fill="#94A3B8">
-          —
-        </text>
-      )
-    }
-    return (
-      <text x={lx} y={ly} dy={3} fontSize={11} fontWeight={600}>
-        <tspan fill="#475569">{entry.average.toFixed(1)}</tspan>
-        <tspan fill="#F59E0B" dx={3}>★</tspan>
-      </text>
-    )
-  }
+  // Label "X.X ★" di ujung batang rating (inline seperti referensi) — sudah tidak dipakai setelah migrasi ke pie
+  // const renderRatingLabel = (props: any) => { ... }
 
   return (
     <section className="space-y-4" aria-label="Analytics sholat">
@@ -307,29 +283,47 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
           insightTone="red"
         >
           {hasMissedData ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={missedStats} margin={{ top: 24, right: 8, left: 8, bottom: 0 }} barCategoryGap="28%">
-                <XAxis
-                  dataKey="name"
-                  tick={{ fontSize: 11, fill: '#64748B' }}
-                  axisLine={{ stroke: '#E2E8F0' }}
-                  tickLine={false}
-                  interval={0}
-                />
-                <Tooltip content={<MissedTooltip />} cursor={{ fill: 'rgba(148,163,184,0.08)' }} />
-                <Bar dataKey="percent" radius={0} maxBarSize={44} isAnimationActive animationDuration={500}>
-                  {missedStats.map((entry, i) => (
-                    <Cell key={entry.key} fill={BAR_COLOR} className="dark:fill-slate-200" />
-                  ))}
-                  <LabelList
-                    dataKey="percent"
-                    position="top"
-                    formatter={(v: number) => `${v}%`}
-                    style={{ fontSize: 11, fill: '#475569', fontWeight: 600 }}
-                  />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="w-full sm:w-[46%] min-w-[150px]">
+                <ResponsiveContainer width="100%" height={190}>
+                  <PieChart>
+                    <Tooltip content={<MissedTooltip />} />
+                    <Pie
+                      data={missedStats}
+                      dataKey="percent"
+                      nameKey="name"
+                      innerRadius={0}
+                      outerRadius={78}
+                      paddingAngle={2}
+                      strokeWidth={2}
+                      stroke="#ffffff"
+                      labelLine={false}
+                      label={renderDonutLabel}
+                      isAnimationActive
+                      animationDuration={500}
+                    >
+                      {missedStats.map((entry, i) => (
+                        <Cell key={entry.key} fill={PASTEL_DONUT_COLORS[i % PASTEL_DONUT_COLORS.length]} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="w-full sm:flex-1 space-y-1.5 min-w-0">
+                {missedStats.map((r, i) => (
+                  <div key={r.key} className="flex items-center gap-2 text-xs min-w-0">
+                    <span
+                      className="h-2.5 w-2.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: PASTEL_DONUT_COLORS[i % PASTEL_DONUT_COLORS.length] }}
+                    />
+                    <span className="text-slate-600 dark:text-slate-300 truncate">{r.name}</span>
+                    <span className="ml-auto font-medium text-slate-700 dark:text-slate-200 whitespace-nowrap">
+                      {r.percent}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           ) : (
             <EmptyState />
           )}
@@ -342,35 +336,47 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
           insightTone="amber"
         >
           {hasRatingData ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart
-                data={ratingStats}
-                layout="vertical"
-                margin={{ top: 4, right: 48, left: 4, bottom: 4 }}
-                barCategoryGap="22%"
-              >
-                <XAxis type="number" domain={[0, 5]} hide />
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  width={64}
-                  tick={{ fontSize: 11, fill: '#64748B' }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <Tooltip content={<RatingTooltip />} cursor={{ fill: 'rgba(148,163,184,0.08)' }} />
-                <Bar dataKey="average" radius={0} maxBarSize={16} isAnimationActive animationDuration={500}>
-                  {ratingStats.map((entry, i) => (
-                    <Cell
-                      key={entry.key}
-                      fill={entry.hasData ? BAR_COLOR : '#E2E8F0'}
-                      className={entry.hasData ? 'dark:fill-slate-200' : undefined}
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="w-full sm:w-[46%] min-w-[150px]">
+                <ResponsiveContainer width="100%" height={190}>
+                  <PieChart>
+                    <Tooltip content={<RatingTooltip />} />
+                    <Pie
+                      data={ratingStats.filter(r => r.hasData)}
+                      dataKey="average"
+                      nameKey="name"
+                      innerRadius={0}
+                      outerRadius={78}
+                      paddingAngle={2}
+                      strokeWidth={2}
+                      stroke="#ffffff"
+                      labelLine={false}
+                      label={renderDonutLabel}
+                      isAnimationActive
+                      animationDuration={500}
+                    >
+                      {ratingStats.filter(r => r.hasData).map((entry, i) => (
+                        <Cell key={entry.key} fill={PASTEL_DONUT_COLORS[i % PASTEL_DONUT_COLORS.length]} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="w-full sm:flex-1 space-y-1.5 min-w-0">
+                {ratingStats.map((r, i) => (
+                  <div key={r.key} className="flex items-center gap-2 text-xs min-w-0">
+                    <span
+                      className="h-2.5 w-2.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: r.hasData ? PASTEL_DONUT_COLORS[i % PASTEL_DONUT_COLORS.length] : '#E2E8F0' }}
                     />
-                  ))}
-                  <LabelList dataKey="average" position="right" content={renderRatingLabel} />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+                    <span className="text-slate-600 dark:text-slate-300 truncate">{r.name}</span>
+                    <span className="ml-auto font-medium text-slate-700 dark:text-slate-200 whitespace-nowrap">
+                      {r.hasData ? `${r.average.toFixed(1)} ★` : '—'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           ) : (
             <EmptyState />
           )}

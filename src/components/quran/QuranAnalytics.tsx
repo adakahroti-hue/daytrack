@@ -2,13 +2,9 @@
 
 import { useMemo } from 'react'
 import {
-  BarChart,
-  Bar,
-  XAxis,
   Tooltip,
   ResponsiveContainer,
   Cell,
-  LabelList,
   PieChart,
   Pie,
 } from 'recharts'
@@ -35,15 +31,6 @@ interface QuranAnalyticsProps {
   logMap: Record<string, Record<string, QuranLogEntry | undefined>>
   columns: readonly QuranColumn[]
 }
-
-const PASTEL_BAR_COLORS = [
-  '#1E293B',
-  '#334155',
-  '#475569',
-  '#64748B',
-  '#94A3B8',
-  '#CBD5E1',
-]
 
 const PASTEL_DONUT_COLORS = [
   '#FDA4AF',
@@ -251,29 +238,47 @@ export function QuranAnalytics({ logMap, columns }: QuranAnalyticsProps) {
           insightTone="red"
         >
           {hasMissedData ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={missedStats} margin={{ top: 24, right: 8, left: 8, bottom: 0 }} barCategoryGap="28%">
-                <XAxis
-                  dataKey="name"
-                  tick={{ fontSize: 11, fill: '#64748B' }}
-                  axisLine={{ stroke: '#E2E8F0' }}
-                  tickLine={false}
-                  interval={0}
-                />
-                <Tooltip content={<MissedTooltip />} cursor={{ fill: 'rgba(148,163,184,0.08)' }} />
-                <Bar dataKey="percent" radius={[6, 6, 0, 0]} maxBarSize={44} isAnimationActive animationDuration={500}>
-                  {missedStats.map((entry, i) => (
-                    <Cell key={entry.key} fill={PASTEL_BAR_COLORS[i % PASTEL_BAR_COLORS.length]} />
-                  ))}
-                  <LabelList
-                    dataKey="percent"
-                    position="top"
-                    formatter={(v: number) => `${v}%`}
-                    style={{ fontSize: 11, fill: '#475569', fontWeight: 600 }}
-                  />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="w-full sm:w-[46%] min-w-[150px]">
+                <ResponsiveContainer width="100%" height={190}>
+                  <PieChart>
+                    <Tooltip content={<MissedTooltip />} />
+                    <Pie
+                      data={missedStats}
+                      dataKey="percent"
+                      nameKey="name"
+                      innerRadius={0}
+                      outerRadius={78}
+                      paddingAngle={2}
+                      strokeWidth={2}
+                      stroke="#ffffff"
+                      labelLine={false}
+                      label={renderDonutLabel}
+                      isAnimationActive
+                      animationDuration={500}
+                    >
+                      {missedStats.map((entry, i) => (
+                        <Cell key={entry.key} fill={PASTEL_DONUT_COLORS[i % PASTEL_DONUT_COLORS.length]} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="w-full sm:flex-1 space-y-1.5 min-w-0">
+                {missedStats.map((r, i) => (
+                  <div key={r.key} className="flex items-center gap-2 text-xs min-w-0">
+                    <span
+                      className="h-2.5 w-2.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: PASTEL_DONUT_COLORS[i % PASTEL_DONUT_COLORS.length] }}
+                    />
+                    <span className="text-slate-600 dark:text-slate-300 truncate">{r.name}</span>
+                    <span className="ml-auto font-medium text-slate-700 dark:text-slate-200 whitespace-nowrap">
+                      {r.percent}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           ) : (
             <EmptyState />
           )}
