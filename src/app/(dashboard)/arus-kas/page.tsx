@@ -282,6 +282,9 @@ export default function ArusKasPage() {
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[160px] sm:min-w-[220px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><MessageSquare className="h-3.5 w-3.5 text-indigo-500" /> Alasan</div>
               </th>
+              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[140px] sm:min-w-[160px]", TABLE_BORDER)}>
+                <div className="flex items-center justify-center gap-1"><Wallet className="h-3.5 w-3.5 text-indigo-500" /> Dompet</div>
+              </th>
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><Wrench className="h-3.5 w-3.5 text-indigo-500" /> Aksi</div>
               </th>
@@ -289,11 +292,11 @@ export default function ArusKasPage() {
           </thead>
           <tbody className={cn(effectiveLocked && "pointer-events-none select-none")}>
             {isLoading ? (
-              <tr><td colSpan={5} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
+              <tr><td colSpan={6} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
             ) : error ? (
-              <tr><td colSpan={5} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
+              <tr><td colSpan={6} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
             ) : entries.length === 0 ? (
-              <tr><td colSpan={5} className="text-center py-12 text-slate-400 text-sm">Belum ada catatan arus kas pada periode ini.</td></tr>
+              <tr><td colSpan={6} className="text-center py-12 text-slate-400 text-sm">Belum ada catatan arus kas pada periode ini.</td></tr>
             ) : (
               entries.map((entry, rowIdx) => {
                 const date = new Date(entry.tanggal + "T00:00:00")
@@ -320,14 +323,21 @@ export default function ArusKasPage() {
                       {isMasuk ? "+" : "−"}{formatRupiah(entry.nominal).replace("Rp ", "")}
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2 border-r", TABLE_BORDER)}>
-                      <div className="flex flex-col gap-1">
-                        <span className="text-slate-800 whitespace-normal break-words leading-snug">{entry.alasan || "-"}</span>
-                        {!isMasuk && entry.dompet && (
-                          <span className="inline-flex w-fit items-center gap-1 rounded-full bg-indigo-50 text-indigo-700 px-2 py-0.5 text-[10px] font-medium border border-indigo-200">
-                            Dompet: {DOMPET_OPTIONS.find(d => d.value === entry.dompet)?.label}
-                          </span>
-                        )}
-                      </div>
+                      <span className="text-slate-800 whitespace-normal break-words leading-snug">{entry.alasan || "-"}</span>
+                    </td>
+                    <td className={cn("px-2 sm:px-3 py-2 text-center border-r", TABLE_BORDER)}>
+                      {isMasuk ? (
+                        <span className="text-slate-400">-</span>
+                      ) : (
+                        <span className={cn("inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border",
+                          entry.dompet === "kebutuhan" && "bg-emerald-50 text-emerald-700 border-emerald-200",
+                          entry.dompet === "tabungan" && "bg-sky-50 text-sky-700 border-sky-200",
+                          entry.dompet === "self_reward" && "bg-amber-50 text-amber-700 border-amber-200",
+                          entry.dompet === "sedekah" && "bg-violet-50 text-violet-700 border-violet-200",
+                          !entry.dompet && "bg-slate-100 text-slate-500 border-slate-200")}>
+                          {entry.dompet ? DOMPET_OPTIONS.find(d => d.value === entry.dompet)?.label : "-"}
+                        </span>
+                      )}
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
                       <div className="flex items-center justify-center gap-1 flex-wrap">
