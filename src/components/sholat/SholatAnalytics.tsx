@@ -32,15 +32,8 @@ interface SholatAnalyticsProps {
   alasanLabels: Record<string, string>
 }
 
-// Palet hitam untuk diagram batang
-const PASTEL_BAR_COLORS = [
-  '#1E293B', // slate-800
-  '#334155', // slate-700
-  '#475569', // slate-600
-  '#1E293B', // slate-800
-  '#334155', // slate-700
-  '#475569', // slate-600
-]
+// Warna hitam pekat untuk diagram batang (seragam)
+const BAR_COLOR = '#0F172A' // slate-900 — hitam pekat
 
 const PASTEL_DONUT_COLORS = [
   '#FDA4AF',
@@ -324,9 +317,9 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
                   interval={0}
                 />
                 <Tooltip content={<MissedTooltip />} cursor={{ fill: 'rgba(148,163,184,0.08)' }} />
-                <Bar dataKey="percent" radius={[6, 6, 0, 0]} maxBarSize={44} isAnimationActive animationDuration={500}>
+                <Bar dataKey="percent" radius={0} maxBarSize={44} isAnimationActive animationDuration={500}>
                   {missedStats.map((entry, i) => (
-                    <Cell key={entry.key} fill={PASTEL_BAR_COLORS[i % PASTEL_BAR_COLORS.length]} />
+                    <Cell key={entry.key} fill={BAR_COLOR} className="dark:fill-slate-200" />
                   ))}
                   <LabelList
                     dataKey="percent"
@@ -366,11 +359,12 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
                   tickLine={false}
                 />
                 <Tooltip content={<RatingTooltip />} cursor={{ fill: 'rgba(148,163,184,0.08)' }} />
-                <Bar dataKey="average" radius={[0, 6, 6, 0]} maxBarSize={16} isAnimationActive animationDuration={500}>
+                <Bar dataKey="average" radius={0} maxBarSize={16} isAnimationActive animationDuration={500}>
                   {ratingStats.map((entry, i) => (
                     <Cell
                       key={entry.key}
-                      fill={entry.hasData ? PASTEL_BAR_COLORS[i % PASTEL_BAR_COLORS.length] : '#E2E8F0'}
+                      fill={entry.hasData ? BAR_COLOR : '#E2E8F0'}
+                      className={entry.hasData ? 'dark:fill-slate-200' : undefined}
                     />
                   ))}
                   <LabelList dataKey="average" position="right" content={renderRatingLabel} />
