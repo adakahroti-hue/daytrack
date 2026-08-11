@@ -206,6 +206,8 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
         let sum = 0
         let count = 0
         for (const row of rows) {
+          // Hanya hitung rating untuk sholat yang benar-benar dilakukan (true)
+          if (row[`sholat_${col.key}`] !== true) continue
           const q = row[`kualitas_${col.key}`]
           if (typeof q === 'number' && q >= 1 && q <= 5) {
             sum += q
