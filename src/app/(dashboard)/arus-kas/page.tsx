@@ -13,7 +13,7 @@ import {
   endOfYear,
 } from "date-fns"
 import { id } from "date-fns/locale"
-import { Calendar, CalendarDays, Wallet, ArrowDownLeft, ArrowUpRight, Trash2, Plus, Pencil, Banknote, MessageSquare, Wrench, PieChart } from "lucide-react"
+import { Calendar, CalendarDays, Wallet, ArrowDownLeft, ArrowUpRight, Trash2, Plus, Pencil, Banknote, MessageSquare, Wrench } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -197,30 +197,21 @@ export default function ArusKasPage() {
       </div>
 
       {/* Alokasi Uang Masuk (otomatis dari total uang masuk periode ini) */}
-      <div className={cn("rounded-xl border bg-white p-4", TABLE_BORDER)}>
-        <div className="flex items-center justify-between gap-2 mb-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600 flex items-center gap-1">
-            <PieChart className="h-4 w-4" /> Alokasi Uang Masuk
-          </p>
-          <p className="text-xs text-slate-500">
-            Total masuk: <span className="font-semibold text-slate-700">{formatRupiah(ringkasan.masuk)}</span>
-          </p>
-        </div>
-        <div className="space-y-2.5">
-          {alokasi.map((item) => (
-            <div key={item.label}>
-              <div className="flex items-center justify-between gap-2 mb-1">
-                <span className="text-xs font-medium text-slate-700">{item.label}</span>
-                <span className={cn("text-xs font-semibold tabular-nums", item.text)}>
-                  {item.persen}% · {formatRupiah(item.nilai)}
-                </span>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {alokasi.map((item) => (
+          <div key={item.label} className={cn("rounded-xl border bg-white p-4", TABLE_BORDER)}>
+            <p className={cn("text-xs font-semibold uppercase tracking-wide flex items-center gap-1", item.text)}>
+              {item.label}
+            </p>
+            <p className="mt-1 text-lg font-bold text-slate-800 tabular-nums">{formatRupiah(item.nilai)}</p>
+            <div className="mt-2 flex items-center gap-1.5">
+              <div className="h-1.5 flex-1 rounded-full bg-slate-100 overflow-hidden">
+                <div className={cn("h-full rounded-full", item.bar)} style={{ width: `${item.persen}%` }} />
               </div>
-              <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
-                <div className={cn("h-full rounded-full transition-all", item.bar)} style={{ width: `${item.persen}%` }} />
-              </div>
+              <span className={cn("text-[11px] font-semibold tabular-nums", item.text)}>{item.persen}%</span>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
 
       {/* Tabel */}
