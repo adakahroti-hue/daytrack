@@ -11,7 +11,7 @@ import {
   endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, CalendarDays, Smile, Check, X, Trash2, Plus, Pencil } from 'lucide-react'
+import { Calendar, CalendarDays, Smile, Check, X, Trash2, Plus, Pencil, Wrench } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -176,15 +176,17 @@ export default function KesenanganPage() {
                   Kesenangan yang Ditunda
                 </div>
               </th>
-              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[96px] sm:min-w-[110px]', TABLE_BORDER)}>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[96px] sm:min-w-[110px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
                   <Check className="h-3.5 w-3.5 text-purple-500" />
                   Status
                 </div>
               </th>
-              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[56px] sm:min-w-[64px]', TABLE_BORDER)}>
-                <span className="sr-only">Hapus</span>
-                <Trash2 className="h-3.5 w-3.5 text-slate-400 mx-auto" />
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
+                <div className="flex items-center justify-center gap-1">
+                  <Wrench className="h-3.5 w-3.5 text-purple-500" />
+                  Aksi
+                </div>
               </th>
             </tr>
           </thead>
@@ -264,16 +266,17 @@ export default function KesenanganPage() {
                         </DropdownMenu>
                       </div>
                     </td>
-                    <td className={cn('px-2 sm:px-3 py-2 text-center', TABLE_BORDER)}>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Hapus kesenangan"
-                        onClick={() => handleDeleteEntry(entry.id)}
-                        className="h-8 w-8 text-slate-400 hover:text-destructive hover:bg-destructive/10"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                    <td className={cn('px-2 sm:px-3 py-2', TABLE_BORDER)}>
+                      <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                        <Button size="sm" aria-label="Edit kesenangan" onClick={() => openEdit(entry)}
+                          className="bg-slate-600 hover:bg-slate-700 text-white gap-1">
+                          <Pencil className="h-3.5 w-3.5" /> Edit
+                        </Button>
+                        <Button size="sm" aria-label="Hapus kesenangan" onClick={() => handleDeleteEntry(entry.id)}
+                          className="bg-red-600 hover:bg-red-700 text-white gap-1">
+                          <Trash2 className="h-3.5 w-3.5" /> Hapus
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 )
