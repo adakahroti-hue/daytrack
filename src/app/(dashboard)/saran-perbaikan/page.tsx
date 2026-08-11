@@ -221,25 +221,23 @@ export default function SaranPerbaikanPage() {
                       <span className="text-slate-800 whitespace-normal break-words leading-snug">{entry.saran}</span>
                     </td>
                     <td className={cn('px-2 sm:px-3 py-2', TABLE_BORDER)}>
-                      <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                      <div className="flex items-center justify-center gap-1 flex-wrap">
                         <Button
-                          variant="default"
                           size="sm"
                           aria-label="Edit masukan"
                           onClick={() => openEdit(entry)}
-                          className="h-7 bg-slate-600 hover:bg-slate-700 text-white text-xs px-2"
+                          className="h-6 gap-1 bg-slate-600 hover:bg-slate-700 text-white text-[11px] px-1.5"
                         >
-                          <Pencil className="h-3.5 w-3.5 mr-1" />
+                          <Pencil className="h-3 w-3" />
                           Edit
                         </Button>
                         <Button
-                          variant="default"
                           size="sm"
                           aria-label="Hapus masukan"
                           onClick={() => handleDeleteEntry(entry.id)}
-                          className="h-7 bg-red-600 hover:bg-red-700 text-white text-xs px-2"
+                          className="h-6 gap-1 bg-red-600 hover:bg-red-700 text-white text-[11px] px-1.5"
                         >
-                          <Trash2 className="h-3.5 w-3.5 mr-1" />
+                          <Trash2 className="h-3 w-3" />
                           Hapus
                         </Button>
                       </div>
