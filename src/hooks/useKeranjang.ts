@@ -52,7 +52,7 @@ export function useDeleteKeranjang() {
 export function useBeliKeranjang() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (id: string) => beliKeranjang(id),
+    mutationFn: ({ id, dompet }: { id: string; dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" }) => beliKeranjang(id, dompet),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["keranjang"] })
       queryClient.invalidateQueries({ queryKey: ["arus-kas"] })

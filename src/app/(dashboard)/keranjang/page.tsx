@@ -103,6 +103,8 @@ export default function KeranjangPage() {
 
   const [editState, setEditState] = useState<EditState | null>(null)
   const [hargaInput, setHargaInput] = useState("")
+  const [pendingBeli, setPendingBeli] = useState<{ id: string; nama: string; harga: number } | null>(null)
+  const [pilihDompet, setPilihDompet] = useState<"kebutuhan" | "tabungan" | "self_reward" | "sedekah">("kebutuhan")
 
   const entries = useMemo(() => {
     return [...(logs as KeranjangEntry[])].sort((a, b) =>
@@ -145,8 +147,15 @@ export default function KeranjangPage() {
     setEditState(null)
   }
 
-  const handleBeli = async (id: string) => {
-    await beliKeranjang.mutateAsync(id)
+  const handleBeli = (entry: KeranjangEntry) => {
+    setPilihDompet("kebutuhan")
+    setPendingBeli({ id: entry.id, nama: entry.nama_barang, harga: entry.harga })
+  }
+
+  const confirmBeli = async () => {
+    if (!pendingBeli) return
+    await beliKeranjang.mutateAsync({ id: pendingBeli.id, dompet: pilihDompet })
+    setPendingBeli(null)
   }
 
   const handleDelete = async (id: string) => {
@@ -215,7 +224,7 @@ export default function KeranjangPage() {
                     <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
                       <div className="flex items-center justify-center gap-1 flex-wrap">
                         {isBelum ? (
-                          <Button size="sm" aria-label="Tandai sudah dibeli" onClick={() => handleBeli(entry.id)}
+                          <Button size="sm" aria-label="Tandai sudah dibeli" onClick={() => handleBeli(entry)}
                             className="h-6 gap-1 bg-green-600 hover:bg-green-700 text-white text-[11px] px-1.5">
                             <Check className="h-3 w-3" /> Sudah
                           </Button>
@@ -279,6 +288,46 @@ export default function KeranjangPage() {
               <Button onClick={handleSave} disabled={!editState?.nama_barang.trim() || parseRupiah(hargaInput) <= 0}>Simpan</Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Popup pilih dompet saat klik "Sudah" */}
+      <Dialog open={!!pendingBeli} onOpenChange={(open) => !open && setPendingBeli(null)}>
+        <DialogContent className="max-w-[92vw] sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Uang keluar dari dompet mana?</DialogTitle>
+          </DialogHeader>
+          {pendingBeli && (
+            <div className="space-y-4">
+              <p className="text-sm text-slate-600">
+                <span className="font-medium text-slate-800">{pendingBeli.nama}</span> · {formatRupiah(pendingBeli.harga)} akan dicatat sebagai uang keluar di Arus Kas.
+              </p>
+              <div className="space-y-1.5">
+                <Label>Sumber Dana (Dompet)</Label>
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  {([
+                    { value: "kebutuhan", label: "Kebutuhan" },
+                    { value: "tabungan", label: "Tabungan" },
+                    { value: "self_reward", label: "Self Reward" },
+                    { value: "sedekah", label: "Sedekah" },
+                  ] as const).map(opt => (
+                    <button key={opt.value} type="button"
+                      onClick={() => setPilihDompet(opt.value)}
+                      className={cn("rounded-lg border px-3 py-2 text-sm font-medium",
+                        pilihDompet === opt.value
+                          ? "bg-indigo-100 text-indigo-700 border-indigo-300"
+                          : "border-slate-200 text-slate-500 hover:bg-slate-50")}>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-1">
+                <Button variant="outline" onClick={() => setPendingBeli(null)}>Batal</Button>
+                <Button onClick={confirmBeli}>Konfirmasi</Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

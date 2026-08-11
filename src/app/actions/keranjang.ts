@@ -123,7 +123,7 @@ export async function getKeranjangRange(startDate: string, endDate: string) {
  *  - pindah ke arus_kas sebagai uang_keluar (nominal = harga, alasan = nama_barang)
  *  - hapus baris keranjang (langsung hilang dari tabel keranjang)
  */
-export async function beliKeranjang(id: string) {
+export async function beliKeranjang(id: string, dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" = "kebutuhan") {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
@@ -138,13 +138,14 @@ export async function beliKeranjang(id: string) {
   if (fetchErr) throw new Error(fetchErr.message)
   if (!item) throw new Error("Item keranjang tidak ditemukan")
 
-  // 1. Insert ke arus_kas (uang_keluar)
+  // 1. Insert ke arus_kas (uang_keluar) dengan dompet sumber dana
   const { error: insertErr } = await supabase.from("arus_kas").insert({
     user_id: user.id,
     tanggal: item.tanggal,
     kategori: "uang_keluar",
     nominal: item.harga,
     alasan: item.nama_barang,
+    dompet,
   })
   if (insertErr) throw new Error(insertErr.message)
 
