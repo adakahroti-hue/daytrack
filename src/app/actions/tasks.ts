@@ -23,7 +23,7 @@ export async function createTask(formData: TaskFormData) {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Unauthorized")
+  if (!user) return { data: null, error: "Unauthorized" as string }
 
   const validated = taskSchema.parse(formData)
 
@@ -41,7 +41,7 @@ export async function createTask(formData: TaskFormData) {
     .select()
     .single()
 
-  if (error) throw new Error(error.message)
+  if (error) return { data: null, error: error.message as string }
 
   revalidatePath("/tugas/hari-ini")
   revalidatePath("/tugas/semua")
