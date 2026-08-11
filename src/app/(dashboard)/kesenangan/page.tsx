@@ -230,10 +230,7 @@ export default function KesenanganPage() {
                       </span>
                     </td>
                     <td className={cn('px-2 sm:px-3 py-2 border-r', TABLE_BORDER)}>
-                      <button type="button" onClick={() => openEdit(entry)} className="w-full text-left group">
-                        <span className="text-slate-800 whitespace-normal break-words leading-snug group-hover:text-blue-700">{entry.kesenangan}</span>
-                        <Pencil className="inline-block h-3 w-3 ml-1.5 text-slate-300 group-hover:text-blue-500 align-middle" />
-                      </button>
+                      <span className="text-slate-800 whitespace-normal break-words leading-snug">{entry.kesenangan}</span>
                     </td>
                     <td className={cn('px-2 sm:px-3 py-2 text-center', TABLE_BORDER)}>
                       <div className="flex items-center justify-center min-h-[36px]">
