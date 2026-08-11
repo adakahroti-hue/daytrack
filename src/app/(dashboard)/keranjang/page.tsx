@@ -253,7 +253,11 @@ export default function KeranjangPage() {
               <Label htmlFor="k-harga">Harga (Rupiah)</Label>
               <Input id="k-harga" type="text" inputMode="numeric" placeholder="Rp 25.000"
                 value={hargaInput}
-                onChange={(e) => { setHargaInput(e.target.value); setEditState(prev => prev ? { ...prev, harga: parseRupiah(e.target.value) } : prev) }} />
+                onChange={(e) => {
+                  const num = parseRupiah(e.target.value)
+                  setEditState(prev => prev ? { ...prev, harga: num } : prev)
+                  setHargaInput(num > 0 ? formatRupiah(num) : '')
+                }} />
             </div>
             <div className="flex justify-end gap-2 pt-1">
               <Button variant="outline" onClick={() => setEditState(null)}>Batal</Button>

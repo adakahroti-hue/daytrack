@@ -276,7 +276,11 @@ export default function ArusKasPage() {
               <Label htmlFor="ak-nominal">Nominal (Rupiah)</Label>
               <Input id="ak-nominal" type="text" inputMode="numeric" placeholder="Rp 50.000"
                 value={nominalInput}
-                onChange={(e) => { setNominalInput(e.target.value); setEditState(prev => prev ? { ...prev, nominal: parseRupiah(e.target.value) } : prev) }} />
+                onChange={(e) => {
+                  const num = parseRupiah(e.target.value)
+                  setEditState(prev => prev ? { ...prev, nominal: num } : prev)
+                  setNominalInput(num > 0 ? formatRupiah(num) : '')
+                }} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="ak-alasan">
