@@ -182,14 +182,14 @@ export default function KeranjangPage() {
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[64px] sm:min-w-[90px] dt-col-stick sm:sticky sm:left-[100px] sm:z-30 sm:bg-white", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><CalendarDays className="h-3.5 w-3.5 text-indigo-500" /> Hari</div>
               </th>
+              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[140px] sm:min-w-[160px]", TABLE_BORDER)}>
+                <div className="flex items-center justify-center gap-1"><Wallet className="h-3.5 w-3.5 text-indigo-500" /> Dompet</div>
+              </th>
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[160px] sm:min-w-[220px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><ShoppingCart className="h-3.5 w-3.5 text-indigo-500" /> Nama Barang</div>
               </th>
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[150px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><Banknote className="h-3.5 w-3.5 text-indigo-500" /> Harga</div>
-              </th>
-              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[140px] sm:min-w-[160px]", TABLE_BORDER)}>
-                <div className="flex items-center justify-center gap-1"><Wallet className="h-3.5 w-3.5 text-indigo-500" /> Dompet</div>
               </th>
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><Wrench className="h-3.5 w-3.5 text-indigo-500" /> Aksi</div>
@@ -218,12 +218,6 @@ export default function KeranjangPage() {
                     <td className={cn("px-2 sm:px-3 py-2 text-center border-r dt-col-stick sm:sticky sm:left-[100px] sm:z-10 sm:bg-inherit", TABLE_BORDER)}>
                       <span className={cn("inline-block px-2 py-0.5 rounded-full text-xs border font-medium", DAY_BADGE_COLORS[dayName] || "bg-slate-100 text-slate-700 border-slate-200")}>{dayName}</span>
                     </td>
-                    <td className={cn("px-2 sm:px-3 py-2 border-r", TABLE_BORDER)}>
-                      <span className="text-slate-800 whitespace-normal break-words leading-snug">{entry.nama_barang}</span>
-                    </td>
-                    <td className={cn("px-2 sm:px-3 py-2 text-center border-r font-semibold tabular-nums text-slate-700", TABLE_BORDER)}>
-                      {formatRupiah(entry.harga)}
-                    </td>
                     <td className={cn("px-2 sm:px-3 py-2 text-center border-r", TABLE_BORDER)}>
                       <span className={cn("inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border",
                         entry.dompet === "kebutuhan" && "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -232,6 +226,12 @@ export default function KeranjangPage() {
                         entry.dompet === "sedekah" && "bg-violet-50 text-violet-700 border-violet-200")}>
                         {DOMPET_OPTIONS.find(d => d.value === entry.dompet)?.label}
                       </span>
+                    </td>
+                    <td className={cn("px-2 sm:px-3 py-2 border-r", TABLE_BORDER)}>
+                      <span className="text-slate-800 whitespace-normal break-words leading-snug">{entry.nama_barang}</span>
+                    </td>
+                    <td className={cn("px-2 sm:px-3 py-2 text-center border-r font-semibold tabular-nums text-slate-700", TABLE_BORDER)}>
+                      {formatRupiah(entry.harga)}
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
                       <div className="flex items-center justify-center gap-1 flex-wrap">
