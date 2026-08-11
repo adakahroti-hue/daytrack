@@ -69,7 +69,7 @@ function AnalyticsCard({
   title: string
   subtitle?: string
   children: React.ReactNode
-  insight: string | null
+  insight: React.ReactNode | null
   insightTone: 'red' | 'amber' | 'blue'
 }) {
   const toneClass =
@@ -208,9 +208,9 @@ export function MinumAirAnalytics({ logMap, columns }: MinumAirAnalyticsProps) {
           title="Minum air terbanyak"
           insight={
             hasMissedData && topMissed && topMissed.missed > 0
-              ? `${topMissed.name} adalah waktu yang paling sering terlewat.`
+              ? <>Waktu yang paling sering terlewat adalah <b className="font-bold">{topMissed.name}</b>.</>
               : hasMissedData
-                ? 'Semua waktu minum yang tercatat sudah dilakukan. Pertahankan!'
+                ? 'Semua waktu minum yang tercatat sudah dilakukan.'
                 : null
           }
           insightTone="red"
@@ -265,7 +265,7 @@ export function MinumAirAnalytics({ logMap, columns }: MinumAirAnalyticsProps) {
         {/* ── Card 2: Alasan Terbanyak Tidak Minum ── */}
         <AnalyticsCard
           title="Alasan Tak Minum"
-          insight={topReason ? `${topReason.name} adalah alasan paling sering.` : null}
+          insight={topReason ? <>Alasan paling sering adalah <b className="font-bold">{topReason.name}</b>.</> : null}
           insightTone="blue"
         >
           {hasReasonData ? (

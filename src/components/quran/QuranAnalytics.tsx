@@ -69,7 +69,7 @@ function AnalyticsCard({
   title: string
   subtitle?: string
   children: React.ReactNode
-  insight: string | null
+  insight: React.ReactNode | null
   insightTone: 'red' | 'amber' | 'blue'
 }) {
   const toneClass =
@@ -230,9 +230,9 @@ export function QuranAnalytics({ logMap, columns }: QuranAnalyticsProps) {
           title="Baca Quran Terbanyak"
           insight={
             hasMissedData && topMissed && topMissed.missed > 0
-              ? `${topMissed.name} adalah waktu yang paling sering terlewat.`
+              ? <>Waktu yang paling sering terlewat adalah <b className="font-bold">{topMissed.name}</b>.</>
               : hasMissedData
-                ? 'Semua waktu baca yang tercatat sudah dilakukan. Pertahankan!'
+                ? 'Semua waktu baca yang tercatat sudah dilakukan.'
                 : null
           }
           insightTone="red"
@@ -287,7 +287,7 @@ export function QuranAnalytics({ logMap, columns }: QuranAnalyticsProps) {
         {/* ── Card 2: Alasan Terbanyak Tidak Baca Quran ── */}
         <AnalyticsCard
           title="Alasan Tak Baca Quran"
-          insight={topReason ? `${topReason.name} adalah alasan paling sering.` : null}
+          insight={topReason ? <>Alasan paling sering adalah <b className="font-bold">{topReason.name}</b>.</> : null}
           insightTone="blue"
         >
           {hasReasonData ? (

@@ -70,7 +70,7 @@ function AnalyticsCard({
   title: string
   subtitle?: string
   children: React.ReactNode
-  insight: string | null
+  insight: React.ReactNode | null
   insightTone: 'red' | 'amber' | 'blue'
 }) {
   const toneClass =
@@ -213,9 +213,9 @@ export function StatusAnalytics({
           subtitle={difficultySubtitle}
           insight={
             hasMissedData && topMissed && topMissed.missed > 0
-              ? `${topMissed.name} adalah hari yang paling sering ${missedNoun}.`
+              ? <>{missedNoun.charAt(0).toUpperCase() + missedNoun.slice(1)} paling sering terjadi pada hari <b className="font-bold">{topMissed.name}</b>.</>
               : hasMissedData
-                ? 'Semua yang tercatat sudah dilakukan. Pertahankan!'
+                ? 'Semua yang tercatat sudah dilakukan.'
                 : null
           }
           insightTone="red"
@@ -271,7 +271,7 @@ export function StatusAnalytics({
         <AnalyticsCard
           title={reasonTitle}
           subtitle={reasonSubtitle}
-          insight={topReason ? `${topReason.name} adalah alasan paling sering.` : null}
+          insight={topReason ? <>Alasan paling sering adalah <b className="font-bold">{topReason.name}</b>.</> : null}
           insightTone="blue"
         >
           {hasReasonData ? (
