@@ -276,7 +276,7 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
         {/* ── Card 1: Sholat Paling Sulit Dilakukan ── */}
         <AnalyticsCard
-          title="Sholat Terbanyak"
+          title="Frekuensi Sholat"
           insight={
             hasMissedData && topMissed && topMissed.missed > 0
               ? <>Sholat paling sering terlewat adalah <b className="font-bold">{topMissed.name}</b>.</>
@@ -335,7 +335,7 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
 
         {/* ── Card 2: Sholat Paling Tidak Khusyuk ── */}
         <AnalyticsCard
-          title="Sholat Terkhusyuk"
+          title="Tingkat Khusyuk"
           insight={topLowRating ? <>Sholat dengan kekhusyukan terendah adalah <b className="font-bold">{topLowRating.name}</b>.</> : null}
           insightTone="amber"
         >
