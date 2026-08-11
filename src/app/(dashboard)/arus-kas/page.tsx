@@ -174,25 +174,27 @@ export default function ArusKasPage() {
 
   return (
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
-      {/* Ringkasan */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className={cn("rounded-xl border bg-white p-4", TABLE_BORDER)}>
-          <p className="text-xs font-semibold uppercase tracking-wide text-green-600 flex items-center gap-1">
-            <ArrowUpRight className="h-4 w-4" /> Uang Masuk
-          </p>
-          <p className="mt-1 text-lg font-bold text-slate-800">{formatRupiah(ringkasan.masuk)}</p>
-        </div>
-        <div className={cn("rounded-xl border bg-white p-4", TABLE_BORDER)}>
-          <p className="text-xs font-semibold uppercase tracking-wide text-red-600 flex items-center gap-1">
-            <ArrowDownLeft className="h-4 w-4" /> Uang Keluar
-          </p>
-          <p className="mt-1 text-lg font-bold text-slate-800">{formatRupiah(ringkasan.keluar)}</p>
-        </div>
-        <div className={cn("rounded-xl border bg-white p-4", TABLE_BORDER)}>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-            <Wallet className="h-4 w-4" /> Saldo
-          </p>
-          <p className="mt-1 text-lg font-bold text-slate-800">{formatRupiah(ringkasan.saldo)}</p>
+      {/* Ringkasan (disatukan dalam 1 card) */}
+      <div className={cn("rounded-xl border bg-white p-4", TABLE_BORDER)}>
+        <div className="grid grid-cols-3 divide-x divide-slate-200">
+          <div className="px-2 text-center">
+            <p className="text-xs font-semibold uppercase tracking-wide text-green-600 flex items-center justify-center gap-1">
+              <ArrowUpRight className="h-4 w-4" /> Uang Masuk
+            </p>
+            <p className="mt-1 text-lg font-bold text-slate-800 tabular-nums">{formatRupiah(ringkasan.masuk)}</p>
+          </div>
+          <div className="px-2 text-center">
+            <p className="text-xs font-semibold uppercase tracking-wide text-red-600 flex items-center justify-center gap-1">
+              <ArrowDownLeft className="h-4 w-4" /> Uang Keluar
+            </p>
+            <p className="mt-1 text-lg font-bold text-slate-800 tabular-nums">{formatRupiah(ringkasan.keluar)}</p>
+          </div>
+          <div className="px-2 text-center">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center justify-center gap-1">
+              <Wallet className="h-4 w-4" /> Saldo
+            </p>
+            <p className="mt-1 text-lg font-bold text-slate-800 tabular-nums">{formatRupiah(ringkasan.saldo)}</p>
+          </div>
         </div>
       </div>
 
@@ -201,7 +203,7 @@ export default function ArusKasPage() {
         {alokasi.map((item) => (
           <div key={item.label} className={cn("rounded-xl border bg-white p-4", TABLE_BORDER)}>
             <p className={cn("text-xs font-semibold uppercase tracking-wide flex items-center gap-1", item.text)}>
-              {item.label} <span className="tabular-nums">{item.persen}%</span>
+              {item.label} <span className="text-[10px] font-medium tabular-nums">({item.persen}%)</span>
             </p>
             <p className="mt-1 text-lg font-bold text-slate-800 tabular-nums">{formatRupiah(item.nilai)}</p>
           </div>
