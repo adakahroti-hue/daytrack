@@ -39,11 +39,11 @@ const DAY_BADGE_COLORS: Record<string, string> = {
 const TABLE_BORDER = "border-slate-900"
 
 // Alokasi otomatis dari total uang masuk (pay yourself first)
-const BUDGET_ITEMS: { label: string; persen: number; bar: string; text: string }[] = [
-  { label: "Kebutuhan Pokok", persen: 70, bar: "bg-emerald-500", text: "text-emerald-600" },
-  { label: "Menabung Impian", persen: 10, bar: "bg-sky-500", text: "text-sky-600" },
-  { label: "Self Reward", persen: 10, bar: "bg-amber-500", text: "text-amber-600" },
-  { label: "Sedekah", persen: 10, bar: "bg-violet-500", text: "text-violet-600" },
+const BUDGET_ITEMS: { label: string; persen: number; text: string }[] = [
+  { label: "Kebutuhan Pokok", persen: 70, text: "text-emerald-600" },
+  { label: "Menabung Impian", persen: 10, text: "text-sky-600" },
+  { label: "Self Reward", persen: 10, text: "text-amber-600" },
+  { label: "Sedekah", persen: 10, text: "text-violet-600" },
 ]
 
 interface ArusKasEntry {
@@ -204,12 +204,7 @@ export default function ArusKasPage() {
               {item.label}
             </p>
             <p className="mt-1 text-lg font-bold text-slate-800 tabular-nums">{formatRupiah(item.nilai)}</p>
-            <div className="mt-2 flex items-center gap-1.5">
-              <div className="h-1.5 flex-1 rounded-full bg-slate-100 overflow-hidden">
-                <div className={cn("h-full rounded-full", item.bar)} style={{ width: `${item.persen}%` }} />
-              </div>
-              <span className={cn("text-[11px] font-semibold tabular-nums", item.text)}>{item.persen}%</span>
-            </div>
+            <p className={cn("mt-0.5 text-[11px] font-semibold tabular-nums", item.text)}>{item.persen}%</p>
           </div>
         ))}
       </div>
