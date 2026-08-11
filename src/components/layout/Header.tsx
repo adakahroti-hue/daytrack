@@ -167,7 +167,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const isHariIni = pathname === '/tugas/hari-ini'
   const isSemua = pathname === '/tugas/semua'
   const isSelesai = pathname === '/tugas/selesai'
-  const isSholat = pathname === '/sholat'
+  const isSholat = pathname === '/sholat' || pathname === '/sholat-sunnah'
   const isQuran = pathname === '/quran'
   const isMinumAir = pathname === '/minum-air'
   const isDoa = pathname === '/doa'
