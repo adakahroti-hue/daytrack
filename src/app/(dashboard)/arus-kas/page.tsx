@@ -38,6 +38,14 @@ const DAY_BADGE_COLORS: Record<string, string> = {
 
 const TABLE_BORDER = "border-slate-900"
 
+// Pilihan dompet sumber dana (hanya untuk uang keluar)
+const DOMPET_OPTIONS: { value: "kebutuhan" | "tabungan" | "self_reward" | "sedekah"; label: string }[] = [
+  { value: "kebutuhan", label: "Kebutuhan" },
+  { value: "tabungan", label: "Tabungan" },
+  { value: "self_reward", label: "Self Reward" },
+  { value: "sedekah", label: "Sedekah" },
+]
+
 // Alokasi otomatis dari total uang masuk (pay yourself first)
 const BUDGET_ITEMS: { label: string; persen: number; text: string }[] = [
   { label: "Kebutuhan", persen: 70, text: "text-emerald-600" },
@@ -53,6 +61,7 @@ interface ArusKasEntry {
   kategori: "uang_masuk" | "uang_keluar"
   nominal: number
   alasan: string | null
+  dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" | null
   created_at: string
 }
 
@@ -62,6 +71,7 @@ interface EditState {
   kategori: "uang_masuk" | "uang_keluar"
   nominal: number
   alasan: string
+  dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" | null
 }
 
 function startOfDaySafe(d: Date): Date {
@@ -140,12 +150,12 @@ export default function ArusKasPage() {
 
   const openAdd = () => {
     setNominalInput("")
-    setEditState({ id: null, tanggal: todayStr, kategori: "uang_masuk", nominal: 0, alasan: "" })
+    setEditState({ id: null, tanggal: todayStr, kategori: "uang_masuk", nominal: 0, alasan: "", dompet: null })
   }
 
   const openEdit = (entry: ArusKasEntry) => {
     setNominalInput(entry.nominal > 0 ? formatRupiah(entry.nominal) : "")
-    setEditState({ id: entry.id, tanggal: entry.tanggal, kategori: entry.kategori, nominal: entry.nominal, alasan: entry.alasan ?? "" })
+    setEditState({ id: entry.id, tanggal: entry.tanggal, kategori: entry.kategori, nominal: entry.nominal, alasan: entry.alasan ?? "", dompet: entry.dompet ?? null })
   }
 
   const handleSave = async () => {
@@ -157,6 +167,7 @@ export default function ArusKasPage() {
       kategori: editState.kategori,
       nominal: editState.nominal,
       alasan: editState.alasan.trim(),
+      dompet: editState.kategori === "uang_keluar" ? editState.dompet : null,
     }
     if (editState.id) {
       // Mode edit
@@ -263,7 +274,14 @@ export default function ArusKasPage() {
                       {isMasuk ? "+" : "−"}{formatRupiah(entry.nominal).replace("Rp ", "")}
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2 border-r", TABLE_BORDER)}>
-                      <span className="text-slate-800 whitespace-normal break-words leading-snug">{entry.alasan || "-"}</span>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-slate-800 whitespace-normal break-words leading-snug">{entry.alasan || "-"}</span>
+                        {!isMasuk && entry.dompet && (
+                          <span className="inline-flex w-fit items-center gap-1 rounded-full bg-indigo-50 text-indigo-700 px-2 py-0.5 text-[10px] font-medium border border-indigo-200">
+                            Dompet: {DOMPET_OPTIONS.find(d => d.value === entry.dompet)?.label}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
                       <div className="flex items-center justify-center gap-1 flex-wrap">
@@ -304,17 +322,34 @@ export default function ArusKasPage() {
             <div className="space-y-1.5">
               <Label>Kategori</Label>
               <div className="flex gap-2">
-                <button type="button" onClick={() => setEditState(prev => prev ? { ...prev, kategori: "uang_masuk" } : prev)}
+                <button type="button" onClick={() => setEditState(prev => prev ? { ...prev, kategori: "uang_masuk", dompet: null } : prev)}
                   className={cn("flex-1 rounded-lg border px-3 py-2 text-sm font-medium flex items-center justify-center gap-1.5",
                     editState?.kategori === "uang_masuk" ? "bg-green-100 text-green-700 border-green-300" : "border-slate-200 text-slate-500 hover:bg-slate-50")}>
                   <ArrowUpRight className="h-4 w-4" /> Uang Masuk
                 </button>
-                <button type="button" onClick={() => setEditState(prev => prev ? { ...prev, kategori: "uang_keluar" } : prev)}
+                <button type="button" onClick={() => setEditState(prev => prev ? { ...prev, kategori: "uang_keluar", dompet: prev.dompet ?? "kebutuhan" } : prev)}
                   className={cn("flex-1 rounded-lg border px-3 py-2 text-sm font-medium flex items-center justify-center gap-1.5",
                     editState?.kategori === "uang_keluar" ? "bg-red-50 text-red-600 border-red-300" : "border-slate-200 text-slate-500 hover:bg-slate-50")}>
                   <ArrowDownLeft className="h-4 w-4" /> Uang Keluar
                 </button>
               </div>
+              {editState?.kategori === "uang_keluar" && (
+                <div className="mt-2">
+                  <Label>Sumber Dana (Dompet)</Label>
+                  <div className="grid grid-cols-2 gap-2 mt-1">
+                    {DOMPET_OPTIONS.map(opt => (
+                      <button key={opt.value} type="button"
+                        onClick={() => setEditState(prev => prev ? { ...prev, dompet: opt.value } : prev)}
+                        className={cn("rounded-lg border px-3 py-2 text-sm font-medium",
+                          editState?.dompet === opt.value
+                            ? "bg-indigo-100 text-indigo-700 border-indigo-300"
+                            : "border-slate-200 text-slate-500 hover:bg-slate-50")}>
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="ak-nominal">Nominal (Rupiah)</Label>

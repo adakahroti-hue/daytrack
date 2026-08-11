@@ -9,6 +9,7 @@ const arusKasSchema = z.object({
   kategori: z.enum(["uang_masuk", "uang_keluar"]),
   nominal: z.number().int().nonnegative(),
   alasan: z.string().optional(),
+  dompet: z.enum(["kebutuhan", "tabungan", "self_reward", "sedekah"]).nullable().optional(),
 })
 
 export type ArusKasFormData = z.infer<typeof arusKasSchema>
@@ -20,6 +21,7 @@ export interface ArusKasEntry {
   kategori: "uang_masuk" | "uang_keluar"
   nominal: number
   alasan: string | null
+  dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" | null
   created_at: string
   updated_at: string
 }
@@ -46,6 +48,7 @@ export async function upsertArusKas(formData: ArusKasFormData) {
     kategori: validated.kategori,
     nominal: validated.nominal,
     alasan: validated.alasan ?? null,
+    dompet: validated.kategori === "uang_keluar" ? (validated.dompet ?? null) : null,
   }
 
   let data, error
@@ -76,6 +79,7 @@ export async function createArusKas(formData: ArusKasFormData) {
     kategori: validated.kategori,
     nominal: validated.nominal,
     alasan: validated.alasan ?? null,
+    dompet: validated.kategori === "uang_keluar" ? (validated.dompet ?? null) : null,
   }
   const { data, error } = await supabase.from("arus_kas").insert(insertData).select().single()
   if (error) throw new Error(error.message)
@@ -104,6 +108,7 @@ export async function updateArusKas(id: string, formData: ArusKasFormData) {
     kategori: validated.kategori,
     nominal: validated.nominal,
     alasan: validated.alasan ?? null,
+    dompet: validated.kategori === "uang_keluar" ? (validated.dompet ?? null) : null,
   }
   const { data, error } = await supabase
     .from("arus_kas")
@@ -123,7 +128,7 @@ export async function getArusKasRange(startDate: string, endDate: string) {
   if (!user) throw new Error("Unauthorized")
   const { data, error } = await supabase
     .from("arus_kas")
-    .select("id, user_id, tanggal, kategori, nominal, alasan, created_at")
+    .select("id, user_id, tanggal, kategori, nominal, alasan, dompet, created_at")
     .eq("user_id", user.id)
     .gte("tanggal", startDate)
     .lte("tanggal", endDate)
