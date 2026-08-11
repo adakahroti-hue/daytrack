@@ -234,7 +234,7 @@ export default function KesenanganPage() {
                     <td className={cn('px-2 sm:px-3 py-2 border-r', TABLE_BORDER)}>
                       <span className="text-slate-800 whitespace-normal break-words leading-snug">{entry.kesenangan}</span>
                     </td>
-                    <td className={cn('px-2 sm:px-3 py-2 text-center', TABLE_BORDER)}>
+                    <td className={cn('px-2 sm:px-3 py-2 text-center border-r', TABLE_BORDER)}>
                       <div className="flex items-center justify-center min-h-[36px]">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
