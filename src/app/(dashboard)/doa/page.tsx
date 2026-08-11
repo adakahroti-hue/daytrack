@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import {
   format,
   eachDayOfInterval,
@@ -95,7 +95,6 @@ export default function DoaPage() {
 
   const upsertDoaLog = useUpsertDoaLog()
   const deleteDoaLog = useDeleteDoaLog()
-  const [showReasons, setShowReasons] = useState<Record<string, boolean>>({})
 
   // Map tanggal -> entry
   const logMap = useMemo(() => {
@@ -189,9 +188,6 @@ export default function DoaPage() {
                 const entry = logMap[dateStr]
                 const isDone = entry?.status === 'sudah'
                 const isMissed = entry?.status === 'belum'
-                const missedLabel = isMissed && entry?.alasan
-                  ? entry.alasan
-                  : 'Tidak'
 
                 return (
                   <tr
@@ -223,28 +219,16 @@ export default function DoaPage() {
                               )}
                             >
                               {isDone && <Check className="h-3.5 w-3.5 shrink-0" />}
-                              {isDone ? 'Sudah' : isMissed ? missedLabel : 'Belum'}
+                              {isDone ? 'Sudah' : isMissed ? 'Tidak' : 'Pilih'}
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="center" className="w-44">
-                            <DropdownMenuItem onClick={() => { setShowReasons(prev => ({ ...prev, [dateStr]: false })); handleSetStatus(dateStr, 'sudah') }} className="flex items-center gap-2">
+                            <DropdownMenuItem onClick={() => { handleSetStatus(dateStr, 'sudah') }} className="flex items-center gap-2">
                               <Check className="h-4 w-4 text-green-600" /> Sudah
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setShowReasons(prev => ({ ...prev, [dateStr]: true }))} className="flex items-center gap-2">
-                              {showReasons[dateStr] && !isDone ? <X className="h-4 w-4 text-red-500" /> : <span className="w-4 h-4" />}
-                              Tidak
+                            <DropdownMenuItem onClick={() => { if (!isMissed) handleSetStatus(dateStr, 'belum') }} className="flex items-center gap-2">
+                              <X className="h-4 w-4 text-red-500" /> Tidak
                             </DropdownMenuItem>
-                            {showReasons[dateStr] && !isDone && (
-                              <>
-                                <DropdownMenuSeparator />
-                                {DOA_REASONS.map(r => (
-                                  <DropdownMenuItem key={r} onClick={() => { setShowReasons(prev => ({ ...prev, [dateStr]: false })); handleSetStatus(dateStr, 'belum', r) }} className="flex items-center gap-2 pl-6">
-                                    {missedLabel === r ? <Check className="h-4 w-4 text-green-600" /> : <span className="w-4 h-4" />}
-                                    {r}
-                                  </DropdownMenuItem>
-                                ))}
-                              </>
-                            )}
                             {entry && (
                               <>
                                 <DropdownMenuSeparator />
@@ -258,9 +242,34 @@ export default function DoaPage() {
                       </div>
                     </td>
                     <td className={cn('px-2 sm:px-3 py-2 text-left', TABLE_BORDER)}>
-                      <span className="text-slate-700 whitespace-normal break-words leading-snug">
-                        {isMissed ? missedLabel : '-'}
-                      </span>
+                      {isDone ? (
+                        <span className="text-slate-400">—</span>
+                      ) : isMissed ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              className="inline-flex items-center justify-between gap-1 rounded-md px-2 py-1 text-xs font-medium border border-slate-300 text-slate-700 hover:bg-slate-50 cursor-pointer min-w-[110px]"
+                            >
+                              <span className="truncate">{entry?.alasan || 'Pilih alasan'}</span>
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start" className="w-44">
+                            {DOA_REASONS.map(r => (
+                              <DropdownMenuItem
+                                key={r}
+                                onClick={() => handleSetStatus(dateStr, 'belum', r)}
+                                className="flex items-center gap-2"
+                              >
+                                {entry?.alasan === r ? <Check className="h-4 w-4 text-green-600" /> : <span className="w-4 h-4" />}
+                                {r}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : (
+                        <span className="text-slate-400 text-xs">Pilih “Tidak” dulu</span>
+                      )}
                     </td>
                   </tr>
                 )
