@@ -180,8 +180,7 @@ export default function KeranjangPage() {
                 Harga
               </th>
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]", TABLE_BORDER)}>
-                <span className="sr-only">Aksi</span>
-                <Pencil className="h-3.5 w-3.5 text-slate-400 mx-auto" />
+                Aksi
               </th>
             </tr>
           </thead>
