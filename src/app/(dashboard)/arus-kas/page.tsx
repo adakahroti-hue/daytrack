@@ -240,14 +240,14 @@ export default function ArusKasPage() {
                       <span className="text-slate-800 whitespace-normal break-words leading-snug">{entry.alasan || "-"}</span>
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
-                      <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                      <div className="flex items-center justify-center gap-1 flex-wrap">
                         <Button size="sm" aria-label="Edit arus kas" onClick={() => openEdit(entry)}
-                          className="bg-slate-600 hover:bg-slate-700 text-white gap-1">
-                          <Pencil className="h-3.5 w-3.5" /> Edit
+                          className="h-6 gap-1 bg-slate-600 hover:bg-slate-700 text-white text-[11px] px-1.5">
+                          <Pencil className="h-3 w-3" /> Edit
                         </Button>
                         <Button size="sm" aria-label="Hapus arus kas" onClick={() => handleDelete(entry.id)}
-                          className="bg-red-600 hover:bg-red-700 text-white gap-1">
-                          <Trash2 className="h-3.5 w-3.5" /> Hapus
+                          className="h-6 gap-1 bg-red-600 hover:bg-red-700 text-white text-[11px] px-1.5">
+                          <Trash2 className="h-3 w-3" /> Hapus
                         </Button>
                       </div>
                     </td>

@@ -213,24 +213,24 @@ export default function KeranjangPage() {
                       {formatRupiah(entry.harga)}
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
-                      <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                      <div className="flex items-center justify-center gap-1 flex-wrap">
                         {isBelum ? (
                           <Button size="sm" aria-label="Tandai sudah dibeli" onClick={() => handleBeli(entry.id)}
-                            className="bg-green-600 hover:bg-green-700 text-white gap-1">
-                            <Check className="h-3.5 w-3.5" /> Sudah
+                            className="h-6 gap-1 bg-green-600 hover:bg-green-700 text-white text-[11px] px-1.5">
+                            <Check className="h-3 w-3" /> Sudah
                           </Button>
                         ) : (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2.5 py-1 text-xs font-medium border border-green-200">
-                            <Check className="h-3.5 w-3.5" /> Dibeli
+                          <span className="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2 py-0.5 text-[11px] font-medium border border-green-200">
+                            <Check className="h-3 w-3" /> Dibeli
                           </span>
                         )}
                         <Button size="sm" aria-label="Edit keranjang" onClick={() => openEdit(entry)}
-                          className="bg-slate-600 hover:bg-slate-700 text-white gap-1">
-                          <Pencil className="h-3.5 w-3.5" /> Edit
+                          className="h-6 gap-1 bg-slate-600 hover:bg-slate-700 text-white text-[11px] px-1.5">
+                          <Pencil className="h-3 w-3" /> Edit
                         </Button>
                         <Button size="sm" aria-label="Hapus keranjang" onClick={() => handleDelete(entry.id)}
-                          className="bg-red-600 hover:bg-red-700 text-white gap-1">
-                          <Trash2 className="h-3.5 w-3.5" /> Hapus
+                          className="h-6 gap-1 bg-red-600 hover:bg-red-700 text-white text-[11px] px-1.5">
+                          <Trash2 className="h-3 w-3" /> Hapus
                         </Button>
                       </div>
                     </td>
