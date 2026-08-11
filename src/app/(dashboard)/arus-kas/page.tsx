@@ -196,7 +196,7 @@ export default function ArusKasPage() {
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[160px]", TABLE_BORDER)}>
                 Nominal
               </th>
-              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[160px] sm:min-w-[220px]", TABLE_BORDER)}>
+              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[160px] sm:min-w-[220px]", TABLE_BORDER)}>
                 Alasan
               </th>
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]", TABLE_BORDER)}>
