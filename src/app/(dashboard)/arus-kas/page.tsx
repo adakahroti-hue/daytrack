@@ -113,12 +113,6 @@ export default function ArusKasPage() {
 
   const { data: logs = [], isLoading, error } = useArusKasRange(startDate, endDate)
   const { data: keranjangLogs = [] } = useKeranjangRange(startDate, endDate)
-  const rencanaBelanja = useMemo(() => {
-    return (keranjangLogs as { id: string; nama_barang: string; harga: number; status: string }[])
-      .filter(l => l.status === "belum")
-      .sort((a, b) => a.nama_barang.localeCompare(b.nama_barang))
-  }, [keranjangLogs])
-  const totalRencana = useMemo(() => rencanaBelanja.reduce((s, l) => s + l.harga, 0), [rencanaBelanja])
   useRealtime({
     table: "arus_kas",
     filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
@@ -152,6 +146,24 @@ export default function ArusKasPage() {
     }
     return { masuk, keluar, saldo: masuk - keluar }
   }, [logs])
+
+  // Target tabungan: 1 barang belum dibeli pertama (urut nama) dari Keranjang
+  const targetBelanja = useMemo(() => {
+    const list = (keranjangLogs as { id: string; nama_barang: string; harga: number; status: string }[])
+      .filter(l => l.status === "belum")
+      .sort((a, b) => a.nama_barang.localeCompare(b.nama_barang))
+    return list[0] || null
+  }, [keranjangLogs])
+  // Sisa dompet Tabungan (10% uang masuk - pemakaian dompet tabungan)
+  const sisaTabungan = useMemo(() => {
+    const awal = Math.round((ringkasan.masuk * 10) / 100)
+    let pakai = 0
+    for (const l of logs as ArusKasEntry[]) {
+      if (l.kategori === "uang_keluar" && l.dompet === "tabungan") pakai += l.nominal
+    }
+    return Math.max(0, awal - pakai)
+  }, [ringkasan.masuk, logs])
+  const butuhLagi = targetBelanja ? Math.max(0, targetBelanja.harga - sisaTabungan) : 0
 
   // Alokasi uang masuk otomatis (persen dari total uang masuk) dikurangi pemakaian per dompet
   const alokasi = useMemo(() => {
@@ -268,27 +280,12 @@ export default function ArusKasPage() {
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
 
-      {/* Mini-card: rencana belanja dari tab Keranjang (minimalis) */}
-      <div className={cn("rounded-xl border bg-white p-3", TABLE_BORDER)}>
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-            <ShoppingCart className="h-3.5 w-3.5 text-slate-400" /> Rencana Belanja
+        {targetBelanja && (
+          <p className="text-[11px] text-slate-500 flex items-center gap-1 ml-auto">
+            <ShoppingCart className="h-3 w-3 text-slate-400" />
+            Butuh <span className="font-semibold text-slate-700 tabular-nums">{formatRupiah(butuhLagi)}</span> lagi untuk membeli <span className="font-medium text-slate-700">{targetBelanja.nama_barang}</span>
           </p>
-          <span className="text-xs font-bold text-slate-700 tabular-nums">{formatRupiah(totalRencana)}</span>
-        </div>
-        {rencanaBelanja.length === 0 ? (
-          <p className="text-[11px] text-slate-400">Tidak ada rencana belanja.</p>
-        ) : (
-          <ul className="space-y-1">
-            {rencanaBelanja.map(item => (
-              <li key={item.id} className="flex items-center justify-between text-[11px]">
-                <span className="text-slate-700 truncate pr-2">{item.nama_barang}</span>
-                <span className="text-slate-500 tabular-nums shrink-0">{formatRupiah(item.harga)}</span>
-              </li>
-            ))}
-          </ul>
         )}
       </div>
 
