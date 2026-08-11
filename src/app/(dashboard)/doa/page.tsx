@@ -249,7 +249,7 @@ export default function DoaPage() {
                           <DropdownMenuTrigger asChild>
                             <button
                               type="button"
-                              className="inline-flex items-center justify-between gap-1 rounded-md px-2 py-1 text-xs font-medium border border-slate-300 text-slate-700 hover:bg-slate-50 cursor-pointer min-w-[110px]"
+                              className="inline-flex items-center justify-between gap-1 rounded-md px-2 py-1 font-medium border border-slate-300 text-slate-700 hover:bg-slate-50 cursor-pointer min-w-[110px]"
                             >
                               <span className="truncate">{entry?.alasan || 'Pilih alasan'}</span>
                             </button>
@@ -268,7 +268,7 @@ export default function DoaPage() {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       ) : (
-                        <span className="text-slate-400 text-xs">Pilih “Tidak” dulu</span>
+                        <span className="text-slate-400">Pilih “Tidak” dulu</span>
                       )}
                     </td>
                   </tr>
