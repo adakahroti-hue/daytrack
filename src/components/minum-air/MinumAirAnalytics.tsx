@@ -205,7 +205,7 @@ export function MinumAirAnalytics({ logMap, columns }: MinumAirAnalyticsProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
         {/* ── Card 1: Tingkat Kesulitan Minum Air ── */}
         <AnalyticsCard
-          title="Minum air terbanyak"
+          title="Frekuensi Minum"
           insight={
             hasMissedData && topMissed && topMissed.missed > 0
               ? <>Waktu yang paling sering terlewat adalah <b className="font-bold text-black dark:text-white">{topMissed.name}</b>.</>

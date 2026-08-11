@@ -330,7 +330,7 @@ export default function PmoPage() {
       {/* Ringkasan */}
       <StatusAnalytics
         entries={analyticsEntries}
-        difficultyTitle="Tahan PMO Terlama"
+        difficultyTitle="Frekuensi Tahan PMO"
         reasonTitle="Alasan Relapse"
         missedNoun="relapse"
       />

@@ -401,7 +401,7 @@ export default function TidurPage() {
       {/* Revisi 6: Ringkasan */}
       <StatusAnalytics
         entries={analyticsEntries}
-        difficultyTitle="Tidur Terbaik"
+        difficultyTitle="Frekuensi Tidur"
         reasonTitle="Alasan Begadang"
         missedNoun="begadang"
         barColor="#1e293b"
