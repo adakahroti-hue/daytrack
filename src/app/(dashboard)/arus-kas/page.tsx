@@ -49,8 +49,8 @@ const DOMPET_OPTIONS: { value: "kebutuhan" | "tabungan" | "self_reward" | "sedek
 // Alokasi otomatis dari total uang masuk (pay yourself first)
 const BUDGET_ITEMS: { label: string; persen: number; text: string; dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" }[] = [
   { label: "Kebutuhan", persen: 70, text: "text-emerald-600", dompet: "kebutuhan" },
-  { label: "Tabung", persen: 10, text: "text-sky-600", dompet: "tabungan" },
   { label: "Self Reward", persen: 10, text: "text-amber-600", dompet: "self_reward" },
+  { label: "Tabung", persen: 10, text: "text-sky-600", dompet: "tabungan" },
   { label: "Sedekah", persen: 10, text: "text-violet-600", dompet: "sedekah" },
 ]
 
