@@ -60,6 +60,7 @@ function getCategoryFromPath(pathname: string): string {
   if (pathname.startsWith('/tidur') || pathname.startsWith('/minum-air')) return 'kesehatan'
   if (pathname.startsWith('/masalah') || pathname.startsWith('/pmo') || pathname.startsWith('/kesenangan')) return 'mental'
   if (pathname.startsWith('/saran-perbaikan')) return 'perbaikan'
+  if (pathname.startsWith('/arus-kas') || pathname.startsWith('/keranjang')) return 'keuangan'
   return 'overview'
 }
 
@@ -80,6 +81,8 @@ function getSubPageFromPath(pathname: string): string | null {
   if (pathname.startsWith('/pmo')) return 'pmo'
   if (pathname.startsWith('/kesenangan')) return 'kesenangan'
   if (pathname.startsWith('/saran-perbaikan')) return 'saran-perbaikan'
+  if (pathname.startsWith('/arus-kas')) return 'arus-kas'
+  if (pathname.startsWith('/keranjang')) return 'keranjang'
   return null
 }
 
@@ -122,6 +125,12 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
       case 'saran-perbaikan': return 'Masukan'
     }
   }
+  if (category === 'keuangan' && subPage) {
+    switch (subPage) {
+      case 'arus-kas': return 'Arus Kas'
+      case 'keranjang': return 'Keranjang'
+    }
+  }
 
   // Category-level titles (fallback)
   switch (category) {
@@ -138,6 +147,7 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
     case 'kesehatan': return 'Kesehatan'
     case 'mental': return 'Kesehatan Mental'
     case 'perbaikan': return 'Perbaikan Diri'
+    case 'keuangan': return 'Keuangan'
     default: return 'Daytrack'
   }
 }
@@ -181,6 +191,12 @@ function getCategoryDescription(category: string, period: Period, subPage: strin
       case 'saran-perbaikan': return 'Sampaikan masukan untuk Daytrack'
     }
   }
+  if (category === 'keuangan' && subPage) {
+    switch (subPage) {
+      case 'arus-kas': return 'Catat pemasukan dan pengeluaran harian Anda'
+      case 'keranjang': return 'Catat rencana belanja Anda'
+    }
+  }
 
   // Category-level descriptions (fallback)
   switch (category) {
@@ -197,6 +213,7 @@ function getCategoryDescription(category: string, period: Period, subPage: strin
     case 'kesehatan': return 'Pantau dan bangun kebiasaan sehat Anda'
     case 'mental': return 'Kelola kondisi mental dan perkembangan diri Anda'
     case 'perbaikan': return 'Evaluasi dan tingkatkan diri'
+    case 'keuangan': return 'Kelola keuangan Anda'
     default: return 'Kelola dan lacak aktivitas Anda'
   }
 }
