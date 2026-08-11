@@ -141,7 +141,6 @@ const TaskCard = memo(({
                 : PRIORITY_CARD_COLORS[task.prioritas]
             ),
         CARD_HOVER,
-        isCompleted && 'opacity-60',
         isOverdue && !isCompleted && 'border-l-3 border-l-red-400 dark:border-l-red-500',
         isInProgress && 'border-l-3 border-l-amber-400 dark:border-l-amber-500'
       )}
