@@ -195,7 +195,7 @@ export default function PmoPage() {
                 </div>
               </th>
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center justify-center gap-1">
                   <MessageCircle className="h-3.5 w-3.5 text-blue-500" />
                   Alasan
                 </div>
