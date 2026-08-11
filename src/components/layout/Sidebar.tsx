@@ -157,13 +157,13 @@ export function Sidebar({
   // Rev 8: hitung jumlah tugas per tab untuk badge di sidebar
   const today = format(new Date(), 'yyyy-MM-dd')
   // Pakai query yang SAMA PERSIS dengan masing-masing tab agar badge akurat:
-  // - Hari Ini  -> useTasks(todayStr)  (sama dengan tab hari-ini)
+  // - Hari Ini  -> useTasks(todayStr) (sama dengan tab hari-ini), EXCLUDE yang selesai
   // - Semua     -> useTasks(undefined) filter belum & tanggal != today
   // - Selesai   -> useTasks(undefined) filter selesai
   const { data: todayTasks = [] } = useTasks(today) // -> queryKey ['tugas', today] (identik tab Hari Ini)
   const { data: allTasks = [] } = useTasks(undefined)
   const taskCounts: Record<string, number> = {
-    '/tugas/hari-ini': todayTasks.length,
+    '/tugas/hari-ini': todayTasks.filter(t => t.status !== 'selesai').length,
     '/tugas/semua': allTasks.filter(t => t.status === 'belum' && t.tanggal !== today).length,
     '/tugas/selesai': allTasks.filter(t => t.status === 'selesai').length,
   }
