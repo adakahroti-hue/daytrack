@@ -363,7 +363,7 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
                 </ResponsiveContainer>
               </div>
               <div className="w-full sm:flex-1 space-y-1.5 min-w-0">
-                {ratingStats.map((r, i) => (
+                {ratingStats.filter(r => r.hasData).map((r, i) => (
                   <div key={r.key} className="flex items-center gap-2 text-xs min-w-0">
                     <span
                       className="h-2.5 w-2.5 rounded-full flex-shrink-0"
