@@ -105,9 +105,10 @@ export default function MasalahPage() {
 
   const [editState, setEditState] = useState<EditState | null>(null)
 
-  // Urutkan entri: terbaru di atas
+  // Urutkan entri: terlama di atas, terbaru di bawah (tanggal baru di bagian bawah)
   const entries = useMemo(() => {
-    return [...(logs as MasalahLogEntry[])].sort((a, b) => b.tanggal.localeCompare(a.tanggal))
+    return [...(logs as MasalahLogEntry[])].sort((a, b) =>
+      a.tanggal.localeCompare(b.tanggal) || (a.created_at || '').localeCompare(b.created_at || ''))
   }, [logs])
 
   const openAdd = () => setEditState({ id: null, tanggal: todayStr, masalah: '' })
@@ -129,6 +130,10 @@ export default function MasalahPage() {
       })
     }
     setEditState(null)
+  }
+
+  const handleDeleteEntry = async (id: string) => {
+    await deleteMasalahLog.mutateAsync(id)
   }
 
   const handleDelete = async () => {
@@ -163,12 +168,16 @@ export default function MasalahPage() {
                   Refleksi
                 </div>
               </th>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[56px] sm:min-w-[64px]', TABLE_BORDER)}>
+                <span className="sr-only">Hapus</span>
+                <Trash2 className="h-3.5 w-3.5 text-slate-400 mx-auto" />
+              </th>
             </tr>
           </thead>
           <tbody className={cn(effectiveLocked && 'pointer-events-none select-none')}>
             {isLoading ? (
               <tr>
-                <td colSpan={3} className="text-center py-12 text-slate-400">
+                <td colSpan={4} className="text-center py-12 text-slate-400">
                   <div className="flex flex-col items-center gap-2">
                     <div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" />
                     <span className="text-sm">Memuat data...</span>
@@ -177,11 +186,11 @@ export default function MasalahPage() {
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan={3} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td>
+                <td colSpan={4} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td>
               </tr>
             ) : entries.length === 0 ? (
               <tr>
-                <td colSpan={3} className="text-center py-12 text-slate-400 text-sm">Belum ada refleksi tercatat pada periode ini.</td>
+                <td colSpan={4} className="text-center py-12 text-slate-400 text-sm">Belum ada refleksi tercatat pada periode ini.</td>
               </tr>
             ) : (
               entries.map((entry, rowIdx) => {
@@ -208,6 +217,17 @@ export default function MasalahPage() {
                         <span className="text-slate-800 whitespace-normal break-words leading-snug group-hover:text-blue-700">{entry.masalah}</span>
                         <Pencil className="inline-block h-3 w-3 ml-1.5 text-slate-300 group-hover:text-blue-500 align-middle" />
                       </button>
+                    </td>
+                    <td className={cn('px-2 sm:px-3 py-2 text-center', TABLE_BORDER)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Hapus refleksi"
+                        onClick={() => handleDeleteEntry(entry.id)}
+                        className="h-8 w-8 text-slate-400 hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </td>
                   </tr>
                 )

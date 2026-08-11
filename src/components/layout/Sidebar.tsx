@@ -47,6 +47,7 @@ import {
   User,
   CheckCircle2,
   Dices,
+  HandCoins,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useTasks } from '@/hooks/useTasks'
@@ -109,6 +110,7 @@ const navigation: NavSection[] = [
     items: [
       { title: 'Berdoa', href: '/doa', icon: Heart },
       { title: 'Bersyukur', href: '/syukur', icon: Sparkles },
+      { title: 'Sedekah', href: '/sedekah', icon: HandCoins },
     ],
   },
   {

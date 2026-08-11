@@ -348,7 +348,7 @@ export function useOverviewRealtime() {
 
   useEffect(() => {
     const supabase = supabaseRef.current
-    const tables = ['tugas', 'sholat', 'quran', 'doa', 'tidur', 'minum_air', 'refleksi', 'pmo', 'syukur', 'fun_queue', 'improvement_backlog']
+    const tables = ['tugas', 'sholat', 'quran', 'doa', 'tidur', 'minum_air', 'refleksi', 'pmo', 'syukur', 'sedekah', 'fun_queue', 'improvement_backlog']
     
     // Use stable channel name
     const channelName = `daytrack:overview:all`

@@ -56,7 +56,7 @@ const HeaderControlsContext = createContext<HeaderControls | null>(null)
 function getCategoryFromPath(pathname: string): string {
   if (pathname === '/overview') return 'overview'
   if (pathname.startsWith('/tugas')) return 'tugas'
-  if (pathname.startsWith('/sholat') || pathname.startsWith('/quran') || pathname.startsWith('/doa') || pathname.startsWith('/syukur')) return 'ibadah'
+  if (pathname.startsWith('/sholat') || pathname.startsWith('/quran') || pathname.startsWith('/doa') || pathname.startsWith('/syukur') || pathname.startsWith('/sedekah')) return 'ibadah'
   if (pathname.startsWith('/tidur') || pathname.startsWith('/minum-air')) return 'kesehatan'
   if (pathname.startsWith('/masalah') || pathname.startsWith('/pmo') || pathname.startsWith('/kesenangan')) return 'mental'
   if (pathname.startsWith('/saran-perbaikan')) return 'perbaikan'
@@ -73,6 +73,7 @@ function getSubPageFromPath(pathname: string): string | null {
   if (pathname.startsWith('/quran')) return 'quran'
   if (pathname.startsWith('/doa')) return 'doa'
   if (pathname.startsWith('/syukur')) return 'syukur'
+  if (pathname.startsWith('/sedekah')) return 'sedekah'
   if (pathname.startsWith('/tidur')) return 'tidur'
   if (pathname.startsWith('/minum-air')) return 'minum-air'
   if (pathname.startsWith('/masalah')) return 'masalah'
@@ -100,6 +101,7 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
       case 'quran': return 'Quran'
       case 'doa': return 'Doa'
       case 'syukur': return 'Syukur'
+      case 'sedekah': return 'Sedekah'
     }
   }
   if (category === 'kesehatan' && subPage) {
@@ -158,6 +160,7 @@ function getCategoryDescription(category: string, period: Period, subPage: strin
       case 'quran': return 'Baca dan catat progres Quran'
       case 'doa': return 'Hafalkan dan catat doa harian'
       case 'syukur': return 'Catat rasa syukur hari ini'
+      case 'sedekah': return 'Catat sedekah harian Anda'
     }
   }
   if (category === 'kesehatan' && subPage) {
