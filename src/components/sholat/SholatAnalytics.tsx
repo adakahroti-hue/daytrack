@@ -71,7 +71,7 @@ function AnalyticsCard({
   title: string
   subtitle?: string
   children: React.ReactNode
-  insight: string | null
+  insight: React.ReactNode | null
   insightTone: 'red' | 'amber' | 'blue'
 }) {
   const toneClass =
@@ -279,9 +279,9 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
           title="Sholat Terbanyak"
           insight={
             hasMissedData && topMissed && topMissed.missed > 0
-              ? `${topMissed.name} adalah sholat yang paling sering terlewat.`
+              ? <>Sholat paling sering terlewat adalah <b className="font-bold">{topMissed.name}</b>.</>
               : hasMissedData
-                ? 'Semua sholat yang tercatat sudah dikerjakan. Pertahankan!'
+                ? 'Semua sholat yang tercatat sudah dikerjakan.'
                 : null
           }
           insightTone="red"
@@ -336,7 +336,7 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
         {/* ── Card 2: Sholat Paling Tidak Khusyuk ── */}
         <AnalyticsCard
           title="Sholat Terkhusyuk"
-          insight={topLowRating ? `${topLowRating.name} memiliki tingkat kekhusyukan terendah.` : null}
+          insight={topLowRating ? <>Sholat dengan kekhusyukan terendah adalah <b className="font-bold">{topLowRating.name}</b>.</> : null}
           insightTone="amber"
         >
           {hasRatingData ? (
@@ -389,7 +389,7 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
         {/* ── Card 3: Alasan Terbanyak Tidak Sholat ── */}
         <AnalyticsCard
           title="Alasan Tak Sholat"
-          insight={topReason ? `${topReason.name} adalah alasan paling sering.` : null}
+          insight={topReason ? <>Alasan paling sering adalah <b className="font-bold">{topReason.name}</b>.</> : null}
           insightTone="blue"
         >
           {hasReasonData ? (
