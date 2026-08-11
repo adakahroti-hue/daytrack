@@ -267,7 +267,7 @@ export default function SyukurPage() {
                           <DropdownMenuTrigger asChild>
                             <button
                               type="button"
-                              className="inline-flex items-center justify-between gap-1 rounded-md px-2 py-1 font-medium border border-slate-300 text-slate-700 hover:bg-slate-50 cursor-pointer min-w-[110px]"
+                              className="font-medium text-slate-700 hover:underline cursor-pointer"
                             >
                               <span className="truncate">{entry?.alasan_tidak ? (ALASAN_LABELS[entry.alasan_tidak] ?? entry.alasan_tidak) : 'Pilih alasan'}</span>
                             </button>
