@@ -16,7 +16,7 @@ import {
   subMonths,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, CalendarDays, Check, X, Trash2 } from 'lucide-react'
+import { Calendar, CalendarDays, Check, X, Trash2, Sunrise, Sun, CloudSun, Sunset, Moon, type LucideIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
@@ -32,12 +32,12 @@ const MinumAirAnalytics = dynamic(() => import('@/components/minum-air/MinumAirA
 
 type WaterKey = 'setelah_bangun' | 'setelah_dzuhur' | 'setelah_ashar' | 'setelah_maghrib' | 'sebelum_tidur'
 
-const WATER_TIMES: { key: WaterKey; label: string; icon: string; waktu: string }[] = [
-  { key: 'setelah_bangun', label: 'Setelah Bangun', icon: '🌅', waktu: '05:30' },
-  { key: 'setelah_dzuhur', label: 'Setelah Dzuhur', icon: '🌞', waktu: '13:30' },
-  { key: 'setelah_ashar', label: 'Setelah Ashar', icon: '🌥️', waktu: '16:00' },
-  { key: 'setelah_maghrib', label: 'Setelah Maghrib', icon: '🌇', waktu: '18:00' },
-  { key: 'sebelum_tidur', label: 'Sebelum Tidur', icon: '🌙', waktu: '21:30' },
+const WATER_TIMES: { key: WaterKey; label: string; icon: LucideIcon; waktu: string }[] = [
+  { key: 'setelah_bangun', label: 'Setelah Bangun', icon: Sunrise, waktu: '05:30' },
+  { key: 'setelah_dzuhur', label: 'Setelah Dzuhur', icon: Sun, waktu: '13:30' },
+  { key: 'setelah_ashar', label: 'Setelah Ashar', icon: CloudSun, waktu: '16:00' },
+  { key: 'setelah_maghrib', label: 'Setelah Maghrib', icon: Sunset, waktu: '18:00' },
+  { key: 'sebelum_tidur', label: 'Sebelum Tidur', icon: Moon, waktu: '21:30' },
 ]
 
 // Revisi 6: daftar alasan tidak minum
@@ -190,14 +190,17 @@ export default function MinumAirPage() {
                   Hari
                 </div>
               </th>
-              {WATER_TIMES.map(col => (
+              {WATER_TIMES.map(col => {
+                const Icon = col.icon
+                return (
                 <th key={col.key} className={cn('px-3 py-2 text-center font-semibold text-slate-700 border-r last:border-r-0 min-w-[96px]', TABLE_BORDER)}>
-                  <div className="flex flex-col items-center justify-center gap-0.5">
-                    <span className="text-base leading-none">{col.icon}</span>
-                    <span>{col.label}</span>
+                  <div className="flex items-center justify-center gap-1">
+                    <Icon className="h-3.5 w-3.5 text-blue-500" />
+                    {col.label}
                   </div>
                 </th>
-              ))}
+                )
+              })}
             </tr>
           </thead>
           <tbody className={cn(effectiveLocked && 'pointer-events-none select-none')}>
