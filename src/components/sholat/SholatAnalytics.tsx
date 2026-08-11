@@ -279,7 +279,7 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
           title="Frekuensi Sholat"
           insight={
             hasMissedData && topMissed && topMissed.missed > 0
-              ? <>Sholat paling sering terlewat adalah <b className="font-bold">{topMissed.name}</b>.</>
+              ? <>Sholat paling sering terlewat adalah <b className="font-bold text-black dark:text-white">{topMissed.name}</b>.</>
               : hasMissedData
                 ? 'Semua sholat yang tercatat sudah dikerjakan.'
                 : null
@@ -336,7 +336,7 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
         {/* ── Card 2: Sholat Paling Tidak Khusyuk ── */}
         <AnalyticsCard
           title="Tingkat Khusyuk"
-          insight={topLowRating ? <>Sholat dengan kekhusyukan terendah adalah <b className="font-bold">{topLowRating.name}</b>.</> : null}
+          insight={topLowRating ? <>Sholat dengan kekhusyukan terendah adalah <b className="font-bold text-black dark:text-white">{topLowRating.name}</b>.</> : null}
           insightTone="amber"
         >
           {hasRatingData ? (
@@ -389,7 +389,7 @@ export function SholatAnalytics({ dates, sholatMap, columns, alasanLabels }: Sho
         {/* ── Card 3: Alasan Terbanyak Tidak Sholat ── */}
         <AnalyticsCard
           title="Alasan Tak Sholat"
-          insight={topReason ? <>Alasan paling sering adalah <b className="font-bold">{topReason.name}</b>.</> : null}
+          insight={topReason ? <>Alasan paling sering adalah <b className="font-bold text-black dark:text-white">{topReason.name}</b>.</> : null}
           insightTone="blue"
         >
           {hasReasonData ? (

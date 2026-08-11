@@ -208,7 +208,7 @@ export function MinumAirAnalytics({ logMap, columns }: MinumAirAnalyticsProps) {
           title="Minum air terbanyak"
           insight={
             hasMissedData && topMissed && topMissed.missed > 0
-              ? <>Waktu yang paling sering terlewat adalah <b className="font-bold">{topMissed.name}</b>.</>
+              ? <>Waktu yang paling sering terlewat adalah <b className="font-bold text-black dark:text-white">{topMissed.name}</b>.</>
               : hasMissedData
                 ? 'Semua waktu minum yang tercatat sudah dilakukan.'
                 : null
@@ -265,7 +265,7 @@ export function MinumAirAnalytics({ logMap, columns }: MinumAirAnalyticsProps) {
         {/* ── Card 2: Alasan Terbanyak Tidak Minum ── */}
         <AnalyticsCard
           title="Alasan Tak Minum"
-          insight={topReason ? <>Alasan paling sering adalah <b className="font-bold">{topReason.name}</b>.</> : null}
+          insight={topReason ? <>Alasan paling sering adalah <b className="font-bold text-black dark:text-white">{topReason.name}</b>.</> : null}
           insightTone="blue"
         >
           {hasReasonData ? (

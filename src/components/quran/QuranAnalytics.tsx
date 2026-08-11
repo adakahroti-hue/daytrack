@@ -230,7 +230,7 @@ export function QuranAnalytics({ logMap, columns }: QuranAnalyticsProps) {
           title="Baca Quran Terbanyak"
           insight={
             hasMissedData && topMissed && topMissed.missed > 0
-              ? <>Waktu yang paling sering terlewat adalah <b className="font-bold">{topMissed.name}</b>.</>
+              ? <>Waktu yang paling sering terlewat adalah <b className="font-bold text-black dark:text-white">{topMissed.name}</b>.</>
               : hasMissedData
                 ? 'Semua waktu baca yang tercatat sudah dilakukan.'
                 : null
@@ -287,7 +287,7 @@ export function QuranAnalytics({ logMap, columns }: QuranAnalyticsProps) {
         {/* ── Card 2: Alasan Terbanyak Tidak Baca Quran ── */}
         <AnalyticsCard
           title="Alasan Tak Baca Quran"
-          insight={topReason ? <>Alasan paling sering adalah <b className="font-bold">{topReason.name}</b>.</> : null}
+          insight={topReason ? <>Alasan paling sering adalah <b className="font-bold text-black dark:text-white">{topReason.name}</b>.</> : null}
           insightTone="blue"
         >
           {hasReasonData ? (

@@ -213,7 +213,7 @@ export function StatusAnalytics({
           subtitle={difficultySubtitle}
           insight={
             hasMissedData && topMissed && topMissed.missed > 0
-              ? <>{missedNoun.charAt(0).toUpperCase() + missedNoun.slice(1)} paling sering terjadi pada hari <b className="font-bold">{topMissed.name}</b>.</>
+              ? <>{missedNoun.charAt(0).toUpperCase() + missedNoun.slice(1)} paling sering terjadi pada hari <b className="font-bold text-black dark:text-white">{topMissed.name}</b>.</>
               : hasMissedData
                 ? 'Semua yang tercatat sudah dilakukan.'
                 : null
@@ -271,7 +271,7 @@ export function StatusAnalytics({
         <AnalyticsCard
           title={reasonTitle}
           subtitle={reasonSubtitle}
-          insight={topReason ? <>Alasan paling sering adalah <b className="font-bold">{topReason.name}</b>.</> : null}
+          insight={topReason ? <>Alasan paling sering adalah <b className="font-bold text-black dark:text-white">{topReason.name}</b>.</> : null}
           insightTone="blue"
         >
           {hasReasonData ? (
