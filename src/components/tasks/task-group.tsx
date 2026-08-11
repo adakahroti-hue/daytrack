@@ -54,7 +54,7 @@ export function TaskGroupRibbon({ groupId, order }: { groupId: string; order: nu
   return (
     <div
       className={cn(
-        'absolute top-0 left-3 z-10 w-6 h-8 flex items-start justify-center pt-1 text-[11px] font-bold text-white',
+        'absolute top-1 left-3 z-0 w-6 h-8 flex items-start justify-center pt-1 text-[11px] font-bold text-white',
         ribbonColorFor(groupId)
       )}
       style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%)' }}

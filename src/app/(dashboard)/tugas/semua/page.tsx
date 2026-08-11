@@ -183,7 +183,7 @@ const TaskCard = memo(({
       <CardContent className="pt-4 pb-3 px-4 space-y-2.5">
         {/* Revisi batch 12: top row ala Hari Ini — judul + menu sebaris, tanpa badge teks prioritas */}
         <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-1 min-w-0 relative z-20">
             {selectionMode && (
               <Checkbox
                 checked={selected}
@@ -251,14 +251,14 @@ const TaskCard = memo(({
               <Calendar className="h-3.5 w-3.5 shrink-0" />
               <span className={cn('whitespace-nowrap', isOverdue && 'text-destructive font-medium')}>
                 {format(taskDate, 'd MMM yyyy', { locale: id })}
-                {isOverdue && !isCompleted && (
-                  <Badge variant="outline" className="ml-1.5 text-xs px-2 py-0.5 gap-1 h-5 text-destructive border-destructive/30 bg-destructive/10">
-                    <AlertTriangle className="h-3 w-3" />
-                    Terlambat {daysOverdue} hari
-                  </Badge>
-                )}
               </span>
             </div>
+            {isOverdue && !isCompleted && (
+              <Badge variant="outline" className="text-xs px-2 py-0.5 gap-1 h-5 text-destructive border-destructive/30 bg-destructive/10">
+                <AlertTriangle className="h-3 w-3" />
+                Terlambat {daysOverdue} hari
+              </Badge>
+            )}
           </div>
          
           {/* Real duration for completed tasks */}
