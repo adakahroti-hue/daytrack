@@ -11,7 +11,7 @@ import {
   endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, Lightbulb, Trash2, Plus, Pencil } from 'lucide-react'
+import { Calendar, CalendarDays, Lightbulb, Trash2, Plus, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -153,7 +153,10 @@ export default function SaranPerbaikanPage() {
                 </div>
               </th>
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[64px] sm:min-w-[90px]', TABLE_BORDER)}>
-                Hari
+                <div className="flex items-center justify-center gap-1">
+                  <CalendarDays className="h-3.5 w-3.5 text-blue-500" />
+                  Hari
+                </div>
               </th>
               <th className={cn('px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 min-w-[160px] sm:min-w-[220px]', TABLE_BORDER)}>
                 <div className="flex items-center gap-1">
