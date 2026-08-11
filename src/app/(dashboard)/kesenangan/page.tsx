@@ -155,25 +155,25 @@ export default function KesenanganPage() {
             <tr className={cn('border-b', TABLE_BORDER)}>
               <th className={cn('dt-col-stick sticky left-0 z-30 bg-white px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[72px] sm:min-w-[100px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
-                  <Calendar className="h-3.5 w-3.5 text-blue-500" />
+                  <Calendar className="h-3.5 w-3.5 text-purple-500" />
                   Tanggal
                 </div>
               </th>
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[64px] sm:min-w-[90px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
-                  <CalendarDays className="h-3.5 w-3.5 text-green-500" />
+                  <CalendarDays className="h-3.5 w-3.5 text-purple-500" />
                   Hari
                 </div>
               </th>
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[170px] sm:min-w-[240px]', TABLE_BORDER)}>
                 <div className="flex items-center gap-1">
-                  <Smile className="h-3.5 w-3.5 text-amber-500" />
+                  <Smile className="h-3.5 w-3.5 text-purple-500" />
                   Kesenangan yang Ditunda
                 </div>
               </th>
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[96px] sm:min-w-[110px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
-                  <Check className="h-3.5 w-3.5 text-green-500" />
+                  <Check className="h-3.5 w-3.5 text-purple-500" />
                   Status
                 </div>
               </th>

@@ -189,8 +189,14 @@ export default function TidurPage() {
                   Jam Tidur
                 </div>
               </th>
-              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[80px] sm:min-w-[100px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
+                  <Moon className="h-3.5 w-3.5 text-blue-500" />
+                  Durasi Tidur
+                </div>
+              </th>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
+                <div className="flex items-center gap-1">
                   <Moon className="h-3.5 w-3.5 text-blue-500" />
                   Status
                 </div>
@@ -199,12 +205,6 @@ export default function TidurPage() {
                 <div className="flex items-center gap-1">
                   <MessageCircle className="h-3.5 w-3.5 text-blue-500" />
                   Alasan
-                </div>
-              </th>
-              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[80px] sm:min-w-[100px]', TABLE_BORDER)}>
-                <div className="flex items-center justify-center gap-1">
-                  <Moon className="h-3.5 w-3.5 text-blue-500" />
-                  Durasi Tidur
                 </div>
               </th>
             </tr>
@@ -300,6 +300,14 @@ export default function TidurPage() {
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </td>
+                    {/* Waktu Tidur (durasi) */}
+                    <td className={cn('px-2 sm:px-3 py-2 text-center border-r', TABLE_BORDER)}>
+                      {entry?.durasi_jam != null ? (
+                        <span className="text-sm font-medium text-slate-700 tabular-nums">{entry.durasi_jam} jam</span>
+                      ) : (
+                        <span className="text-slate-400">-</span>
+                      )}
+                    </td>
                     {/* Status */}
                     <td className={cn('px-2 sm:px-3 py-2 text-center border-r', TABLE_BORDER)}>
                       <div className="flex items-center justify-center min-h-[36px]">
@@ -381,13 +389,6 @@ export default function TidurPage() {
                         <span className="text-slate-400">-</span>
                       )}
                     </td>
-                    {/* Waktu Tidur (durasi) */}
-                    <td className={cn('px-2 sm:px-3 py-2 text-center', TABLE_BORDER)}>
-                      {entry?.durasi_jam != null ? (
-                        <span className="text-sm font-medium text-slate-700 tabular-nums">{entry.durasi_jam} jam</span>
-                      ) : (
-                        <span className="text-slate-400">-</span>
-                      )}
                     </td>
                   </tr>
                 )

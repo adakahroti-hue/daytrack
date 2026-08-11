@@ -147,16 +147,16 @@ export default function MasalahPage() {
             <tr className={cn('border-b', TABLE_BORDER)}>
               <th className={cn('dt-col-stick sticky left-0 z-30 bg-white px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[72px] sm:min-w-[100px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
-                  <Calendar className="h-3.5 w-3.5 text-blue-500" />
+                  <Calendar className="h-3.5 w-3.5 text-purple-500" />
                   Tanggal
                 </div>
               </th>
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[64px] sm:min-w-[90px]', TABLE_BORDER)}>
                 Hari
               </th>
-              <th className={cn('px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 min-w-[160px] sm:min-w-[220px]', TABLE_BORDER)}>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[160px] sm:min-w-[220px]', TABLE_BORDER)}>
                 <div className="flex items-center gap-1">
-                  <Shield className="h-3.5 w-3.5 text-slate-500" />
+                  <Shield className="h-3.5 w-3.5 text-purple-500" />
                   Refleksi
                 </div>
               </th>
