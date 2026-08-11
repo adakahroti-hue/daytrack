@@ -213,23 +213,24 @@ export default function KeranjangPage() {
                       {formatRupiah(entry.harga)}
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
-                      <div className="flex items-center justify-center gap-1">
+                      <div className="flex items-center justify-center gap-1.5 flex-wrap">
                         {isBelum ? (
-                          <Button size="icon" variant="ghost" aria-label="Tandai sudah dibeli" onClick={() => handleBeli(entry.id)}
-                            className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50">
-                            <Check className="h-4 w-4" />
+                          <Button size="sm" variant="outline" aria-label="Tandai sudah dibeli" onClick={() => handleBeli(entry.id)}
+                            className="text-green-700 border-green-300 hover:bg-green-50 gap-1">
+                            <Check className="h-3.5 w-3.5" /> Sudah
                           </Button>
                         ) : (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2 py-0.5 text-xs font-medium border border-green-200">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2.5 py-1 text-xs font-medium border border-green-200">
                             <Check className="h-3.5 w-3.5" /> Dibeli
                           </span>
                         )}
-                        <Button size="icon" variant="ghost" aria-label="Edit keranjang" onClick={() => openEdit(entry)}
-                          className="h-8 w-8 text-slate-500 hover:text-slate-700 hover:bg-slate-100">
-                          <Pencil className="h-4 w-4" />
+                        <Button size="sm" variant="outline" aria-label="Edit keranjang" onClick={() => openEdit(entry)}
+                          className="text-slate-600 border-slate-300 hover:bg-slate-100 gap-1">
+                          <Pencil className="h-3.5 w-3.5" /> Edit
                         </Button>
-                        <Button variant="ghost" size="icon" aria-label="Hapus keranjang" onClick={() => handleDelete(entry.id)} className="h-8 w-8 text-slate-400 hover:text-destructive hover:bg-destructive/10">
-                          <Trash2 className="h-4 w-4" />
+                        <Button size="sm" variant="outline" aria-label="Hapus keranjang" onClick={() => handleDelete(entry.id)}
+                          className="text-red-600 border-red-300 hover:bg-red-50 gap-1">
+                          <Trash2 className="h-3.5 w-3.5" /> Hapus
                         </Button>
                       </div>
                     </td>
