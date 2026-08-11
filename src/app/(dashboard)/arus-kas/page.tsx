@@ -47,11 +47,11 @@ const DOMPET_OPTIONS: { value: "kebutuhan" | "tabungan" | "self_reward" | "sedek
 ]
 
 // Alokasi otomatis dari total uang masuk (pay yourself first)
-const BUDGET_ITEMS: { label: string; persen: number; text: string }[] = [
-  { label: "Kebutuhan", persen: 70, text: "text-emerald-600" },
-  { label: "Tabung", persen: 10, text: "text-sky-600" },
-  { label: "Self Reward", persen: 10, text: "text-amber-600" },
-  { label: "Sedekah", persen: 10, text: "text-violet-600" },
+const BUDGET_ITEMS: { label: string; persen: number; text: string; dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" }[] = [
+  { label: "Kebutuhan", persen: 70, text: "text-emerald-600", dompet: "kebutuhan" },
+  { label: "Tabung", persen: 10, text: "text-sky-600", dompet: "tabungan" },
+  { label: "Self Reward", persen: 10, text: "text-amber-600", dompet: "self_reward" },
+  { label: "Sedekah", persen: 10, text: "text-violet-600", dompet: "sedekah" },
 ]
 
 interface ArusKasEntry {
@@ -139,14 +139,22 @@ export default function ArusKasPage() {
     return { masuk, keluar, saldo: masuk - keluar }
   }, [logs])
 
-  // Alokasi uang masuk otomatis (persen dari total uang masuk periode ini)
+  // Alokasi uang masuk otomatis (persen dari total uang masuk) dikurangi pemakaian per dompet
   const alokasi = useMemo(() => {
     const total = ringkasan.masuk
-    return BUDGET_ITEMS.map(item => ({
-      ...item,
-      nilai: Math.round((total * item.persen) / 100),
-    }))
-  }, [ringkasan.masuk])
+    // total uang keluar per dompet
+    const pakai: Record<string, number> = {}
+    for (const l of logs as ArusKasEntry[]) {
+      if (l.kategori === "uang_keluar" && l.dompet) {
+        pakai[l.dompet] = (pakai[l.dompet] || 0) + l.nominal
+      }
+    }
+    return BUDGET_ITEMS.map(item => {
+      const awal = Math.round((total * item.persen) / 100)
+      const sisa = Math.max(0, awal - (pakai[item.dompet] || 0))
+      return { ...item, nilai: sisa }
+    })
+  }, [ringkasan.masuk, logs])
 
   const openAdd = () => {
     setNominalInput("")
