@@ -13,7 +13,7 @@ import {
   endOfYear,
 } from "date-fns"
 import { id } from "date-fns/locale"
-import { Calendar, CalendarDays, Wallet, ArrowDownLeft, ArrowUpRight, Trash2, Plus, Pencil, Banknote, MessageSquare, Wrench } from "lucide-react"
+import { Calendar, CalendarDays, Wallet, ArrowDownLeft, ArrowUpRight, Trash2, Plus, Pencil, Banknote, MessageSquare, Wrench, PieChart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -37,6 +37,14 @@ const DAY_BADGE_COLORS: Record<string, string> = {
 }
 
 const TABLE_BORDER = "border-slate-900"
+
+// Alokasi otomatis dari total uang masuk (pay yourself first)
+const BUDGET_ITEMS: { label: string; persen: number; bar: string; text: string }[] = [
+  { label: "Kebutuhan Pokok", persen: 70, bar: "bg-emerald-500", text: "text-emerald-600" },
+  { label: "Menabung Impian", persen: 10, bar: "bg-sky-500", text: "text-sky-600" },
+  { label: "Self Reward", persen: 10, bar: "bg-amber-500", text: "text-amber-600" },
+  { label: "Sedekah", persen: 10, bar: "bg-violet-500", text: "text-violet-600" },
+]
 
 interface ArusKasEntry {
   id: string
@@ -121,6 +129,15 @@ export default function ArusKasPage() {
     return { masuk, keluar, saldo: masuk - keluar }
   }, [logs])
 
+  // Alokasi uang masuk otomatis (persen dari total uang masuk periode ini)
+  const alokasi = useMemo(() => {
+    const total = ringkasan.masuk
+    return BUDGET_ITEMS.map(item => ({
+      ...item,
+      nilai: Math.round((total * item.persen) / 100),
+    }))
+  }, [ringkasan.masuk])
+
   const openAdd = () => {
     setNominalInput("")
     setEditState({ id: null, tanggal: todayStr, kategori: "uang_masuk", nominal: 0, alasan: "" })
@@ -176,6 +193,33 @@ export default function ArusKasPage() {
             <Wallet className="h-4 w-4" /> Saldo
           </p>
           <p className="mt-1 text-lg font-bold text-slate-800">{formatRupiah(ringkasan.saldo)}</p>
+        </div>
+      </div>
+
+      {/* Alokasi Uang Masuk (otomatis dari total uang masuk periode ini) */}
+      <div className={cn("rounded-xl border bg-white p-4", TABLE_BORDER)}>
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600 flex items-center gap-1">
+            <PieChart className="h-4 w-4" /> Alokasi Uang Masuk
+          </p>
+          <p className="text-xs text-slate-500">
+            Total masuk: <span className="font-semibold text-slate-700">{formatRupiah(ringkasan.masuk)}</span>
+          </p>
+        </div>
+        <div className="space-y-2.5">
+          {alokasi.map((item) => (
+            <div key={item.label}>
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <span className="text-xs font-medium text-slate-700">{item.label}</span>
+                <span className={cn("text-xs font-semibold tabular-nums", item.text)}>
+                  {item.persen}% · {formatRupiah(item.nilai)}
+                </span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                <div className={cn("h-full rounded-full transition-all", item.bar)} style={{ width: `${item.persen}%` }} />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
