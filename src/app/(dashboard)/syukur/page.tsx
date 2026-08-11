@@ -259,7 +259,7 @@ export default function SyukurPage() {
                         </DropdownMenu>
                       </div>
                     </td>
-                    <td className={cn('px-2 sm:px-3 py-2 text-left', TABLE_BORDER)}>
+                    <td className={cn('px-2 sm:px-3 py-2 text-center', TABLE_BORDER)}>
                       {isDone ? (
                         <span className="text-slate-400">—</span>
                       ) : isMissed ? (
