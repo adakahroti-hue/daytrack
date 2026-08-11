@@ -21,7 +21,7 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { formatRupiah, parseRupiah } from "@/lib/utils"
 import { useTableLock } from "@/components/ui/table-lock"
-import { useKeranjangRange, useCreateKeranjang, useDeleteKeranjang, useBeliKeranjang } from "@/hooks/useKeranjang"
+import { useKeranjangRange, useCreateKeranjang, useDeleteKeranjang, useBeliKeranjang, useUpdateKeranjang } from "@/hooks/useKeranjang"
 import { useRealtime } from "@/hooks/useRealtime"
 import { useHeaderControls } from "@/components/layout/HeaderControls"
 
@@ -99,6 +99,7 @@ export default function KeranjangPage() {
   const createKeranjang = useCreateKeranjang()
   const deleteKeranjang = useDeleteKeranjang()
   const beliKeranjang = useBeliKeranjang()
+  const updateKeranjang = useUpdateKeranjang()
 
   const [editState, setEditState] = useState<EditState | null>(null)
   const [hargaInput, setHargaInput] = useState("")
@@ -117,17 +118,30 @@ export default function KeranjangPage() {
     setEditState({ id: null, tanggal: todayStr, nama_barang: "", harga: 0 })
   }
 
+  const openEdit = (entry: KeranjangEntry) => {
+    setHargaInput(entry.harga > 0 ? formatRupiah(entry.harga) : "")
+    setEditState({ id: entry.id, tanggal: entry.tanggal, nama_barang: entry.nama_barang, harga: entry.harga })
+  }
+
   const handleSave = async () => {
     if (!editState) return
     if (!editState.nama_barang.trim()) return
-    const harga = parseRupiah(hargaInput)
-    if (harga <= 0) return
-    await createKeranjang.mutateAsync({
-      tanggal: editState.tanggal,
-      nama_barang: editState.nama_barang.trim(),
-      harga,
-      status: "belum",
-    })
+    if (editState.harga <= 0) return
+    if (editState.id) {
+      // Mode edit
+      await updateKeranjang.mutateAsync({
+        id: editState.id,
+        data: { tanggal: editState.tanggal, nama_barang: editState.nama_barang.trim(), harga: editState.harga },
+      })
+    } else {
+      // Mode tambah
+      await createKeranjang.mutateAsync({
+        tanggal: editState.tanggal,
+        nama_barang: editState.nama_barang.trim(),
+        harga: editState.harga,
+        status: "belum",
+      })
+    }
     setEditState(null)
   }
 
@@ -165,22 +179,19 @@ export default function KeranjangPage() {
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[150px]", TABLE_BORDER)}>
                 Harga
               </th>
-              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[120px] sm:min-w-[150px]", TABLE_BORDER)}>
-                Status
-              </th>
-              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[56px] w-[56px]", TABLE_BORDER)}>
-                <span className="sr-only">Hapus</span>
-                <Trash2 className="h-3.5 w-3.5 text-slate-400 mx-auto" />
+              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]", TABLE_BORDER)}>
+                <span className="sr-only">Aksi</span>
+                <Pencil className="h-3.5 w-3.5 text-slate-400 mx-auto" />
               </th>
             </tr>
           </thead>
           <tbody className={cn(effectiveLocked && "pointer-events-none select-none")}>
             {isLoading ? (
-              <tr><td colSpan={6} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
+              <tr><td colSpan={5} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
             ) : error ? (
-              <tr><td colSpan={6} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
+              <tr><td colSpan={5} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
             ) : entries.length === 0 ? (
-              <tr><td colSpan={6} className="text-center py-12 text-slate-400 text-sm">Belum ada barang di keranjang. Tekan tombol + untuk menambah.</td></tr>
+              <tr><td colSpan={5} className="text-center py-12 text-slate-400 text-sm">Belum ada barang di keranjang. Tekan tombol + untuk menambah.</td></tr>
             ) : (
               entries.map((entry, rowIdx) => {
                 const date = new Date(entry.tanggal + "T00:00:00")
@@ -202,22 +213,26 @@ export default function KeranjangPage() {
                     <td className={cn("px-2 sm:px-3 py-2 text-center border-r font-semibold tabular-nums text-slate-700", TABLE_BORDER)}>
                       {formatRupiah(entry.harga)}
                     </td>
-                    <td className={cn("px-2 sm:px-3 py-2 text-center", TABLE_BORDER)}>
-                      {isBelum ? (
-                        <Button size="sm" variant="outline" onClick={() => handleBeli(entry.id)}
-                          className="text-green-700 border-green-300 hover:bg-green-50 gap-1">
-                          <Check className="h-3.5 w-3.5" /> Sudah
+                    <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
+                      <div className="flex items-center justify-center gap-1">
+                        {isBelum ? (
+                          <Button size="icon" variant="ghost" aria-label="Tandai sudah dibeli" onClick={() => handleBeli(entry.id)}
+                            className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50">
+                            <Check className="h-4 w-4" />
+                          </Button>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2 py-0.5 text-xs font-medium border border-green-200">
+                            <Check className="h-3.5 w-3.5" /> Dibeli
+                          </span>
+                        )}
+                        <Button size="icon" variant="ghost" aria-label="Edit keranjang" onClick={() => openEdit(entry)}
+                          className="h-8 w-8 text-slate-500 hover:text-slate-700 hover:bg-slate-100">
+                          <Pencil className="h-4 w-4" />
                         </Button>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2.5 py-1 text-xs font-medium border border-green-200">
-                          <Check className="h-3.5 w-3.5" /> Sudah
-                        </span>
-                      )}
-                    </td>
-                    <td className={cn("px-2 sm:px-3 py-2 text-center", TABLE_BORDER)}>
-                      <Button variant="ghost" size="icon" aria-label="Hapus keranjang" onClick={() => handleDelete(entry.id)} className="h-8 w-8 text-slate-400 hover:text-destructive hover:bg-destructive/10">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                        <Button variant="ghost" size="icon" aria-label="Hapus keranjang" onClick={() => handleDelete(entry.id)} className="h-8 w-8 text-slate-400 hover:text-destructive hover:bg-destructive/10">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 )
