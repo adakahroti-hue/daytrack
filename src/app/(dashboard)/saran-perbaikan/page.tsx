@@ -11,7 +11,7 @@ import {
   endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, CalendarDays, Lightbulb, Trash2, Plus, Pencil } from 'lucide-react'
+import { Calendar, CalendarDays, Lightbulb, Trash2, Plus, Pencil, Wrench } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -163,15 +163,17 @@ export default function SaranPerbaikanPage() {
                   Hari
                 </div>
               </th>
-              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[160px] sm:min-w-[220px]', TABLE_BORDER)}>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[160px] sm:min-w-[220px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
                   <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
                   Saran Perbaikan
                 </div>
               </th>
-              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[56px] sm:min-w-[64px]', TABLE_BORDER)}>
-                <span className="sr-only">Hapus</span>
-                <Trash2 className="h-3.5 w-3.5 text-slate-400 mx-auto" />
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[96px] sm:min-w-[110px]', TABLE_BORDER)}>
+                <div className="flex items-center justify-center gap-1">
+                  <Wrench className="h-3.5 w-3.5 text-amber-500" />
+                  Aksi
+                </div>
               </th>
             </tr>
           </thead>
@@ -216,21 +218,31 @@ export default function SaranPerbaikanPage() {
                       </span>
                     </td>
                     <td className={cn('px-2 sm:px-3 py-2 border-r', TABLE_BORDER)}>
-                      <button type="button" onClick={() => openEdit(entry)} className="w-full text-left group">
-                        <span className="text-slate-800 whitespace-normal break-words leading-snug group-hover:text-blue-700">{entry.saran}</span>
-                        <Pencil className="inline-block h-3 w-3 ml-1.5 text-slate-300 group-hover:text-blue-500 align-middle" />
-                      </button>
+                      <span className="text-slate-800 whitespace-normal break-words leading-snug">{entry.saran}</span>
                     </td>
-                    <td className={cn('px-2 sm:px-3 py-2 text-center', TABLE_BORDER)}>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Hapus masukan"
-                        onClick={() => handleDeleteEntry(entry.id)}
-                        className="h-8 w-8 text-slate-400 hover:text-destructive hover:bg-destructive/10"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                    <td className={cn('px-2 sm:px-3 py-2', TABLE_BORDER)}>
+                      <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                        <Button
+                          variant="default"
+                          size="sm"
+                          aria-label="Edit masukan"
+                          onClick={() => openEdit(entry)}
+                          className="h-7 bg-slate-600 hover:bg-slate-700 text-white text-xs px-2"
+                        >
+                          <Pencil className="h-3.5 w-3.5 mr-1" />
+                          Edit
+                        </Button>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          aria-label="Hapus masukan"
+                          onClick={() => handleDeleteEntry(entry.id)}
+                          className="h-7 bg-red-600 hover:bg-red-700 text-white text-xs px-2"
+                        >
+                          <Trash2 className="h-3.5 w-3.5 mr-1" />
+                          Hapus
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 )
