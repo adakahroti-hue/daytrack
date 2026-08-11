@@ -11,7 +11,7 @@ import {
   endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, Smile, Check, X, Trash2, Plus, Pencil } from 'lucide-react'
+import { Calendar, CalendarDays, Smile, Check, X, Trash2, Plus, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -160,9 +160,12 @@ export default function KesenanganPage() {
                 </div>
               </th>
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[64px] sm:min-w-[90px]', TABLE_BORDER)}>
-                Hari
+                <div className="flex items-center justify-center gap-1">
+                  <CalendarDays className="h-3.5 w-3.5 text-green-500" />
+                  Hari
+                </div>
               </th>
-              <th className={cn('px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 border-r min-w-[170px] sm:min-w-[240px]', TABLE_BORDER)}>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[170px] sm:min-w-[240px]', TABLE_BORDER)}>
                 <div className="flex items-center gap-1">
                   <Smile className="h-3.5 w-3.5 text-amber-500" />
                   Kesenangan yang Ditunda
