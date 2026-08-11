@@ -48,6 +48,9 @@ import {
   CheckCircle2,
   Dices,
   HandCoins,
+  Wallet,
+  ArrowDownLeft,
+  ShoppingCart,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useTasks } from '@/hooks/useTasks'
@@ -120,6 +123,14 @@ const navigation: NavSection[] = [
       { title: 'Minum Air', href: '/minum-air', icon: GlassWater },
       { title: 'PMO', href: '/pmo', icon: Shield },
       { title: 'Waktu Tidur', href: '/tidur', icon: Moon },
+    ],
+  },
+  {
+    title: 'Keuangan',
+    icon: Wallet,
+    items: [
+      { title: 'Arus Kas', href: '/arus-kas', icon: ArrowDownLeft },
+      { title: 'Keranjang', href: '/keranjang', icon: ShoppingCart },
     ],
   },
   {

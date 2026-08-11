@@ -228,6 +228,24 @@ export function getMissionGroupDescriptionWithCount(priority: string, count: num
 }
 
 // ============================================
+// Currency (Rupiah) helpers — kategori Keuangan
+// ============================================
+
+/** Format angka jadi Rupiah tanpa desimal: 50000 -> "Rp 50.000" */
+export function formatRupiah(value: number | null | undefined): string {
+  if (value === null || value === undefined || isNaN(value)) return 'Rp 0'
+  return 'Rp ' + Math.round(value).toLocaleString('id-ID')
+}
+
+/** Parse string Rupiah / input bebas jadi angka: "Rp 50.000" / "50000" -> 50000 */
+export function parseRupiah(input: string): number {
+  if (!input) return 0
+  const cleaned = input.replace(/[^0-9]/g, '')
+  const n = parseInt(cleaned, 10)
+  return isNaN(n) ? 0 : n
+}
+
+// ============================================
 // Card styles (shared)
 // ============================================
 export const CARD_BASE = `${CARD_BORDER} ${CARD_BORDER_HOVER} rounded-xl transition-colors duration-200`
