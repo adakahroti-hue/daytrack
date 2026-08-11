@@ -227,7 +227,7 @@ export function QuranAnalytics({ logMap, columns }: QuranAnalyticsProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
         {/* ── Card 1: Tingkat Kesulitan Baca Quran ── */}
         <AnalyticsCard
-          title="Baca Quran Terbanyak"
+          title="Frekuensi Baca Quran"
           insight={
             hasMissedData && topMissed && topMissed.missed > 0
               ? <>Waktu yang paling sering terlewat adalah <b className="font-bold text-black dark:text-white">{topMissed.name}</b>.</>

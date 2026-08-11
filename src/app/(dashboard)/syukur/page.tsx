@@ -301,7 +301,7 @@ export default function SyukurPage() {
       {/* Revisi 5: Ringkasan */}
       <StatusAnalytics
         entries={analyticsEntries}
-        difficultyTitle="Bersyukur Terbanyak"
+        difficultyTitle="Frekuensi Bersyukur"
         reasonTitle="Alasan Tak Bersyukur"
         missedNoun="terlewat"
       />

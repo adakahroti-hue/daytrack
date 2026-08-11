@@ -282,7 +282,7 @@ export default function DoaPage() {
       {/* Revisi 4: Ringkasan */}
       <StatusAnalytics
         entries={analyticsEntries}
-        difficultyTitle="Doa Terbanyak"
+        difficultyTitle="Frekuensi Doa"
         reasonTitle="Alasan Tak Mendoakan"
         missedNoun="terlewat"
       />
