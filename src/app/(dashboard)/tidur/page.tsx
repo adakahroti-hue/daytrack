@@ -389,7 +389,6 @@ export default function TidurPage() {
                         <span className="text-slate-400">-</span>
                       )}
                     </td>
-                    </td>
                   </tr>
                 )
               })
