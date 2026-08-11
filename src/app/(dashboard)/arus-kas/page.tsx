@@ -40,8 +40,8 @@ const TABLE_BORDER = "border-slate-900"
 
 // Alokasi otomatis dari total uang masuk (pay yourself first)
 const BUDGET_ITEMS: { label: string; persen: number; text: string }[] = [
-  { label: "Kebutuhan Pokok", persen: 70, text: "text-emerald-600" },
-  { label: "Menabung Impian", persen: 10, text: "text-sky-600" },
+  { label: "Kebutuhan", persen: 70, text: "text-emerald-600" },
+  { label: "Tabung", persen: 10, text: "text-sky-600" },
   { label: "Self Reward", persen: 10, text: "text-amber-600" },
   { label: "Sedekah", persen: 10, text: "text-violet-600" },
 ]
