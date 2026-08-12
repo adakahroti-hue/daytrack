@@ -130,7 +130,7 @@ const navigation: NavSection[] = [
     icon: Wallet,
     items: [
       { title: 'Arus Kas', href: '/arus-kas', icon: DollarSign },
-      { title: 'Keranjang', href: '/keranjang', icon: ShoppingCart },
+      { title: 'Belanja', href: '/keranjang', icon: ShoppingCart },
     ],
   },
   {

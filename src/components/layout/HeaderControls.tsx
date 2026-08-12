@@ -128,7 +128,7 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
   if (category === 'keuangan' && subPage) {
     switch (subPage) {
       case 'arus-kas': return 'Arus Kas'
-      case 'keranjang': return 'Keranjang'
+      case 'keranjang': return 'Belanja'
     }
   }
 
