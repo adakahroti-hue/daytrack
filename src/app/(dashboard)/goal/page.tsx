@@ -44,7 +44,6 @@ interface GoalEntry {
   proyeksi_harga: number
   kategori: "kebutuhan" | "tabungan" | "self_reward" | "sedekah"
   action_harian: string | null
-  habit: string | null
   created_at: string
   updated_at: string
 }
@@ -57,7 +56,6 @@ interface EditState {
   proyeksi_harga: number
   kategori: "kebutuhan" | "tabungan" | "self_reward" | "sedekah"
   action_harian: string
-  habit: string
 }
 
 function startOfDaySafe(d: Date): Date {
@@ -128,7 +126,6 @@ export default function GoalPage() {
       proyeksi_harga: 0,
       kategori: "kebutuhan",
       action_harian: "",
-      habit: "",
     })
   }
 
@@ -142,7 +139,6 @@ export default function GoalPage() {
       proyeksi_harga: entry.proyeksi_harga,
       kategori: entry.kategori,
       action_harian: entry.action_harian || "",
-      habit: entry.habit || "",
     })
   }
 
@@ -160,7 +156,6 @@ export default function GoalPage() {
           proyeksi_harga: editState.proyeksi_harga,
           kategori: editState.kategori,
           action_harian: editState.action_harian,
-          habit: editState.habit,
         },
       })
     } else {
@@ -171,7 +166,6 @@ export default function GoalPage() {
         proyeksi_harga: editState.proyeksi_harga,
         kategori: editState.kategori,
         action_harian: editState.action_harian,
-        habit: editState.habit,
       })
     }
     setEditState(null)
@@ -211,10 +205,7 @@ export default function GoalPage() {
                 <div className="flex items-center justify-center gap-1"><Wallet className="h-3.5 w-3.5 text-indigo-500" /> Kategori</div>
               </th>
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[160px] sm:min-w-[200px]", TABLE_BORDER)}>
-                <div className="flex items-center justify-center gap-1"><Wrench className="h-3.5 w-3.5 text-indigo-500" /> Action Harian</div>
-              </th>
-              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[160px] sm:min-w-[200px]", TABLE_BORDER)}>
-                <div className="flex items-center justify-center gap-1"><Wrench className="h-3.5 w-3.5 text-indigo-500" /> Habit</div>
+                <div className="flex items-center justify-center gap-1"><Wrench className="h-3.5 w-3.5 text-indigo-500" /> Rencana Tindakan</div>
               </th>
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><Wrench className="h-3.5 w-3.5 text-indigo-500" /> Button</div>
@@ -223,11 +214,11 @@ export default function GoalPage() {
           </thead>
           <tbody className={cn(effectiveLocked && "pointer-events-none select-none")}>
             {isLoading ? (
-              <tr><td colSpan={8} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
+              <tr><td colSpan={7} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
             ) : error ? (
-              <tr><td colSpan={8} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
+              <tr><td colSpan={7} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
             ) : entries.length === 0 ? (
-              <tr><td colSpan={8} className="text-center py-12 text-slate-400 text-sm">Belum ada goal. Tekan tombol + untuk menambah.</td></tr>
+              <tr><td colSpan={7} className="text-center py-12 text-slate-400 text-sm">Belum ada goal. Tekan tombol + untuk menambah.</td></tr>
             ) : (
               entries.map((entry, rowIdx) => {
                 const setDate = new Date(entry.tanggal_set + "T00:00:00")
@@ -259,9 +250,6 @@ export default function GoalPage() {
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2 border-r align-top", TABLE_BORDER)}>
                       <span className="text-slate-700 whitespace-normal break-words leading-snug text-[11px] sm:text-xs">{entry.action_harian || <span className="text-slate-300">—</span>}</span>
-                    </td>
-                    <td className={cn("px-2 sm:px-3 py-2 border-r align-top", TABLE_BORDER)}>
-                      <span className="text-slate-700 whitespace-normal break-words leading-snug text-[11px] sm:text-xs">{entry.habit || <span className="text-slate-300">—</span>}</span>
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
                       <div className="flex items-center justify-center gap-1 flex-wrap">
@@ -338,16 +326,10 @@ export default function GoalPage() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="g-action">Action Harian</Label>
-              <Textarea id="g-action" rows={2} placeholder="Deskripsi action harian..."
+              <Label htmlFor="g-action">Rencana Tindakan</Label>
+              <Textarea id="g-action" rows={2} placeholder="Deskripsi rencana tindakan..."
                 value={editState?.action_harian ?? ""}
                 onChange={(e) => setEditState(prev => prev ? { ...prev, action_harian: e.target.value } : prev)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="g-habit">Habit</Label>
-              <Textarea id="g-habit" rows={2} placeholder="Kebiasaan pendukung..."
-                value={editState?.habit ?? ""}
-                onChange={(e) => setEditState(prev => prev ? { ...prev, habit: e.target.value } : prev)} />
             </div>
             <div className="flex justify-end gap-2 pt-1">
               <Button variant="outline" onClick={() => setEditState(null)}>Batal</Button>

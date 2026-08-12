@@ -11,7 +11,6 @@ const goalSchema = z.object({
   proyeksi_harga: z.number().int().nonnegative(),
   kategori: z.enum(["kebutuhan", "tabungan", "self_reward", "sedekah"]).default("kebutuhan"),
   action_harian: z.string().optional().default(""),
-  habit: z.string().optional().default(""),
 })
 
 export type GoalFormData = z.infer<typeof goalSchema>
@@ -25,7 +24,6 @@ export interface GoalEntry {
   proyeksi_harga: number
   kategori: "kebutuhan" | "tabungan" | "self_reward" | "sedekah"
   action_harian: string | null
-  habit: string | null
   created_at: string
   updated_at: string
 }
@@ -44,7 +42,6 @@ export async function createGoal(formData: GoalFormData) {
     proyeksi_harga: validated.proyeksi_harga,
     kategori: validated.kategori,
     action_harian: validated.action_harian ?? "",
-    habit: validated.habit ?? "",
   }
 
   const { data, error } = await supabase.from("goal").insert(insertData).select().single()
@@ -62,7 +59,6 @@ export async function updateGoal(
     proyeksi_harga?: number
     kategori?: "kebutuhan" | "tabungan" | "self_reward" | "sedekah"
     action_harian?: string
-    habit?: string
   }
 ) {
   const supabase = await createClient()
@@ -76,7 +72,6 @@ export async function updateGoal(
   if (formData.proyeksi_harga !== undefined) updateData.proyeksi_harga = formData.proyeksi_harga
   if (formData.kategori !== undefined) updateData.kategori = formData.kategori
   if (formData.action_harian !== undefined) updateData.action_harian = formData.action_harian
-  if (formData.habit !== undefined) updateData.habit = formData.habit
 
   const { data, error } = await supabase
     .from("goal")
@@ -106,7 +101,7 @@ export async function getGoalRange(startDate: string, endDate: string) {
   if (!user) throw new Error("Unauthorized")
   const { data, error } = await supabase
     .from("goal")
-    .select("id, user_id, tanggal_set, tanggal_deadline, nama_goal, proyeksi_harga, kategori, action_harian, habit, created_at, updated_at")
+    .select("id, user_id, tanggal_set, tanggal_deadline, nama_goal, proyeksi_harga, kategori, action_harian, created_at, updated_at")
     .eq("user_id", user.id)
     .gte("tanggal_set", startDate)
     .lte("tanggal_set", endDate)
