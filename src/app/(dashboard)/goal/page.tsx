@@ -207,8 +207,12 @@ export default function GoalPage() {
 
   const handleSave = async () => {
     if (!editState) return
-    if (!editState.nama_goal.trim()) return
-    if (editState.proyeksi_harga <= 0) return
+    // Saat TAMBAH baru: boleh simpan meski field kosong.
+    // Saat EDIT / Jadikan Utama: wajib ada nama & harga > 0.
+    if (editState.id && !promoteMode) {
+      if (!editState.nama_goal.trim()) return
+      if (editState.proyeksi_harga <= 0) return
+    }
     const serializedLangkah = serializeLangkah(langkahList)
 
     if (promoteMode) {
@@ -312,14 +316,14 @@ export default function GoalPage() {
                 for (const st of steps) for (const f of st.fields) if (f.trim().length > 0) allFields.push(f.trim())
                 if (allFields.length === 0) return <p className="text-green-700/60">—</p>
                 return (
-                  <ol className="space-y-1.5 mt-0.5">
+                  <div className="flex flex-wrap gap-1.5 mt-0.5">
                     {allFields.map((f, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <span className="shrink-0 flex items-center justify-center h-5 w-5 rounded-full bg-green-600 text-white text-[11px] font-bold">{i + 1}</span>
-                        <span className="inline-flex w-fit text-slate-800 text-[13px] leading-snug break-words rounded-lg bg-white border border-green-200 px-2.5 py-1">{f}</span>
-                      </li>
+                      <span key={i} className="inline-flex items-center gap-1.5 rounded-lg bg-green-100 border border-green-200 px-2 py-1">
+                        <span className="shrink-0 flex items-center justify-center h-4 w-4 rounded-full bg-green-600 text-white text-[10px] font-bold leading-none">{i + 1}</span>
+                        <span className="text-green-900 text-[13px] leading-snug break-words">{f}</span>
+                      </span>
                     ))}
-                  </ol>
+                  </div>
                 )
               })()}
             </div>
@@ -498,8 +502,7 @@ export default function GoalPage() {
               <Button
                 onClick={handleSave}
                 disabled={
-                  !editState?.nama_goal.trim() ||
-                  parseRupiah(hargaInput) <= 0 ||
+                  ((editState?.id && !promoteMode) && (!editState?.nama_goal.trim() || parseRupiah(hargaInput) <= 0)) ||
                   (promoteMode && (!editState?.tempo.trim() || !editState?.action_harian.trim() || serializeLangkah(langkahList).trim() === ""))
                 }
               >Simpan</Button>

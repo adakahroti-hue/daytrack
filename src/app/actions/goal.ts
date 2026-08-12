@@ -7,7 +7,7 @@ import { z } from "zod"
 const goalSchema = z.object({
   tanggal_set: z.string().min(1, "Tanggal set wajib diisi"),
   tanggal_deadline: z.string().optional(),
-  nama_goal: z.string().min(1, "Nama goal wajib diisi"),
+  nama_goal: z.string().optional().default(""),
   proyeksi_harga: z.number().int().nonnegative(),
   tempo: z.string().optional().default(""),
   action_harian: z.string().optional().default(""),
