@@ -11,6 +11,7 @@ const goalSchema = z.object({
   proyeksi_harga: z.number().int().nonnegative(),
   kategori: z.string().min(1, "Kategori wajib diisi").default("kebutuhan"),
   action_harian: z.string().optional().default(""),
+  langkah_aksi: z.string().optional().default(""),
 })
 
 export type GoalFormData = z.infer<typeof goalSchema>
@@ -24,6 +25,7 @@ export interface GoalEntry {
   proyeksi_harga: number
   kategori: string
   action_harian: string | null
+  langkah_aksi: string | null
   created_at: string
   updated_at: string
 }
@@ -42,6 +44,7 @@ export async function createGoal(formData: GoalFormData) {
     proyeksi_harga: validated.proyeksi_harga,
     kategori: validated.kategori,
     action_harian: validated.action_harian ?? "",
+    langkah_aksi: validated.langkah_aksi ?? "",
   }
 
   const { data, error } = await supabase.from("goal").insert(insertData).select().single()
@@ -59,6 +62,7 @@ export async function updateGoal(
     proyeksi_harga?: number
     kategori?: string
     action_harian?: string
+    langkah_aksi?: string
   }
 ) {
   const supabase = await createClient()
@@ -72,6 +76,7 @@ export async function updateGoal(
   if (formData.proyeksi_harga !== undefined) updateData.proyeksi_harga = formData.proyeksi_harga
   if (formData.kategori !== undefined) updateData.kategori = formData.kategori
   if (formData.action_harian !== undefined) updateData.action_harian = formData.action_harian
+  if (formData.langkah_aksi !== undefined) updateData.langkah_aksi = formData.langkah_aksi
 
   const { data, error } = await supabase
     .from("goal")
@@ -101,7 +106,7 @@ export async function getGoalRange(startDate: string, endDate: string) {
   if (!user) throw new Error("Unauthorized")
   const { data, error } = await supabase
     .from("goal")
-    .select("id, user_id, tanggal_set, tanggal_deadline, nama_goal, proyeksi_harga, kategori, action_harian, created_at, updated_at")
+    .select("id, user_id, tanggal_set, tanggal_deadline, nama_goal, proyeksi_harga, kategori, action_harian, langkah_aksi, created_at, updated_at")
     .eq("user_id", user.id)
     .gte("tanggal_set", startDate)
     .lte("tanggal_set", endDate)
