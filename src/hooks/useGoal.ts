@@ -30,7 +30,7 @@ export function useCreateGoal() {
 export function useUpdateGoal() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { tanggal_set?: string; tanggal_deadline?: string; nama_goal?: string; proyeksi_harga?: number; kategori?: "kebutuhan" | "tabungan" | "self_reward" | "sedekah"; action_harian?: string; habit?: string } }) =>
+    mutationFn: ({ id, data }: { id: string; data: { tanggal_set?: string; tanggal_deadline?: string; nama_goal?: string; proyeksi_harga?: number; kategori?: string; action_harian?: string } }) =>
       updateGoal(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["goal"] })

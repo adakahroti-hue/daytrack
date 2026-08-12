@@ -28,13 +28,6 @@ import { useHeaderControls } from "@/components/layout/HeaderControls"
 
 const TABLE_BORDER = "border-slate-900"
 
-const KATEGORI_OPTIONS: { value: "kebutuhan" | "tabungan" | "self_reward" | "sedekah"; label: string }[] = [
-  { value: "kebutuhan", label: "Kebutuhan" },
-  { value: "tabungan", label: "Tabungan" },
-  { value: "self_reward", label: "Self Reward" },
-  { value: "sedekah", label: "Sedekah" },
-]
-
 interface GoalEntry {
   id: string
   user_id: string
@@ -42,7 +35,7 @@ interface GoalEntry {
   tanggal_deadline: string
   nama_goal: string
   proyeksi_harga: number
-  kategori: "kebutuhan" | "tabungan" | "self_reward" | "sedekah"
+  kategori: string
   action_harian: string | null
   created_at: string
   updated_at: string
@@ -54,7 +47,7 @@ interface EditState {
   tanggal_deadline: string
   nama_goal: string
   proyeksi_harga: number
-  kategori: "kebutuhan" | "tabungan" | "self_reward" | "sedekah"
+  kategori: string
   action_harian: string
 }
 
@@ -240,13 +233,7 @@ export default function GoalPage() {
                       {formatRupiah(entry.proyeksi_harga)}
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2 text-center border-r", TABLE_BORDER)}>
-                      <span className={cn("inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border",
-                        entry.kategori === "kebutuhan" && "bg-emerald-50 text-emerald-700 border-emerald-200",
-                        entry.kategori === "tabungan" && "bg-sky-50 text-sky-700 border-sky-200",
-                        entry.kategori === "self_reward" && "bg-amber-50 text-amber-700 border-amber-200",
-                        entry.kategori === "sedekah" && "bg-violet-50 text-violet-700 border-violet-200")}>
-                        {KATEGORI_OPTIONS.find(d => d.value === entry.kategori)?.label}
-                      </span>
+                      <span className="text-slate-700 whitespace-normal break-words leading-snug">{entry.kategori || <span className="text-slate-300">—</span>}</span>
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2 border-r align-top", TABLE_BORDER)}>
                       <span className="text-slate-700 whitespace-normal break-words leading-snug text-[11px] sm:text-xs">{entry.action_harian || <span className="text-slate-300">—</span>}</span>
@@ -311,19 +298,10 @@ export default function GoalPage() {
                 }} />
             </div>
             <div className="space-y-1.5">
-              <Label>Kategori</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {KATEGORI_OPTIONS.map(opt => (
-                  <button key={opt.value} type="button"
-                    onClick={() => setEditState(prev => prev ? { ...prev, kategori: opt.value } : prev)}
-                    className={cn("rounded-lg border px-3 py-2 text-sm font-medium",
-                      editState?.kategori === opt.value
-                        ? "bg-indigo-100 text-indigo-700 border-indigo-300"
-                        : "border-slate-200 text-slate-500 hover:bg-slate-50")}>
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
+              <Label htmlFor="g-kategori">Kategori</Label>
+              <Input id="g-kategori" placeholder="Contoh: Kebutuhan, Tabungan..."
+                value={editState?.kategori ?? ""}
+                onChange={(e) => setEditState(prev => prev ? { ...prev, kategori: e.target.value } : prev)} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="g-action">Rencana Tindakan</Label>

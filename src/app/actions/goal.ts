@@ -9,7 +9,7 @@ const goalSchema = z.object({
   tanggal_deadline: z.string().min(1, "Tanggal deadline wajib diisi"),
   nama_goal: z.string().min(1, "Nama goal wajib diisi"),
   proyeksi_harga: z.number().int().nonnegative(),
-  kategori: z.enum(["kebutuhan", "tabungan", "self_reward", "sedekah"]).default("kebutuhan"),
+  kategori: z.string().min(1, "Kategori wajib diisi").default("kebutuhan"),
   action_harian: z.string().optional().default(""),
 })
 
@@ -22,7 +22,7 @@ export interface GoalEntry {
   tanggal_deadline: string
   nama_goal: string
   proyeksi_harga: number
-  kategori: "kebutuhan" | "tabungan" | "self_reward" | "sedekah"
+  kategori: string
   action_harian: string | null
   created_at: string
   updated_at: string
@@ -57,7 +57,7 @@ export async function updateGoal(
     tanggal_deadline?: string
     nama_goal?: string
     proyeksi_harga?: number
-    kategori?: "kebutuhan" | "tabungan" | "self_reward" | "sedekah"
+    kategori?: string
     action_harian?: string
   }
 ) {
