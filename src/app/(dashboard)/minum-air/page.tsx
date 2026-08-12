@@ -37,7 +37,7 @@ const WATER_TIMES: { key: WaterKey; label: string; icon: LucideIcon; waktu: stri
   { key: 'setelah_dzuhur', label: 'Setelah Dzuhur', icon: Sun, waktu: '13:30' },
   { key: 'setelah_ashar', label: 'Setelah Ashar', icon: CloudSun, waktu: '16:00' },
   { key: 'setelah_maghrib', label: 'Setelah Maghrib', icon: Sunset, waktu: '18:00' },
-  { key: 'sebelum_tidur', label: 'Sebelum Isya', icon: Moon, waktu: '21:30' },
+  { key: 'sebelum_tidur', label: 'Setelah Isya', icon: Moon, waktu: '21:30' },
 ]
 
 // Revisi 6: daftar alasan tidak minum
