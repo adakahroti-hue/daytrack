@@ -179,7 +179,7 @@ export default function GoalPage() {
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
 
       {/* Card Goal Utama */}
-      <div className={cn("rounded-xl border bg-amber-100 p-4 sm:p-5", TABLE_BORDER)}>
+      <div className={cn("rounded-xl border bg-amber-100 p-4 sm:p-5 shadow-sm", TABLE_BORDER)}>
         <div className="flex items-center gap-2 mb-3">
           <h2 className="text-sm font-bold uppercase tracking-wide text-slate-700">Goal Utama</h2>
         </div>
@@ -218,22 +218,22 @@ export default function GoalPage() {
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[50px] sm:min-w-[70px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><Hash className="h-3.5 w-3.5 text-indigo-500" /> No</div>
               </th>
-              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[160px] sm:min-w-[200px]", TABLE_BORDER)}>
-                <div className="flex items-center justify-center gap-1"><Target className="h-3.5 w-3.5 text-indigo-500" /> Nama Goal</div>
+              <th className={cn("px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 border-r min-w-[150px] sm:min-w-[180px]", TABLE_BORDER)}>
+                <div className="flex items-center justify-start gap-1"><Target className="h-3.5 w-3.5 text-indigo-500" /> Nama Goal</div>
               </th>
-              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[150px]", TABLE_BORDER)}>
+              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[110px] sm:min-w-[140px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><Banknote className="h-3.5 w-3.5 text-indigo-500" /> Nilai</div>
               </th>
-              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[150px]", TABLE_BORDER)}>
+              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[110px] sm:min-w-[140px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><Clock className="h-3.5 w-3.5 text-indigo-500" /> Tempo</div>
               </th>
-              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[160px] sm:min-w-[200px]", TABLE_BORDER)}>
-                <div className="flex items-center justify-center gap-1"><ClipboardList className="h-3.5 w-3.5 text-indigo-500" /> Rencana</div>
+              <th className={cn("px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 border-r min-w-[150px] sm:min-w-[180px]", TABLE_BORDER)}>
+                <div className="flex items-center justify-start gap-1"><ClipboardList className="h-3.5 w-3.5 text-indigo-500" /> Rencana</div>
               </th>
-              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[160px] sm:min-w-[200px]", TABLE_BORDER)}>
-                <div className="flex items-center justify-center gap-1"><Footprints className="h-3.5 w-3.5 text-indigo-500" /> Langkah Aksi</div>
+              <th className={cn("px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 border-r min-w-[150px] sm:min-w-[180px]", TABLE_BORDER)}>
+                <div className="flex items-center justify-start gap-1"><Footprints className="h-3.5 w-3.5 text-indigo-500" /> Langkah Aksi</div>
               </th>
-              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]", TABLE_BORDER)}>
+              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[104px] sm:min-w-[150px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><MousePointerClick className="h-3.5 w-3.5 text-indigo-500" /> Tombol</div>
               </th>
             </tr>
@@ -268,23 +268,23 @@ export default function GoalPage() {
                       <span className="text-slate-700 whitespace-normal break-words leading-snug text-[11px] sm:text-xs">{entry.langkah_aksi || <span className="text-slate-300">—</span>}</span>
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
-                      <div className="flex items-center justify-center gap-1 flex-wrap">
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-1">
                         {entry.is_utama ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-[11px] font-medium border border-amber-200">
+                          <span className="inline-flex w-full sm:w-auto items-center justify-center gap-1 rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-[11px] font-medium border border-amber-200">
                             <Star className="h-3 w-3 fill-amber-400" /> Utama
                           </span>
                         ) : (
                           <Button size="sm" aria-label="Jadikan goal utama" onClick={() => setGoalUtama.mutateAsync(entry.id)}
-                            className="h-6 gap-1 bg-amber-500 hover:bg-amber-600 text-white text-[11px] px-1.5">
+                            className="h-6 w-full sm:w-auto gap-1 bg-amber-500 hover:bg-amber-600 text-white text-[11px] px-1.5 justify-center">
                             <Star className="h-3 w-3" /> Utama
                           </Button>
                         )}
                         <Button size="sm" aria-label="Edit goal" onClick={() => openEdit(entry)}
-                          className="h-6 gap-1 bg-slate-600 hover:bg-slate-700 text-white text-[11px] px-1.5">
+                          className="h-6 w-full sm:w-auto gap-1 bg-slate-600 hover:bg-slate-700 text-white text-[11px] px-1.5 justify-center">
                           <Pencil className="h-3 w-3" /> Edit
                         </Button>
                         <Button size="sm" aria-label="Hapus goal" onClick={() => handleDelete(entry.id)}
-                          className="h-6 gap-1 bg-red-600 hover:bg-red-700 text-white text-[11px] px-1.5">
+                          className="h-6 w-full sm:w-auto gap-1 bg-red-600 hover:bg-red-700 text-white text-[11px] px-1.5 justify-center">
                           <Trash2 className="h-3 w-3" /> Hapus
                         </Button>
                       </div>
