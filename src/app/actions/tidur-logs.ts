@@ -37,6 +37,13 @@ function calculateDuration(jamTidur: string | null, jamBangun: string | null): n
   return Math.round((bangunMinutes - tidurMinutes) / 60 * 10) / 10
 }
 
+// Geser tanggal 'yyyy-MM-dd' sebanyak n hari (tanpa dependensi date-fns)
+function shiftDate(yyyyMmDd: string, n: number): string {
+  const d = new Date(yyyyMmDd + 'T00:00:00')
+  d.setDate(d.getDate() + n)
+  return d.toISOString().slice(0, 10)
+}
+
 export async function upsertTidurLog(formData: TidurLogFormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -59,8 +66,17 @@ export async function upsertTidurLog(formData: TidurLogFormData) {
   if (validated.jam_tidur !== undefined) insertData.jam_tidur = validated.jam_tidur || null
   if (validated.jam_bangun !== undefined) insertData.jam_bangun = validated.jam_bangun || null
   if (validated.alasan_tidak !== undefined) insertData.alasan_tidak = validated.alasan_tidak || null
-  // durasi_jam is always recalculated from jam_tidur + jam_bangun
-  const effectiveJamTidur = validated.jam_tidur ?? existing?.jam_tidur ?? null
+
+  // Durasi dihitung dari: jam_bangun(hari ini) - jam_tidur(hari kemarin)
+  // fetch jam_tidur di baris tanggal kemarin
+  const kemarin = shiftDate(validated.tanggal, -1)
+  const { data: prevLog } = await supabase
+    .from("tidur")
+    .select("jam_tidur")
+    .eq("user_id", user.id)
+    .eq("tanggal", kemarin)
+    .maybeSingle()
+  const effectiveJamTidur = prevLog?.jam_tidur ?? null
   const effectiveJamBangun = validated.jam_bangun ?? existing?.jam_bangun ?? null
   insertData.durasi_jam = calculateDuration(effectiveJamTidur, effectiveJamBangun)
 
@@ -74,6 +90,23 @@ export async function upsertTidurLog(formData: TidurLogFormData) {
   }
 
   if (error) throw new Error(error.message)
+
+  // Rekalkulasi durasi baris besok (karena jam_tidur hari ini = "kemarin"-nya baris besok)
+  const besok = shiftDate(validated.tanggal, 1)
+  const { data: nextLog } = await supabase
+    .from("tidur")
+    .select("id, jam_bangun")
+    .eq("user_id", user.id)
+    .eq("tanggal", besok)
+    .maybeSingle()
+  if (nextLog && nextLog.id) {
+    const nextDurasi = calculateDuration(
+      validated.jam_tidur ?? existing?.jam_tidur ?? null,
+      nextLog.jam_bangun
+    )
+    await supabase.from("tidur").update({ durasi_jam: nextDurasi }).eq("id", nextLog.id).eq("user_id", user.id)
+  }
+
   revalidatePath("/tidur"); revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
   return { data, error: null }
 }
