@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic"
 
-import { useMemo, useState } from "react"
+import { Fragment, useMemo, useState } from "react"
 import {
   format,
   startOfWeek,
@@ -174,7 +174,7 @@ export default function KeranjangPage() {
 
       <div className={cn("relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-320px)] landscape:max-lg:max-h-none rounded-lg border bg-white", TABLE_BORDER)}>
         <table className="w-full border-collapse text-xs sm:text-sm">
-          <thead className="sticky top-0 z-20 bg-white">
+          <thead className={cn("hidden sm:table-header-group sticky top-0 z-20 bg-white")}>
             <tr className={cn("border-b", TABLE_BORDER)}>
               <th className={cn("dt-col-stick sticky left-0 z-30 bg-white px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[72px] sm:min-w-[100px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><Calendar className="h-3.5 w-3.5 text-indigo-500" /> Tanggal</div>
@@ -210,52 +210,97 @@ export default function KeranjangPage() {
                 const dateDisplay = format(date, "d MMMM", { locale: id })
                 const isBelum = entry.status === "belum"
                 return (
-                  <tr key={entry.id} className={cn("border-b transition-colors", TABLE_BORDER, rowIdx % 2 === 0 ? "bg-white" : "bg-slate-50/30", "hover:bg-blue-50/40")}>
-                    <td className={cn("dt-col-stick sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums text-sm", TABLE_BORDER)}>
-                      <span className="sm:hidden">{format(date, "d MMM", { locale: id })}</span>
-                      <span className="hidden sm:inline">{dateDisplay}</span>
-                    </td>
-                    <td className={cn("px-2 sm:px-3 py-2 text-center border-r dt-col-stick sm:sticky sm:left-[100px] sm:z-10 sm:bg-inherit", TABLE_BORDER)}>
-                      <span className={cn("inline-block px-2 py-0.5 rounded-full text-xs border font-medium", DAY_BADGE_COLORS[dayName] || "bg-slate-100 text-slate-700 border-slate-200")}>{dayName}</span>
-                    </td>
-                    <td className={cn("px-2 sm:px-3 py-2 text-center border-r", TABLE_BORDER)}>
-                      <span className={cn("inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border",
-                        entry.dompet === "kebutuhan" && "bg-emerald-50 text-emerald-700 border-emerald-200",
-                        entry.dompet === "tabungan" && "bg-sky-50 text-sky-700 border-sky-200",
-                        entry.dompet === "self_reward" && "bg-amber-50 text-amber-700 border-amber-200",
-                        entry.dompet === "sedekah" && "bg-violet-50 text-violet-700 border-violet-200")}>
-                        {DOMPET_OPTIONS.find(d => d.value === entry.dompet)?.label}
-                      </span>
-                    </td>
-                    <td className={cn("px-2 sm:px-3 py-2 border-r", TABLE_BORDER)}>
-                      <span className="text-sm text-slate-800 whitespace-normal break-words leading-snug">{entry.nama_barang}</span>
-                    </td>
-                    <td className={cn("px-2 sm:px-3 py-2 text-center border-r font-semibold tabular-nums text-slate-700", TABLE_BORDER)}>
-                      {formatRupiah(entry.harga)}
-                    </td>
-                    <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
-                      <div className="flex items-center justify-center gap-1 flex-wrap">
-                        {isBelum ? (
-                          <Button size="sm" aria-label="Tandai sudah dibeli" onClick={() => handleBeli(entry.id)}
-                            className="h-6 gap-1 bg-green-600 hover:bg-green-700 text-white text-[11px] px-1.5">
-                            <Check className="h-3 w-3" /> Sudah
+                  <Fragment key={entry.id}>
+                    {/* ── Mobile: kartu ringkas (sm:hidden) ── */}
+                    <tr className={cn("sm:hidden border-b", TABLE_BORDER, rowIdx % 2 === 0 ? "bg-white" : "bg-slate-50/30")}>
+                      <td colSpan={6} className={cn("px-3 py-3", TABLE_BORDER)}>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-sm font-semibold text-slate-800 break-words min-w-0">{entry.nama_barang}</span>
+                            <span className="shrink-0 font-bold tabular-nums text-sm text-slate-800">{formatRupiah(entry.harga)}</span>
+                          </div>
+                          <div className="flex items-center gap-2 flex-wrap text-[11px] text-slate-500">
+                            <span className="tabular-nums">{dateDisplay}</span>
+                            <span className={cn("inline-block px-1.5 py-0.5 rounded-full border font-medium", DAY_BADGE_COLORS[dayName] || "bg-slate-100 text-slate-700 border-slate-200")}>{dayName}</span>
+                            <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border",
+                              entry.dompet === "kebutuhan" && "bg-emerald-50 text-emerald-700 border-emerald-200",
+                              entry.dompet === "tabungan" && "bg-sky-50 text-sky-700 border-sky-200",
+                              entry.dompet === "self_reward" && "bg-amber-50 text-amber-700 border-amber-200",
+                              entry.dompet === "sedekah" && "bg-violet-50 text-violet-700 border-violet-200")}>
+                              {DOMPET_OPTIONS.find(d => d.value === entry.dompet)?.label}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5 pt-0.5">
+                            {isBelum ? (
+                              <Button size="sm" aria-label="Tandai sudah dibeli" onClick={() => handleBeli(entry.id)}
+                                className="h-7 flex-1 gap-1 bg-green-600 hover:bg-green-700 text-white text-[11px] px-1.5">
+                                <Check className="h-3 w-3" /> Sudah
+                              </Button>
+                            ) : (
+                              <span className="inline-flex h-7 flex-1 items-center justify-center gap-1 rounded-md bg-green-100 text-green-700 text-[11px] font-medium border border-green-200">
+                                <Check className="h-3 w-3" /> Dibeli
+                              </span>
+                            )}
+                            <Button size="sm" aria-label="Edit keranjang" onClick={() => openEdit(entry)}
+                              className="h-7 flex-1 gap-1 bg-slate-600 hover:bg-slate-700 text-white text-[11px] px-1.5">
+                              <Pencil className="h-3 w-3" /> Edit
+                            </Button>
+                            <Button size="sm" aria-label="Hapus keranjang" onClick={() => handleDelete(entry.id)}
+                              className="h-7 flex-1 gap-1 bg-red-600 hover:bg-red-700 text-white text-[11px] px-1.5">
+                              <Trash2 className="h-3 w-3" /> Hapus
+                            </Button>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    {/* ── Desktop: tabel penuh (hidden sm:table-row) ── */}
+                    <tr className={cn("hidden sm:table-row border-b transition-colors", TABLE_BORDER, rowIdx % 2 === 0 ? "bg-white" : "bg-slate-50/30", "hover:bg-blue-50/40")}>
+                      <td className={cn("dt-col-stick sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums text-sm", TABLE_BORDER)}>
+                        <span className="sm:hidden">{format(date, "d MMM", { locale: id })}</span>
+                        <span className="hidden sm:inline">{dateDisplay}</span>
+                      </td>
+                      <td className={cn("px-2 sm:px-3 py-2 text-center border-r dt-col-stick sm:sticky sm:left-[100px] sm:z-10 sm:bg-inherit", TABLE_BORDER)}>
+                        <span className={cn("inline-block px-2 py-0.5 rounded-full text-xs border font-medium", DAY_BADGE_COLORS[dayName] || "bg-slate-100 text-slate-700 border-slate-200")}>{dayName}</span>
+                      </td>
+                      <td className={cn("px-2 sm:px-3 py-2 text-center border-r", TABLE_BORDER)}>
+                        <span className={cn("inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border",
+                          entry.dompet === "kebutuhan" && "bg-emerald-50 text-emerald-700 border-emerald-200",
+                          entry.dompet === "tabungan" && "bg-sky-50 text-sky-700 border-sky-200",
+                          entry.dompet === "self_reward" && "bg-amber-50 text-amber-700 border-amber-200",
+                          entry.dompet === "sedekah" && "bg-violet-50 text-violet-700 border-violet-200")}>
+                          {DOMPET_OPTIONS.find(d => d.value === entry.dompet)?.label}
+                        </span>
+                      </td>
+                      <td className={cn("px-2 sm:px-3 py-2 border-r", TABLE_BORDER)}>
+                        <span className="text-sm text-slate-800 whitespace-normal break-words leading-snug">{entry.nama_barang}</span>
+                      </td>
+                      <td className={cn("px-2 sm:px-3 py-2 text-center border-r font-semibold tabular-nums text-slate-700", TABLE_BORDER)}>
+                        {formatRupiah(entry.harga)}
+                      </td>
+                      <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
+                        <div className="flex items-center justify-center gap-1 flex-wrap">
+                          {isBelum ? (
+                            <Button size="sm" aria-label="Tandai sudah dibeli" onClick={() => handleBeli(entry.id)}
+                              className="h-6 gap-1 bg-green-600 hover:bg-green-700 text-white text-[11px] px-1.5">
+                              <Check className="h-3 w-3" /> Sudah
+                            </Button>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2 py-0.5 text-[11px] font-medium border border-green-200">
+                              <Check className="h-3 w-3" /> Dibeli
+                            </span>
+                          )}
+                          <Button size="sm" aria-label="Edit keranjang" onClick={() => openEdit(entry)}
+                            className="h-6 gap-1 bg-slate-600 hover:bg-slate-700 text-white text-[11px] px-1.5">
+                            <Pencil className="h-3 w-3" /> Edit
                           </Button>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2 py-0.5 text-[11px] font-medium border border-green-200">
-                            <Check className="h-3 w-3" /> Dibeli
-                          </span>
-                        )}
-                        <Button size="sm" aria-label="Edit keranjang" onClick={() => openEdit(entry)}
-                          className="h-6 gap-1 bg-slate-600 hover:bg-slate-700 text-white text-[11px] px-1.5">
-                          <Pencil className="h-3 w-3" /> Edit
-                        </Button>
-                        <Button size="sm" aria-label="Hapus keranjang" onClick={() => handleDelete(entry.id)}
-                          className="h-6 gap-1 bg-red-600 hover:bg-red-700 text-white text-[11px] px-1.5">
-                          <Trash2 className="h-3 w-3" /> Hapus
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
+                          <Button size="sm" aria-label="Hapus keranjang" onClick={() => handleDelete(entry.id)}
+                            className="h-6 gap-1 bg-red-600 hover:bg-red-700 text-white text-[11px] px-1.5">
+                            <Trash2 className="h-3 w-3" /> Hapus
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  </Fragment>
                 )
               })
             )}
