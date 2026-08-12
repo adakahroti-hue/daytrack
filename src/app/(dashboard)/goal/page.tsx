@@ -12,7 +12,7 @@ import {
   startOfYear,
   endOfYear,
 } from "date-fns"
-import { Target, Wallet, Banknote, Wrench, Pencil, Trash2, Plus, Hash, Clock, ClipboardList, Footprints, MousePointerClick, Star } from "lucide-react"
+import { Target, Wallet, Banknote, Wrench, Pencil, Trash2, Plus, Hash, Clock, ClipboardList, Footprints, MousePointerClick, Star, ArrowUp, ArrowDown, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -26,6 +26,42 @@ import { useRealtime } from "@/hooks/useRealtime"
 import { useHeaderControls } from "@/components/layout/HeaderControls"
 
 const TABLE_BORDER = "border-slate-900"
+
+interface LangkahItem {
+  fields: string[]
+}
+
+// Parse langkah_aksi (TEXT di DB) ke struktur list.
+// Kalau isinya JSON array -> langkah terstruktur.
+// Kalau teks biasa -> 1 langkah dengan 1 field.
+// Kalau kosong -> [].
+function parseLangkah(raw: string | null): LangkahItem[] {
+  if (!raw || !raw.trim()) return []
+  try {
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed)) {
+      return parsed.map((it: any) => ({
+        fields: Array.isArray(it?.fields)
+          ? it.fields.map((f: any) => String(f ?? "")).filter((f: string) => f.length > 0)
+          : (it && typeof it === "string" && it.length > 0 ? [it] : [])
+      }))
+    }
+  } catch {
+    // bukan JSON -> anggap teks biasa
+    return [{ fields: [raw] }]
+  }
+  return []
+}
+
+// Balik: list -> string JSON (atau teks biasa kalau cuma 1 field di 1 step)
+function serializeLangkah(list: LangkahItem[]): string {
+  const clean = list
+    .map(l => ({ fields: (l.fields || []).map(f => f.trim()).filter(f => f.length > 0) }))
+    .filter(l => l.fields.length > 0)
+  if (clean.length === 0) return ""
+  if (clean.length === 1 && clean[0].fields.length === 1) return clean[0].fields[0]
+  return JSON.stringify(clean)
+}
 
 interface GoalEntry {
   id: string
@@ -101,6 +137,7 @@ export default function GoalPage() {
 
   const [editState, setEditState] = useState<EditState | null>(null)
   const [hargaInput, setHargaInput] = useState("")
+  const [langkahList, setLangkahList] = useState<LangkahItem[]>([])
 
   const entries = useMemo(() => {
     return [...(logs as GoalEntry[])].sort((a, b) =>
@@ -126,6 +163,7 @@ export default function GoalPage() {
       action_harian: "",
       langkah_aksi: "",
     })
+    setLangkahList([])
   }
 
   const openEdit = (entry: GoalEntry) => {
@@ -139,12 +177,14 @@ export default function GoalPage() {
       action_harian: entry.action_harian || "",
       langkah_aksi: entry.langkah_aksi || "",
     })
+    setLangkahList(parseLangkah(entry.langkah_aksi))
   }
 
   const handleSave = async () => {
     if (!editState) return
     if (!editState.nama_goal.trim()) return
     if (editState.proyeksi_harga <= 0) return
+    const serializedLangkah = serializeLangkah(langkahList)
     if (editState.id) {
       await updateGoal.mutateAsync({
         id: editState.id,
@@ -154,7 +194,7 @@ export default function GoalPage() {
           proyeksi_harga: editState.proyeksi_harga,
           tempo: editState.tempo,
           action_harian: editState.action_harian,
-          langkah_aksi: editState.langkah_aksi,
+          langkah_aksi: serializedLangkah,
         },
       })
     } else {
@@ -165,11 +205,29 @@ export default function GoalPage() {
         proyeksi_harga: editState.proyeksi_harga,
         tempo: editState.tempo,
         action_harian: editState.action_harian,
-        langkah_aksi: editState.langkah_aksi,
+        langkah_aksi: serializedLangkah,
       })
     }
     setEditState(null)
+    setLangkahList([])
   }
+
+  // ── Langkah Aksi builder helpers ──
+  const addStep = () => setLangkahList(prev => [...prev, { fields: [""] }])
+  const removeStep = (si: number) => setLangkahList(prev => prev.filter((_, i) => i !== si))
+  const moveStep = (si: number, dir: -1 | 1) => setLangkahList(prev => {
+    const next = [...prev]
+    const j = si + dir
+    if (j < 0 || j >= next.length) return prev
+    ;[next[si], next[j]] = [next[j], next[si]]
+    return next
+  })
+  const updateField = (si: number, fi: number, val: string) => setLangkahList(prev =>
+    prev.map((s, i) => i === si ? { fields: s.fields.map((f, k) => k === fi ? val : f) } : s))
+  const addField = (si: number) => setLangkahList(prev =>
+    prev.map((s, i) => i === si ? { fields: [...s.fields, ""] } : s))
+  const removeField = (si: number, fi: number) => setLangkahList(prev =>
+    prev.map((s, i) => i === si ? { fields: s.fields.filter((_, k) => k !== fi) } : s))
 
   const handleDelete = async (id: string) => {
     await deleteGoal.mutateAsync(id)
@@ -265,7 +323,20 @@ export default function GoalPage() {
                       <span className="text-base text-slate-700 whitespace-normal break-words leading-snug">{entry.action_harian || <span className="text-slate-300">—</span>}</span>
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2 border-r align-top", TABLE_BORDER)}>
-                      <span className="text-base text-slate-700 whitespace-normal break-words leading-snug">{entry.langkah_aksi || <span className="text-slate-300">—</span>}</span>
+                      {(() => {
+                        const steps = parseLangkah(entry.langkah_aksi)
+                        if (steps.length === 0) return <span className="text-slate-300">—</span>
+                        return (
+                          <ol className="space-y-0.5">
+                            {steps.map((st, i) => (
+                              <li key={i} className="text-base text-slate-700 leading-snug">
+                                <span className="font-semibold text-slate-500 mr-1">{i + 1}.</span>
+                                {st.fields.length === 0 ? "—" : st.fields.join(" · ")}
+                              </li>
+                            ))}
+                          </ol>
+                        )
+                      })()}
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
                       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-1">
@@ -346,10 +417,66 @@ export default function GoalPage() {
                 onChange={(e) => setEditState(prev => prev ? { ...prev, action_harian: e.target.value } : prev)} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="g-langkah">Langkah Aksi</Label>
-              <Textarea id="g-langkah" rows={2} placeholder="Deskripsi langkah aksi..."
-                value={editState?.langkah_aksi ?? ""}
-                onChange={(e) => setEditState(prev => prev ? { ...prev, langkah_aksi: e.target.value } : prev)} />
+              <div className="flex items-center justify-between">
+                <Label htmlFor="g-langkah">Langkah Aksi</Label>
+                <Button type="button" size="sm" variant="outline" onClick={addStep}
+                  className="h-6 gap-1 text-[11px] px-2">
+                  <Plus className="h-3 w-3" /> Tambah Langkah
+                </Button>
+              </div>
+              {langkahList.length === 0 ? (
+                <p className="text-xs text-slate-400">Belum ada langkah. Klik &quot;Tambah Langkah&quot; untuk mulai menyusun rencana berurutan.</p>
+              ) : (
+                <div className="space-y-2">
+                  {langkahList.map((step, si) => (
+                    <div key={si} className="rounded-lg border border-slate-200 bg-slate-50/60 p-2 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-slate-500">Langkah {si + 1}</span>
+                        <div className="flex items-center gap-1">
+                          <Button type="button" size="sm" variant="ghost" aria-label="Pindah ke atas"
+                            disabled={si === 0}
+                            onClick={() => moveStep(si, -1)}
+                            className="h-5 w-5 p-0 text-slate-500 hover:text-slate-700 disabled:opacity-30">
+                            <ArrowUp className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button type="button" size="sm" variant="ghost" aria-label="Pindah ke bawah"
+                            disabled={si === langkahList.length - 1}
+                            onClick={() => moveStep(si, 1)}
+                            className="h-5 w-5 p-0 text-slate-500 hover:text-slate-700 disabled:opacity-30">
+                            <ArrowDown className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button type="button" size="sm" variant="ghost" aria-label="Hapus langkah"
+                            onClick={() => removeStep(si)}
+                            className="h-5 w-5 p-0 text-red-500 hover:text-red-700">
+                            <X className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        {step.fields.map((f, fi) => (
+                          <div key={fi} className="flex items-center gap-1.5">
+                            <Input
+                              value={f}
+                              placeholder={`Field ${fi + 1}`}
+                              onChange={(e) => updateField(si, fi, e.target.value)}
+                              className="h-8 text-sm"
+                            />
+                            <Button type="button" size="sm" variant="ghost" aria-label="Hapus field"
+                              onClick={() => removeField(si, fi)}
+                              className="h-7 w-7 shrink-0 p-0 text-red-500 hover:text-red-700">
+                              <X className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        ))}
+                        <Button type="button" size="sm" variant="outline" onClick={() => addField(si)}
+                          className="h-6 gap-1 text-[11px] px-2">
+                          <Plus className="h-3 w-3" /> Tambah Field
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="flex justify-end gap-2 pt-1">
               <Button variant="outline" onClick={() => setEditState(null)}>Batal</Button>
