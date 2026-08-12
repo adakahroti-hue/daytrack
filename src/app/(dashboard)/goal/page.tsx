@@ -34,7 +34,6 @@ interface GoalEntry {
   tanggal_deadline: string
   nama_goal: string
   proyeksi_harga: number
-  kategori: string
   action_harian: string | null
   langkah_aksi: string | null
   created_at: string
@@ -46,7 +45,6 @@ interface EditState {
   tanggal_set: string
   nama_goal: string
   proyeksi_harga: number
-  kategori: string
   action_harian: string
   langkah_aksi: string
 }
@@ -116,7 +114,6 @@ export default function GoalPage() {
       tanggal_set: todayStr,
       nama_goal: "",
       proyeksi_harga: 0,
-      kategori: "kebutuhan",
       action_harian: "",
       langkah_aksi: "",
     })
@@ -129,7 +126,6 @@ export default function GoalPage() {
       tanggal_set: entry.tanggal_set,
       nama_goal: entry.nama_goal,
       proyeksi_harga: entry.proyeksi_harga,
-      kategori: entry.kategori,
       action_harian: entry.action_harian || "",
       langkah_aksi: entry.langkah_aksi || "",
     })
@@ -146,7 +142,6 @@ export default function GoalPage() {
           tanggal_set: editState.tanggal_set,
           nama_goal: editState.nama_goal.trim(),
           proyeksi_harga: editState.proyeksi_harga,
-          kategori: editState.kategori,
           action_harian: editState.action_harian,
           langkah_aksi: editState.langkah_aksi,
         },
@@ -157,7 +152,6 @@ export default function GoalPage() {
         tanggal_deadline: todayStr,
         nama_goal: editState.nama_goal.trim(),
         proyeksi_harga: editState.proyeksi_harga,
-        kategori: editState.kategori,
         action_harian: editState.action_harian,
         langkah_aksi: editState.langkah_aksi,
       })
@@ -192,9 +186,6 @@ export default function GoalPage() {
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[150px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><Banknote className="h-3.5 w-3.5 text-indigo-500" /> Nilai</div>
               </th>
-              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[150px]", TABLE_BORDER)}>
-                <div className="flex items-center justify-center gap-1"><Wallet className="h-3.5 w-3.5 text-indigo-500" /> Kategori</div>
-              </th>
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[160px] sm:min-w-[200px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><Wrench className="h-3.5 w-3.5 text-indigo-500" /> Rencana</div>
               </th>
@@ -208,11 +199,11 @@ export default function GoalPage() {
           </thead>
           <tbody className={cn(effectiveLocked && "pointer-events-none select-none")}>
             {isLoading ? (
-              <tr><td colSpan={7} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
+              <tr><td colSpan={6} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
             ) : error ? (
-              <tr><td colSpan={7} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
+              <tr><td colSpan={6} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
             ) : entries.length === 0 ? (
-              <tr><td colSpan={7} className="text-center py-12 text-slate-400 text-sm">Belum ada goal. Tekan tombol + untuk menambah.</td></tr>
+              <tr><td colSpan={6} className="text-center py-12 text-slate-400 text-sm">Belum ada goal. Tekan tombol + untuk menambah.</td></tr>
             ) : (
               entries.map((entry, rowIdx) => {
                 return (
@@ -225,9 +216,6 @@ export default function GoalPage() {
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2 text-center border-r font-semibold tabular-nums text-slate-700", TABLE_BORDER)}>
                       {formatRupiah(entry.proyeksi_harga)}
-                    </td>
-                    <td className={cn("px-2 sm:px-3 py-2 text-center border-r", TABLE_BORDER)}>
-                      <span className="text-slate-700 whitespace-normal break-words leading-snug">{entry.kategori || <span className="text-slate-300">—</span>}</span>
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2 border-r align-top", TABLE_BORDER)}>
                       <span className="text-slate-700 whitespace-normal break-words leading-snug text-[11px] sm:text-xs">{entry.action_harian || <span className="text-slate-300">—</span>}</span>
@@ -281,12 +269,6 @@ export default function GoalPage() {
                   setEditState(prev => prev ? { ...prev, proyeksi_harga: num } : prev)
                   setHargaInput(num > 0 ? formatRupiah(num) : '')
                 }} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="g-kategori">Kategori</Label>
-              <Input id="g-kategori" placeholder="Contoh: Kebutuhan, Tabungan..."
-                value={editState?.kategori ?? ""}
-                onChange={(e) => setEditState(prev => prev ? { ...prev, kategori: e.target.value } : prev)} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="g-action">Rencana</Label>
