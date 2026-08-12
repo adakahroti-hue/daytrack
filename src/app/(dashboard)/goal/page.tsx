@@ -179,35 +179,35 @@ export default function GoalPage() {
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
 
       {/* Card Goal Utama */}
-      <div className={cn("rounded-xl border bg-amber-100 p-4 sm:p-5 shadow-sm", TABLE_BORDER)}>
+      <div className={cn("rounded-lg border border-green-200 bg-green-50 p-4 sm:p-5 shadow-sm")}>
         <div className="flex items-center gap-2 mb-3">
           <h2 className="text-sm font-bold uppercase tracking-wide text-slate-700">Goal Utama</h2>
         </div>
         {goalUtama ? (
           <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
             <div>
-              <p className="text-[11px] font-semibold uppercase text-amber-800">Nama Goal</p>
+              <p className="text-[11px] font-semibold uppercase text-green-800">Nama Goal</p>
               <p className="font-semibold text-slate-800 break-words">{goalUtama.nama_goal}</p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase text-amber-800">Nilai</p>
+              <p className="text-[11px] font-semibold uppercase text-green-800">Nilai</p>
               <p className="font-semibold text-slate-800 tabular-nums">{formatRupiah(goalUtama.proyeksi_harga)}</p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase text-amber-800">Tempo</p>
-              <p className="text-slate-800 break-words">{goalUtama.tempo || <span className="text-amber-700/60">—</span>}</p>
+              <p className="text-[11px] font-semibold uppercase text-green-800">Tempo</p>
+              <p className="text-slate-800 break-words">{goalUtama.tempo || <span className="text-green-700/60">—</span>}</p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase text-amber-800">Rencana</p>
-              <p className="text-slate-800 break-words whitespace-normal text-[13px]">{goalUtama.action_harian || <span className="text-amber-700/60">—</span>}</p>
+              <p className="text-[11px] font-semibold uppercase text-green-800">Rencana</p>
+              <p className="text-slate-800 break-words whitespace-normal text-[13px]">{goalUtama.action_harian || <span className="text-green-700/60">—</span>}</p>
             </div>
             <div className="col-span-2">
-              <p className="text-[11px] font-semibold uppercase text-amber-800">Langkah Aksi</p>
-              <p className="text-slate-800 break-words whitespace-normal text-[13px]">{goalUtama.langkah_aksi || <span className="text-amber-700/60">—</span>}</p>
+              <p className="text-[11px] font-semibold uppercase text-green-800">Langkah Aksi</p>
+              <p className="text-slate-800 break-words whitespace-normal text-[13px]">{goalUtama.langkah_aksi || <span className="text-green-700/60">—</span>}</p>
             </div>
           </div>
         ) : (
-          <p className="text-sm text-amber-800/80">Belum ada goal utama. Tekan tombol &quot;Jadikan Utama&quot; pada salah satu goal di bawah.</p>
+          <p className="text-sm text-green-800/80">Belum ada goal utama. Tekan tombol &quot;Jadikan Utama&quot; pada salah satu goal di bawah.</p>
         )}
       </div>
 
