@@ -332,7 +332,7 @@ export default function ArusKasPage() {
                 const isMasuk = entry.kategori === "uang_masuk"
                 return (
                   <tr key={entry.id} className={cn("border-b transition-colors", TABLE_BORDER, rowIdx % 2 === 0 ? "bg-white" : "bg-slate-50/30", "hover:bg-blue-50/40")}>
-                    <td className={cn("dt-col-stick sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums", TABLE_BORDER)}>
+                    <td className={cn("dt-col-stick sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums text-sm", TABLE_BORDER)}>
                       <span className="sm:hidden">{format(date, "d MMM", { locale: id })}</span>
                       <span className="hidden sm:inline">{dateDisplay}</span>
                     </td>
@@ -364,7 +364,7 @@ export default function ArusKasPage() {
                       {isMasuk ? "+" : "−"}{formatRupiah(entry.nominal).replace("Rp ", "")}
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2 border-r", TABLE_BORDER)}>
-                      <span className="text-slate-800 whitespace-normal break-words leading-snug">{entry.alasan || "-"}</span>
+                      <span className="text-sm text-slate-800 whitespace-normal break-words leading-snug">{entry.alasan || "-"}</span>
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
                       <div className="flex items-center justify-center gap-1 flex-wrap">
