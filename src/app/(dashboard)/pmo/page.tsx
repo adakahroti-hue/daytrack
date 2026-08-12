@@ -255,7 +255,7 @@ export default function PmoPage() {
                               )}
                             >
                               {isDone && <Check className="h-3.5 w-3.5 shrink-0" />}
-                              {isDone ? 'Berhasil' : isRelapse ? 'Relapse' : 'Belum'}
+                              {isDone ? 'Berhasil' : isRelapse ? 'Relapse' : <X className="h-3.5 w-3.5 shrink-0 text-slate-400" />}
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="center" className="w-48">

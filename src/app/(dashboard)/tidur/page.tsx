@@ -325,7 +325,7 @@ export default function TidurPage() {
                               )}
                             >
                               {isDone && <Check className="h-3.5 w-3.5 shrink-0" />}
-                              {isDone ? 'Tepat Waktu' : isBegadang ? 'Begadang' : 'Belum'}
+                              {isDone ? 'Tepat Waktu' : isBegadang ? 'Begadang' : <X className="h-3.5 w-3.5 shrink-0 text-slate-400" />}
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="center" className="w-40">
