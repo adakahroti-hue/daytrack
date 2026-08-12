@@ -298,11 +298,11 @@ export default function GoalPage() {
       </div>
 
       {/* Ringkasan total proyeksi harga (di bawah tabel) */}
-      <div className={cn("rounded-xl border bg-white p-4 flex items-center justify-between gap-3", TABLE_BORDER)}>
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-          <Target className="h-4 w-4" /> Total Proyeksi Goal ({entries.length} item)
+      <div className={cn("rounded-xl border bg-white p-3 sm:p-4 flex flex-wrap items-center justify-between gap-2 sm:gap-3", TABLE_BORDER)}>
+        <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
+          <Target className="h-3.5 w-3.5" /> Total Proyeksi Goal ({entries.length} item)
         </p>
-        <p className="text-lg font-bold text-slate-800 tabular-nums">{formatRupiah(totalHarga)}</p>
+        <p className="text-base sm:text-lg font-bold text-slate-800 tabular-nums">{formatRupiah(totalHarga)}</p>
       </div>
 
       {lockControl}
