@@ -290,7 +290,7 @@ export default function GoalPage() {
           <h2 className="text-sm font-bold uppercase tracking-wide text-slate-700">Goal Utama</h2>
         </div>
         {goalUtama ? (
-          <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-3 text-sm">
             <div>
               <p className="text-[11px] font-semibold uppercase text-green-800">Nama Goal</p>
               <p className="font-semibold text-slate-800 break-words">{goalUtama.nama_goal}</p>
@@ -307,7 +307,7 @@ export default function GoalPage() {
               <p className="text-[11px] font-semibold uppercase text-green-800">Rencana</p>
               <p className="text-slate-800 break-words whitespace-normal text-[13px]">{goalUtama.action_harian || <span className="text-green-700/60">—</span>}</p>
             </div>
-            <div className="col-span-2">
+            <div className="col-span-2 sm:col-span-4">
               <p className="text-[11px] font-semibold uppercase text-green-800">Langkah Aksi</p>
               {(() => {
                 const steps = parseLangkah(goalUtama.langkah_aksi)
