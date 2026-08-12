@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import {
   format,
   startOfWeek,
@@ -156,7 +156,7 @@ export default function KesenanganPage() {
       {/* Tabel gaya Quran: Tanggal | Hari | Kesenangan yang Ditunda | Status — hanya entri yang ada */}
       <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)] landscape:max-lg:max-h-none rounded-lg border bg-white', TABLE_BORDER)}>
         <table className="w-full border-collapse text-xs sm:text-sm">
-          <thead className="sticky top-0 z-20 bg-white">
+          <thead className={cn('hidden sm:table-header-group sticky top-0 z-20 bg-white')}>
             <tr className={cn('border-b', TABLE_BORDER)}>
               <th className={cn('dt-col-stick sticky left-0 z-30 bg-white px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[72px] sm:min-w-[100px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
@@ -218,10 +218,37 @@ export default function KesenanganPage() {
                 const isDone = entry.status === 'sudah'
 
                 return (
-                  <tr
-                    key={entry.id}
-                    className={cn('border-b transition-colors', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30', 'hover:bg-blue-50/40')}
-                  >
+                  <Fragment key={entry.id}>
+                    {/* ── Mobile: kartu ringkas (sm:hidden) ── */}
+                    <tr className={cn('sm:hidden border-b', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30')}>
+                      <td colSpan={5} className={cn('px-3 py-3', TABLE_BORDER)}>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 flex-wrap text-[11px] text-slate-500">
+                            <span className="tabular-nums">{dateDisplay}</span>
+                            <span className={cn('inline-block px-1.5 py-0.5 rounded-full border font-medium', DAY_BADGE_COLORS[dayName] || 'bg-slate-100 text-slate-700 border-slate-200')}>{dayName}</span>
+                          </div>
+                          <p className="text-sm text-slate-800 whitespace-normal break-words leading-snug">{entry.kesenangan}</p>
+                          <div className="flex items-center gap-1.5 pt-0.5">
+                            <button type="button" onClick={() => handleSetStatus(entry, !isDone)}
+                              className={cn('h-7 flex-1 inline-flex items-center justify-center gap-1 rounded-md text-[11px] font-medium border',
+                                isDone ? 'bg-green-100 text-green-700 border-green-200' : 'bg-amber-50 text-amber-700 border-amber-200')}>
+                              {isDone ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                              {isDone ? 'Sudah' : 'Belum'}
+                            </button>
+                            <Button size="sm" aria-label="Edit kesenangan" onClick={() => openEdit(entry)}
+                              className="h-7 flex-1 gap-1 bg-slate-600 hover:bg-slate-700 text-white text-[11px] px-1.5">
+                              <Pencil className="h-3 w-3" /> Edit
+                            </Button>
+                            <Button size="sm" aria-label="Hapus kesenangan" onClick={() => handleDeleteEntry(entry.id)}
+                              className="h-7 flex-1 gap-1 bg-red-600 hover:bg-red-700 text-white text-[11px] px-1.5">
+                              <Trash2 className="h-3 w-3" /> Hapus
+                            </Button>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    {/* ── Desktop: tabel penuh (hidden sm:table-row) ── */}
+                    <tr key={entry.id} className={cn('hidden sm:table-row border-b transition-colors', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30', 'hover:bg-blue-50/40')}>
                     <td className={cn('dt-col-stick sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
                       <span className="sm:hidden">{format(date, 'd MMM', { locale: id })}</span>
                       <span className="hidden sm:inline">{dateDisplay}</span>
@@ -279,6 +306,7 @@ export default function KesenanganPage() {
                       </div>
                     </td>
                   </tr>
+                  </Fragment>
                 )
               })
             )}
