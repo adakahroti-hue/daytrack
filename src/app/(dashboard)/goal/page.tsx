@@ -183,9 +183,6 @@ export default function GoalPage() {
           <thead className="sticky top-0 z-20 bg-white">
             <tr className={cn("border-b", TABLE_BORDER)}>
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[140px]", TABLE_BORDER)}>
-                <div className="flex items-center justify-center gap-1"><Calendar className="h-3.5 w-3.5 text-indigo-500" /> Tgl Set</div>
-              </th>
-              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[140px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><CalendarDays className="h-3.5 w-3.5 text-indigo-500" /> Tgl Deadline</div>
               </th>
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[160px] sm:min-w-[200px]", TABLE_BORDER)}>
@@ -207,21 +204,16 @@ export default function GoalPage() {
           </thead>
           <tbody className={cn(effectiveLocked && "pointer-events-none select-none")}>
             {isLoading ? (
-              <tr><td colSpan={7} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
+              <tr><td colSpan={6} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
             ) : error ? (
-              <tr><td colSpan={7} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
+              <tr><td colSpan={6} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
             ) : entries.length === 0 ? (
-              <tr><td colSpan={7} className="text-center py-12 text-slate-400 text-sm">Belum ada goal. Tekan tombol + untuk menambah.</td></tr>
+              <tr><td colSpan={6} className="text-center py-12 text-slate-400 text-sm">Belum ada goal. Tekan tombol + untuk menambah.</td></tr>
             ) : (
               entries.map((entry, rowIdx) => {
-                const setDate = new Date(entry.tanggal_set + "T00:00:00")
                 const deadlineDate = new Date(entry.tanggal_deadline + "T00:00:00")
                 return (
                   <tr key={entry.id} className={cn("border-b transition-colors", TABLE_BORDER, rowIdx % 2 === 0 ? "bg-white" : "bg-slate-50/30", "hover:bg-blue-50/40")}>
-                    <td className={cn("px-2 sm:px-3 py-2 text-center border-r font-medium tabular-nums text-slate-700", TABLE_BORDER)}>
-                      <span className="sm:hidden">{format(setDate, "d MMM", { locale: id })}</span>
-                      <span className="hidden sm:inline">{format(setDate, "d MMMM yyyy", { locale: id })}</span>
-                    </td>
                     <td className={cn("px-2 sm:px-3 py-2 text-center border-r font-medium tabular-nums text-slate-700", TABLE_BORDER)}>
                       <span className="sm:hidden">{format(deadlineDate, "d MMM", { locale: id })}</span>
                       <span className="hidden sm:inline">{format(deadlineDate, "d MMMM yyyy", { locale: id })}</span>
@@ -269,17 +261,10 @@ export default function GoalPage() {
             <DialogTitle>{editState?.id ? "Edit Goal" : "Tambah Goal"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="g-set">Tanggal Set</Label>
-                <Input id="g-set" type="date" value={editState?.tanggal_set ?? todayStr}
-                  onChange={(e) => setEditState(prev => prev ? { ...prev, tanggal_set: e.target.value } : prev)} />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="g-deadline">Tanggal Deadline</Label>
-                <Input id="g-deadline" type="date" value={editState?.tanggal_deadline ?? todayStr}
-                  onChange={(e) => setEditState(prev => prev ? { ...prev, tanggal_deadline: e.target.value } : prev)} />
-              </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="g-deadline">Tanggal Deadline</Label>
+              <Input id="g-deadline" type="date" value={editState?.tanggal_deadline ?? todayStr}
+                onChange={(e) => setEditState(prev => prev ? { ...prev, tanggal_deadline: e.target.value } : prev)} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="g-nama">Nama Goal</Label>
