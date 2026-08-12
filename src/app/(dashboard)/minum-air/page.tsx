@@ -264,7 +264,7 @@ export default function MinumAirPage() {
                                   )}
                                 >
                                   {isDone && <Check className="h-3.5 w-3.5" />}
-                                  {isDone ? 'Sudah' : isLupa ? lupaLabel : 'Belum'}
+                                  {isDone ? 'Sudah' : isLupa ? lupaLabel : <X className="h-3.5 w-3.5 shrink-0 text-slate-400" />}
                                 </button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="center" className="w-40">

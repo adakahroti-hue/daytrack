@@ -237,7 +237,7 @@ export default function SyukurPage() {
                               )}
                             >
                               {isDone && <Check className="h-3.5 w-3.5 shrink-0" />}
-                              {isDone ? 'Sudah' : isMissed ? 'Tidak' : 'Pilih'}
+                              {isDone ? 'Sudah' : isMissed ? 'Tidak' : <X className="h-3.5 w-3.5 shrink-0 text-slate-400" />}
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="center" className="w-44">
