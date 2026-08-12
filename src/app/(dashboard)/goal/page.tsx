@@ -314,9 +314,9 @@ export default function GoalPage() {
                 return (
                   <ol className="space-y-1.5 mt-0.5">
                     {allFields.map((f, i) => (
-                      <li key={i} className="flex items-start gap-2 rounded-md bg-white border border-green-200 px-2.5 py-1.5">
+                      <li key={i} className="flex items-start gap-2">
                         <span className="shrink-0 flex items-center justify-center h-5 w-5 rounded-full bg-green-600 text-white text-[11px] font-bold">{i + 1}</span>
-                        <span className="text-slate-800 text-[13px] leading-snug break-words">{f}</span>
+                        <span className="inline-flex w-fit text-slate-800 text-[13px] leading-snug break-words rounded-lg bg-white border border-green-200 px-2.5 py-1">{f}</span>
                       </li>
                     ))}
                   </ol>
