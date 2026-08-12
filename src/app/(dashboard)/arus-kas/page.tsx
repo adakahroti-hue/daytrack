@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic"
 
-import { useMemo, useState } from "react"
+import { Fragment, useMemo, useState } from "react"
 import {
   format,
   startOfWeek,
@@ -331,54 +331,92 @@ export default function ArusKasPage() {
                 const dateDisplay = format(date, "d MMMM", { locale: id })
                 const isMasuk = entry.kategori === "uang_masuk"
                 return (
-                  <tr key={entry.id} className={cn("border-b transition-colors", TABLE_BORDER, rowIdx % 2 === 0 ? "bg-white" : "bg-slate-50/30", "hover:bg-blue-50/40")}>
-                    <td className={cn("dt-col-stick sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums text-sm", TABLE_BORDER)}>
-                      <span className="sm:hidden">{format(date, "d MMM", { locale: id })}</span>
-                      <span className="hidden sm:inline">{dateDisplay}</span>
-                    </td>
-                    <td className={cn("px-2 sm:px-3 py-2 text-center border-r dt-col-stick sm:sticky sm:left-[100px] sm:z-10 sm:bg-inherit", TABLE_BORDER)}>
-                      <span className={cn("inline-block px-2 py-0.5 rounded-full text-xs border font-medium", DAY_BADGE_COLORS[dayName] || "bg-slate-100 text-slate-700 border-slate-200")}>{dayName}</span>
-                    </td>
-                    <td className={cn("px-2 sm:px-3 py-2 text-center border-r", TABLE_BORDER)}>
-                      <span className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium border",
-                        isMasuk ? "bg-green-100 text-green-700 border-green-200" : "bg-red-50 text-red-600 border-red-200")}>
-                        {isMasuk ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownLeft className="h-3.5 w-3.5" />}
-                        {isMasuk ? "Uang Masuk" : "Uang Keluar"}
-                      </span>
-                    </td>
-                    <td className={cn("px-2 sm:px-3 py-2 text-center border-r", TABLE_BORDER)}>
-                      {isMasuk ? (
-                        <span className="text-slate-400">-</span>
-                      ) : (
-                        <span className={cn("inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border",
-                          entry.dompet === "kebutuhan" && "bg-emerald-50 text-emerald-700 border-emerald-200",
-                          entry.dompet === "tabungan" && "bg-sky-50 text-sky-700 border-sky-200",
-                          entry.dompet === "self_reward" && "bg-amber-50 text-amber-700 border-amber-200",
-                          entry.dompet === "sedekah" && "bg-violet-50 text-violet-700 border-violet-200",
-                          !entry.dompet && "bg-slate-100 text-slate-500 border-slate-200")}>
-                          {entry.dompet ? DOMPET_OPTIONS.find(d => d.value === entry.dompet)?.label : "-"}
+                  <Fragment key={entry.id}>
+                    {/* ── Mobile: kartu ringkas (sm:hidden) ── */}
+                    <tr className={cn("sm:hidden border-b", TABLE_BORDER, rowIdx % 2 === 0 ? "bg-white" : "bg-slate-50/30")}>
+                      <td colSpan={7} className={cn("px-3 py-3", TABLE_BORDER)}>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border shrink-0",
+                                isMasuk ? "bg-green-100 text-green-700 border-green-200" : "bg-red-50 text-red-600 border-red-200")}>
+                                {isMasuk ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownLeft className="h-3 w-3" />}
+                                {isMasuk ? "Masuk" : "Keluar"}
+                              </span>
+                              <span className="text-[11px] text-slate-500 tabular-nums">{dateDisplay}</span>
+                              <span className={cn("inline-block px-1.5 py-0.5 rounded-full text-[10px] border font-medium", DAY_BADGE_COLORS[dayName] || "bg-slate-100 text-slate-700 border-slate-200")}>{dayName}</span>
+                            </div>
+                            <span className={cn("font-bold tabular-nums text-sm shrink-0", isMasuk ? "text-green-700" : "text-red-600")}>
+                              {isMasuk ? "+" : "−"}{formatRupiah(entry.nominal).replace("Rp ", "")}
+                            </span>
+                          </div>
+                          <p className="text-sm text-slate-800 whitespace-normal break-words leading-snug">{entry.alasan || "-"}</p>
+                          {!isMasuk && entry.dompet && (
+                            <p className="text-[11px] text-slate-500">Dompet: {DOMPET_OPTIONS.find(d => d.value === entry.dompet)?.label}</p>
+                          )}
+                          <div className="flex items-center gap-1.5 pt-0.5">
+                            <Button size="sm" aria-label="Edit arus kas" onClick={() => openEdit(entry)}
+                              className="h-7 flex-1 gap-1 bg-slate-600 hover:bg-slate-700 text-white text-[11px] px-1.5">
+                              <Pencil className="h-3 w-3" /> Edit
+                            </Button>
+                            <Button size="sm" aria-label="Hapus arus kas" onClick={() => handleDelete(entry.id)}
+                              className="h-7 flex-1 gap-1 bg-red-600 hover:bg-red-700 text-white text-[11px] px-1.5">
+                              <Trash2 className="h-3 w-3" /> Hapus
+                            </Button>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    {/* ── Desktop: tabel penuh (hidden sm:table-row) ── */}
+                    <tr className={cn("hidden sm:table-row border-b transition-colors", TABLE_BORDER, rowIdx % 2 === 0 ? "bg-white" : "bg-slate-50/30", "hover:bg-blue-50/40")}>
+                      <td className={cn("dt-col-stick sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums text-sm", TABLE_BORDER)}>
+                        <span className="sm:hidden">{format(date, "d MMM", { locale: id })}</span>
+                        <span className="hidden sm:inline">{dateDisplay}</span>
+                      </td>
+                      <td className={cn("px-2 sm:px-3 py-2 text-center border-r dt-col-stick sm:sticky sm:left-[100px] sm:z-10 sm:bg-inherit", TABLE_BORDER)}>
+                        <span className={cn("inline-block px-2 py-0.5 rounded-full text-xs border font-medium", DAY_BADGE_COLORS[dayName] || "bg-slate-100 text-slate-700 border-slate-200")}>{dayName}</span>
+                      </td>
+                      <td className={cn("px-2 sm:px-3 py-2 text-center border-r", TABLE_BORDER)}>
+                        <span className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium border",
+                          isMasuk ? "bg-green-100 text-green-700 border-green-200" : "bg-red-50 text-red-600 border-red-200")}>
+                          {isMasuk ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownLeft className="h-3.5 w-3.5" />}
+                          {isMasuk ? "Uang Masuk" : "Uang Keluar"}
                         </span>
-                      )}
-                    </td>
-                    <td className={cn("px-2 sm:px-3 py-2 text-center border-r font-semibold tabular-nums", TABLE_BORDER, isMasuk ? "text-green-700" : "text-red-600")}>
-                      {isMasuk ? "+" : "−"}{formatRupiah(entry.nominal).replace("Rp ", "")}
-                    </td>
-                    <td className={cn("px-2 sm:px-3 py-2 border-r", TABLE_BORDER)}>
-                      <span className="text-sm text-slate-800 whitespace-normal break-words leading-snug">{entry.alasan || "-"}</span>
-                    </td>
-                    <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
-                      <div className="flex items-center justify-center gap-1 flex-wrap">
-                        <Button size="sm" aria-label="Edit arus kas" onClick={() => openEdit(entry)}
-                          className="h-6 gap-1 bg-slate-600 hover:bg-slate-700 text-white text-[11px] px-1.5">
-                          <Pencil className="h-3 w-3" /> Edit
-                        </Button>
-                        <Button size="sm" aria-label="Hapus arus kas" onClick={() => handleDelete(entry.id)}
-                          className="h-6 gap-1 bg-red-600 hover:bg-red-700 text-white text-[11px] px-1.5">
-                          <Trash2 className="h-3 w-3" /> Hapus
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
+                      </td>
+                      <td className={cn("px-2 sm:px-3 py-2 text-center border-r", TABLE_BORDER)}>
+                        {isMasuk ? (
+                          <span className="text-slate-400">-</span>
+                        ) : (
+                          <span className={cn("inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border",
+                            entry.dompet === "kebutuhan" && "bg-emerald-50 text-emerald-700 border-emerald-200",
+                            entry.dompet === "tabungan" && "bg-sky-50 text-sky-700 border-sky-200",
+                            entry.dompet === "self_reward" && "bg-amber-50 text-amber-700 border-amber-200",
+                            entry.dompet === "sedekah" && "bg-violet-50 text-violet-700 border-violet-200",
+                            !entry.dompet && "bg-slate-100 text-slate-500 border-slate-200")}>
+                            {entry.dompet ? DOMPET_OPTIONS.find(d => d.value === entry.dompet)?.label : "-"}
+                          </span>
+                        )}
+                      </td>
+                      <td className={cn("px-2 sm:px-3 py-2 text-center border-r font-semibold tabular-nums", TABLE_BORDER, isMasuk ? "text-green-700" : "text-red-600")}>
+                        {isMasuk ? "+" : "−"}{formatRupiah(entry.nominal).replace("Rp ", "")}
+                      </td>
+                      <td className={cn("px-2 sm:px-3 py-2 border-r", TABLE_BORDER)}>
+                        <span className="text-sm text-slate-800 whitespace-normal break-words leading-snug">{entry.alasan || "-"}</span>
+                      </td>
+                      <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
+                        <div className="flex items-center justify-center gap-1 flex-wrap">
+                          <Button size="sm" aria-label="Edit arus kas" onClick={() => openEdit(entry)}
+                            className="h-6 gap-1 bg-slate-600 hover:bg-slate-700 text-white text-[11px] px-1.5">
+                            <Pencil className="h-3 w-3" /> Edit
+                          </Button>
+                          <Button size="sm" aria-label="Hapus arus kas" onClick={() => handleDelete(entry.id)}
+                            className="h-6 gap-1 bg-red-600 hover:bg-red-700 text-white text-[11px] px-1.5">
+                            <Trash2 className="h-3 w-3" /> Hapus
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  </Fragment>
                 )
               })
             )}
