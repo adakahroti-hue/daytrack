@@ -253,19 +253,19 @@ export default function GoalPage() {
                       {rowIdx + 1}
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2 border-r", TABLE_BORDER)}>
-                      <span className="text-slate-800 whitespace-normal break-words leading-snug font-medium">{entry.nama_goal}</span>
+                      <span className="text-base text-slate-800 whitespace-normal break-words leading-snug font-medium">{entry.nama_goal}</span>
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2 text-center border-r font-semibold tabular-nums text-slate-700", TABLE_BORDER)}>
                       {formatRupiah(entry.proyeksi_harga)}
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2 text-center border-r", TABLE_BORDER)}>
-                      <span className="text-slate-700 whitespace-normal break-words leading-snug">{entry.tempo || <span className="text-slate-300">—</span>}</span>
+                      <span className="text-base text-slate-700 whitespace-normal break-words leading-snug">{entry.tempo || <span className="text-slate-300">—</span>}</span>
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2 border-r align-top", TABLE_BORDER)}>
-                      <span className="text-slate-700 whitespace-normal break-words leading-snug text-[11px] sm:text-xs">{entry.action_harian || <span className="text-slate-300">—</span>}</span>
+                      <span className="text-base text-slate-700 whitespace-normal break-words leading-snug">{entry.action_harian || <span className="text-slate-300">—</span>}</span>
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2 border-r align-top", TABLE_BORDER)}>
-                      <span className="text-slate-700 whitespace-normal break-words leading-snug text-[11px] sm:text-xs">{entry.langkah_aksi || <span className="text-slate-300">—</span>}</span>
+                      <span className="text-base text-slate-700 whitespace-normal break-words leading-snug">{entry.langkah_aksi || <span className="text-slate-300">—</span>}</span>
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
                       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-1">
