@@ -12,7 +12,7 @@ import {
   startOfYear,
   endOfYear,
 } from "date-fns"
-import { Target, Wallet, Banknote, Wrench, Pencil, Trash2, Plus, Hash, Clock, ClipboardList, Footprints, MousePointerClick } from "lucide-react"
+import { Target, Wallet, Banknote, Wrench, Pencil, Trash2, Plus, Hash, Clock, ClipboardList, Footprints, MousePointerClick, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -21,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { formatRupiah, parseRupiah } from "@/lib/utils"
 import { useTableLock } from "@/components/ui/table-lock"
-import { useGoalRange, useCreateGoal, useDeleteGoal, useUpdateGoal } from "@/hooks/useGoal"
+import { useGoalRange, useCreateGoal, useDeleteGoal, useUpdateGoal, useSetGoalUtama } from "@/hooks/useGoal"
 import { useRealtime } from "@/hooks/useRealtime"
 import { useHeaderControls } from "@/components/layout/HeaderControls"
 
@@ -37,6 +37,7 @@ interface GoalEntry {
   tempo: string | null
   action_harian: string | null
   langkah_aksi: string | null
+  is_utama: boolean
   created_at: string
   updated_at: string
 }
@@ -96,6 +97,7 @@ export default function GoalPage() {
   const createGoal = useCreateGoal()
   const deleteGoal = useDeleteGoal()
   const updateGoal = useUpdateGoal()
+  const setGoalUtama = useSetGoalUtama()
 
   const [editState, setEditState] = useState<EditState | null>(null)
   const [hargaInput, setHargaInput] = useState("")
@@ -103,6 +105,10 @@ export default function GoalPage() {
   const entries = useMemo(() => {
     return [...(logs as GoalEntry[])].sort((a, b) =>
       a.tanggal_set.localeCompare(b.tanggal_set) || (a.created_at || "").localeCompare(b.created_at || ""))
+  }, [logs])
+
+  const goalUtama = useMemo(() => {
+    return (logs as GoalEntry[]).find(g => g.is_utama) || null
   }, [logs])
 
   const totalHarga = useMemo(() => {
@@ -172,6 +178,40 @@ export default function GoalPage() {
   return (
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
 
+      {/* Card Goal Utama */}
+      <div className={cn("rounded-xl border-2 bg-gradient-to-br from-indigo-50 to-white p-4 sm:p-5", TABLE_BORDER)}>
+        <div className="flex items-center gap-2 mb-3">
+          <Star className="h-5 w-5 text-amber-500 fill-amber-400" />
+          <h2 className="text-sm font-bold uppercase tracking-wide text-slate-700">Goal Utama</h2>
+        </div>
+        {goalUtama ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+            <div>
+              <p className="text-[11px] font-semibold uppercase text-slate-400">Nama Goal</p>
+              <p className="font-semibold text-slate-800 break-words">{goalUtama.nama_goal}</p>
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold uppercase text-slate-400">Nilai</p>
+              <p className="font-semibold text-slate-800 tabular-nums">{formatRupiah(goalUtama.proyeksi_harga)}</p>
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold uppercase text-slate-400">Tempo</p>
+              <p className="text-slate-700 break-words">{goalUtama.tempo || <span className="text-slate-300">—</span>}</p>
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold uppercase text-slate-400">Rencana</p>
+              <p className="text-slate-700 break-words whitespace-normal text-[13px]">{goalUtama.action_harian || <span className="text-slate-300">—</span>}</p>
+            </div>
+            <div className="sm:col-span-2">
+              <p className="text-[11px] font-semibold uppercase text-slate-400">Langkah Aksi</p>
+              <p className="text-slate-700 break-words whitespace-normal text-[13px]">{goalUtama.langkah_aksi || <span className="text-slate-300">—</span>}</p>
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-slate-400">Belum ada goal utama. Tekan tombol &quot;Jadikan Utama&quot; pada salah satu goal di bawah.</p>
+        )}
+      </div>
+
       <div className={cn("relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-340px)] landscape:max-lg:max-h-none rounded-lg border bg-white", TABLE_BORDER)}>
         <table className="w-full border-collapse text-xs sm:text-sm">
           <thead className="sticky top-0 z-20 bg-white">
@@ -230,6 +270,16 @@ export default function GoalPage() {
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
                       <div className="flex items-center justify-center gap-1 flex-wrap">
+                        {entry.is_utama ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-[11px] font-medium border border-amber-200">
+                            <Star className="h-3 w-3 fill-amber-400" /> Utama
+                          </span>
+                        ) : (
+                          <Button size="sm" aria-label="Jadikan goal utama" onClick={() => setGoalUtama.mutateAsync(entry.id)}
+                            className="h-6 gap-1 bg-amber-500 hover:bg-amber-600 text-white text-[11px] px-1.5">
+                            <Star className="h-3 w-3" /> Utama
+                          </Button>
+                        )}
                         <Button size="sm" aria-label="Edit goal" onClick={() => openEdit(entry)}
                           className="h-6 gap-1 bg-slate-600 hover:bg-slate-700 text-white text-[11px] px-1.5">
                           <Pencil className="h-3 w-3" /> Edit

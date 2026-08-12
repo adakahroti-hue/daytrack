@@ -6,6 +6,7 @@ import {
   createGoal,
   updateGoal,
   deleteGoal,
+  setGoalUtama,
 } from "@/app/actions/goal"
 import type { GoalFormData } from "@/app/actions/goal"
 
@@ -42,6 +43,16 @@ export function useDeleteGoal() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => deleteGoal(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["goal"] })
+    },
+  })
+}
+
+export function useSetGoalUtama() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => setGoalUtama(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["goal"] })
     },

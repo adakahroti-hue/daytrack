@@ -26,6 +26,7 @@ export interface GoalEntry {
   tempo: string | null
   action_harian: string | null
   langkah_aksi: string | null
+  is_utama: boolean
   created_at: string
   updated_at: string
 }
@@ -100,13 +101,26 @@ export async function deleteGoal(id: string) {
   return { error: null }
 }
 
+export async function setGoalUtama(id: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  // Reset semua goal user jadi false, lalu set yang dipilih jadi true
+  await supabase.from("goal").update({ is_utama: false }).eq("user_id", user.id).neq("id", id)
+  const { error } = await supabase.from("goal").update({ is_utama: true }).eq("id", id).eq("user_id", user.id)
+  if (error) throw new Error(error.message)
+  revalidatePath("/goal")
+  return { error: null }
+}
+
 export async function getGoalRange(startDate: string, endDate: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
   const { data, error } = await supabase
     .from("goal")
-    .select("id, user_id, tanggal_set, tanggal_deadline, nama_goal, proyeksi_harga, tempo, action_harian, langkah_aksi, created_at, updated_at")
+    .select("id, user_id, tanggal_set, tanggal_deadline, nama_goal, proyeksi_harga, tempo, action_harian, langkah_aksi, is_utama, created_at, updated_at")
     .eq("user_id", user.id)
     .gte("tanggal_set", startDate)
     .lte("tanggal_set", endDate)
