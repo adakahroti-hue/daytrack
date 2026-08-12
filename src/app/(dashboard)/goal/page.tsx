@@ -305,7 +305,22 @@ export default function GoalPage() {
             </div>
             <div className="col-span-2">
               <p className="text-[11px] font-semibold uppercase text-green-800">Langkah Aksi</p>
-              <p className="text-slate-800 break-words whitespace-normal text-[13px]">{goalUtama.langkah_aksi || <span className="text-green-700/60">—</span>}</p>
+              {(() => {
+                const steps = parseLangkah(goalUtama.langkah_aksi)
+                if (steps.length === 0) return <p className="text-green-700/60">—</p>
+                return (
+                  <ol className="space-y-1.5 mt-0.5">
+                    {steps.map((st, i) => (
+                      <li key={i} className="flex items-start gap-2 rounded-md bg-white border border-green-200 px-2.5 py-1.5">
+                        <span className="shrink-0 flex items-center justify-center h-5 w-5 rounded-full bg-green-600 text-white text-[11px] font-bold">{i + 1}</span>
+                        <span className="text-slate-800 text-[13px] leading-snug break-words">
+                          {st.fields.length === 0 ? "—" : st.fields.join(" · ")}
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                )
+              })()}
             </div>
           </div>
         ) : (
