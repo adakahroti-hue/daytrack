@@ -171,13 +171,6 @@ export default function GoalPage() {
 
   return (
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
-      {/* Ringkasan total proyeksi harga */}
-      <div className={cn("rounded-xl border bg-white p-4", TABLE_BORDER)}>
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-          <Target className="h-4 w-4" /> Total Proyeksi Goal ({entries.length} item)
-        </p>
-        <p className="mt-1 text-lg font-bold text-slate-800">{formatRupiah(totalHarga)}</p>
-      </div>
 
       <div className={cn("relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-340px)] landscape:max-lg:max-h-none rounded-lg border bg-white", TABLE_BORDER)}>
         <table className="w-full border-collapse text-xs sm:text-sm">
@@ -254,6 +247,15 @@ export default function GoalPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Ringkasan total proyeksi harga (di bawah tabel) */}
+      <div className={cn("rounded-xl border bg-white p-4 flex items-center justify-between gap-3", TABLE_BORDER)}>
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
+          <Target className="h-4 w-4" /> Total Proyeksi Goal ({entries.length} item)
+        </p>
+        <p className="text-lg font-bold text-slate-800 tabular-nums">{formatRupiah(totalHarga)}</p>
+      </div>
+
       {lockControl}
 
       <Button onClick={openAdd} size="icon" aria-label="Tambah Goal" className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-white shadow-lg">
