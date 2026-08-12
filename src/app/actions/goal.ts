@@ -114,6 +114,40 @@ export async function setGoalUtama(id: string) {
   return { error: null }
 }
 
+// Jadikan utama sambil melengkapi field (atomic: reset others + update + set utama)
+export async function promoteGoal(
+  id: string,
+  formData: {
+    proyeksi_harga?: number
+    tempo?: string
+    action_harian?: string
+    langkah_aksi?: string
+  }
+) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  const updateData: Record<string, any> = { is_utama: true }
+  if (formData.proyeksi_harga !== undefined) updateData.proyeksi_harga = formData.proyeksi_harga
+  if (formData.tempo !== undefined) updateData.tempo = formData.tempo
+  if (formData.action_harian !== undefined) updateData.action_harian = formData.action_harian
+  if (formData.langkah_aksi !== undefined) updateData.langkah_aksi = formData.langkah_aksi
+
+  // Reset semua goal user jadi false (kecuali ini), lalu update + set utama
+  await supabase.from("goal").update({ is_utama: false }).eq("user_id", user.id).neq("id", id)
+  const { error } = await supabase
+    .from("goal")
+    .update(updateData)
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .select()
+    .single()
+  if (error) throw new Error(error.message)
+  revalidatePath("/goal")
+  return { error: null }
+}
+
 export async function getGoalRange(startDate: string, endDate: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

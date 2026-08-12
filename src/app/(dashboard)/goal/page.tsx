@@ -21,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { formatRupiah, parseRupiah } from "@/lib/utils"
 import { useTableLock } from "@/components/ui/table-lock"
-import { useGoalRange, useCreateGoal, useDeleteGoal, useUpdateGoal, useSetGoalUtama } from "@/hooks/useGoal"
+import { useGoalRange, useCreateGoal, useDeleteGoal, useUpdateGoal, usePromoteGoal } from "@/hooks/useGoal"
 import { useRealtime } from "@/hooks/useRealtime"
 import { useHeaderControls } from "@/components/layout/HeaderControls"
 
@@ -133,11 +133,40 @@ export default function GoalPage() {
   const createGoal = useCreateGoal()
   const deleteGoal = useDeleteGoal()
   const updateGoal = useUpdateGoal()
-  const setGoalUtama = useSetGoalUtama()
+  const promoteGoal = usePromoteGoal()
 
   const [editState, setEditState] = useState<EditState | null>(null)
   const [hargaInput, setHargaInput] = useState("")
   const [langkahList, setLangkahList] = useState<LangkahItem[]>([])
+  const [promoteMode, setPromoteMode] = useState(false) // true = dialog ini untuk "Jadikan Utama" (wajib isi field)
+
+  // Cek apakah suatu goal sudah punya data lengkap untuk jadi Goal Utama
+  const isUtamaComplete = (e: GoalEntry) =>
+    !!e.nama_goal?.trim() &&
+    (e.proyeksi_harga ?? 0) > 0 &&
+    !!e.tempo?.trim() &&
+    !!e.action_harian?.trim() &&
+    !!e.langkah_aksi?.trim()
+
+  // Klik "Jadikan Utama": kalau sudah lengkap -> langsung; kalau belum -> buka dialog isi field
+  const handlePromoteClick = (entry: GoalEntry) => {
+    if (isUtamaComplete(entry)) {
+      promoteGoal.mutateAsync({ id: entry.id, data: {} })
+      return
+    }
+    setHargaInput(entry.proyeksi_harga > 0 ? formatRupiah(entry.proyeksi_harga) : "")
+    setLangkahList(parseLangkah(entry.langkah_aksi))
+    setPromoteMode(true)
+    setEditState({
+      id: entry.id,
+      tanggal_set: entry.tanggal_set,
+      nama_goal: entry.nama_goal,
+      proyeksi_harga: entry.proyeksi_harga,
+      tempo: entry.tempo || "",
+      action_harian: entry.action_harian || "",
+      langkah_aksi: entry.langkah_aksi || "",
+    })
+  }
 
   const entries = useMemo(() => {
     return [...(logs as GoalEntry[])].sort((a, b) =>
@@ -185,6 +214,25 @@ export default function GoalPage() {
     if (!editState.nama_goal.trim()) return
     if (editState.proyeksi_harga <= 0) return
     const serializedLangkah = serializeLangkah(langkahList)
+
+    if (promoteMode) {
+      // Mode "Jadikan Utama": wajib isi tempo, rencana, langkah
+      if (!editState.tempo.trim() || !editState.action_harian.trim() || !serializedLangkah.trim()) return
+      await promoteGoal.mutateAsync({
+        id: editState.id!,
+        data: {
+          proyeksi_harga: editState.proyeksi_harga,
+          tempo: editState.tempo,
+          action_harian: editState.action_harian,
+          langkah_aksi: serializedLangkah,
+        },
+      })
+      setEditState(null)
+      setLangkahList([])
+      setPromoteMode(false)
+      return
+    }
+
     if (editState.id) {
       await updateGoal.mutateAsync({
         id: editState.id,
@@ -279,18 +327,6 @@ export default function GoalPage() {
               <th className={cn("px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 border-r min-w-[150px] sm:min-w-[180px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-start gap-1"><Target className="h-3.5 w-3.5 text-indigo-500" /> Nama Goal</div>
               </th>
-              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[110px] sm:min-w-[140px]", TABLE_BORDER)}>
-                <div className="flex items-center justify-center gap-1"><Banknote className="h-3.5 w-3.5 text-indigo-500" /> Nilai</div>
-              </th>
-              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[110px] sm:min-w-[140px]", TABLE_BORDER)}>
-                <div className="flex items-center justify-center gap-1"><Clock className="h-3.5 w-3.5 text-indigo-500" /> Tempo</div>
-              </th>
-              <th className={cn("px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 border-r min-w-[150px] sm:min-w-[180px]", TABLE_BORDER)}>
-                <div className="flex items-center justify-start gap-1"><ClipboardList className="h-3.5 w-3.5 text-indigo-500" /> Rencana</div>
-              </th>
-              <th className={cn("px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 border-r min-w-[150px] sm:min-w-[180px]", TABLE_BORDER)}>
-                <div className="flex items-center justify-start gap-1"><Footprints className="h-3.5 w-3.5 text-indigo-500" /> Langkah Aksi</div>
-              </th>
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[104px] sm:min-w-[150px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><MousePointerClick className="h-3.5 w-3.5 text-indigo-500" /> Tombol</div>
               </th>
@@ -298,11 +334,11 @@ export default function GoalPage() {
           </thead>
           <tbody className={cn(effectiveLocked && "pointer-events-none select-none")}>
             {isLoading ? (
-              <tr><td colSpan={7} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
+              <tr><td colSpan={3} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
             ) : error ? (
-              <tr><td colSpan={7} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
+              <tr><td colSpan={3} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
             ) : entries.length === 0 ? (
-              <tr><td colSpan={7} className="text-center py-12 text-slate-400 text-sm">Belum ada goal. Tekan tombol + untuk menambah.</td></tr>
+              <tr><td colSpan={3} className="text-center py-12 text-slate-400 text-sm">Belum ada goal. Tekan tombol + untuk menambah.</td></tr>
             ) : (
               entries.map((entry, rowIdx) => {
                 return (
@@ -313,31 +349,6 @@ export default function GoalPage() {
                     <td className={cn("px-2 sm:px-3 py-2 border-r", TABLE_BORDER)}>
                       <span className="text-base text-slate-800 whitespace-normal break-words leading-snug font-medium">{entry.nama_goal}</span>
                     </td>
-                    <td className={cn("px-2 sm:px-3 py-2 text-center border-r font-semibold tabular-nums text-slate-700", TABLE_BORDER)}>
-                      {formatRupiah(entry.proyeksi_harga)}
-                    </td>
-                    <td className={cn("px-2 sm:px-3 py-2 text-center border-r", TABLE_BORDER)}>
-                      <span className="text-base text-slate-700 whitespace-normal break-words leading-snug">{entry.tempo || <span className="text-slate-300">—</span>}</span>
-                    </td>
-                    <td className={cn("px-2 sm:px-3 py-2 border-r align-top", TABLE_BORDER)}>
-                      <span className="text-base text-slate-700 whitespace-normal break-words leading-snug">{entry.action_harian || <span className="text-slate-300">—</span>}</span>
-                    </td>
-                    <td className={cn("px-2 sm:px-3 py-2 border-r align-top", TABLE_BORDER)}>
-                      {(() => {
-                        const steps = parseLangkah(entry.langkah_aksi)
-                        if (steps.length === 0) return <span className="text-slate-300">—</span>
-                        return (
-                          <ol className="space-y-0.5">
-                            {steps.map((st, i) => (
-                              <li key={i} className="text-base text-slate-700 leading-snug">
-                                <span className="font-semibold text-slate-500 mr-1">{i + 1}.</span>
-                                {st.fields.length === 0 ? "—" : st.fields.join(" · ")}
-                              </li>
-                            ))}
-                          </ol>
-                        )
-                      })()}
-                    </td>
                     <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
                       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-1">
                         {entry.is_utama ? (
@@ -345,7 +356,7 @@ export default function GoalPage() {
                             <Star className="h-3 w-3 fill-green-500" /> Utama
                           </span>
                         ) : (
-                          <Button size="sm" aria-label="Jadikan goal utama" onClick={() => setGoalUtama.mutateAsync(entry.id)}
+                          <Button size="sm" aria-label="Jadikan goal utama" onClick={() => handlePromoteClick(entry)}
                             className="h-6 w-full sm:w-auto gap-1 bg-green-600 hover:bg-green-700 text-white text-[11px] px-1.5 justify-center">
                             <Star className="h-3 w-3" /> Utama
                           </Button>
@@ -385,7 +396,7 @@ export default function GoalPage() {
       <Dialog open={!!editState} onOpenChange={(open) => !open && setEditState(null)}>
         <DialogContent className="max-w-[92vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editState?.id ? "Edit Goal" : "Tambah Goal"}</DialogTitle>
+            <DialogTitle>{promoteMode ? "Lengkapi & Jadikan Utama" : (editState?.id ? "Edit Goal" : "Tambah Goal")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
@@ -479,8 +490,15 @@ export default function GoalPage() {
               )}
             </div>
             <div className="flex justify-end gap-2 pt-1">
-              <Button variant="outline" onClick={() => setEditState(null)}>Batal</Button>
-              <Button onClick={handleSave} disabled={!editState?.nama_goal.trim() || parseRupiah(hargaInput) <= 0}>Simpan</Button>
+              <Button variant="outline" onClick={() => { setEditState(null); setPromoteMode(false); }}>Batal</Button>
+              <Button
+                onClick={handleSave}
+                disabled={
+                  !editState?.nama_goal.trim() ||
+                  parseRupiah(hargaInput) <= 0 ||
+                  (promoteMode && (!editState?.tempo.trim() || !editState?.action_harian.trim() || serializeLangkah(langkahList).trim() === ""))
+                }
+              >Simpan</Button>
             </div>
           </div>
         </DialogContent>

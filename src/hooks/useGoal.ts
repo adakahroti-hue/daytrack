@@ -7,6 +7,7 @@ import {
   updateGoal,
   deleteGoal,
   setGoalUtama,
+  promoteGoal,
 } from "@/app/actions/goal"
 import type { GoalFormData } from "@/app/actions/goal"
 
@@ -49,10 +50,11 @@ export function useDeleteGoal() {
   })
 }
 
-export function useSetGoalUtama() {
+export function usePromoteGoal() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (id: string) => setGoalUtama(id),
+    mutationFn: ({ id, data }: { id: string; data: { proyeksi_harga?: number; tempo?: string; action_harian?: string; langkah_aksi?: string } }) =>
+      promoteGoal(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["goal"] })
     },
