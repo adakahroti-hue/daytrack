@@ -181,7 +181,6 @@ export default function GoalPage() {
       {/* Card Goal Utama */}
       <div className={cn("rounded-xl border-2 bg-gradient-to-br from-indigo-50 to-white p-4 sm:p-5", TABLE_BORDER)}>
         <div className="flex items-center gap-2 mb-3">
-          <Star className="h-5 w-5 text-amber-500 fill-amber-400" />
           <h2 className="text-sm font-bold uppercase tracking-wide text-slate-700">Goal Utama</h2>
         </div>
         {goalUtama ? (
