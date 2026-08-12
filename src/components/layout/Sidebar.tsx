@@ -51,6 +51,7 @@ import {
   Wallet,
   DollarSign,
   ShoppingCart,
+  Target,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useTasks } from '@/hooks/useTasks'
@@ -131,6 +132,7 @@ const navigation: NavSection[] = [
     items: [
       { title: 'Arus Kas', href: '/arus-kas', icon: DollarSign },
       { title: 'Belanja', href: '/keranjang', icon: ShoppingCart },
+      { title: 'Goal', href: '/goal', icon: Target },
     ],
   },
   {
