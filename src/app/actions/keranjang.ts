@@ -82,7 +82,7 @@ export async function createKeranjang(formData: KeranjangFormData) {
   return { data, error: null }
 }
 
-export async function updateKeranjang(id: string, formData: { nama_barang?: string; harga?: number; tanggal?: string }) {
+export async function updateKeranjang(id: string, formData: { nama_barang?: string; harga?: number; tanggal?: string; dompet?: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
@@ -90,6 +90,7 @@ export async function updateKeranjang(id: string, formData: { nama_barang?: stri
   if (formData.tanggal !== undefined) updateData.tanggal = formData.tanggal
   if (formData.nama_barang !== undefined) updateData.nama_barang = formData.nama_barang
   if (formData.harga !== undefined) updateData.harga = formData.harga
+  if (formData.dompet !== undefined) updateData.dompet = formData.dompet
   const { data, error } = await supabase.from("keranjang").update(updateData).eq("id", id).eq("user_id", user.id).select().single()
   if (error) throw new Error(error.message)
   revalidatePath("/keranjang")
