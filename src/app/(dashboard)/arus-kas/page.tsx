@@ -13,7 +13,7 @@ import {
   endOfYear,
 } from "date-fns"
 import { id } from "date-fns/locale"
-import { Calendar, CalendarDays, Wallet, ArrowDownLeft, ArrowUpRight, Trash2, Plus, Pencil, Banknote, MessageSquare, Wrench, ShoppingCart } from "lucide-react"
+import { Calendar, CalendarDays, Wallet, ArrowDownLeft, ArrowUpRight, Trash2, Plus, Pencil, Banknote, MessageSquare, Wrench } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -24,7 +24,6 @@ import { cn } from "@/lib/utils"
 import { formatRupiah, parseRupiah } from "@/lib/utils"
 import { useTableLock } from "@/components/ui/table-lock"
 import { useArusKasRange, useCreateArusKas, useDeleteArusKas, useUpdateArusKas } from "@/hooks/useArusKas"
-import { useKeranjangRange } from "@/hooks/useKeranjang"
 import { useRealtime } from "@/hooks/useRealtime"
 import { useHeaderControls } from "@/components/layout/HeaderControls"
 
@@ -112,7 +111,6 @@ export default function ArusKasPage() {
   const endDate = format(rangeEnd, "yyyy-MM-dd")
 
   const { data: logs = [], isLoading, error } = useArusKasRange(startDate, endDate)
-  const { data: keranjangLogs = [] } = useKeranjangRange(startDate, endDate)
   useRealtime({
     table: "arus_kas",
     filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
@@ -146,24 +144,6 @@ export default function ArusKasPage() {
     }
     return { masuk, keluar, saldo: masuk - keluar }
   }, [logs])
-
-  // Target tabungan: 1 barang belum dibeli termurah dari Keranjang
-  const targetBelanja = useMemo(() => {
-    const list = (keranjangLogs as { id: string; nama_barang: string; harga: number; status: string }[])
-      .filter(l => l.status === "belum")
-      .sort((a, b) => a.harga - b.harga)
-    return list[0] || null
-  }, [keranjangLogs])
-  // Sisa dompet Tabungan (10% uang masuk - pemakaian dompet tabungan)
-  const sisaTabungan = useMemo(() => {
-    const awal = Math.round((ringkasan.masuk * 10) / 100)
-    let pakai = 0
-    for (const l of logs as ArusKasEntry[]) {
-      if (l.kategori === "uang_keluar" && l.dompet === "tabungan") pakai += l.nominal
-    }
-    return Math.max(0, awal - pakai)
-  }, [ringkasan.masuk, logs])
-  const butuhLagi = targetBelanja ? Math.max(0, targetBelanja.harga - sisaTabungan) : 0
 
   // Alokasi uang masuk otomatis (persen dari total uang masuk) dikurangi pemakaian per dompet
   const alokasi = useMemo(() => {
@@ -280,13 +260,6 @@ export default function ArusKasPage() {
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-
-        {targetBelanja && (
-          <p className="text-sm text-slate-500 flex items-center gap-1.5 ml-auto">
-            <ShoppingCart className="h-3.5 w-3.5 text-slate-400" />
-            Butuh <span className="font-bold text-slate-800 tabular-nums">{formatRupiah(butuhLagi)}</span> lagi untuk membeli <span className="font-semibold text-slate-700">{targetBelanja.nama_barang}</span>
-          </p>
-        )}
       </div>
 
       {/* Tabel */}
