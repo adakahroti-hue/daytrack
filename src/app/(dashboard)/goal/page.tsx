@@ -307,15 +307,16 @@ export default function GoalPage() {
               <p className="text-[11px] font-semibold uppercase text-green-800">Langkah Aksi</p>
               {(() => {
                 const steps = parseLangkah(goalUtama.langkah_aksi)
-                if (steps.length === 0) return <p className="text-green-700/60">—</p>
+                // Ratakan semua field dari semua step jadi 1 daftar berurutan (penomoran per-field)
+                const allFields: string[] = []
+                for (const st of steps) for (const f of st.fields) if (f.trim().length > 0) allFields.push(f.trim())
+                if (allFields.length === 0) return <p className="text-green-700/60">—</p>
                 return (
                   <ol className="space-y-1.5 mt-0.5">
-                    {steps.map((st, i) => (
+                    {allFields.map((f, i) => (
                       <li key={i} className="flex items-start gap-2 rounded-md bg-white border border-green-200 px-2.5 py-1.5">
                         <span className="shrink-0 flex items-center justify-center h-5 w-5 rounded-full bg-green-600 text-white text-[11px] font-bold">{i + 1}</span>
-                        <span className="text-slate-800 text-[13px] leading-snug break-words">
-                          {st.fields.length === 0 ? "—" : st.fields.join(" · ")}
-                        </span>
+                        <span className="text-slate-800 text-[13px] leading-snug break-words">{f}</span>
                       </li>
                     ))}
                   </ol>
