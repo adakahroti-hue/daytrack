@@ -179,7 +179,7 @@ export default function GoalPage() {
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
 
       {/* Card Goal Utama */}
-      <div className={cn("rounded-xl border-2 bg-gradient-to-br from-indigo-50 to-white p-4 sm:p-5", TABLE_BORDER)}>
+      <div className={cn("rounded-xl border-2 bg-gradient-to-br from-amber-100 to-yellow-50 p-4 sm:p-5", TABLE_BORDER)}>
         <div className="flex items-center gap-2 mb-3">
           <h2 className="text-sm font-bold uppercase tracking-wide text-slate-700">Goal Utama</h2>
         </div>
