@@ -21,7 +21,7 @@ type Task = {
   id: string
   user_id: string
   nama: string
-  tanggal: string
+  tanggal?: string
   estimasi_menit: number
   prioritas: 'p1' | 'p2' | 'p3' | 'p4'
   status: 'belum' | 'proses' | 'selesai'
@@ -36,7 +36,7 @@ type Task = {
 
 type TaskFormData = {
   nama: string
-  tanggal: string
+  tanggal?: string
   estimasi_menit: number
   prioritas: 'p1' | 'p2' | 'p3' | 'p4'
   status: 'belum' | 'proses' | 'selesai'
@@ -111,10 +111,10 @@ const TaskCard = memo(({
     return <CheckCircle2 className="h-3.5 w-3.5" />
   }
 
-  const taskDate = new Date(task.tanggal)
+  const taskDate = task.tanggal ? new Date(task.tanggal) : null
   const today = startOfDay(new Date())
-  const isOverdue = isBefore(taskDate, today) && !isCompleted
-  const daysOverdue = isOverdue ? differenceInDays(today, taskDate) : 0
+  const isOverdue = taskDate ? (isBefore(taskDate, today) && !isCompleted) : false
+  const daysOverdue = isOverdue ? differenceInDays(today, taskDate!) : 0
 
   // Status badge style - consistent pill style
   const statusBadgeClass = cn(
@@ -219,7 +219,7 @@ const TaskCard = memo(({
             <div className="flex items-center gap-1.5">
               <Calendar className="h-3.5 w-3.5 shrink-0" />
               <span className={cn('whitespace-nowrap', isOverdue && 'text-destructive font-medium')}>
-                {format(taskDate, 'd MMM yyyy', { locale: id })}
+                {task.tanggal ? format(taskDate!, 'd MMM yyyy', { locale: id }) : 'Belum ditentukan'}
                 {isOverdue && !isCompleted && (
                   <Badge variant="outline" className="ml-1.5 text-xs px-2 py-0.5 gap-1 h-5 text-destructive border-destructive/30 bg-destructive/10">
                     <AlertTriangle className="h-3 w-3" />

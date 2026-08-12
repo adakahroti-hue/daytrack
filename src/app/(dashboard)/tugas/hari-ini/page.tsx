@@ -20,7 +20,7 @@ type Task = {
   id: string
   user_id: string
   nama: string
-  tanggal: string
+  tanggal?: string
   estimasi_menit: number
   prioritas: 'p1' | 'p2' | 'p3' | 'p4'
   status: 'belum' | 'proses' | 'selesai'
@@ -38,7 +38,7 @@ type Task = {
 
 type TaskFormData = {
   nama: string
-  tanggal: string
+  tanggal?: string
   estimasi_menit: number
   prioritas: 'p1' | 'p2' | 'p3' | 'p4'
   status: 'belum' | 'proses' | 'selesai'
@@ -314,7 +314,7 @@ function HariIniPageClient() {
     setEditingTask({
       id: task.id,
       nama: task.nama,
-      tanggal: task.tanggal,
+      tanggal: task.tanggal ?? undefined,
       estimasi_menit: task.estimasi_menit,
       prioritas: task.prioritas,
       status: task.status,

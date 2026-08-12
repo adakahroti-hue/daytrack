@@ -6,7 +6,7 @@ import { z } from "zod"
 
 const taskSchema = z.object({
   nama: z.string().min(1, "Nama tugas wajib diisi"),
-  tanggal: z.string().min(1, "Tanggal wajib diisi"),
+  tanggal: z.string().optional(),
   estimasi_menit: z.number().int().min(0).default(0),
   prioritas: z.enum(["p1", "p2", "p3", "p4"]).default("p3"),
   status: z.enum(["proses", "belum", "selesai"]).default("belum"),

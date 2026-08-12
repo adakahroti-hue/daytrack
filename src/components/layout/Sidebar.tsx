@@ -185,7 +185,7 @@ export function Sidebar({
   const { data: allTasks = [] } = useTasks(undefined)
   const taskCounts: Record<string, number> = {
     '/tugas/hari-ini': todayTasks.filter(t => t.status !== 'selesai').length,
-    '/tugas/semua': allTasks.filter(t => t.status === 'belum' && t.tanggal !== today).length,
+    '/tugas/semua': allTasks.filter(t => t.status === 'belum' && t.tanggal != today).length,
     '/tugas/selesai': allTasks.filter(t => t.status === 'selesai').length,
   }
 

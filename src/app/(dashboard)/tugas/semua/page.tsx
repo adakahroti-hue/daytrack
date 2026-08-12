@@ -37,7 +37,7 @@ type Task = {
 
 type TaskFormData = {
   nama: string
-  tanggal: string
+  tanggal?: string
   estimasi_menit: number
   prioritas: 'p1' | 'p2' | 'p3' | 'p4'
   status: 'belum' | 'proses' | 'selesai'
@@ -141,10 +141,10 @@ const TaskCard = memo(({
     return <CheckCircle2 className="h-3.5 w-3.5" />
   }
 
-  const taskDate = new Date(task.tanggal)
+  const taskDate = task.tanggal ? new Date(task.tanggal) : null
   const today = startOfDay(new Date())
-  const isOverdue = isBefore(taskDate, today) && !isCompleted
-  const daysOverdue = isOverdue ? differenceInDays(today, taskDate) : 0
+  const isOverdue = taskDate ? (isBefore(taskDate, today) && !isCompleted) : false
+  const daysOverdue = isOverdue ? differenceInDays(today, taskDate!) : 0
 
   // Status badge style - consistent pill style
   const statusBadgeClass = cn(
@@ -250,7 +250,7 @@ const TaskCard = memo(({
             <div className="flex items-center gap-1.5">
               <Calendar className="h-3.5 w-3.5 shrink-0" />
               <span className={cn('whitespace-nowrap', isOverdue && 'text-destructive font-medium')}>
-                {format(taskDate, 'd MMM yyyy', { locale: id })}
+                {task.tanggal ? format(taskDate!, 'd MMM yyyy', { locale: id }) : 'Belum ditentukan'}
               </span>
             </div>
             {isOverdue && !isCompleted && (
@@ -355,9 +355,9 @@ function StatsCard({ label, value, icon: Icon, iconContainerClass }: {
 function StatsInline({ todayTasks }: { todayTasks: Task[] }) {
   const total = todayTasks.length
   const overdue = todayTasks.filter(t => {
-    const taskDate = new Date(t.tanggal)
+    const taskDate = t.tanggal ? new Date(t.tanggal) : null
     const today = startOfDay(new Date())
-    return isBefore(taskDate, today) && t.status !== 'selesai'
+    return taskDate ? (isBefore(taskDate, today) && t.status !== 'selesai') : false
   }).length
 
   return (
@@ -415,7 +415,7 @@ function SemuaPageClient() {
     const formData: EditingTask = {
       id: task.id,
       nama: task.nama,
-      tanggal: task.tanggal,
+      tanggal: task.tanggal ?? undefined,
       estimasi_menit: task.estimasi_menit,
       prioritas: task.prioritas,
       status: task.status,
@@ -443,7 +443,7 @@ function SemuaPageClient() {
   }
 
   const handleSubmit = (data: TaskFormData) => {
-    const taskData = { ...data }
+    const taskData = { ...data, tanggal: data.tanggal && data.tanggal.length > 0 ? data.tanggal : undefined }
     if (editingTask) {
       updateTask.mutate({ id: editingTask.id, data: taskData })
     } else {
@@ -463,8 +463,8 @@ function SemuaPageClient() {
   const filteredTasks = useMemo(() => {
     const todayStart = startOfDay(new Date())
     return allTasks.filter(t => (
-      (t.status === 'belum' || (t.status === 'proses' && isBefore(new Date(t.tanggal), todayStart)))
-      && t.tanggal !== today
+      (t.status === 'belum' || (t.status === 'proses' && t.tanggal && isBefore(new Date(t.tanggal), todayStart)))
+      && t.tanggal != today
     ))
   }, [allTasks, today])
 
@@ -486,8 +486,8 @@ function SemuaPageClient() {
     // Rev 5: pisahkan tugas terlambat — untuk mode prioritas/tanggal/durasi, tugas terlambat
     // dikumpulkan dalam group "Terlambat" di bagian bawah (bukan tercampur di group lain)
     const todayStart = startOfDay(new Date())
-    const overdueTasks = filteredTasks.filter(t => isBefore(new Date(t.tanggal), todayStart))
-    const onTimeTasks = filteredTasks.filter(t => !isBefore(new Date(t.tanggal), todayStart))
+    const overdueTasks = filteredTasks.filter(t => t.tanggal && isBefore(new Date(t.tanggal), todayStart))
+    const onTimeTasks = filteredTasks.filter(t => !t.tanggal || !isBefore(new Date(t.tanggal), todayStart))
 
     const groups: { key: string; title: string; description: string; icon: React.ComponentType<{ className?: string }>; iconColor: string; tasks: Task[] }[] = []
 
@@ -501,7 +501,7 @@ function SemuaPageClient() {
       const dates = [...byDate.keys()].sort((a, b) => b.localeCompare(a))
       for (const d of dates) {
         const tasks = byDate.get(d)!.sort(byPrioritySort)
-        const title = d === today ? 'Hari Ini' : format(new Date(d + 'T00:00:00'), 'EEEE, d MMM yyyy', { locale: id })
+        const title = d === today ? 'Hari Ini' : (d ? format(new Date(d + 'T00:00:00'), 'EEEE, d MMM yyyy', { locale: id }) : 'Belum ditentukan')
         groups.push({ key: d, title, description: `${tasks.length} tugas`, icon: Calendar, iconColor: 'text-blue-600 dark:text-blue-400', tasks })
       }
     } else if (groupMode === 'durasi') {

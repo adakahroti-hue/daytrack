@@ -61,8 +61,8 @@ import { isBefore, startOfDay } from 'date-fns'
 function SemuaOverdueCount() {
   const { data: allTasks = [] } = useTasks()
   const overdue = allTasks.filter((t: any) => {
-    const taskDate = new Date(t.tanggal)
-    return isBefore(taskDate, startOfDay(new Date())) && t.status !== 'selesai'
+    const taskDate = t.tanggal ? new Date(t.tanggal) : null
+    return taskDate ? (isBefore(taskDate, startOfDay(new Date())) && t.status !== 'selesai') : false
   }).length
   if (overdue === 0) return null
   return (

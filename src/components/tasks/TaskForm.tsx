@@ -19,7 +19,7 @@ import { DurationStepper } from './DurationStepper'
 
 const taskSchema = z.object({
   nama: z.string().min(1, 'Nama tugas wajib diisi'),
-  tanggal: z.string().min(1, 'Tanggal wajib diisi'),
+  tanggal: z.string().optional(),
   estimasi_menit: z.number().int().min(0),
   prioritas: z.enum(['p1', 'p2', 'p3', 'p4']),
   status: z.enum(['belum', 'proses', 'selesai']),
@@ -71,6 +71,16 @@ export function TaskForm({ initialData, onSubmit, onCancel, hideDate }: TaskForm
   const estimasiMenit = watch('estimasi_menit') || 0
   const [jam, setJam] = useState(Math.floor(estimasiMenit / 60))
   const [menit, setMenit] = useState(estimasiMenit % 60)
+  // Rev: izinkan tanggal kosong ("ide yang belum matang")
+  const hasDate = watch('tanggal') && watch('tanggal')!.length > 0
+
+  const toggleDate = () => {
+    if (hasDate) {
+      setValue('tanggal', '', { shouldValidate: false })
+    } else {
+      setValue('tanggal', format(new Date(), 'yyyy-MM-dd'), { shouldValidate: false })
+    }
+  }
 
   // Update jam/menit saat initialData berubah (misal edit)
   useEffect(() => {
@@ -106,12 +116,25 @@ export function TaskForm({ initialData, onSubmit, onCancel, hideDate }: TaskForm
 
       {!hideDate && (
         <div className="space-y-2">
-          <Label htmlFor="tanggal">Tanggal *</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="tanggal">Tanggal</Label>
+            <button
+              type="button"
+              onClick={toggleDate}
+              className="text-xs text-slate-500 hover:text-slate-700 underline-offset-2 hover:underline"
+            >
+              {hasDate ? 'Kosongkan (ide belum matang)' : 'Isi tanggal'}
+            </button>
+          </div>
           <Input
             id="tanggal"
             type="date"
+            disabled={!hasDate}
             {...register('tanggal')}
           />
+          {!hasDate && (
+            <p className="text-xs text-slate-400">Tanggal dikosongkan — catatan ide yang belum ditentukan jadwalnya.</p>
+          )}
         </div>
       )}
 
