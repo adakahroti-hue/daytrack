@@ -186,28 +186,28 @@ export default function GoalPage() {
         {goalUtama ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
             <div>
-              <p className="text-[11px] font-semibold uppercase text-slate-400">Nama Goal</p>
+              <p className="text-[11px] font-semibold uppercase text-amber-800">Nama Goal</p>
               <p className="font-semibold text-slate-800 break-words">{goalUtama.nama_goal}</p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase text-slate-400">Nilai</p>
+              <p className="text-[11px] font-semibold uppercase text-amber-800">Nilai</p>
               <p className="font-semibold text-slate-800 tabular-nums">{formatRupiah(goalUtama.proyeksi_harga)}</p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase text-slate-400">Tempo</p>
-              <p className="text-slate-700 break-words">{goalUtama.tempo || <span className="text-slate-300">—</span>}</p>
+              <p className="text-[11px] font-semibold uppercase text-amber-800">Tempo</p>
+              <p className="text-slate-800 break-words">{goalUtama.tempo || <span className="text-amber-700/60">—</span>}</p>
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase text-slate-400">Rencana</p>
-              <p className="text-slate-700 break-words whitespace-normal text-[13px]">{goalUtama.action_harian || <span className="text-slate-300">—</span>}</p>
+              <p className="text-[11px] font-semibold uppercase text-amber-800">Rencana</p>
+              <p className="text-slate-800 break-words whitespace-normal text-[13px]">{goalUtama.action_harian || <span className="text-amber-700/60">—</span>}</p>
             </div>
             <div className="sm:col-span-2">
-              <p className="text-[11px] font-semibold uppercase text-slate-400">Langkah Aksi</p>
-              <p className="text-slate-700 break-words whitespace-normal text-[13px]">{goalUtama.langkah_aksi || <span className="text-slate-300">—</span>}</p>
+              <p className="text-[11px] font-semibold uppercase text-amber-800">Langkah Aksi</p>
+              <p className="text-slate-800 break-words whitespace-normal text-[13px]">{goalUtama.langkah_aksi || <span className="text-amber-700/60">—</span>}</p>
             </div>
           </div>
         ) : (
-          <p className="text-sm text-slate-400">Belum ada goal utama. Tekan tombol &quot;Jadikan Utama&quot; pada salah satu goal di bawah.</p>
+          <p className="text-sm text-amber-800/80">Belum ada goal utama. Tekan tombol &quot;Jadikan Utama&quot; pada salah satu goal di bawah.</p>
         )}
       </div>
 
