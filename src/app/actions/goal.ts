@@ -9,6 +9,7 @@ const goalSchema = z.object({
   tanggal_deadline: z.string().optional(),
   nama_goal: z.string().min(1, "Nama goal wajib diisi"),
   proyeksi_harga: z.number().int().nonnegative(),
+  tempo: z.string().optional().default(""),
   action_harian: z.string().optional().default(""),
   langkah_aksi: z.string().optional().default(""),
 })
@@ -22,6 +23,7 @@ export interface GoalEntry {
   tanggal_deadline: string
   nama_goal: string
   proyeksi_harga: number
+  tempo: string | null
   action_harian: string | null
   langkah_aksi: string | null
   created_at: string
@@ -40,6 +42,7 @@ export async function createGoal(formData: GoalFormData) {
     tanggal_deadline: validated.tanggal_deadline || new Date().toISOString().slice(0, 10),
     nama_goal: validated.nama_goal,
     proyeksi_harga: validated.proyeksi_harga,
+    tempo: validated.tempo ?? "",
     action_harian: validated.action_harian ?? "",
     langkah_aksi: validated.langkah_aksi ?? "",
   }
@@ -57,6 +60,7 @@ export async function updateGoal(
     tanggal_deadline?: string
     nama_goal?: string
     proyeksi_harga?: number
+    tempo?: string
     action_harian?: string
     langkah_aksi?: string
   }
@@ -70,6 +74,7 @@ export async function updateGoal(
   if (formData.tanggal_deadline !== undefined) updateData.tanggal_deadline = formData.tanggal_deadline
   if (formData.nama_goal !== undefined) updateData.nama_goal = formData.nama_goal
   if (formData.proyeksi_harga !== undefined) updateData.proyeksi_harga = formData.proyeksi_harga
+  if (formData.tempo !== undefined) updateData.tempo = formData.tempo
   if (formData.action_harian !== undefined) updateData.action_harian = formData.action_harian
   if (formData.langkah_aksi !== undefined) updateData.langkah_aksi = formData.langkah_aksi
 
@@ -101,7 +106,7 @@ export async function getGoalRange(startDate: string, endDate: string) {
   if (!user) throw new Error("Unauthorized")
   const { data, error } = await supabase
     .from("goal")
-    .select("id, user_id, tanggal_set, tanggal_deadline, nama_goal, proyeksi_harga, action_harian, langkah_aksi, created_at, updated_at")
+    .select("id, user_id, tanggal_set, tanggal_deadline, nama_goal, proyeksi_harga, tempo, action_harian, langkah_aksi, created_at, updated_at")
     .eq("user_id", user.id)
     .gte("tanggal_set", startDate)
     .lte("tanggal_set", endDate)
