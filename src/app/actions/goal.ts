@@ -6,7 +6,7 @@ import { z } from "zod"
 
 const goalSchema = z.object({
   tanggal_set: z.string().min(1, "Tanggal set wajib diisi"),
-  tanggal_deadline: z.string().min(1, "Tanggal deadline wajib diisi"),
+  tanggal_deadline: z.string().optional(),
   nama_goal: z.string().min(1, "Nama goal wajib diisi"),
   proyeksi_harga: z.number().int().nonnegative(),
   kategori: z.string().min(1, "Kategori wajib diisi").default("kebutuhan"),
@@ -37,7 +37,7 @@ export async function createGoal(formData: GoalFormData) {
   const insertData = {
     user_id: user.id,
     tanggal_set: validated.tanggal_set,
-    tanggal_deadline: validated.tanggal_deadline,
+    tanggal_deadline: validated.tanggal_deadline || new Date().toISOString().slice(0, 10),
     nama_goal: validated.nama_goal,
     proyeksi_harga: validated.proyeksi_harga,
     kategori: validated.kategori,

@@ -12,8 +12,7 @@ import {
   startOfYear,
   endOfYear,
 } from "date-fns"
-import { id } from "date-fns/locale"
-import { Calendar, CalendarDays, Target, Wallet, Banknote, Wrench, Pencil, Trash2, Plus } from "lucide-react"
+import { Target, Wallet, Banknote, Wrench, Pencil, Trash2, Plus, Hash } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -44,7 +43,6 @@ interface GoalEntry {
 interface EditState {
   id: string | null
   tanggal_set: string
-  tanggal_deadline: string
   nama_goal: string
   proyeksi_harga: number
   kategori: string
@@ -114,7 +112,6 @@ export default function GoalPage() {
     setEditState({
       id: null,
       tanggal_set: todayStr,
-      tanggal_deadline: todayStr,
       nama_goal: "",
       proyeksi_harga: 0,
       kategori: "kebutuhan",
@@ -127,7 +124,6 @@ export default function GoalPage() {
     setEditState({
       id: entry.id,
       tanggal_set: entry.tanggal_set,
-      tanggal_deadline: entry.tanggal_deadline,
       nama_goal: entry.nama_goal,
       proyeksi_harga: entry.proyeksi_harga,
       kategori: entry.kategori,
@@ -144,7 +140,6 @@ export default function GoalPage() {
         id: editState.id,
         data: {
           tanggal_set: editState.tanggal_set,
-          tanggal_deadline: editState.tanggal_deadline,
           nama_goal: editState.nama_goal.trim(),
           proyeksi_harga: editState.proyeksi_harga,
           kategori: editState.kategori,
@@ -154,7 +149,7 @@ export default function GoalPage() {
     } else {
       await createGoal.mutateAsync({
         tanggal_set: editState.tanggal_set,
-        tanggal_deadline: editState.tanggal_deadline,
+        tanggal_deadline: todayStr,
         nama_goal: editState.nama_goal.trim(),
         proyeksi_harga: editState.proyeksi_harga,
         kategori: editState.kategori,
@@ -182,8 +177,8 @@ export default function GoalPage() {
         <table className="w-full border-collapse text-xs sm:text-sm">
           <thead className="sticky top-0 z-20 bg-white">
             <tr className={cn("border-b", TABLE_BORDER)}>
-              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[140px]", TABLE_BORDER)}>
-                <div className="flex items-center justify-center gap-1"><CalendarDays className="h-3.5 w-3.5 text-indigo-500" /> Tgl Deadline</div>
+              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[60px] sm:min-w-[90px]", TABLE_BORDER)}>
+                <div className="flex items-center justify-center gap-1"><Hash className="h-3.5 w-3.5 text-indigo-500" /> Nomor Urut</div>
               </th>
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[160px] sm:min-w-[200px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><Target className="h-3.5 w-3.5 text-indigo-500" /> Nama Goal</div>
@@ -211,12 +206,10 @@ export default function GoalPage() {
               <tr><td colSpan={6} className="text-center py-12 text-slate-400 text-sm">Belum ada goal. Tekan tombol + untuk menambah.</td></tr>
             ) : (
               entries.map((entry, rowIdx) => {
-                const deadlineDate = new Date(entry.tanggal_deadline + "T00:00:00")
                 return (
                   <tr key={entry.id} className={cn("border-b transition-colors", TABLE_BORDER, rowIdx % 2 === 0 ? "bg-white" : "bg-slate-50/30", "hover:bg-blue-50/40")}>
                     <td className={cn("px-2 sm:px-3 py-2 text-center border-r font-medium tabular-nums text-slate-700", TABLE_BORDER)}>
-                      <span className="sm:hidden">{format(deadlineDate, "d MMM", { locale: id })}</span>
-                      <span className="hidden sm:inline">{format(deadlineDate, "d MMMM yyyy", { locale: id })}</span>
+                      {rowIdx + 1}
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2 border-r", TABLE_BORDER)}>
                       <span className="text-slate-800 whitespace-normal break-words leading-snug font-medium">{entry.nama_goal}</span>
@@ -261,11 +254,6 @@ export default function GoalPage() {
             <DialogTitle>{editState?.id ? "Edit Goal" : "Tambah Goal"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="g-deadline">Tanggal Deadline</Label>
-              <Input id="g-deadline" type="date" value={editState?.tanggal_deadline ?? todayStr}
-                onChange={(e) => setEditState(prev => prev ? { ...prev, tanggal_deadline: e.target.value } : prev)} />
-            </div>
             <div className="space-y-1.5">
               <Label htmlFor="g-nama">Nama Goal</Label>
               <Input id="g-nama" placeholder="Contoh: Beli Laptop..."
