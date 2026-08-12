@@ -270,12 +270,12 @@ export default function GoalPage() {
                     <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
                       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-1">
                         {entry.is_utama ? (
-                          <span className="inline-flex w-full sm:w-auto items-center justify-center gap-1 rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-[11px] font-medium border border-amber-200">
-                            <Star className="h-3 w-3 fill-amber-400" /> Utama
+                          <span className="inline-flex w-full sm:w-auto items-center justify-center gap-1 rounded-full bg-green-100 text-green-700 px-2 py-0.5 text-[11px] font-medium border border-green-200">
+                            <Star className="h-3 w-3 fill-green-500" /> Utama
                           </span>
                         ) : (
                           <Button size="sm" aria-label="Jadikan goal utama" onClick={() => setGoalUtama.mutateAsync(entry.id)}
-                            className="h-6 w-full sm:w-auto gap-1 bg-amber-500 hover:bg-amber-600 text-white text-[11px] px-1.5 justify-center">
+                            className="h-6 w-full sm:w-auto gap-1 bg-green-600 hover:bg-green-700 text-white text-[11px] px-1.5 justify-center">
                             <Star className="h-3 w-3" /> Utama
                           </Button>
                         )}
