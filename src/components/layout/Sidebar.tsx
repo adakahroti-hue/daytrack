@@ -91,6 +91,11 @@ const navigation: NavSection[] = [
     href: '/overview',
   },
   {
+    title: 'Goal',
+    icon: Target,
+    href: '/goal',
+  },
+  {
     title: 'Tugas',
     icon: Calendar,
     items: [
@@ -132,7 +137,6 @@ const navigation: NavSection[] = [
     items: [
       { title: 'Arus Kas', href: '/arus-kas', icon: DollarSign },
       { title: 'Belanja', href: '/keranjang', icon: ShoppingCart },
-      { title: 'Goal', href: '/goal', icon: Target },
     ],
   },
   {

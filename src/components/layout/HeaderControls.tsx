@@ -60,7 +60,9 @@ function getCategoryFromPath(pathname: string): string {
   if (pathname.startsWith('/tidur') || pathname.startsWith('/minum-air')) return 'kesehatan'
   if (pathname.startsWith('/masalah') || pathname.startsWith('/pmo') || pathname.startsWith('/kesenangan')) return 'mental'
   if (pathname.startsWith('/saran-perbaikan')) return 'perbaikan'
-  if (pathname.startsWith('/arus-kas') || pathname.startsWith('/keranjang') || pathname.startsWith('/goal')) return 'keuangan'
+  if (pathname.startsWith('/saran-perbaikan')) return 'perbaikan'
+  if (pathname.startsWith('/goal')) return 'goal'
+  if (pathname.startsWith('/arus-kas') || pathname.startsWith('/keranjang')) return 'keuangan'
   return 'overview'
 }
 
@@ -126,11 +128,11 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
       case 'saran-perbaikan': return 'Masukan'
     }
   }
+  if (category === 'goal') return 'Goal'
   if (category === 'keuangan' && subPage) {
     switch (subPage) {
       case 'arus-kas': return 'Arus Kas'
       case 'keranjang': return 'Belanja'
-      case 'goal': return 'Goal'
     }
   }
 
@@ -193,11 +195,11 @@ function getCategoryDescription(category: string, period: Period, subPage: strin
       case 'saran-perbaikan': return 'Sampaikan masukan untuk Daytrack'
     }
   }
+  if (category === 'goal') return 'Target barang belanjaan & kebiasaan harian'
   if (category === 'keuangan' && subPage) {
     switch (subPage) {
       case 'arus-kas': return 'Catat pemasukan dan pengeluaran harian Anda'
       case 'keranjang': return 'Catat rencana belanja Anda'
-      case 'goal': return 'Target barang belanjaan & kebiasaan harian'
     }
   }
 
