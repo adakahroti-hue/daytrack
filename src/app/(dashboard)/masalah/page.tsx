@@ -18,7 +18,6 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
-import { useTableLock } from '@/components/ui/table-lock'
 import { useMasalahLogRange, useUpsertMasalahLog, useUpdateMasalahLog, useDeleteMasalahLog } from '@/hooks/useMasalahLogs'
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
@@ -62,8 +61,6 @@ function startOfDaySafe(d: Date): Date {
 // ─── Main Component ────────────────────────────────
 
 export default function MasalahPage() {
-  // Revisi mobile (batch 8): lock/unlock tabel — khusus tampilan mobile
-  const { effectiveLocked, lockControl } = useTableLock()
   // Periode & tanggal dari HeaderControls (toolbar di header)
   const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
   const todayStr = format(new Date(), 'yyyy-MM-dd')
@@ -176,7 +173,7 @@ export default function MasalahPage() {
               </th>
             </tr>
           </thead>
-          <tbody className={cn(effectiveLocked && 'pointer-events-none select-none')}>
+          <tbody>
             {isLoading ? (
               <tr>
                 <td colSpan={4} className="text-center py-12 text-slate-400">
@@ -257,7 +254,6 @@ export default function MasalahPage() {
           </tbody>
         </table>
       </div>
-      {lockControl}
 
       {/* Revisi 8: tombol tambah floating seperti tab Semua */}
       <Button

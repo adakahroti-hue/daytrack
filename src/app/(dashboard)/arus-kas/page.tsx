@@ -22,7 +22,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { formatRupiah, parseRupiah } from "@/lib/utils"
-import { useTableLock } from "@/components/ui/table-lock"
 import { useArusKasRange, useCreateArusKas, useDeleteArusKas, useUpdateArusKas } from "@/hooks/useArusKas"
 import { useRealtime } from "@/hooks/useRealtime"
 import { useHeaderControls } from "@/components/layout/HeaderControls"
@@ -82,7 +81,6 @@ function startOfDaySafe(d: Date): Date {
 }
 
 export default function ArusKasPage() {
-  const { effectiveLocked, lockControl } = useTableLock()
   const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
   const todayStr = format(new Date(), "yyyy-MM-dd")
 
@@ -290,7 +288,7 @@ export default function ArusKasPage() {
               </th>
             </tr>
           </thead>
-          <tbody className={cn(effectiveLocked && "pointer-events-none select-none")}>
+          <tbody>
             {isLoading ? (
               <tr><td colSpan={6} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
             ) : error ? (
@@ -396,7 +394,6 @@ export default function ArusKasPage() {
           </tbody>
         </table>
       </div>
-      {lockControl}
 
       <Button onClick={openAdd} size="icon" aria-label="Tambah Arus Kas" className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-white shadow-lg">
         <Plus className="h-6 w-6" />

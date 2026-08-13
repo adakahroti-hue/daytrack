@@ -15,7 +15,6 @@ import { id } from 'date-fns/locale'
 import { Calendar, CalendarDays, HandCoins, Check, X, Trash2, MessageCircle } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
-import { useTableLock } from '@/components/ui/table-lock'
 import { useSedekahLogRange, useUpsertSedekahLog, useDeleteSedekahLog } from '@/hooks/useSedekahLogs'
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
@@ -74,8 +73,6 @@ function startOfDaySafe(d: Date): Date {
 // ─── Main Component ────────────────────────────────
 
 export default function SedekahPage() {
-  // Revisi mobile (batch 8): lock/unlock tabel — khusus tampilan mobile
-  const { effectiveLocked, lockControl } = useTableLock()
   // Periode & tanggal dari HeaderControls (toolbar di header)
   const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
   const todayStr = format(new Date(), 'yyyy-MM-dd')
@@ -184,7 +181,7 @@ export default function SedekahPage() {
               </th>
             </tr>
           </thead>
-          <tbody className={cn(effectiveLocked && 'pointer-events-none select-none')}>
+          <tbody>
             {isLoading ? (
               <tr>
                 <td colSpan={4} className="text-center py-12 text-slate-400">
@@ -296,7 +293,6 @@ export default function SedekahPage() {
           </tbody>
         </table>
       </div>
-      {lockControl}
 
       {/* Revisi 5: Ringkasan */}
       <StatusAnalytics

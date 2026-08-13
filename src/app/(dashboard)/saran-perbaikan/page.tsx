@@ -18,7 +18,6 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
-import { useTableLock } from '@/components/ui/table-lock'
 import { useSaranPerbaikanRange, useCreateSaranPerbaikan, useUpdateSaranPerbaikan, useDeleteSaranPerbaikan } from '@/hooks/useSaranPerbaikan'
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
@@ -63,8 +62,6 @@ function startOfDaySafe(d: Date): Date {
 // Revisi 1 (batch 7): model entri seperti tab Masalah — tabel kosong sampai ada inputan,
 // tanggal mengikuti inputan (bukan grid semua tanggal). Tab ini bernama "Masukan".
 export default function SaranPerbaikanPage() {
-  // Revisi mobile (batch 8): lock/unlock tabel — khusus tampilan mobile
-  const { effectiveLocked, lockControl } = useTableLock()
   // Periode & tanggal dari HeaderControls (toolbar di header)
   const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
   const todayStr = format(new Date(), 'yyyy-MM-dd')
@@ -177,7 +174,7 @@ export default function SaranPerbaikanPage() {
               </th>
             </tr>
           </thead>
-          <tbody className={cn(effectiveLocked && 'pointer-events-none select-none')}>
+          <tbody>
             {isLoading ? (
               <tr>
                 <td colSpan={4} className="text-center py-12 text-slate-400">
@@ -270,7 +267,6 @@ export default function SaranPerbaikanPage() {
           </tbody>
         </table>
       </div>
-      {lockControl}
 
       {/* Revisi 8 (batch 6): tombol tambah floating seperti tab Semua */}
       <Button

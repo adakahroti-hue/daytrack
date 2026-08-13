@@ -18,7 +18,6 @@ import { id } from 'date-fns/locale'
 import { Check, X, Sun, Moon, Calendar, CalendarDays, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { useTableLock } from '@/components/ui/table-lock'
 import { useSholatSunnahRange, useToggleSholatSunnah, useUpdateSholatSunnahQuality } from '@/hooks/useSholatSunnah'
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
@@ -332,7 +331,6 @@ DropdownMenuContent.displayName = 'DropdownMenuContent'
 // ─── Main Component ────────────────────────────────
 
 export default function SholatSunnahPage() {
-  const { effectiveLocked, lockControl } = useTableLock()
   const queryClient = useQueryClient()
   const [dropdown, setDropdown] = useState<DropdownState>(null)
   const tableContainerRef = useRef<HTMLDivElement>(null)
@@ -534,7 +532,7 @@ export default function SholatSunnahPage() {
               ))}
             </tr>
           </thead>
-          <tbody className={cn(effectiveLocked && 'pointer-events-none select-none')}>
+          <tbody>
             {isLoading ? (
               <tr>
                 <td colSpan={4} className="text-center py-12 text-slate-400">
@@ -628,7 +626,6 @@ export default function SholatSunnahPage() {
           </tbody>
         </table>
       </div>
-      {lockControl}
 
       <SholatSunnahAnalytics
         dates={dates}

@@ -18,7 +18,6 @@ import { id } from 'date-fns/locale'
 import { Check, X, Sun, CloudSun, Sunset, Moon, Calendar, CalendarDays, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { useTableLock } from '@/components/ui/table-lock'
 import { usePrayerLogRange, useTogglePrayer, useUpdatePrayerQuality } from '@/hooks/usePrayerLogs'
 import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
@@ -364,8 +363,6 @@ DropdownMenuContent.displayName = 'DropdownMenuContent'
 // ─── Main Component ────────────────────────────────
 
 export default function SholatPage() {
-  // Revisi mobile (batch 8): lock/unlock tabel — khusus tampilan mobile
-  const { effectiveLocked, lockControl } = useTableLock()
   const queryClient = useQueryClient()
   const [dropdown, setDropdown] = useState<DropdownState>(null)
   const tableContainerRef = useRef<HTMLDivElement>(null)
@@ -591,7 +588,7 @@ export default function SholatPage() {
               ))}
             </tr>
           </thead>
-          <tbody className={cn(effectiveLocked && 'pointer-events-none select-none')}>
+          <tbody>
             {isLoading ? (
               <tr>
                 <td colSpan={8} className="text-center py-12 text-slate-400">
@@ -685,7 +682,6 @@ export default function SholatPage() {
           </tbody>
         </table>
       </div>
-      {lockControl}
 
       {/* ── Ringkasan — tepat di bawah tabel (dinamis per periode aktif) ── */}
       <SholatAnalytics
