@@ -41,6 +41,7 @@ interface EditState {
   id: string | null // null = tambah baru
   tanggal: string
   kesenangan: string
+  status: 'belum' | 'sudah'
 }
 
 function startOfDaySafe(d: Date): Date {
@@ -102,8 +103,8 @@ export default function KesenanganPage() {
       a.tanggal.localeCompare(b.tanggal) || (a.created_at || '').localeCompare(b.created_at || ''))
   }, [logs])
 
-  const openAdd = () => setEditState({ id: null, tanggal: todayStr, kesenangan: '' })
-  const openEdit = (e: KesenanganEntry) => setEditState({ id: e.id, tanggal: e.tanggal, kesenangan: e.kesenangan })
+  const openAdd = () => setEditState({ id: null, tanggal: todayStr, kesenangan: '', status: 'belum' })
+  const openEdit = (e: KesenanganEntry) => setEditState({ id: e.id, tanggal: e.tanggal, kesenangan: e.kesenangan, status: (e.status === 'sudah' ? 'sudah' : 'belum') })
 
   const handleSave = async () => {
     if (!editState) return
@@ -112,14 +113,14 @@ export default function KesenanganPage() {
     if (editState.id) {
       await updateKesenangan.mutateAsync({
         id: editState.id,
-        data: { tanggal: editState.tanggal, hari, kesenangan: editState.kesenangan.trim() },
+        data: { tanggal: editState.tanggal, hari, kesenangan: editState.kesenangan.trim(), status: editState.status },
       })
     } else {
       await createKesenangan.mutateAsync({
         tanggal: editState.tanggal,
         hari,
         kesenangan: editState.kesenangan.trim(),
-        status: 'belum',
+        status: editState.status,
       })
     }
     setEditState(null)
@@ -338,6 +339,18 @@ export default function KesenanganPage() {
                 onChange={(e) => setEditState(prev => prev ? { ...prev, kesenangan: e.target.value } : prev)}
                 rows={3}
               />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="kesenangan-status">Status</Label>
+              <select
+                id="kesenangan-status"
+                value={editState?.status ?? 'belum'}
+                onChange={(e) => setEditState(prev => prev ? { ...prev, status: e.target.value as 'belum' | 'sudah' } : prev)}
+                className="h-9 w-full rounded-md border border-slate-200 bg-white text-sm px-2"
+              >
+                <option value="belum">Belum</option>
+                <option value="sudah">Sudah</option>
+              </select>
             </div>
             <div className="flex items-center justify-between gap-2 pt-1">
               <div>

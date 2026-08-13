@@ -62,6 +62,7 @@ interface EditState {
   id: string | null // null = tambah baru
   tanggal: string
   masalah: string
+  status: 'belum' | 'proses' | 'selesai'
 }
 
 function startOfDaySafe(d: Date): Date {
@@ -120,8 +121,8 @@ export default function MasalahPage() {
       a.tanggal.localeCompare(b.tanggal) || (a.created_at || '').localeCompare(b.created_at || ''))
   }, [logs])
 
-  const openAdd = () => setEditState({ id: null, tanggal: todayStr, masalah: '' })
-  const openEdit = (e: MasalahLogEntry) => setEditState({ id: e.id, tanggal: e.tanggal, masalah: e.masalah })
+  const openAdd = () => setEditState({ id: null, tanggal: todayStr, masalah: '', status: 'belum' })
+  const openEdit = (e: MasalahLogEntry) => setEditState({ id: e.id, tanggal: e.tanggal, masalah: e.masalah, status: e.status })
 
   const handleSave = async () => {
     if (!editState) return
@@ -129,13 +130,13 @@ export default function MasalahPage() {
     if (editState.id) {
       await updateMasalahLog.mutateAsync({
         id: editState.id,
-        data: { tanggal: editState.tanggal, masalah: editState.masalah.trim() },
+        data: { tanggal: editState.tanggal, masalah: editState.masalah.trim(), status: editState.status },
       })
     } else {
       await upsertMasalahLog.mutateAsync({
         tanggal: editState.tanggal,
         masalah: editState.masalah.trim(),
-        status: 'belum',
+        status: editState.status,
       })
     }
     setEditState(null)
@@ -297,6 +298,19 @@ export default function MasalahPage() {
                 onChange={(e) => setEditState(prev => prev ? { ...prev, masalah: e.target.value } : prev)}
                 rows={3}
               />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="masalah-status">Status</Label>
+              <select
+                id="masalah-status"
+                value={editState?.status ?? 'belum'}
+                onChange={(e) => setEditState(prev => prev ? { ...prev, status: e.target.value as 'belum' | 'proses' | 'selesai' } : prev)}
+                className="h-9 w-full rounded-md border border-slate-200 bg-white text-sm px-2"
+              >
+                <option value="belum">Belum</option>
+                <option value="proses">Proses</option>
+                <option value="selesai">Selesai</option>
+              </select>
             </div>
             <div className="flex items-center justify-between gap-2 pt-1">
               <div>
