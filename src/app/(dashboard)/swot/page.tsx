@@ -330,17 +330,6 @@ export default function SwotPage() {
               <Label>Langkah Aksi</Label>
               <Textarea value={actDraft.langkah_aksi} onChange={(e) => setActDraft({ ...actDraft, langkah_aksi: e.target.value })} placeholder="Langkah konkret..." rows={3} />
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Label className="text-[11px]">Deadline</Label>
-                <Input type="date" value={actDraft.deadline} onChange={(e) => setActDraft({ ...actDraft, deadline: e.target.value })} className="h-9" />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[11px]">Progress ({actDraft.progress}%)</Label>
-                <Input type="range" min={0} max={100} step={5} value={actDraft.progress}
-                  onChange={(e) => setActDraft({ ...actDraft, progress: Number(e.target.value) })} className="mt-2 w-full" />
-              </div>
-            </div>
             <div className="flex justify-end gap-2 pt-1">
               <Button variant="outline" onClick={() => setActDialog(false)}>Batal</Button>
               <Button onClick={saveAction} disabled={isBusy || !actDraft.target.trim()}>
