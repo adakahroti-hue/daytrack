@@ -6,7 +6,7 @@ import { z } from "zod"
 const masalahLogSchema = z.object({
   tanggal: z.string().min(1, "Tanggal wajib diisi"),
   masalah: z.string().min(1, "Masalah wajib diisi"),
-  status: z.enum(['belum', 'proses', 'selesai']).default('belum'),
+  status: z.enum(['belum', 'sudah']).default('belum'),
 })
 
 export type MasalahLogFormData = z.infer<typeof masalahLogSchema>
@@ -16,7 +16,7 @@ export interface MasalahLogEntry {
   user_id: string
   tanggal: string
   masalah: string
-  status: 'belum' | 'proses' | 'selesai'
+  status: 'belum' | 'sudah'
   created_at: string
   updated_at: string
 }
@@ -57,7 +57,7 @@ export async function upsertMasalahLog(formData: MasalahLogFormData) {
   return { data, error: null }
 }
 
-export async function updateMasalahLog(id: string, formData: { masalah?: string; status?: 'belum' | 'proses' | 'selesai'; tanggal?: string }) {
+export async function updateMasalahLog(id: string, formData: { masalah?: string; status?: 'belum' | 'sudah'; tanggal?: string }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")

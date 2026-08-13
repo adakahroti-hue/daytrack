@@ -36,14 +36,12 @@ const DAY_BADGE_COLORS: Record<string, string> = {
 
 const STATUS_LABEL: Record<string, string> = {
   belum: 'Belum',
-  proses: 'Proses',
-  selesai: 'Selesai',
+  sudah: 'Sudah',
 }
 
 const STATUS_BADGE: Record<string, string> = {
   belum: 'bg-slate-100 text-slate-600 border-slate-200',
-  proses: 'bg-amber-100 text-amber-700 border-amber-200',
-  selesai: 'bg-green-100 text-green-700 border-green-200',
+  sudah: 'bg-green-100 text-green-700 border-green-200',
 }
 
 const TABLE_BORDER = 'border-slate-900'
@@ -53,7 +51,7 @@ interface MasalahLogEntry {
   user_id: string
   tanggal: string
   masalah: string
-  status: 'belum' | 'proses' | 'selesai'
+  status: 'belum' | 'sudah'
   created_at: string
   updated_at: string
 }
@@ -62,7 +60,7 @@ interface EditState {
   id: string | null // null = tambah baru
   tanggal: string
   masalah: string
-  status: 'belum' | 'proses' | 'selesai'
+  status: 'belum' | 'sudah'
 }
 
 function startOfDaySafe(d: Date): Date {
@@ -303,13 +301,12 @@ export default function MasalahPage() {
               <Label htmlFor="masalah-status">Status</Label>
               <select
                 id="masalah-status"
-                value={editState?.status ?? 'belum'}
-                onChange={(e) => setEditState(prev => prev ? { ...prev, status: e.target.value as 'belum' | 'proses' | 'selesai' } : prev)}
+                value={editState?.status === 'sudah' ? 'sudah' : 'belum'}
+                onChange={(e) => setEditState(prev => prev ? { ...prev, status: e.target.value as 'belum' | 'sudah' } : prev)}
                 className="h-9 w-full rounded-md border border-slate-200 bg-white text-sm px-2"
               >
                 <option value="belum">Belum</option>
-                <option value="proses">Proses</option>
-                <option value="selesai">Selesai</option>
+                <option value="sudah">Sudah</option>
               </select>
             </div>
             <div className="flex items-center justify-between gap-2 pt-1">

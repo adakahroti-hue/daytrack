@@ -13,7 +13,7 @@ export function useUpsertMasalahLog() {
 }
 export function useUpdateMasalahLog() {
   const queryClient = useQueryClient()
-  return useMutation({ mutationFn: ({ id, data }: { id: string; data: { masalah?: string; solusi?: string; status?: 'belum' | 'proses' | 'selesai'; tanggal?: string } }) => updateMasalahLog(id, data), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["refleksi"] }) })
+  return useMutation({ mutationFn: ({ id, data }: { id: string; data: { masalah?: string; solusi?: string; status?: 'belum' | 'sudah'; tanggal?: string } }) => updateMasalahLog(id, data), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["refleksi"] }) })
 }
 export function useDeleteMasalahLog() {
   const queryClient = useQueryClient()
