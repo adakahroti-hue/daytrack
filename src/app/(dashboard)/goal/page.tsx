@@ -293,6 +293,7 @@ export default function GoalPage() {
       langkah_aksi: "",
     })
     setLangkahList([])
+    setPromoteMode(false) // pastikan mode "Jadikan Utama" mati saat tambah baru
   }
 
   const openEdit = (entry: GoalEntry) => {
@@ -420,8 +421,21 @@ export default function GoalPage() {
 
       {/* Card Goal Utama */}
       <div className={cn("rounded-lg border border-green-200 bg-green-50 p-4 sm:p-5 shadow-sm")}>
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-3 flex-wrap">
           <h2 className="text-sm font-bold uppercase tracking-wide text-slate-700">Goal Utama</h2>
+          {goalUtama?.tempo?.trim() && (
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase text-green-800">
+              <Timer className="h-3.5 w-3.5" />
+              Periode Berjalan
+              {playStart && deadline ? (
+                <span className="font-medium normal-case text-slate-600 tabular-nums">
+                  {format(playStart, 'd MMM yyyy', { locale: id })} → {format(deadline, 'd MMM yyyy', { locale: id })}
+                </span>
+              ) : (
+                <span className="font-normal normal-case text-slate-400">Tekan "Mulai" untuk menjalankan periode</span>
+              )}
+            </span>
+          )}
           {goalUtama && (
             <>
               <Button type="button" size="sm" variant="ghost" aria-label="Edit goal utama"
@@ -449,25 +463,13 @@ export default function GoalPage() {
               title={goalUtama.tempo?.trim() ? "Mulai timer periode goal" : "Isi Tempo dulu untuk menjalankan timer"}
             >
               {playStart ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-              {playStart ? "Stop" : "Mulai"}
+              {playStart ? "Stop" : "mulai"}
             </Button>
           </>)}
         </div>
-        {/* Bar Periode Berjalan — selalu tampil (sebaris area tombol Play) untuk menegaskan fitur */}
+        {/* Progress bar Periode Berjalan — di bagian atas card, tepat di bawah baris tombol Play */}
         {goalUtama?.tempo?.trim() && (
-          <div className="mt-3 pt-3 border-t border-green-200">
-            <div className="flex items-center justify-between gap-2 mb-1.5">
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase text-green-800">
-                <Timer className="h-3.5 w-3.5" /> Periode Berjalan
-              </span>
-              {playStart && deadline ? (
-                <span className="text-[11px] font-medium text-slate-600 tabular-nums">
-                  {format(playStart, 'd MMM yyyy', { locale: id })} → {format(deadline, 'd MMM yyyy', { locale: id })}
-                </span>
-              ) : (
-                <span className="text-[11px] text-slate-400">Tekan “Mulai” untuk menjalankan periode</span>
-              )}
-            </div>
+          <div className="mb-4">
             <div className="h-2.5 w-full rounded-full bg-green-200/60 overflow-hidden">
               <div
                 className="h-full rounded-full bg-green-600 transition-[width] duration-1000 ease-linear"
@@ -481,6 +483,9 @@ export default function GoalPage() {
                   : 'Periode goal telah berakhir'}
                 <span className="text-green-700/70"> · {progressPct.toFixed(1)}% berlalu</span>
               </p>
+            )}
+            {!playStart && (
+              <p className="mt-1.5 text-[11px] text-slate-400">Belum dijalankan — tekan tombol “mulai” untuk memulai periode.</p>
             )}
           </div>
         )}
@@ -604,10 +609,6 @@ export default function GoalPage() {
                             <Star className="h-3 w-3" /> Utama
                           </Button>
                         )}
-                        <Button size="sm" aria-label="Edit goal" onClick={() => openEdit(entry)}
-                          className="h-6 w-full sm:w-auto gap-1 bg-slate-600 hover:bg-slate-700 text-white text-[11px] px-1.5 justify-center">
-                          <Pencil className="h-3 w-3" /> Edit
-                        </Button>
                         <Button size="sm" aria-label="Hapus goal" onClick={() => handleDelete(entry.id)}
                           className="h-6 w-full sm:w-auto gap-1 bg-red-600 hover:bg-red-700 text-white text-[11px] px-1.5 justify-center">
                           <Trash2 className="h-3 w-3" /> Hapus
@@ -641,6 +642,7 @@ export default function GoalPage() {
                 onChange={(e) => setEditState(prev => prev ? { ...prev, nama_goal: e.target.value } : prev)} />
             </div>
             {showFullFields && (
+            <>
             <div className="space-y-1.5">
               <Label htmlFor="g-tempo">Tempo</Label>
               <Input id="g-tempo" placeholder="Contoh: 3 bulan, 1 tahun..."
@@ -653,8 +655,10 @@ export default function GoalPage() {
                 value={editState?.action_harian ?? ""}
                 onChange={(e) => setEditState(prev => prev ? { ...prev, action_harian: e.target.value } : prev)} />
             </div>
+            </>
             )}
             {showFullFields && (
+            <>
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label htmlFor="g-langkah">Langkah Aksi</Label>
@@ -741,6 +745,8 @@ export default function GoalPage() {
                 }
               >Simpan</Button>
             </div>
+            </>
+            )}
           </div>
         </DialogContent>
       </Dialog>

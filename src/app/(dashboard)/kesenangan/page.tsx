@@ -11,7 +11,7 @@ import {
   endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Hash, Smile, Check, X, Trash2, Plus, Pencil, Wrench } from 'lucide-react'
+import { Hash, Smile, Check, X, Trash2, Plus, Pencil, Wrench, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -94,6 +94,7 @@ export default function KesenanganPage() {
   const deleteKesenangan = useDeleteKesenangan()
 
   const [editState, setEditState] = useState<EditState | null>(null)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
 
   // Urutkan entri: terlama di atas, terbaru di bawah (tanggal baru di bagian bawah)
   const entries = useMemo(() => {
@@ -136,6 +137,17 @@ export default function KesenanganPage() {
 
   const handleSetStatus = async (entry: KesenanganEntry, done: boolean) => {
     await updateKesenangan.mutateAsync({ id: entry.id, data: { status: done ? 'sudah' : 'belum' } })
+  }
+
+  // Salin teks "Kesenangan yang Ditunda" ke clipboard, beri feedback "Tersalin" 1.5 dtk.
+  const handleCopy = async (entry: KesenanganEntry) => {
+    try {
+      await navigator.clipboard.writeText(entry.kesenangan)
+      setCopiedId(entry.id)
+      setTimeout(() => setCopiedId((cur) => (cur === entry.id ? null : cur)), 1500)
+    } catch {
+      /* clipboard tidak tersedia — abaikan */
+    }
   }
 
   return (
@@ -217,6 +229,11 @@ export default function KesenanganPage() {
                               className="h-7 flex-1 gap-1 bg-red-600 hover:bg-red-700 text-white text-[11px] px-1.5">
                               <Trash2 className="h-3 w-3" /> Hapus
                             </Button>
+                            <Button size="sm" aria-label="Salin teks kesenangan" onClick={() => handleCopy(entry)}
+                              className={cn('h-7 flex-1 gap-1 text-[11px] px-1.5', copiedId === entry.id ? 'bg-purple-100 text-purple-700 border border-purple-200' : 'bg-purple-600 hover:bg-purple-700 text-white')}>
+                              {copiedId === entry.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                              {copiedId === entry.id ? 'Tersalin' : 'Copy'}
+                            </Button>
                           </div>
                         </div>
                       </td>
@@ -269,6 +286,11 @@ export default function KesenanganPage() {
                         <Button size="sm" aria-label="Hapus kesenangan" onClick={() => handleDeleteEntry(entry.id)}
                           className="h-6 gap-1 bg-red-600 hover:bg-red-700 text-white text-[11px] px-1.5">
                           <Trash2 className="h-3 w-3" /> Hapus
+                        </Button>
+                        <Button size="sm" aria-label="Salin teks kesenangan" onClick={() => handleCopy(entry)}
+                          className={cn('h-6 gap-1 text-[11px] px-1.5', copiedId === entry.id ? 'bg-purple-100 text-purple-700 border border-purple-200' : 'bg-purple-600 hover:bg-purple-700 text-white')}>
+                          {copiedId === entry.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                          {copiedId === entry.id ? 'Tersalin' : 'Copy'}
                         </Button>
                       </div>
                     </td>
