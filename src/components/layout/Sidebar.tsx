@@ -143,7 +143,7 @@ const navigation: NavSection[] = [
     title: 'Mental',
     icon: Shield,
     items: [
-      { title: 'Tunda Senang', href: '/kesenangan', icon: Hourglass },
+      { title: 'Tunda', href: '/kesenangan', icon: Hourglass },
       { title: 'Refleksi', href: '/masalah', icon: PersonStanding },
     ],
   },
