@@ -13,7 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, getMissionPriorityIcon, getMissionGroupName, getMissionPriorityShortLabel, getMissionPriorityBorder, getMissionGroupDescriptionWithCount, CARD_BASE, CARD_HOVER, STAT_ICON_CONTAINERS, BRAND_COLORS, getActualDurationText, compareEstimasiVsActual, getLiveDurationText, PRIORITY_COLORS } from '@/lib/utils'
 import { TaskForm } from '@/components/tasks/TaskForm'
 import { TaskGroupRibbon, TaskGroupDialog } from '@/components/tasks/task-group'
-import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus, useBulkUpdateTaskDate } from '@/hooks/useTasks'
+import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus, useBulkUpdateTaskDate, useBulkDeleteTasks } from '@/hooks/useTasks'
 import { useTasksRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
 import { Suspense } from 'react'
@@ -386,6 +386,7 @@ function SemuaPageClient() {
   const { groupMode, setGroupMode } = useHeaderControls()
   const [isMounted, setIsMounted] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [selectionMode, setSelectionMode] = useState(false)
   const [bulkDate, setBulkDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   // Revisi batch 12: penanda paket (parent/child/single)
   const [groupTask, setGroupTask] = useState<Task | null>(null)
@@ -410,6 +411,7 @@ function SemuaPageClient() {
   const deleteTask = useDeleteTask()
   const toggleTaskStatus = useToggleTaskStatus()
   const bulkUpdateTaskDate = useBulkUpdateTaskDate()
+  const bulkDeleteTasks = useBulkDeleteTasks()
 
   const handleEdit = (task: Task) => {
     const formData: EditingTask = {
@@ -585,9 +587,11 @@ function SemuaPageClient() {
     return groups
   }, [filteredTasks, groupMode, today])
 
-  // Rev 7: daftar id tugas lambat (untuk Pilih Semua) & handler bulk ubah tanggal
-  const allLambatIds = useMemo(() => groupedTasks.flatMap(g => g.tasks.map(t => t.id)), [groupedTasks])
-  const selectAllLambat = () => setSelectedIds(new Set(allLambatIds))
+  // Rev: daftar id tugas visible (untuk Pilih Semua di semua mode) & handler bulk
+  const allVisibleIds = useMemo(() => filteredTasks.map(t => t.id), [filteredTasks])
+  const toggleSelectAll = () => setSelectedIds(prev =>
+    prev.size === allVisibleIds.length && allVisibleIds.length > 0 ? new Set() : new Set(allVisibleIds)
+  )
   const clearSelection = () => setSelectedIds(new Set())
   const handleBulkUpdateDate = () => {
     if (selectedIds.size === 0) return
@@ -595,6 +599,14 @@ function SemuaPageClient() {
       { ids: Array.from(selectedIds), tanggal: bulkDate },
       { onSuccess: () => setSelectedIds(new Set()) }
     )
+  }
+  const handleBulkDelete = () => {
+    if (selectedIds.size === 0) return
+    if (confirm(`Yakin ingin menghapus ${selectedIds.size} tugas yang dipilih?`)) {
+      bulkDeleteTasks.mutate(Array.from(selectedIds), {
+        onSuccess: () => { setSelectedIds(new Set()); setSelectionMode(false) },
+      })
+    }
   }
 
   // Empty state: totalTasks === 0 → belum ada tugas sama sekali;
@@ -672,7 +684,9 @@ function SemuaPageClient() {
           </div>
         ) : (
           <div className="space-y-8">
-          {groupMode === 'lambat' && filteredTasks.length > 0 && (
+          {/* Toolbar aksi: Pilih Tugas (semua mode) + bulk hapus/ubah tanggal */}
+          {filteredTasks.length > 0 && (
+            selectionMode ? (
             <div className="sticky top-2 z-20 flex flex-wrap items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 shadow-sm">
               <span className="text-xs font-medium text-slate-600 dark:text-slate-300 mr-1">
                 {selectedIds.size > 0 ? `${selectedIds.size} terpilih` : 'Pilih tugas'}
@@ -681,25 +695,59 @@ function SemuaPageClient() {
                 variant="outline"
                 size="sm"
                 className="h-8"
-                onClick={selectedIds.size === allLambatIds.length && allLambatIds.length > 0 ? clearSelection : selectAllLambat}
+                onClick={selectedIds.size === allVisibleIds.length && allVisibleIds.length > 0 ? clearSelection : toggleSelectAll}
               >
-                {selectedIds.size === allLambatIds.length && allLambatIds.length > 0 ? 'Batal Pilih' : 'Pilih Semua'}
+                {selectedIds.size === allVisibleIds.length && allVisibleIds.length > 0 ? 'Batal Pilih' : 'Pilih Semua'}
               </Button>
-              <input
-                type="date"
-                value={bulkDate}
-                onChange={(e) => setBulkDate(e.target.value)}
-                className="h-8 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 text-sm text-slate-700 dark:text-slate-200"
-              />
+              {groupMode === 'lambat' && (
+                <input
+                  type="date"
+                  value={bulkDate}
+                  onChange={(e) => setBulkDate(e.target.value)}
+                  className="h-8 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 text-sm text-slate-700 dark:text-slate-200"
+                />
+              )}
+              {groupMode === 'lambat' && (
+                <Button
+                  size="sm"
+                  className="h-8 bg-[#0F172A] hover:bg-[#1E293B] text-white"
+                  disabled={selectedIds.size === 0 || bulkUpdateTaskDate.isPending}
+                  onClick={handleBulkUpdateDate}
+                >
+                  {bulkUpdateTaskDate.isPending ? 'Menyimpan...' : 'Ubah Tanggal'}
+                </Button>
+              )}
               <Button
                 size="sm"
-                className="h-8 bg-[#0F172A] hover:bg-[#1E293B] text-white"
-                disabled={selectedIds.size === 0 || bulkUpdateTaskDate.isPending}
-                onClick={handleBulkUpdateDate}
+                variant="destructive"
+                className="h-8"
+                disabled={selectedIds.size === 0 || bulkDeleteTasks.isPending}
+                onClick={handleBulkDelete}
               >
-                {bulkUpdateTaskDate.isPending ? 'Menyimpan...' : 'Ubah Tanggal'}
+                <Trash2 className="h-3.5 w-3.5" />
+                {bulkDeleteTasks.isPending ? 'Menghapus...' : `Hapus${selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}`}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 ml-auto"
+                onClick={() => { setSelectionMode(false); setSelectedIds(new Set()) }}
+              >
+                Selesai
               </Button>
             </div>
+            ) : (
+            <div className="sticky top-2 z-20 flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8"
+                onClick={() => setSelectionMode(true)}
+              >
+                <Check className="h-3.5 w-3.5" /> Pilih Tugas
+              </Button>
+            </div>
+            )
           )}
             {groupedTasks.map((group) => (
               <div key={group.key} className="space-y-4">
@@ -721,7 +769,7 @@ function SemuaPageClient() {
                       onEdit={handleEdit}
                       onDelete={handleDelete}
                       onStatusChange={handleStatusChange}
-                      selectionMode={groupMode === 'lambat'}
+                      selectionMode={selectionMode || groupMode === 'lambat'}
                       selected={selectedIds.has(task.id)}
                       onToggleSelect={toggleSelect}
                       onSetGroup={setGroupTask}
