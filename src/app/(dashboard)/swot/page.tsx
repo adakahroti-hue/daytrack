@@ -293,6 +293,7 @@ export default function SwotPage() {
             <DialogTitle>{itemEditId ? "Edit Item SWOT" : `Tambah Item — ${KAT.find((k) => k.key === itemKategori)?.label}`}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
+            {itemEditId && (
             <div className="space-y-1">
               <Label>Kategori</Label>
               <select value={itemDraft.kategori} onChange={(e) => setItemDraft({ ...itemDraft, kategori: e.target.value as SwotKategori })}
@@ -300,6 +301,7 @@ export default function SwotPage() {
                 {KAT.map((k) => <option key={k.key} value={k.key}>{k.label}</option>)}
               </select>
             </div>
+            )}
             <div className="space-y-1">
               <Label>Judul</Label>
               <Input value={itemDraft.judul} onChange={(e) => setItemDraft({ ...itemDraft, judul: e.target.value })} placeholder="Mis: Disiplin bangun pagi" />
