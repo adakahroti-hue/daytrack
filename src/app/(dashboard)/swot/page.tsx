@@ -16,9 +16,6 @@ import {
   Target,
   Flag,
   CalendarClock,
-  History,
-  CheckCircle2,
-  Circle,
   Loader2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -30,7 +27,6 @@ import { cn } from "@/lib/utils"
 import {
   useSwotItems,
   useSwotActions,
-  useSwotHistory,
   useCreateSwotItem,
   useUpdateSwotItem,
   useDeleteSwotItem,
@@ -83,7 +79,6 @@ const STATUS_CLASS: Record<SwotStatus, string> = {
 export default function SwotPage() {
   const { data: items = [], isLoading: itemsLoading } = useSwotItems()
   const { data: actions = [], isLoading: actionsLoading } = useSwotActions()
-  const { data: history = [] } = useSwotHistory()
 
   const createItem = useCreateSwotItem()
   const updateItem = useUpdateSwotItem()
@@ -293,56 +288,6 @@ export default function SwotPage() {
                 </div>
               </div>
             ))}
-          </div>
-        )}
-      </div>
-
-      {/* Progress / History */}
-      <div className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
-        <div className="flex items-center gap-1.5 text-sm font-bold text-slate-800 mb-2">
-          <History className="h-4 w-4 text-primary" /> Progress / History
-        </div>
-        {history.length === 0 ? (
-          <p className="text-xs text-slate-400 py-2">Belum ada catatan perkembangan. Snapshot otomatis saat ada perubahan.</p>
-        ) : (
-          <div className="space-y-2">
-            {history.map((h) => {
-              const s = h.snapshot || {}
-              const c = s.counts || {}
-              return (
-                <div key={h.id} className="rounded-lg border border-slate-200 p-2.5">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs font-semibold text-slate-700">
-                      {format(new Date(h.periode + "T00:00:00"), "d MMM yyyy", { locale: id })}
-                    </span>
-                    <span className="text-[11px] text-slate-500 tabular-nums">Avg progress: {s.avgProgress ?? 0}%</span>
-                  </div>
-                  <div className="grid grid-cols-4 gap-1.5 text-center">
-                    <div className="rounded bg-emerald-50 border border-emerald-200 py-1">
-                      <div className="text-[10px] text-emerald-700">S</div>
-                      <div className="text-sm font-bold text-emerald-700 tabular-nums">{c.strength ?? 0}</div>
-                    </div>
-                    <div className="rounded bg-rose-50 border border-rose-200 py-1">
-                      <div className="text-[10px] text-rose-700">W</div>
-                      <div className="text-sm font-bold text-rose-700 tabular-nums">{c.weakness ?? 0}</div>
-                    </div>
-                    <div className="rounded bg-sky-50 border border-sky-200 py-1">
-                      <div className="text-[10px] text-sky-700">O</div>
-                      <div className="text-sm font-bold text-sky-700 tabular-nums">{c.opportunity ?? 0}</div>
-                    </div>
-                    <div className="rounded bg-amber-50 border border-amber-200 py-1">
-                      <div className="text-[10px] text-amber-700">T</div>
-                      <div className="text-sm font-bold text-amber-700 tabular-nums">{c.threat ?? 0}</div>
-                    </div>
-                  </div>
-                  {s.doneItems != null && (
-                    <p className="mt-1.5 text-[11px] text-slate-500 flex items-center gap-1">
-                      <CheckCircle2 className="h-3 w-3 text-emerald-600" /> {s.doneItems}/{s.totalItems ?? 0} item selesai
-                    </p>
-                  )}
-                </div>
-              )
-            })}
           </div>
         )}
       </div>
