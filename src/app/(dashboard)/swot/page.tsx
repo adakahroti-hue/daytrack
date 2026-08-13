@@ -365,6 +365,7 @@ export default function SwotPage() {
               <Label>Judul</Label>
               <Input value={itemDraft.judul} onChange={(e) => setItemDraft({ ...itemDraft, judul: e.target.value })} placeholder="Mis: Disiplin bangun pagi" />
             </div>
+            {itemEditId && (
             <div className="grid grid-cols-3 gap-2">
               <div className="space-y-1">
                 <Label className="text-[11px]">Prioritas</Label>
@@ -388,6 +389,7 @@ export default function SwotPage() {
                 </select>
               </div>
             </div>
+            )}
             <div className="flex justify-end gap-2 pt-1">
               <Button variant="outline" onClick={() => setItemDialog(false)}>Batal</Button>
               <Button onClick={saveItem} disabled={isBusy || !itemDraft.judul.trim()}>
