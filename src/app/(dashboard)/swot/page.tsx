@@ -56,6 +56,20 @@ const KAT: { key: SwotKategori; label: string; accent: string; ring: string; ico
   { key: "threat", label: "Ancaman", accent: "bg-amber-50 border-amber-200", ring: "text-amber-700", icon: <Flag className="h-4 w-4" /> },
 ]
 
+// Radio button dekoratif (estetika) — warna mengikuti kategori card
+const RADIO_RING: Record<SwotKategori, string> = {
+  strength: "border-emerald-500",
+  weakness: "border-rose-500",
+  opportunity: "border-sky-500",
+  threat: "border-amber-500",
+}
+const RADIO_DOT: Record<SwotKategori, string> = {
+  strength: "bg-emerald-500",
+  weakness: "bg-rose-500",
+  opportunity: "bg-sky-500",
+  threat: "bg-amber-500",
+}
+
 const PRIO_LABEL: Record<SwotPrioritas, string> = { rendah: "Rendah", sedang: "Sedang", tinggi: "Tinggi" }
 const PRIO_CLASS: Record<SwotPrioritas, string> = {
   rendah: "bg-slate-100 text-slate-600 border-slate-200",
@@ -199,7 +213,9 @@ export default function SwotPage() {
                 <div className="space-y-2">
                   {list.map((it) => (
                     <div key={it.id} className="py-1.5 flex items-start gap-2.5">
-                      <span className="mt-1 h-3.5 w-3.5 shrink-0 rounded-full border-2 border-slate-400" aria-hidden="true" />
+                      <span className={cn("mt-1 h-3.5 w-3.5 shrink-0 rounded-full border-2 flex items-center justify-center", RADIO_RING[k.key])} aria-hidden="true">
+                        <span className={cn("h-1.5 w-1.5 rounded-full", RADIO_DOT[k.key])} />
+                      </span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <p className="text-sm font-medium text-slate-800 break-words flex-1">{it.judul}</p>
