@@ -212,17 +212,6 @@ export default function SwotPage() {
                           </Button>
                         </div>
                       </div>
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className={cn("text-[10px] border rounded px-1.5 py-0.5", PRIO_CLASS[it.prioritas])}>
-                          {PRIO_LABEL[it.prioritas]}
-                        </span>
-                        <span className={cn("text-[10px] border rounded px-1.5 py-0.5 flex items-center gap-1", k.ring)}>
-                          {TREN_ICON[it.tren]} {TREN_LABEL[it.tren]}
-                        </span>
-                        <span className={cn("text-[10px] border rounded px-1.5 py-0.5", STATUS_CLASS[it.status])}>
-                          {STATUS_LABEL[it.status]}
-                        </span>
-                      </div>
                     </div>
                   ))}
                 </div>
