@@ -128,7 +128,7 @@ const navigation: NavSection[] = [
     items: [
       { title: 'Minum Air', href: '/minum-air', icon: GlassWater },
       { title: 'PMO', href: '/pmo', icon: Shield },
-      { title: 'Waktu Tidur', href: '/tidur', icon: Moon },
+      { title: 'Tidur', href: '/tidur', icon: Moon },
     ],
   },
   {
