@@ -423,19 +423,6 @@ export default function GoalPage() {
       <div className={cn("rounded-lg border border-green-200 bg-green-50 p-4 sm:p-5 shadow-sm")}>
         <div className="flex items-center gap-2 mb-3 flex-wrap">
           <h2 className="text-sm font-bold uppercase tracking-wide text-slate-700">Goal Utama</h2>
-          {goalUtama?.tempo?.trim() && (
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase text-green-800">
-              <Timer className="h-3.5 w-3.5" />
-              Periode Berjalan
-              {playStart && deadline ? (
-                <span className="font-medium normal-case text-slate-600 tabular-nums">
-                  {format(playStart, 'd MMM yyyy', { locale: id })} → {format(deadline, 'd MMM yyyy', { locale: id })}
-                </span>
-              ) : (
-                <span className="font-normal normal-case text-slate-400">Tekan "Mulai" untuk menjalankan periode</span>
-              )}
-            </span>
-          )}
           {goalUtama && (
             <>
               <Button type="button" size="sm" variant="ghost" aria-label="Edit goal utama"
