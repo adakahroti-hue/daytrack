@@ -20,19 +20,14 @@ export type GroupableTask = TaskGroupInfo & {
   nama: string
 }
 
+// Revisi Aldy: warna penanda paket — urut merah, biru, hijau, gold, hitam, ungu (tua & solid)
 const RIBBON_COLORS = [
-  'bg-indigo-500',
-  'bg-rose-500',
-  'bg-emerald-500',
-  'bg-amber-500',
-  'bg-sky-500',
-  'bg-violet-500',
-  'bg-pink-500',
-  'bg-teal-500',
-  'bg-orange-500',
-  'bg-lime-500',
-  'bg-cyan-500',
-  'bg-fuchsia-500',
+  'bg-red-700',
+  'bg-blue-700',
+  'bg-green-700',
+  'bg-yellow-700',
+  'bg-neutral-900',
+  'bg-purple-700',
 ]
 
 // Revisi: warna paket dialokasikan per group_id — parent & child satu paket berbagi warna,

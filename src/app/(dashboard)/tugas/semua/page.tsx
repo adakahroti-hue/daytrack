@@ -192,7 +192,7 @@ const TaskCard = memo(({
                 aria-label="Pilih tugas"
               />
             )}
-            <h3 className={cn("font-medium text-base leading-tight truncate capitalize flex-1 min-w-0", task.group_id && "pl-7")}>{task.nama}</h3>
+            <h3 className={cn("font-medium text-base leading-tight capitalize flex-1", task.group_id && "pl-7")}>{task.nama}</h3>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

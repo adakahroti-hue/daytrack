@@ -164,7 +164,7 @@ const TaskCard = memo(({
       <CardContent className="pt-4 pb-3 px-4 space-y-2.5">
         {/* Revisi 2-3: judul + menu titik tiga SEBARIS di kanan atas, sejajar */}
         <div className="flex items-start justify-between gap-2">
-          <h3 className={cn("font-medium text-base leading-tight truncate capitalize flex-1 min-w-0", task.group_id && "pl-7")}>{task.nama}</h3>
+          <h3 className={cn("font-medium text-base leading-tight capitalize flex-1", task.group_id && "pl-7")}>{task.nama}</h3>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
