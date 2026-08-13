@@ -6,8 +6,10 @@ import {
   createGoal,
   updateGoal,
   deleteGoal,
-  setGoalUtama,
+  getGoalUtama,
   promoteGoal,
+  updateGoalUtama,
+  deleteGoalUtama,
 } from "@/app/actions/goal"
 import type { GoalFormData } from "@/app/actions/goal"
 
@@ -53,9 +55,40 @@ export function useDeleteGoal() {
 export function usePromoteGoal() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { proyeksi_harga?: number; tempo?: string; action_harian?: string; langkah_aksi?: string } }) =>
+    mutationFn: ({ id, data }: { id: string; data: { tempo?: string; action_harian?: string; langkah_aksi?: string } }) =>
       promoteGoal(id, data),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["goal"] })
+      queryClient.invalidateQueries({ queryKey: ["goal-utama"] })
+    },
+  })
+}
+
+export function useGoalUtama() {
+  return useQuery({
+    queryKey: ["goal-utama"],
+    queryFn: () => getGoalUtama(),
+  })
+}
+
+export function useUpdateGoalUtama() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Parameters<typeof updateGoalUtama>[1] }) =>
+      updateGoalUtama(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["goal-utama"] })
+      queryClient.invalidateQueries({ queryKey: ["goal"] })
+    },
+  })
+}
+
+export function useDeleteGoalUtama() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => deleteGoalUtama(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["goal-utama"] })
       queryClient.invalidateQueries({ queryKey: ["goal"] })
     },
   })

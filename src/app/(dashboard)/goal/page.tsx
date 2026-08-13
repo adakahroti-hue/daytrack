@@ -22,8 +22,9 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { useTableLock } from "@/components/ui/table-lock"
-import { useGoalRange, useCreateGoal, useDeleteGoal, useUpdateGoal, usePromoteGoal } from "@/hooks/useGoal"
+import { useGoalRange, useCreateGoal, useDeleteGoal, useUpdateGoal, usePromoteGoal, useGoalUtama, useUpdateGoalUtama, useDeleteGoalUtama } from "@/hooks/useGoal"
 import { syncGoalLangkahToTasks } from "@/app/actions/tasks"
+import { getGoalUtama, type GoalUtamaEntry } from "@/app/actions/goal"
 import { useTasksByGroup } from "@/hooks/useTasks"
 import { useRealtime } from "@/hooks/useRealtime"
 import { useHeaderControls } from "@/components/layout/HeaderControls"
@@ -189,6 +190,8 @@ export default function GoalPage() {
   const deleteGoal = useDeleteGoal()
   const updateGoal = useUpdateGoal()
   const promoteGoal = usePromoteGoal()
+  const updateGoalUtama = useUpdateGoalUtama()
+  const deleteGoalUtama = useDeleteGoalUtama()
 
   const [editState, setEditState] = useState<EditState | null>(null)
   const [langkahList, setLangkahList] = useState<LangkahItem[]>([])
@@ -256,9 +259,8 @@ export default function GoalPage() {
       a.tanggal_set.localeCompare(b.tanggal_set) || (a.created_at || "").localeCompare(b.created_at || ""))
   }, [logs])
 
-  const goalUtama = useMemo(() => {
-    return (logs as GoalEntry[]).find(g => g.is_utama) || null
-  }, [logs])
+  // Goal Utama sekarang dari tabel terpisah (goal_utama) — bukan lagi kolom is_utama di goal
+  const { data: goalUtama, isLoading: goalUtamaLoading } = useGoalUtama()
 
   // Hitung deadline + progres timer "berjalan" (setelah goalUtama diketahui)
   const tempoDays = goalUtama ? parseTempoToDays(goalUtama.tempo) : null
@@ -322,7 +324,6 @@ export default function GoalPage() {
       await promoteGoal.mutateAsync({
         id: editState.id!,
         data: {
-          proyeksi_harga: 0,
           tempo: editState.tempo,
           action_harian: editState.action_harian,
           langkah_aksi: serializedLangkah,
@@ -339,17 +340,31 @@ export default function GoalPage() {
     }
 
     if (editState.id) {
-      await updateGoal.mutateAsync({
-        id: editState.id,
-        data: {
-          tanggal_set: editState.tanggal_set,
-          nama_goal: editState.nama_goal.trim(),
-          proyeksi_harga: 0,
-          tempo: editState.tempo,
-          action_harian: editState.action_harian,
-          langkah_aksi: serializedLangkah,
-        },
-      })
+      // Edit goal utama (data di tabel goal_utama) vs goal biasa (tabel goal)
+      if (goalUtama?.id === editState.id) {
+        await updateGoalUtama.mutateAsync({
+          id: editState.id,
+          data: {
+            tanggal_set: editState.tanggal_set,
+            nama_goal: editState.nama_goal.trim(),
+            tempo: editState.tempo,
+            action_harian: editState.action_harian,
+            langkah_aksi: serializedLangkah,
+          },
+        })
+      } else {
+        await updateGoal.mutateAsync({
+          id: editState.id,
+          data: {
+            tanggal_set: editState.tanggal_set,
+            nama_goal: editState.nama_goal.trim(),
+            proyeksi_harga: 0,
+            tempo: editState.tempo,
+            action_harian: editState.action_harian,
+            langkah_aksi: serializedLangkah,
+          },
+        })
+      }
       // 1a: sinkron langkah -> task hanya kalau goal ini adalah Goal Utama
       if (groupId && goalUtama?.id === editState.id) {
         await syncGoalLangkahToTasks(groupId, langkahList, editState.nama_goal.trim())
@@ -387,7 +402,15 @@ export default function GoalPage() {
     prev.map((s, i) => i === si ? { ...s, ...patch } : s))
 
   const handleDelete = async (id: string) => {
-    await deleteGoal.mutateAsync(id)
+    if (confirm("Yakin ingin menghapus goal ini?")) {
+      await deleteGoal.mutateAsync(id)
+    }
+  }
+
+  const handleDeleteGoalUtama = async (id: string) => {
+    if (confirm("Yakin ingin menghapus Goal Utama? Goal akan kembali ke daftar goal biasa (tidak ada yang utama).")) {
+      await deleteGoalUtama.mutateAsync(id)
+    }
   }
 
   return (
@@ -398,24 +421,35 @@ export default function GoalPage() {
         <div className="flex items-center gap-2 mb-3">
           <h2 className="text-sm font-bold uppercase tracking-wide text-slate-700">Goal Utama</h2>
           {goalUtama && (
-            <Button
-              type="button"
-              size="sm"
-              variant={playStart ? "outline" : "default"}
-              onClick={playStart ? stopPlay : startPlay}
-              className={cn(
-                "ml-auto h-7 gap-1.5 text-[11px] px-2.5",
-                playStart
-                  ? "border-green-300 text-green-700 hover:bg-green-100"
-                  : "bg-green-600 hover:bg-green-700 text-white"
-              )}
+            <>
+              <Button type="button" size="sm" variant="ghost" aria-label="Edit goal utama"
+                onClick={() => openEdit(goalUtama as any)}
+                className="ml-auto h-7 w-7 p-0 text-slate-500 hover:text-slate-700">
+                <Pencil className="h-3.5 w-3.5" />
+              </Button>
+              <Button type="button" size="sm" variant="ghost" aria-label="Hapus goal utama"
+                onClick={() => handleDeleteGoalUtama(goalUtama.id)}
+                className="h-7 w-7 p-0 text-red-500 hover:text-red-700">
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={playStart ? "outline" : "default"}
+                onClick={playStart ? stopPlay : startPlay}
+                className={cn(
+                  "h-7 gap-1.5 text-[11px] px-2.5",
+                  playStart
+                    ? "border-green-300 text-green-700 hover:bg-green-100"
+                    : "bg-green-600 hover:bg-green-700 text-white"
+                )}
               disabled={!goalUtama.tempo?.trim()}
               title={goalUtama.tempo?.trim() ? "Mulai timer periode goal" : "Isi Tempo dulu untuk menjalankan timer"}
             >
               {playStart ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
               {playStart ? "Stop" : "Play"}
             </Button>
-          )}
+          </>)}
         </div>
         {goalUtama ? (
           <div className="space-y-4">
