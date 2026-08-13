@@ -8,11 +8,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Checkbox } from '@/components/ui/checkbox'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, getMissionPriorityIcon, getMissionGroupName, CARD_BASE, CARD_HOVER, getTaskActualDurationText, compareTaskEstimasiVsActual, getTaskLiveDurationText } from '@/lib/utils'
 import { TaskForm } from '@/components/tasks/TaskForm'
 import { TaskGroupRibbon, TaskGroupDialog } from '@/components/tasks/task-group'
-import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus, usePauseTask, useResumeTask } from '@/hooks/useTasks'
+import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus, usePauseTask, useResumeTask, useBulkDeleteTasks } from '@/hooks/useTasks'
 import { useTasksRealtime } from '@/hooks/useRealtime'
 import { Suspense } from 'react'
 
@@ -72,6 +73,9 @@ const TaskCard = memo(({
   onResume,
   onStart,
   onSetGroup,
+  selectionMode,
+  selected,
+  onToggleSelect,
 }: {
   task: Task
   onEdit: (task: Task) => void
@@ -81,6 +85,9 @@ const TaskCard = memo(({
   onResume: (id: string) => void
   onStart?: (task: Task) => void
   onSetGroup?: (task: Task) => void
+  selectionMode?: boolean
+  selected?: boolean
+  onToggleSelect?: (id: string) => void
 }) => {
   const isCompleted = task.status === 'selesai'
   const isInProgress = task.status === 'proses'
@@ -164,7 +171,17 @@ const TaskCard = memo(({
       <CardContent className="pt-4 pb-3 px-4 space-y-2.5">
         {/* Revisi 2-3: judul + menu titik tiga SEBARIS di kanan atas, sejajar */}
         <div className="flex items-start justify-between gap-2">
-          <h3 className={cn("font-medium text-base leading-tight capitalize flex-1", task.group_id && "pl-7")}>{task.nama}</h3>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            {selectionMode && (
+              <Checkbox
+                checked={!!selected}
+                onCheckedChange={() => onToggleSelect?.(task.id)}
+                className="h-4 w-4 shrink-0"
+                aria-label="Pilih tugas"
+              />
+            )}
+            <h3 className={cn("font-medium text-base leading-tight capitalize flex-1", task.group_id && "pl-7")}>{task.nama}</h3>
+          </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -295,6 +312,9 @@ function HariIniPageClient() {
   const [pendingStart, setPendingStart] = useState<Task | null>(null)
   // Revisi batch 12: penanda paket (parent/child/single)
   const [groupTask, setGroupTask] = useState<Task | null>(null)
+  // Seleksi massal (centang + hapus banyak)
+  const [selectionMode, setSelectionMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   const today = new Date()
   const todayStr = format(today, 'yyyy-MM-dd')
@@ -309,6 +329,31 @@ function HariIniPageClient() {
   const toggleTaskStatus = useToggleTaskStatus()
   const pauseTask = usePauseTask()
   const resumeTask = useResumeTask()
+  const bulkDeleteTasks = useBulkDeleteTasks()
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+  const allTodayIds = todayTasks.map((t: Task) => t.id)
+  const toggleSelectAll = () => setSelectedIds(prev =>
+    prev.size === allTodayIds.length && allTodayIds.length > 0
+      ? new Set()
+      : new Set(allTodayIds)
+  )
+  const clearSelection = () => setSelectedIds(new Set())
+  const handleBulkDelete = () => {
+    if (selectedIds.size === 0) return
+    if (confirm(`Yakin ingin menghapus ${selectedIds.size} tugas yang dipilih?`)) {
+      bulkDeleteTasks.mutate(Array.from(selectedIds), {
+        onSuccess: () => { setSelectedIds(new Set()); setSelectionMode(false) },
+      })
+    }
+  }
 
   const handleEdit = (task: Task) => {
     setEditingTask({
@@ -437,6 +482,40 @@ function HariIniPageClient() {
 
   return (
     <div className="space-y-6 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
+      {/* Toolbar seleksi massal */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="text-sm text-slate-500">
+          {selectionMode
+            ? `${selectedIds.size} tugas terpilih`
+            : `Total ${stats.totalToday} tugas hari ini`}
+        </div>
+        <div className="flex items-center gap-2">
+          {selectionMode ? (
+            <>
+              <Button variant="outline" size="sm" onClick={toggleSelectAll}
+                className="h-8 text-[12px]">
+                {selectedIds.size === allTodayIds.length && allTodayIds.length > 0 ? 'Batal Pilih Semua' : `Pilih Semua (${allTodayIds.length})`}
+              </Button>
+              <Button variant="destructive" size="sm" onClick={handleBulkDelete}
+                disabled={selectedIds.size === 0 || bulkDeleteTasks.isPending}
+                className="h-8 text-[12px]">
+                {bulkDeleteTasks.isPending ? 'Menghapus...' : `Hapus${selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}`}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => { setSelectionMode(false); clearSelection() }}
+                className="h-8 text-[12px]">
+                Batal
+              </Button>
+            </>
+          ) : (
+            <Button variant="outline" size="sm" onClick={() => setSelectionMode(true)}
+              disabled={stats.totalToday === 0}
+              className="h-8 text-[12px]">
+              Pilih Tugas
+            </Button>
+          )}
+        </div>
+      </div>
+
       {showBoard ? (
         <div className="space-y-8">
           {/* Group "Sedang Dikerjakan" — paling atas */}
@@ -451,16 +530,19 @@ function HariIniPageClient() {
               </div>
               <div className="grid grid-cols-1 gap-4">
                 {inProgressTasks.map((task: Task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onStatusChange={handleStatusChange}
-                    onPause={handlePause}
-                    onResume={handleResume}
-                    onStart={handleStartRequest}
-                  />
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onStatusChange={handleStatusChange}
+                  onPause={handlePause}
+                  onResume={handleResume}
+                  onStart={handleStartRequest}
+                  selectionMode={selectionMode}
+                  selected={selectedIds.has(task.id)}
+                  onToggleSelect={toggleSelect}
+                />
                 ))}
               </div>
             </div>
@@ -490,6 +572,9 @@ function HariIniPageClient() {
                         onPause={handlePause}
                         onResume={handleResume}
                         onStart={handleStartRequest}
+                        selectionMode={selectionMode}
+                        selected={selectedIds.has(task.id)}
+                        onToggleSelect={toggleSelect}
                       />
                     ))}
                   </div>
