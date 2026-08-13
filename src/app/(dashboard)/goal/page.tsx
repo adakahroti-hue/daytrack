@@ -340,8 +340,8 @@ export default function GoalPage() {
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[50px] sm:min-w-[70px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><Hash className="h-3.5 w-3.5 text-indigo-500" /> No</div>
               </th>
-              <th className={cn("px-2 sm:px-3 py-2 text-left font-semibold text-slate-700 border-r min-w-[150px] sm:min-w-[180px]", TABLE_BORDER)}>
-                <div className="flex items-center justify-start gap-1"><Target className="h-3.5 w-3.5 text-indigo-500" /> Nama Goal</div>
+              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[150px] sm:min-w-[180px]", TABLE_BORDER)}>
+                <div className="flex items-center justify-center gap-1"><Target className="h-3.5 w-3.5 text-indigo-500" /> Nama Goal</div>
               </th>
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[104px] sm:min-w-[150px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><MousePointerClick className="h-3.5 w-3.5 text-indigo-500" /> Tombol</div>
@@ -363,7 +363,7 @@ export default function GoalPage() {
                       {rowIdx + 1}
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2 border-r", TABLE_BORDER)}>
-                      <span className="text-base text-slate-800 whitespace-normal break-words leading-snug font-medium">{entry.nama_goal}</span>
+                      <span className="text-xs sm:text-sm text-slate-800 whitespace-normal break-words leading-snug font-medium">{entry.nama_goal}</span>
                     </td>
                     <td className={cn("px-2 sm:px-3 py-2", TABLE_BORDER)}>
                       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-1">
