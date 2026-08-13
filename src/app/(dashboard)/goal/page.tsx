@@ -295,10 +295,12 @@ export default function GoalPage() {
               <p className="text-[11px] font-semibold uppercase text-green-800">Nama Goal</p>
               <p className="font-semibold text-slate-800 break-words">{goalUtama.nama_goal}</p>
             </div>
-            <div>
-              <p className="text-[11px] font-semibold uppercase text-green-800">Nilai</p>
-              <p className="font-semibold text-slate-800 tabular-nums">{formatRupiah(goalUtama.proyeksi_harga)}</p>
-            </div>
+            {goalUtama.proyeksi_harga > 0 && (
+              <div>
+                <p className="text-[11px] font-semibold uppercase text-green-800">Nilai</p>
+                <p className="font-semibold text-slate-800 tabular-nums">{formatRupiah(goalUtama.proyeksi_harga)}</p>
+              </div>
+            )}
             <div>
               <p className="text-[11px] font-semibold uppercase text-green-800">Tempo</p>
               <p className="text-slate-800 break-words">{goalUtama.tempo || <span className="text-green-700/60">—</span>}</p>
