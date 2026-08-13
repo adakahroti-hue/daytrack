@@ -6,7 +6,6 @@ import { useMemo, useState } from "react"
 import { format } from "date-fns"
 import { id } from "date-fns/locale"
 import {
-  Radar,
   Plus,
   Pencil,
   Trash2,
@@ -164,11 +163,6 @@ export default function SwotPage() {
 
   return (
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
-      {/* Header */}
-      <div className="flex items-center gap-2">
-        <Radar className="h-5 w-5 text-primary" />
-        <h1 className="text-lg font-bold text-slate-900 dark:text-white">Analisis SWOT Diri</h1>
-      </div>
 
       {/* Ringkasan jumlah */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
