@@ -149,7 +149,7 @@ const navigation: NavSection[] = [
     title: 'Pelajaran',
     icon: Shield,
     items: [
-      { title: 'Tunda', href: '/kesenangan', icon: Hourglass },
+      { title: 'Playlist', href: '/kesenangan', icon: Hourglass },
       { title: 'Refleksi', href: '/masalah', icon: PersonStanding },
     ],
   },
