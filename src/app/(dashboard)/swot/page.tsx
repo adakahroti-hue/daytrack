@@ -198,7 +198,7 @@ export default function SwotPage() {
               ) : (
                 <div className="space-y-2">
                   {list.map((it) => (
-                    <div key={it.id} className="rounded-lg bg-white/70 border border-white/60 p-2.5 space-y-1.5">
+                    <div key={it.id} className="py-1.5 space-y-1">
                       <div className="flex items-start justify-between gap-2">
                         <p className="text-sm font-medium text-slate-800 break-words flex-1">{it.judul}</p>
                         <div className="flex items-center gap-1 shrink-0">
