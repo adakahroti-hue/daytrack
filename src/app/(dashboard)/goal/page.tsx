@@ -551,9 +551,6 @@ export default function GoalPage() {
                     <span className="text-green-700/70"> · {format(playStart, 'd MMM yyyy', { locale: id })} → {format(deadline, 'd MMM yyyy', { locale: id })}</span>
                   </p>
                 )}
-                {!playStart && (
-                  <p className="mt-1.5 text-[11px] text-slate-400">Tekan tombol "mulai" untuk memulai periode.</p>
-                )}
               </div>
             </div>
           )}
