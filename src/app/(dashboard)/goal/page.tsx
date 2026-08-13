@@ -515,9 +515,9 @@ export default function GoalPage() {
                   </span>
                   <span className="text-[11px] font-medium text-slate-600 tabular-nums">{doneSteps}/{totalSteps} selesai</span>
                 </div>
-                <div className="h-2.5 w-full rounded-full bg-green-200/60 overflow-hidden">
+                <div className="h-2.5 w-full rounded-full bg-yellow-200/60 overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-emerald-600 transition-[width] duration-500 ease-linear"
+                    className="h-full rounded-full bg-yellow-500 transition-[width] duration-500 ease-linear"
                     style={{ width: `${stepProgressPct}%` }}
                   />
                 </div>
