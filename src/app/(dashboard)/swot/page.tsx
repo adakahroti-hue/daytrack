@@ -304,7 +304,7 @@ export default function SwotPage() {
             )}
             <div className="space-y-1">
               <Label>Judul</Label>
-              <Input value={itemDraft.judul} onChange={(e) => setItemDraft({ ...itemDraft, judul: e.target.value })} placeholder="Mis: Disiplin bangun pagi" />
+              <Textarea value={itemDraft.judul} onChange={(e) => setItemDraft({ ...itemDraft, judul: e.target.value })} placeholder="Mis: Disiplin bangun pagi" rows={5} className="resize-y min-h-[120px]" />
             </div>
             {itemEditId && (
             <div className="grid grid-cols-3 gap-2">
