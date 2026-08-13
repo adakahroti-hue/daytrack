@@ -11,7 +11,7 @@ import {
   endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, CalendarDays, Shield, Trash2, Plus, Pencil, Wrench } from 'lucide-react'
+import { Calendar, CalendarDays, Shield, Trash2, Plus, Pencil, Wrench, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -32,6 +32,18 @@ const DAY_BADGE_COLORS: Record<string, string> = {
   Jumat: 'bg-blue-100 text-blue-800 border-blue-200',
   Sabtu: 'bg-green-100 text-green-800 border-green-200',
   Minggu: 'bg-rose-100 text-rose-800 border-rose-200',
+}
+
+const STATUS_LABEL: Record<string, string> = {
+  belum: 'Belum',
+  proses: 'Proses',
+  selesai: 'Selesai',
+}
+
+const STATUS_BADGE: Record<string, string> = {
+  belum: 'bg-slate-100 text-slate-600 border-slate-200',
+  proses: 'bg-amber-100 text-amber-700 border-amber-200',
+  selesai: 'bg-green-100 text-green-700 border-green-200',
 }
 
 const TABLE_BORDER = 'border-slate-900'
@@ -165,6 +177,12 @@ export default function MasalahPage() {
                   Refleksi
                 </div>
               </th>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[96px] sm:min-w-[120px]', TABLE_BORDER)}>
+                <div className="flex items-center justify-center gap-1">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-purple-500" />
+                  Status
+                </div>
+              </th>
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
                   <Wrench className="h-3.5 w-3.5 text-purple-500" />
@@ -176,7 +194,7 @@ export default function MasalahPage() {
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={4} className="text-center py-12 text-slate-400">
+                <td colSpan={5} className="text-center py-12 text-slate-400">
                   <div className="flex flex-col items-center gap-2">
                     <div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" />
                     <span className="text-sm">Memuat data...</span>
@@ -185,11 +203,11 @@ export default function MasalahPage() {
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan={4} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td>
+                <td colSpan={5} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td>
               </tr>
             ) : entries.length === 0 ? (
               <tr>
-                <td colSpan={4} className="text-center py-12 text-slate-400 text-sm">Belum ada refleksi tercatat pada periode ini.</td>
+                <td colSpan={5} className="text-center py-12 text-slate-400 text-sm">Belum ada refleksi tercatat pada periode ini.</td>
               </tr>
             ) : (
               entries.map((entry, rowIdx) => {
@@ -200,7 +218,7 @@ export default function MasalahPage() {
                   <Fragment key={entry.id}>
                     {/* ── Mobile: kartu ringkas (sm:hidden) ── */}
                     <tr className={cn('sm:hidden border-b', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30')}>
-                      <td colSpan={4} className={cn('px-3 py-3', TABLE_BORDER)}>
+                      <td colSpan={5} className={cn('px-3 py-3', TABLE_BORDER)}>
                         <div className="space-y-2">
                           <div className="flex items-center gap-2 flex-wrap text-[11px] text-slate-500">
                             <span className="tabular-nums">{dateDisplay}</span>
@@ -233,6 +251,11 @@ export default function MasalahPage() {
                       </td>
                       <td className={cn('px-2 sm:px-3 py-2 border-r', TABLE_BORDER)}>
                         <span className="text-slate-800 whitespace-normal break-words leading-snug">{entry.masalah}</span>
+                      </td>
+                      <td className={cn('px-2 sm:px-3 py-2 border-r', TABLE_BORDER)}>
+                        <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs border font-medium', STATUS_BADGE[entry.status] || 'bg-slate-100 text-slate-600 border-slate-200')}>
+                          {STATUS_LABEL[entry.status] || 'Belum'}
+                        </span>
                       </td>
                       <td className={cn('px-2 sm:px-3 py-2', TABLE_BORDER)}>
                         <div className="flex items-center justify-center gap-1 flex-wrap">
