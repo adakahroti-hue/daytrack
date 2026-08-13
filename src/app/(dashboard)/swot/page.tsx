@@ -306,31 +306,6 @@ export default function SwotPage() {
               <Label>Judul</Label>
               <Textarea value={itemDraft.judul} onChange={(e) => setItemDraft({ ...itemDraft, judul: e.target.value })} placeholder="Mis: Disiplin bangun pagi" rows={5} className="resize-y min-h-[120px]" />
             </div>
-            {itemEditId && (
-            <div className="grid grid-cols-3 gap-2">
-              <div className="space-y-1">
-                <Label className="text-[11px]">Prioritas</Label>
-                <select value={itemDraft.prioritas} onChange={(e) => setItemDraft({ ...itemDraft, prioritas: e.target.value as SwotPrioritas })}
-                  className="h-9 w-full rounded-md border border-slate-200 bg-white text-sm px-1">
-                  {(["rendah", "sedang", "tinggi"] as SwotPrioritas[]).map((p) => <option key={p} value={p}>{PRIO_LABEL[p]}</option>)}
-                </select>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[11px]">Tren</Label>
-                <select value={itemDraft.tren} onChange={(e) => setItemDraft({ ...itemDraft, tren: e.target.value as SwotTren })}
-                  className="h-9 w-full rounded-md border border-slate-200 bg-white text-sm px-1">
-                  {(["membaik", "stagnan", "memburuk"] as SwotTren[]).map((t) => <option key={t} value={t}>{TREN_LABEL[t]}</option>)}
-                </select>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[11px]">Status</Label>
-                <select value={itemDraft.status} onChange={(e) => setItemDraft({ ...itemDraft, status: e.target.value as SwotStatus })}
-                  className="h-9 w-full rounded-md border border-slate-200 bg-white text-sm px-1">
-                  {(["aktif", "ditindak", "selesai"] as SwotStatus[]).map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
-                </select>
-              </div>
-            </div>
-            )}
             <div className="flex justify-end gap-2 pt-1">
               <Button variant="outline" onClick={() => setItemDialog(false)}>Batal</Button>
               <Button onClick={saveItem} disabled={isBusy || !itemDraft.judul.trim()}>
