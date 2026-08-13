@@ -11,7 +11,7 @@ import {
   endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, CalendarDays, Smile, Check, X, Trash2, Plus, Pencil, Wrench } from 'lucide-react'
+import { Hash, Smile, Check, X, Trash2, Plus, Pencil, Wrench } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -24,16 +24,6 @@ import { useRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
 
 // ─── Constants ────────────────────────────────────
-
-const DAY_BADGE_COLORS: Record<string, string> = {
-  Senin: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  Selasa: 'bg-orange-100 text-orange-800 border-orange-200',
-  Rabu: 'bg-purple-100 text-purple-800 border-purple-200',
-  Kamis: 'bg-amber-100 text-amber-800 border-amber-200',
-  Jumat: 'bg-blue-100 text-blue-800 border-blue-200',
-  Sabtu: 'bg-green-100 text-green-800 border-green-200',
-  Minggu: 'bg-rose-100 text-rose-800 border-rose-200',
-}
 
 const TABLE_BORDER = 'border-slate-900'
 
@@ -150,21 +140,15 @@ export default function KesenanganPage() {
 
   return (
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
-      {/* Tabel gaya Quran: Tanggal | Hari | Kesenangan yang Ditunda | Status — hanya entri yang ada */}
+      {/* Tabel: No | Kesenangan yang Ditunda | Status | Aksi — tanpa kolom tanggal & hari */}
       <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)] landscape:max-lg:max-h-none rounded-lg border bg-white', TABLE_BORDER)}>
         <table className="w-full border-collapse text-xs sm:text-sm">
           <thead className={cn('hidden sm:table-header-group sticky top-0 z-20 bg-white')}>
             <tr className={cn('border-b', TABLE_BORDER)}>
-              <th className={cn('dt-col-stick sticky left-0 z-30 bg-white px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[72px] sm:min-w-[100px]', TABLE_BORDER)}>
+              <th className={cn('dt-col-stick sticky left-0 z-30 bg-white px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[48px] sm:min-w-[64px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
-                  <Calendar className="h-3.5 w-3.5 text-purple-500" />
-                  Tanggal
-                </div>
-              </th>
-              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[64px] sm:min-w-[90px]', TABLE_BORDER)}>
-                <div className="flex items-center justify-center gap-1">
-                  <CalendarDays className="h-3.5 w-3.5 text-purple-500" />
-                  Hari
+                  <Hash className="h-3.5 w-3.5 text-purple-500" />
+                  No
                 </div>
               </th>
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[170px] sm:min-w-[240px]', TABLE_BORDER)}>
@@ -190,7 +174,7 @@ export default function KesenanganPage() {
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={5} className="text-center py-12 text-slate-400">
+                <td colSpan={4} className="text-center py-12 text-slate-400">
                   <div className="flex flex-col items-center gap-2">
                     <div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" />
                     <span className="text-sm">Memuat data...</span>
@@ -199,31 +183,24 @@ export default function KesenanganPage() {
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan={5} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td>
+                <td colSpan={4} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td>
               </tr>
             ) : entries.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-center py-12 text-slate-400 text-sm">
+                <td colSpan={4} className="text-center py-12 text-slate-400 text-sm">
                   Belum ada kesenangan yang ditunda. Tekan tombol + untuk menambah.
                 </td>
               </tr>
             ) : (
               entries.map((entry, rowIdx) => {
-                const date = new Date(entry.tanggal + 'T00:00:00')
-                const dayName = format(date, 'EEEE', { locale: id })
-                const dateDisplay = format(date, 'd MMMM', { locale: id })
                 const isDone = entry.status === 'sudah'
-
                 return (
                   <Fragment key={entry.id}>
                     {/* ── Mobile: kartu ringkas (sm:hidden) ── */}
                     <tr className={cn('sm:hidden border-b', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30')}>
-                      <td colSpan={5} className={cn('px-3 py-3', TABLE_BORDER)}>
+                      <td colSpan={4} className={cn('px-3 py-3', TABLE_BORDER)}>
                         <div className="space-y-2">
-                          <div className="flex items-center gap-2 flex-wrap text-[11px] text-slate-500">
-                            <span className="tabular-nums">{dateDisplay}</span>
-                            <span className={cn('inline-block px-1.5 py-0.5 rounded-full border font-medium', DAY_BADGE_COLORS[dayName] || 'bg-slate-100 text-slate-700 border-slate-200')}>{dayName}</span>
-                          </div>
+                          <span className="inline-block text-[11px] font-semibold text-slate-400 tabular-nums">No. {rowIdx + 1}</span>
                           <p className="text-sm text-slate-800 whitespace-normal break-words leading-snug">{entry.kesenangan}</p>
                           <div className="flex items-center gap-1.5 pt-0.5">
                             <button type="button" onClick={() => handleSetStatus(entry, !isDone)}
@@ -246,31 +223,24 @@ export default function KesenanganPage() {
                     </tr>
                     {/* ── Desktop: tabel penuh (hidden sm:table-row) ── */}
                     <tr key={entry.id} className={cn('hidden sm:table-row border-b transition-colors', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30', 'hover:bg-blue-50/40')}>
-                    <td className={cn('dt-col-stick sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
-                      <span className="sm:hidden">{format(date, 'd MMM', { locale: id })}</span>
-                      <span className="hidden sm:inline">{dateDisplay}</span>
-                    </td>
-                    <td className={cn('px-2 sm:px-3 py-2 text-center border-r', TABLE_BORDER)}>
-                      <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs border font-medium', DAY_BADGE_COLORS[dayName] || 'bg-slate-100 text-slate-700 border-slate-200')}>
-                        {dayName}
-                      </span>
-                    </td>
-                    <td className={cn('px-2 sm:px-3 py-2 border-r', TABLE_BORDER)}>
-                      <span className="text-slate-800 whitespace-normal break-words leading-snug">{entry.kesenangan}</span>
-                    </td>
-                    <td className={cn('px-2 sm:px-3 py-2 text-center border-r', TABLE_BORDER)}>
-                      <div className="flex items-center justify-center min-h-[36px]">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button
-                              type="button"
-                              className={cn(
-                                'inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium border transition-colors cursor-pointer whitespace-normal leading-tight text-center',
-                                isDone
-                                  ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200'
-                                  : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
-                              )}
-                            >
+                      <td className={cn('dt-col-stick sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
+                        {rowIdx + 1}
+                      </td>
+                      <td className={cn('px-2 sm:px-3 py-2 border-r', TABLE_BORDER)}>
+                        <span className="text-slate-800 whitespace-normal break-words leading-snug">{entry.kesenangan}</span>
+                      </td>
+                      <td className={cn('px-2 sm:px-3 py-2 text-center border-r', TABLE_BORDER)}>
+                        <div className="flex items-center justify-center min-h-[36px]">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button
+                                type="button"
+                                className={cn(
+                                  'inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium border transition-colors cursor-pointer whitespace-normal leading-tight text-center',
+                                  isDone
+                                    ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200'
+                                    : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                                )}>
                               {isDone && <Check className="h-3.5 w-3.5 shrink-0" />}
                               {isDone ? 'Sudah' : 'Belum'}
                             </button>
