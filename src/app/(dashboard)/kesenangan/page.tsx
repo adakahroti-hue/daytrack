@@ -322,15 +322,6 @@ export default function KesenanganPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="kesenangan-tanggal">Tanggal</Label>
-              <Input
-                id="kesenangan-tanggal"
-                type="date"
-                value={editState?.tanggal ?? todayStr}
-                onChange={(e) => setEditState(prev => prev ? { ...prev, tanggal: e.target.value } : prev)}
-              />
-            </div>
-            <div className="space-y-1.5">
               <Label htmlFor="kesenangan-teks">Kesenangan yang Ditunda</Label>
               <Textarea
                 id="kesenangan-teks"

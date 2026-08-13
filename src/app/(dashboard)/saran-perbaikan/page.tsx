@@ -258,15 +258,6 @@ export default function SaranPerbaikanPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="saran-tanggal">Tanggal</Label>
-              <Input
-                id="saran-tanggal"
-                type="date"
-                value={editState?.tanggal ?? todayStr}
-                onChange={(e) => setEditState(prev => prev ? { ...prev, tanggal: e.target.value } : prev)}
-              />
-            </div>
-            <div className="space-y-1.5">
               <Label htmlFor="saran-teks">Saran Perbaikan</Label>
               <Textarea
                 id="saran-teks"

@@ -279,15 +279,6 @@ export default function MasalahPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="masalah-tanggal">Tanggal</Label>
-              <Input
-                id="masalah-tanggal"
-                type="date"
-                value={editState?.tanggal ?? todayStr}
-                onChange={(e) => setEditState(prev => prev ? { ...prev, tanggal: e.target.value } : prev)}
-              />
-            </div>
-            <div className="space-y-1.5">
               <Label htmlFor="masalah-teks">Refleksi</Label>
               <Textarea
                 id="masalah-teks"
