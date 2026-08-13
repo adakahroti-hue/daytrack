@@ -117,8 +117,8 @@ const navigation: NavSection[] = [
     title: 'Hoki',
     icon: Dices,
     items: [
-      { title: 'Berdoa', href: '/doa', icon: Heart },
-      { title: 'Bersyukur', href: '/syukur', icon: Sparkles },
+      { title: 'Doa', href: '/doa', icon: Heart },
+      { title: 'Syukur', href: '/syukur', icon: Sparkles },
       { title: 'Sedekah', href: '/sedekah', icon: HandCoins },
     ],
   },
