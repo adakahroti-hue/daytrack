@@ -198,18 +198,21 @@ export default function SwotPage() {
               ) : (
                 <div className="space-y-2">
                   {list.map((it) => (
-                    <div key={it.id} className="py-1.5 space-y-1">
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm font-medium text-slate-800 break-words flex-1">{it.judul}</p>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <Button size="sm" variant="ghost" aria-label="Edit" onClick={() => openEditItem(it)}
-                            className="h-6 w-6 p-0 text-slate-500 hover:text-slate-700">
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button size="sm" variant="ghost" aria-label="Hapus" onClick={() => handleDeleteItem(it.id)}
-                            className="h-6 w-6 p-0 text-red-500 hover:text-red-700">
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
+                    <div key={it.id} className="py-1.5 flex items-start gap-2.5">
+                      <span className="mt-1 h-3.5 w-3.5 shrink-0 rounded-full border-2 border-slate-400" aria-hidden="true" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-sm font-medium text-slate-800 break-words flex-1">{it.judul}</p>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <Button size="sm" variant="ghost" aria-label="Edit" onClick={() => openEditItem(it)}
+                              className="h-6 w-6 p-0 text-slate-500 hover:text-slate-700">
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button size="sm" variant="ghost" aria-label="Hapus" onClick={() => handleDeleteItem(it.id)}
+                              className="h-6 w-6 p-0 text-red-500 hover:text-red-700">
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
