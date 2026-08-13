@@ -468,27 +468,6 @@ export default function GoalPage() {
           </>)}
         </div>
         {/* Progress bar Periode Berjalan — di bagian atas card, tepat di bawah baris tombol Play */}
-        {goalUtama?.tempo?.trim() && (
-          <div className="mb-4">
-            <div className="h-2.5 w-full rounded-full bg-green-200/60 overflow-hidden">
-              <div
-                className="h-full rounded-full bg-green-600 transition-[width] duration-1000 ease-linear"
-                style={{ width: `${progressPct}%` }}
-              />
-            </div>
-            {playStart && deadline && (
-              <p className="mt-1.5 text-[11px] text-slate-600 tabular-nums">
-                {remainingMs > 0
-                  ? `Sisa waktu: ${Math.floor(remainingMs / 86400000)} hari ${Math.floor((remainingMs % 86400000) / 3600000)} jam ${Math.floor((remainingMs % 3600000) / 60000)} menit`
-                  : 'Periode goal telah berakhir'}
-                <span className="text-green-700/70"> · {progressPct.toFixed(1)}% berlalu</span>
-              </p>
-            )}
-            {!playStart && (
-              <p className="mt-1.5 text-[11px] text-slate-400">Belum dijalankan — tekan tombol “mulai” untuk memulai periode.</p>
-            )}
-          </div>
-        )}
         {goalUtama ? (
           <div className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3 text-sm">
@@ -540,23 +519,56 @@ export default function GoalPage() {
             </div>
           </div>
           {goalGroupId && totalSteps > 0 && (
-            <div className="mt-4 pt-3 border-t border-green-200">
-              <div className="flex items-center justify-between gap-2 mb-1.5">
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase text-green-800">
-                  <ClipboardList className="h-3.5 w-3.5" /> Progress Langkah
-                </span>
-                <span className="text-[11px] font-medium text-slate-600 tabular-nums">{doneSteps}/{totalSteps} selesai</span>
+            <div className="mt-4 pt-3 border-t border-green-200 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+              {/* Kiri: Progress Langkah */}
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase text-green-800">
+                    <ClipboardList className="h-3.5 w-3.5" /> Progress Langkah
+                  </span>
+                  <span className="text-[11px] font-medium text-slate-600 tabular-nums">{doneSteps}/{totalSteps} selesai</span>
+                </div>
+                <div className="h-2.5 w-full rounded-full bg-green-200/60 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-emerald-600 transition-[width] duration-500 ease-linear"
+                    style={{ width: `${stepProgressPct}%` }}
+                  />
+                </div>
+                <p className="mt-1.5 text-[11px] text-slate-600 tabular-nums">
+                  {stepProgressPct}% langkah terselesaikan
+                  <span className="text-green-700/70"> · tersinkron dengan tab Semua</span>
+                </p>
               </div>
-              <div className="h-2.5 w-full rounded-full bg-green-200/60 overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-emerald-600 transition-[width] duration-500 ease-linear"
-                  style={{ width: `${stepProgressPct}%` }}
-                />
+              {/* Kanan: Periode Berjalan */}
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase text-green-800">
+                    <Timer className="h-3.5 w-3.5" /> Periode Berjalan
+                  </span>
+                  {playStart && deadline ? (
+                    <span className="text-[11px] font-medium text-slate-600 tabular-nums">{progressPct.toFixed(1)}% berlalu</span>
+                  ) : (
+                    <span className="text-[11px] text-slate-400">Belum dijalankan</span>
+                  )}
+                </div>
+                <div className="h-2.5 w-full rounded-full bg-green-200/60 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-green-600 transition-[width] duration-1000 ease-linear"
+                    style={{ width: `${progressPct}%` }}
+                  />
+                </div>
+                {playStart && deadline && (
+                  <p className="mt-1.5 text-[11px] text-slate-600 tabular-nums">
+                    {remainingMs > 0
+                      ? `Sisa waktu: ${Math.floor(remainingMs / 86400000)} hari ${Math.floor((remainingMs % 86400000) / 3600000)} jam ${Math.floor((remainingMs % 3600000) / 60000)} menit`
+                      : 'Periode goal telah berakhir'}
+                    <span className="text-green-700/70"> · {format(playStart, 'd MMM yyyy', { locale: id })} → {format(deadline, 'd MMM yyyy', { locale: id })}</span>
+                  </p>
+                )}
+                {!playStart && (
+                  <p className="mt-1.5 text-[11px] text-slate-400">Tekan tombol "mulai" untuk memulai periode.</p>
+                )}
               </div>
-              <p className="mt-1.5 text-[11px] text-slate-600 tabular-nums">
-                {stepProgressPct}% langkah terselesaikan
-                <span className="text-green-700/70"> · tersinkron dengan tab Semua</span>
-              </p>
             </div>
           )}
           </div>
