@@ -200,9 +200,9 @@ export default function SwotPage() {
                 <div className={cn("flex items-center gap-1.5 text-sm font-bold", k.ring)}>
                   {k.icon} {k.label}
                 </div>
-                <Button size="sm" variant="outline" onClick={() => openAddItem(k.key)}
-                  className="h-6 gap-1 text-[11px] px-2">
-                  <Plus className="h-3 w-3" /> Tambah Item
+                <Button size="icon" variant="outline" aria-label="Tambah Item" onClick={() => openAddItem(k.key)}
+                  className="h-6 w-6 p-0">
+                  <Plus className="h-3 w-3" />
                 </Button>
               </div>
               {itemsLoading ? (
