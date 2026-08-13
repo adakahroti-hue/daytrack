@@ -3,6 +3,7 @@ export const JAM_BANGUN_OPTIONS = [
   { value: '03:30', label: '03.30' },
   { value: '04:30', label: '04.30' },
   { value: '05:00', label: '05.00' },
+  { value: '05:30', label: '05.30' },
   { value: '06:00', label: '06.00' },
   { value: '07:00', label: '07.00' },
   { value: '08:00', label: '08.00' },
