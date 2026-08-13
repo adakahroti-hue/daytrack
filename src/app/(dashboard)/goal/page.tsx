@@ -511,7 +511,7 @@ export default function GoalPage() {
               <div>
                 <div className="flex items-center justify-between gap-2 mb-1.5">
                   <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase text-green-800">
-                    <ClipboardList className="h-3.5 w-3.5" /> Progress Langkah
+                    <ClipboardList className="h-3.5 w-3.5" /> Progress
                   </span>
                   <span className="text-[11px] font-medium text-slate-600 tabular-nums">{doneSteps}/{totalSteps} selesai</span>
                 </div>
@@ -530,7 +530,7 @@ export default function GoalPage() {
               <div>
                 <div className="flex items-center justify-between gap-2 mb-1.5">
                   <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase text-green-800">
-                    <Timer className="h-3.5 w-3.5" /> Periode Berjalan
+                    <Timer className="h-3.5 w-3.5" /> Durasi
                   </span>
                   {playStart && deadline ? (
                     <span className="text-[11px] font-medium text-slate-600 tabular-nums">{progressPct.toFixed(1)}% berlalu</span>
