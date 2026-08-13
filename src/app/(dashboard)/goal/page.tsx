@@ -261,6 +261,8 @@ export default function GoalPage() {
 
   // Goal Utama sekarang dari tabel terpisah (goal_utama) — bukan lagi kolom is_utama di goal
   const { data: goalUtama, isLoading: goalUtamaLoading } = useGoalUtama()
+  // Field Tempo/Rencana/Langkah hanya untuk Goal Utama (goal_utama). Goal biasa cuma nomor + nama.
+  const showFullFields = promoteMode || (editState?.id != null && goalUtama?.id === editState.id)
 
   // Hitung deadline + progres timer "berjalan" (setelah goalUtama diketahui)
   const tempoDays = goalUtama ? parseTempoToDays(goalUtama.tempo) : null
@@ -447,10 +449,41 @@ export default function GoalPage() {
               title={goalUtama.tempo?.trim() ? "Mulai timer periode goal" : "Isi Tempo dulu untuk menjalankan timer"}
             >
               {playStart ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-              {playStart ? "Stop" : "Play"}
+              {playStart ? "Stop" : "Mulai"}
             </Button>
           </>)}
         </div>
+        {/* Bar Periode Berjalan — selalu tampil (sebaris area tombol Play) untuk menegaskan fitur */}
+        {goalUtama?.tempo?.trim() && (
+          <div className="mt-3 pt-3 border-t border-green-200">
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase text-green-800">
+                <Timer className="h-3.5 w-3.5" /> Periode Berjalan
+              </span>
+              {playStart && deadline ? (
+                <span className="text-[11px] font-medium text-slate-600 tabular-nums">
+                  {format(playStart, 'd MMM yyyy', { locale: id })} → {format(deadline, 'd MMM yyyy', { locale: id })}
+                </span>
+              ) : (
+                <span className="text-[11px] text-slate-400">Tekan “Mulai” untuk menjalankan periode</span>
+              )}
+            </div>
+            <div className="h-2.5 w-full rounded-full bg-green-200/60 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-green-600 transition-[width] duration-1000 ease-linear"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+            {playStart && deadline && (
+              <p className="mt-1.5 text-[11px] text-slate-600 tabular-nums">
+                {remainingMs > 0
+                  ? `Sisa waktu: ${Math.floor(remainingMs / 86400000)} hari ${Math.floor((remainingMs % 86400000) / 3600000)} jam ${Math.floor((remainingMs % 3600000) / 60000)} menit`
+                  : 'Periode goal telah berakhir'}
+                <span className="text-green-700/70"> · {progressPct.toFixed(1)}% berlalu</span>
+              </p>
+            )}
+          </div>
+        )}
         {goalUtama ? (
           <div className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3 text-sm">
@@ -501,30 +534,6 @@ export default function GoalPage() {
               })()}
             </div>
           </div>
-          {playStart && deadline && (
-            <div className="mt-4 pt-3 border-t border-green-200">
-              <div className="flex items-center justify-between gap-2 mb-1.5">
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase text-green-800">
-                  <Timer className="h-3.5 w-3.5" /> Periode Berjalan
-                </span>
-                <span className="text-[11px] font-medium text-slate-600 tabular-nums">
-                  {format(playStart, 'd MMM yyyy', { locale: id })} → {format(deadline, 'd MMM yyyy', { locale: id })}
-                </span>
-              </div>
-              <div className="h-2.5 w-full rounded-full bg-green-200/60 overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-green-600 transition-[width] duration-1000 ease-linear"
-                  style={{ width: `${progressPct}%` }}
-                />
-              </div>
-              <p className="mt-1.5 text-[11px] text-slate-600 tabular-nums">
-                {remainingMs > 0
-                  ? `Sisa waktu: ${Math.floor(remainingMs / 86400000)} hari ${Math.floor((remainingMs % 86400000) / 3600000)} jam ${Math.floor((remainingMs % 3600000) / 60000)} menit`
-                  : 'Periode goal telah berakhir'}
-                <span className="text-green-700/70"> · {progressPct.toFixed(1)}% berlalu</span>
-              </p>
-            </div>
-          )}
           {goalGroupId && totalSteps > 0 && (
             <div className="mt-4 pt-3 border-t border-green-200">
               <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -631,6 +640,7 @@ export default function GoalPage() {
                 value={editState?.nama_goal ?? ""}
                 onChange={(e) => setEditState(prev => prev ? { ...prev, nama_goal: e.target.value } : prev)} />
             </div>
+            {showFullFields && (
             <div className="space-y-1.5">
               <Label htmlFor="g-tempo">Tempo</Label>
               <Input id="g-tempo" placeholder="Contoh: 3 bulan, 1 tahun..."
@@ -643,6 +653,8 @@ export default function GoalPage() {
                 value={editState?.action_harian ?? ""}
                 onChange={(e) => setEditState(prev => prev ? { ...prev, action_harian: e.target.value } : prev)} />
             </div>
+            )}
+            {showFullFields && (
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label htmlFor="g-langkah">Langkah Aksi</Label>

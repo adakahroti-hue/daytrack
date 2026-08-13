@@ -171,7 +171,7 @@ const TaskCard = memo(({
       <CardContent className="pt-4 pb-3 px-4 space-y-2.5">
         {/* Revisi 2-3: judul + menu titik tiga SEBARIS di kanan atas, sejajar */}
         <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className={cn("flex items-center gap-2 flex-1 min-w-0", task.group_id && "pl-7")}>
             {selectionMode && (
               <Checkbox
                 checked={!!selected}
