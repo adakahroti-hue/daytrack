@@ -92,14 +92,14 @@ const navigation: NavSection[] = [
     href: '/overview',
   },
   {
-    title: 'Goal',
-    icon: Target,
-    href: '/goal',
-  },
-  {
     title: 'SWOT',
     icon: ScanSearch,
     href: '/swot',
+  },
+  {
+    title: 'Goal',
+    icon: Target,
+    href: '/goal',
   },
   {
     title: 'Tugas',
