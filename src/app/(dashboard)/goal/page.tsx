@@ -21,7 +21,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
-import { formatRupiah, parseRupiah } from "@/lib/utils"
 import { useTableLock } from "@/components/ui/table-lock"
 import { useGoalRange, useCreateGoal, useDeleteGoal, useUpdateGoal, usePromoteGoal } from "@/hooks/useGoal"
 import { syncGoalLangkahToTasks } from "@/app/actions/tasks"
@@ -192,7 +191,6 @@ export default function GoalPage() {
   const promoteGoal = usePromoteGoal()
 
   const [editState, setEditState] = useState<EditState | null>(null)
-  const [hargaInput, setHargaInput] = useState("")
   const [langkahList, setLangkahList] = useState<LangkahItem[]>([])
   const [promoteMode, setPromoteMode] = useState(false) // true = dialog ini untuk "Jadikan Utama" (wajib isi field)
 
@@ -227,9 +225,9 @@ export default function GoalPage() {
   }, [playStart])
 
   // Cek apakah suatu goal sudah punya data lengkap untuk jadi Goal Utama
+  // (field Proyeksi Harga sudah dihapus dari form -> tidak lagi jadi syarat)
   const isUtamaComplete = (e: GoalEntry) =>
     !!e.nama_goal?.trim() &&
-    (e.proyeksi_harga ?? 0) > 0 &&
     !!e.tempo?.trim() &&
     !!e.action_harian?.trim() &&
     !!e.langkah_aksi?.trim()
@@ -240,7 +238,6 @@ export default function GoalPage() {
       promoteGoal.mutateAsync({ id: entry.id, data: {} })
       return
     }
-    setHargaInput(entry.proyeksi_harga > 0 ? formatRupiah(entry.proyeksi_harga) : "")
     setLangkahList(parseLangkah(entry.langkah_aksi, entry.tanggal_set).steps)
     setPromoteMode(true)
     setEditState({
@@ -282,7 +279,6 @@ export default function GoalPage() {
   const stepProgressPct = totalSteps > 0 ? Math.round((doneSteps / totalSteps) * 100) : 0
 
   const openAdd = () => {
-    setHargaInput("")
     setEditState({
       id: null,
       tanggal_set: todayStr,
@@ -296,7 +292,6 @@ export default function GoalPage() {
   }
 
   const openEdit = (entry: GoalEntry) => {
-    setHargaInput(entry.proyeksi_harga > 0 ? formatRupiah(entry.proyeksi_harga) : "")
     setEditState({
       id: entry.id,
       tanggal_set: entry.tanggal_set,
@@ -327,7 +322,7 @@ export default function GoalPage() {
       await promoteGoal.mutateAsync({
         id: editState.id!,
         data: {
-          proyeksi_harga: editState.proyeksi_harga,
+          proyeksi_harga: 0,
           tempo: editState.tempo,
           action_harian: editState.action_harian,
           langkah_aksi: serializedLangkah,
@@ -349,7 +344,7 @@ export default function GoalPage() {
         data: {
           tanggal_set: editState.tanggal_set,
           nama_goal: editState.nama_goal.trim(),
-          proyeksi_harga: editState.proyeksi_harga,
+          proyeksi_harga: 0,
           tempo: editState.tempo,
           action_harian: editState.action_harian,
           langkah_aksi: serializedLangkah,
@@ -424,17 +419,11 @@ export default function GoalPage() {
         </div>
         {goalUtama ? (
           <div className="space-y-4">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-3 text-sm">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3 text-sm">
             <div>
               <p className="text-[11px] font-semibold uppercase text-green-800">Nama Goal</p>
               <p className="text-slate-800 break-words whitespace-normal text-[13px]">{goalUtama.nama_goal}</p>
             </div>
-            {goalUtama.proyeksi_harga > 0 && (
-              <div>
-                <p className="text-[11px] font-semibold uppercase text-green-800">Nilai</p>
-                <p className="text-slate-800 break-words whitespace-normal text-[13px]">{formatRupiah(goalUtama.proyeksi_harga)}</p>
-              </div>
-            )}
             <div>
               <p className="text-[11px] font-semibold uppercase text-green-800">Tempo</p>
               <p className="text-slate-800 break-words whitespace-normal text-[13px]">{goalUtama.tempo || <span className="text-green-700/60">—</span>}</p>
@@ -462,18 +451,15 @@ export default function GoalPage() {
                   p4: 'bg-slate-100 text-slate-500 border-slate-200',
                 }
                 return (
-                  <div className="mt-1.5 space-y-1.5">
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
                     {steps.map((s, i) => (
                       <div key={i} className={cn(
-                        "flex flex-wrap items-center gap-1.5 rounded-lg border px-2 py-1",
+                        "flex items-center gap-1.5 rounded-lg border px-2 py-1",
                         s.status === 'selesai' ? 'bg-green-50 border-green-200' : 'bg-green-100 border-green-200'
                       )}>
                         <span className="shrink-0 flex items-center justify-center h-4 w-4 rounded-full bg-green-600 text-white text-[10px] font-bold leading-none">{i + 1}</span>
-                        <span className={cn("text-green-900 text-[13px] leading-snug break-words flex-1 min-w-[120px]", s.status === 'selesai' && "line-through opacity-70")}>{s.text}</span>
-                        {s.tanggal && <span className="text-[10px] text-slate-500 border border-slate-200 rounded px-1">{format(new Date(s.tanggal + 'T00:00:00'), 'd MMM', { locale: id })}</span>}
+                        <span className={cn("text-green-900 text-[13px] leading-snug break-words", s.status === 'selesai' && "line-through opacity-70")}>{s.text}</span>
                         {s.estimasi_menit > 0 && <span className="text-[10px] text-slate-500 border border-slate-200 rounded px-1">{s.estimasi_menit}m</span>}
-                        <span className={cn("text-[10px] border rounded px-1", prioClass[s.prioritas] || prioClass.p4)}>{s.prioritas.toUpperCase()}</span>
-                        <span className={cn("text-[10px] border rounded px-1", statusClass[s.status] || statusClass.belum)}>{statusLabel[s.status] || 'Belum'}</span>
                       </div>
                     ))}
                   </div>
@@ -612,16 +598,6 @@ export default function GoalPage() {
                 onChange={(e) => setEditState(prev => prev ? { ...prev, nama_goal: e.target.value } : prev)} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="g-harga">Proyeksi Harga (Rupiah)</Label>
-              <Input id="g-harga" type="text" inputMode="numeric" placeholder="Rp 12.000.000"
-                value={hargaInput}
-                onChange={(e) => {
-                  const num = parseRupiah(e.target.value)
-                  setEditState(prev => prev ? { ...prev, proyeksi_harga: num } : prev)
-                  setHargaInput(num > 0 ? formatRupiah(num) : '')
-                }} />
-            </div>
-            <div className="space-y-1.5">
               <Label htmlFor="g-tempo">Tempo</Label>
               <Input id="g-tempo" placeholder="Contoh: 3 bulan, 1 tahun..."
                 value={editState?.tempo ?? ""}
@@ -714,7 +690,7 @@ export default function GoalPage() {
               <Button
                 onClick={handleSave}
                 disabled={
-                  ((editState?.id && !promoteMode) && (!editState?.nama_goal.trim() || parseRupiah(hargaInput) <= 0)) ||
+                  ((editState?.id && !promoteMode) && (!editState?.nama_goal.trim())) ||
                   (promoteMode && (!editState?.tempo.trim() || !editState?.action_harian.trim() || serializeLangkah({ group_id: null, steps: langkahList }).trim() === ""))
                 }
               >Simpan</Button>
