@@ -317,7 +317,7 @@ export default function GoalPage() {
                 for (const st of steps) for (const f of st.fields) if (f.trim().length > 0) allFields.push(f.trim())
                 if (allFields.length === 0) return <p className="text-green-700/60">—</p>
                 return (
-                  <div className="flex flex-wrap gap-1.5 mt-1.5">
+                  <div className="flex flex-wrap gap-1.5 mt-2.5">
                     {allFields.map((f, i) => (
                       <span key={i} className="inline-flex items-center gap-1.5 rounded-lg bg-green-100 border border-green-200 px-2 py-1">
                         <span className="shrink-0 flex items-center justify-center h-4 w-4 rounded-full bg-green-600 text-white text-[10px] font-bold leading-none">{i + 1}</span>
