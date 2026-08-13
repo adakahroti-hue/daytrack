@@ -493,7 +493,7 @@ export default function GoalPage() {
                     {steps.map((s, i) => (
                       <div key={i} className={cn(
                         "flex items-center gap-1.5 rounded-lg border px-2 py-1",
-                        s.status === 'selesai' ? 'bg-green-50 border-green-200' : 'bg-green-100 border-green-200'
+                        s.status === 'selesai' ? 'bg-yellow-100 border-yellow-300' : 'bg-green-100 border-green-200'
                       )}>
                         <span className="shrink-0 flex items-center justify-center h-4 w-4 rounded-full bg-green-600 text-white text-[10px] font-bold leading-none">{i + 1}</span>
                         <span className={cn("text-green-900 text-[13px] leading-snug break-words", s.status === 'selesai' && "line-through opacity-70")}>{s.text}</span>
