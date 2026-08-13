@@ -52,6 +52,7 @@ import {
   DollarSign,
   ShoppingCart,
   Target,
+  Radar,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useTasks } from '@/hooks/useTasks'
@@ -94,6 +95,11 @@ const navigation: NavSection[] = [
     title: 'Goal',
     icon: Target,
     href: '/goal',
+  },
+  {
+    title: 'SWOT',
+    icon: Radar,
+    href: '/swot',
   },
   {
     title: 'Tugas',
