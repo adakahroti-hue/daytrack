@@ -523,7 +523,6 @@ export default function GoalPage() {
                 </div>
                 <p className="mt-1.5 text-[11px] text-slate-600 tabular-nums">
                   {stepProgressPct}% langkah terselesaikan
-                  <span className="text-green-700/70"> · tersinkron dengan tab Semua</span>
                 </p>
               </div>
               {/* Kanan: Periode Berjalan */}
