@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import {
   format,
   startOfWeek,
@@ -11,8 +11,10 @@ import {
   endOfMonth,
   startOfYear,
   endOfYear,
+  addDays,
 } from "date-fns"
-import { Target, Wallet, Banknote, Wrench, Pencil, Trash2, Plus, Hash, Clock, ClipboardList, Footprints, MousePointerClick, Star, ArrowUp, ArrowDown, X } from "lucide-react"
+import { id } from "date-fns/locale"
+import { Target, Wallet, Banknote, Wrench, Pencil, Trash2, Plus, Hash, Clock, ClipboardList, Footprints, MousePointerClick, Star, ArrowUp, ArrowDown, X, Play, Pause, Timer } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -140,6 +142,36 @@ export default function GoalPage() {
   const [langkahList, setLangkahList] = useState<LangkahItem[]>([])
   const [promoteMode, setPromoteMode] = useState(false) // true = dialog ini untuk "Jadikan Utama" (wajib isi field)
 
+  // ── Fitur Timer "Berjalan" (Play) pada card Goal Utama ──
+  // Saat Play ditekan: capture tanggal hari itu sebagai start, deadline = start + durasi tempo.
+  // Lalu progress bar + countdown mundur ke deadline terus berjalan tiap detik.
+  const [playStart, setPlayStart] = useState<Date | null>(null)
+  const [nowTick, setNowTick] = useState<Date>(new Date())
+
+  // Parse teks tempo ("3 bulan", "1 tahun", "90 hari", "2 minggu") → jumlah hari.
+  const parseTempoToDays = (tempo: string | null | undefined): number | null => {
+    if (!tempo) return null
+    const m = tempo.toLowerCase().match(/(\d+)\s*(hari|h|minggu|mgg|bulan|bln|tahun|thn)/)
+    if (!m) return null
+    const n = parseInt(m[1], 10)
+    const unit = m[2]
+    if (unit.startsWith('hari') || unit === 'h') return n
+    if (unit.startsWith('minggu') || unit.startsWith('mgg')) return n * 7
+    if (unit.startsWith('bulan') || unit.startsWith('bln')) return n * 30
+    if (unit.startsWith('tahun') || unit.startsWith('thn')) return n * 365
+    return null
+  }
+
+  const startPlay = () => setPlayStart(new Date())
+  const stopPlay = () => setPlayStart(null)
+
+  // Tick tiap detik selama play aktif
+  useEffect(() => {
+    if (!playStart) return
+    const idInt = setInterval(() => setNowTick(new Date()), 1000)
+    return () => clearInterval(idInt)
+  }, [playStart])
+
   // Cek apakah suatu goal sudah punya data lengkap untuk jadi Goal Utama
   const isUtamaComplete = (e: GoalEntry) =>
     !!e.nama_goal?.trim() &&
@@ -176,6 +208,16 @@ export default function GoalPage() {
   const goalUtama = useMemo(() => {
     return (logs as GoalEntry[]).find(g => g.is_utama) || null
   }, [logs])
+
+  // Hitung deadline + progres timer "berjalan" (setelah goalUtama diketahui)
+  const tempoDays = goalUtama ? parseTempoToDays(goalUtama.tempo) : null
+  const deadline = playStart && tempoDays ? addDays(playStart, tempoDays) : null
+  const totalMs = playStart && deadline ? deadline.getTime() - playStart.getTime() : 0
+  const elapsedMs = playStart ? nowTick.getTime() - playStart.getTime() : 0
+  const progressPct = deadline && totalMs > 0
+    ? Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100))
+    : 0
+  const remainingMs = deadline ? Math.max(0, deadline.getTime() - nowTick.getTime()) : 0
 
   const openAdd = () => {
     setHargaInput("")
@@ -287,8 +329,28 @@ export default function GoalPage() {
       <div className={cn("rounded-lg border border-green-200 bg-green-50 p-4 sm:p-5 shadow-sm")}>
         <div className="flex items-center gap-2 mb-3">
           <h2 className="text-sm font-bold uppercase tracking-wide text-slate-700">Goal Utama</h2>
+          {goalUtama && (
+            <Button
+              type="button"
+              size="sm"
+              variant={playStart ? "outline" : "default"}
+              onClick={playStart ? stopPlay : startPlay}
+              className={cn(
+                "ml-auto h-7 gap-1.5 text-[11px] px-2.5",
+                playStart
+                  ? "border-green-300 text-green-700 hover:bg-green-100"
+                  : "bg-green-600 hover:bg-green-700 text-white"
+              )}
+              disabled={!goalUtama.tempo?.trim()}
+              title={goalUtama.tempo?.trim() ? "Mulai timer periode goal" : "Isi Tempo dulu untuk menjalankan timer"}
+            >
+              {playStart ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+              {playStart ? "Stop" : "Play"}
+            </Button>
+          )}
         </div>
         {goalUtama ? (
+          <div className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-3 text-sm">
             <div>
               <p className="text-[11px] font-semibold uppercase text-green-800">Nama Goal</p>
@@ -328,6 +390,31 @@ export default function GoalPage() {
                 )
               })()}
             </div>
+          </div>
+          {playStart && deadline && (
+            <div className="mt-4 pt-3 border-t border-green-200">
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase text-green-800">
+                  <Timer className="h-3.5 w-3.5" /> Periode Berjalan
+                </span>
+                <span className="text-[11px] font-medium text-slate-600 tabular-nums">
+                  {format(playStart, 'd MMM yyyy', { locale: id })} → {format(deadline, 'd MMM yyyy', { locale: id })}
+                </span>
+              </div>
+              <div className="h-2.5 w-full rounded-full bg-green-200/60 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-green-600 transition-[width] duration-1000 ease-linear"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+              <p className="mt-1.5 text-[11px] text-slate-600 tabular-nums">
+                {remainingMs > 0
+                  ? `Sisa waktu: ${Math.floor(remainingMs / 86400000)} hari ${Math.floor((remainingMs % 86400000) / 3600000)} jam ${Math.floor((remainingMs % 3600000) / 60000)} menit`
+                  : 'Periode goal telah berakhir'}
+                <span className="text-green-700/70"> · {progressPct.toFixed(1)}% berlalu</span>
+              </p>
+            </div>
+          )}
           </div>
         ) : (
           <p className="text-sm text-green-800/80">Belum ada goal utama. Tekan tombol &quot;Jadikan Utama&quot; pada salah satu goal di bawah.</p>
