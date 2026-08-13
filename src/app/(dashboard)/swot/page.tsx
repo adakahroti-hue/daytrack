@@ -212,7 +212,7 @@ export default function SwotPage() {
               ) : (
                 <div className="space-y-2">
                   {list.map((it) => (
-                    <div key={it.id} className="py-1.5 flex items-start gap-2.5">
+                    <div key={it.id} className="py-1.5 pl-4 flex items-start gap-2.5">
                       <span className={cn("mt-1 h-3.5 w-3.5 shrink-0 rounded-full border-2 flex items-center justify-center", RADIO_RING[k.key])} aria-hidden="true">
                         <span className={cn("h-1.5 w-1.5 rounded-full", RADIO_DOT[k.key])} />
                       </span>
