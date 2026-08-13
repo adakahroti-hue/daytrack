@@ -237,6 +237,28 @@ export function useTaskById(id: string) {
   })
 }
 
+// Baca task dalam 1 paket goal (by group_id) -> untuk progress card Goal Utama.
+export function useTasksByGroup(groupId?: string | null) {
+  return useQuery({
+    queryKey: ["tugas", "group", groupId],
+    queryFn: async () => {
+      if (!groupId) return []
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from("tugas")
+        .select("*")
+        .eq("group_id", groupId)
+        .order("group_order", { ascending: true })
+      if (error) throw new Error(error.message)
+      return data || []
+    },
+    enabled: !!groupId,
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: false,
+    placeholderData: (previousData) => previousData,
+  })
+}
+
 export function useBulkDeleteTasks() {
   const queryClient = useQueryClient()
   

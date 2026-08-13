@@ -387,6 +387,81 @@ export async function getTasks(date?: string, status?: string, limit?: number) {
   return data || []
 }
 
+// ── Sinkronisasi Langkah Aksi Goal Utama -> task (paket group_id) ──
+// Setiap step = 1 task. Update kalau sudah ada (by group_id+group_order),
+// insert kalau baru, delete kalau langkah dihapus. (Mekanisme 3b)
+export interface GoalStepSync {
+  text: string
+  tanggal: string
+  estimasi_menit: number
+  prioritas: "p1" | "p2" | "p3" | "p4"
+  status: "belum" | "proses" | "selesai"
+}
+
+export async function syncGoalLangkahToTasks(
+  groupId: string,
+  steps: GoalStepSync[],
+  goalNama: string
+) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  // 1. Ambil task paket yang sudah ada
+  const { data: existing, error: fetchErr } = await supabase
+    .from("tugas")
+    .select("id, group_order")
+    .eq("user_id", user.id)
+    .eq("group_id", groupId)
+    .order("group_order", { ascending: true })
+  if (fetchErr) throw new Error(fetchErr.message)
+
+  const existingByOrder = new Map<number, string>()
+  ;(existing || []).forEach((t: any) => {
+    if (t.group_order != null) existingByOrder.set(t.group_order, t.id)
+  })
+
+  // 2. Upsert tiap step
+  for (let i = 0; i < steps.length; i++) {
+    const s = steps[i]
+    const nama = s.text.trim()
+    if (!nama) continue
+    const payload = {
+      nama,
+      tanggal: s.tanggal || null,
+      estimasi_menit: s.estimasi_menit || 0,
+      prioritas: s.prioritas,
+      status: s.status,
+      group_id: groupId,
+      group_order: i,
+    }
+    const existingId = existingByOrder.get(i)
+    if (existingId) {
+      const { error } = await supabase.from("tugas").update(payload).eq("id", existingId).eq("user_id", user.id)
+      if (error) throw new Error(error.message)
+    } else {
+      const { error } = await supabase.from("tugas").insert({ ...payload, user_id: user.id })
+      if (error) throw new Error(error.message)
+    }
+  }
+
+  // 3. Hapus task paket yang group_order >= steps.length (langkah dihapus)
+  const { error: delErr } = await supabase
+    .from("tugas")
+    .delete()
+    .eq("user_id", user.id)
+    .eq("group_id", groupId)
+    .gte("group_order", steps.length)
+  if (delErr) throw new Error(delErr.message)
+
+  revalidatePath("/tugas/hari-ini")
+  revalidatePath("/tugas/semua")
+  revalidatePath("/tugas/selesai")
+  revalidatePath("/goal")
+  revalidatePath("/overview")
+  return { error: null }
+}
+
 export async function getTaskById(id: string) {
   const supabase = await createClient()
 

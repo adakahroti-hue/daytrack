@@ -24,46 +24,14 @@ import { cn } from "@/lib/utils"
 import { formatRupiah, parseRupiah } from "@/lib/utils"
 import { useTableLock } from "@/components/ui/table-lock"
 import { useGoalRange, useCreateGoal, useDeleteGoal, useUpdateGoal, usePromoteGoal } from "@/hooks/useGoal"
+import { syncGoalLangkahToTasks } from "@/app/actions/tasks"
+import { useTasksByGroup } from "@/hooks/useTasks"
 import { useRealtime } from "@/hooks/useRealtime"
 import { useHeaderControls } from "@/components/layout/HeaderControls"
 
 const TABLE_BORDER = "border-slate-900"
 
-interface LangkahItem {
-  fields: string[]
-}
-
-// Parse langkah_aksi (TEXT di DB) ke struktur list.
-// Kalau isinya JSON array -> langkah terstruktur.
-// Kalau teks biasa -> 1 langkah dengan 1 field.
-// Kalau kosong -> [].
-function parseLangkah(raw: string | null): LangkahItem[] {
-  if (!raw || !raw.trim()) return []
-  try {
-    const parsed = JSON.parse(raw)
-    if (Array.isArray(parsed)) {
-      return parsed.map((it: any) => ({
-        fields: Array.isArray(it?.fields)
-          ? it.fields.map((f: any) => String(f ?? "")).filter((f: string) => f.length > 0)
-          : (it && typeof it === "string" && it.length > 0 ? [it] : [])
-      }))
-    }
-  } catch {
-    // bukan JSON -> anggap teks biasa
-    return [{ fields: [raw] }]
-  }
-  return []
-}
-
-// Balik: list -> string JSON (atau teks biasa kalau cuma 1 field di 1 step)
-function serializeLangkah(list: LangkahItem[]): string {
-  const clean = list
-    .map(l => ({ fields: (l.fields || []).map(f => f.trim()).filter(f => f.length > 0) }))
-    .filter(l => l.fields.length > 0)
-  if (clean.length === 0) return ""
-  if (clean.length === 1 && clean[0].fields.length === 1) return clean[0].fields[0]
-  return JSON.stringify(clean)
-}
+interface LangkahItem extends LangkahStep {}
 
 interface GoalEntry {
   id: string
@@ -88,6 +56,92 @@ interface EditState {
   tempo: string
   action_harian: string
   langkah_aksi: string
+}
+
+// ── Tipe Langkah Aksi (Goal Utama) ──
+// Tiap langkah = 1 task di tabel `tugas`, terikat dalam 1 paket (group_id).
+export type LangkahPrioritas = 'p1' | 'p2' | 'p3' | 'p4'
+export type LangkahStatus = 'belum' | 'proses' | 'selesai'
+
+export interface LangkahStep {
+  text: string
+  tanggal: string        // YYYY-MM-DD (default = tanggal_set goal, bisa diubah)
+  estimasi_menit: number // default 0
+  prioritas: LangkahPrioritas // default 'p3'
+  status: LangkahStatus  // default 'belum'
+}
+
+export interface LangkahData {
+  group_id: string | null // paket task di tabel tugas
+  steps: LangkahStep[]
+}
+
+// Parse langkah_aksi (TEXT di DB) ke struktur LangkahData.
+// Mendukung 3 format:
+//   1. JSON baru  : { group_id, steps:[{text,tanggal,estimasi_menit,prioritas,status}] }
+//   2. JSON lama  : [{ fields:[...] }]
+//   3. Teks biasa : "satu langkah"
+// defaultTanggal = tanggal_set goal (dipakai kalau langkah tak punya tanggal).
+function parseLangkah(raw: string | null, defaultTanggal?: string): LangkahData {
+  const empty: LangkahData = { group_id: null, steps: [] }
+  if (!raw || !raw.trim()) return empty
+  try {
+    const parsed = JSON.parse(raw)
+    // Format baru
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && 'steps' in parsed) {
+      const steps: LangkahStep[] = (Array.isArray(parsed.steps) ? parsed.steps : [])
+        .map((s: any) => ({
+          text: String(s?.text ?? '').trim(),
+          tanggal: s?.tanggal || defaultTanggal || '',
+          estimasi_menit: Number(s?.estimasi_menit) || 0,
+          prioritas: (s?.prioritas || 'p3') as LangkahPrioritas,
+          status: (s?.status || 'belum') as LangkahStatus,
+        }))
+        .filter((s: LangkahStep) => s.text.length > 0)
+      return { group_id: parsed.group_id || null, steps }
+    }
+    // Format lama [{ fields:[...] }]
+    if (Array.isArray(parsed)) {
+      const steps: LangkahStep[] = parsed
+        .map((it: any) => {
+          const fields = Array.isArray(it?.fields)
+            ? it.fields.map((f: any) => String(f ?? '')).filter((f: string) => f.length > 0)
+            : (it && typeof it === 'string' && it.length > 0 ? [it] : [])
+          return fields.map((text: string) => ({
+            text,
+            tanggal: defaultTanggal || '',
+            estimasi_menit: 0,
+            prioritas: 'p3' as LangkahPrioritas,
+            status: 'belum' as LangkahStatus,
+          }))
+        })
+        .flat()
+      return { group_id: null, steps }
+    }
+  } catch {
+    // bukan JSON -> teks biasa = 1 langkah
+    return {
+      group_id: null,
+      steps: [{ text: raw.trim(), tanggal: defaultTanggal || '', estimasi_menit: 0, prioritas: 'p3', status: 'belum' }],
+    }
+  }
+  return empty
+}
+
+// Balik: LangkahData -> string JSON.
+// Jika tak ada step, kembalikan "" (kosong).
+function serializeLangkah(data: LangkahData): string {
+  const steps = (data.steps || [])
+    .map((s) => ({
+      text: s.text.trim(),
+      tanggal: s.tanggal || '',
+      estimasi_menit: Number(s.estimasi_menit) || 0,
+      prioritas: s.prioritas || 'p3',
+      status: s.status || 'belum',
+    }))
+    .filter((s) => s.text.length > 0)
+  if (steps.length === 0) return ''
+  return JSON.stringify({ group_id: data.group_id || null, steps })
 }
 
 function startOfDaySafe(d: Date): Date {
@@ -187,7 +241,7 @@ export default function GoalPage() {
       return
     }
     setHargaInput(entry.proyeksi_harga > 0 ? formatRupiah(entry.proyeksi_harga) : "")
-    setLangkahList(parseLangkah(entry.langkah_aksi))
+    setLangkahList(parseLangkah(entry.langkah_aksi, entry.tanggal_set).steps)
     setPromoteMode(true)
     setEditState({
       id: entry.id,
@@ -219,6 +273,14 @@ export default function GoalPage() {
     : 0
   const remainingMs = deadline ? Math.max(0, deadline.getTime() - nowTick.getTime()) : 0
 
+  // ── Progress paket langkah (sync ke tab Semua) ──
+  // group_id diambil dari langkah_aksi goal utama; task by group_id dibaca dari tugas.
+  const goalGroupId = goalUtama ? parseLangkah(goalUtama.langkah_aksi).group_id : null
+  const { data: groupTasks = [] } = useTasksByGroup(goalGroupId)
+  const totalSteps = groupTasks.length
+  const doneSteps = groupTasks.filter((t: any) => t.status === 'selesai').length
+  const stepProgressPct = totalSteps > 0 ? Math.round((doneSteps / totalSteps) * 100) : 0
+
   const openAdd = () => {
     setHargaInput("")
     setEditState({
@@ -244,7 +306,7 @@ export default function GoalPage() {
       action_harian: entry.action_harian || "",
       langkah_aksi: entry.langkah_aksi || "",
     })
-    setLangkahList(parseLangkah(entry.langkah_aksi))
+    setLangkahList(parseLangkah(entry.langkah_aksi, entry.tanggal_set).steps)
   }
 
   const handleSave = async () => {
@@ -254,7 +316,10 @@ export default function GoalPage() {
     if (editState.id && !promoteMode) {
       if (!editState.nama_goal.trim()) return
     }
-    const serializedLangkah = serializeLangkah(langkahList)
+    // group_id paket: pertahankan kalau goal utama sudah punya, atau buat baru.
+    const prevData = goalUtama ? parseLangkah(goalUtama.langkah_aksi) : { group_id: null, steps: [] }
+    const groupId = promoteMode ? crypto.randomUUID() : (prevData.group_id || crypto.randomUUID())
+    const serializedLangkah = serializeLangkah({ group_id: groupId, steps: langkahList })
 
     if (promoteMode) {
       // Mode "Jadikan Utama": wajib isi tempo, rencana, langkah
@@ -268,6 +333,10 @@ export default function GoalPage() {
           langkah_aksi: serializedLangkah,
         },
       })
+      // 1a: sinkron langkah -> task (paket group_id) karena goal ini jadi Utama
+      if (groupId) {
+        await syncGoalLangkahToTasks(groupId, langkahList, editState.nama_goal.trim())
+      }
       setEditState(null)
       setLangkahList([])
       setPromoteMode(false)
@@ -286,6 +355,10 @@ export default function GoalPage() {
           langkah_aksi: serializedLangkah,
         },
       })
+      // 1a: sinkron langkah -> task hanya kalau goal ini adalah Goal Utama
+      if (groupId && goalUtama?.id === editState.id) {
+        await syncGoalLangkahToTasks(groupId, langkahList, editState.nama_goal.trim())
+      }
     } else {
       await createGoal.mutateAsync({
         tanggal_set: editState.tanggal_set,
@@ -302,7 +375,11 @@ export default function GoalPage() {
   }
 
   // ── Langkah Aksi builder helpers ──
-  const addStep = () => setLangkahList(prev => [...prev, { fields: [""] }])
+  // Tiap langkah = 1 task utuh (LangkahStep). Tidak lagi nested fields.
+  const addStep = () => setLangkahList(prev => [
+    ...prev,
+    { text: '', tanggal: editState?.tanggal_set || '', estimasi_menit: 0, prioritas: 'p3', status: 'belum' } as LangkahStep,
+  ])
   const removeStep = (si: number) => setLangkahList(prev => prev.filter((_, i) => i !== si))
   const moveStep = (si: number, dir: -1 | 1) => setLangkahList(prev => {
     const next = [...prev]
@@ -311,12 +388,8 @@ export default function GoalPage() {
     ;[next[si], next[j]] = [next[j], next[si]]
     return next
   })
-  const updateField = (si: number, fi: number, val: string) => setLangkahList(prev =>
-    prev.map((s, i) => i === si ? { fields: s.fields.map((f, k) => k === fi ? val : f) } : s))
-  const addField = (si: number) => setLangkahList(prev =>
-    prev.map((s, i) => i === si ? { fields: [...s.fields, ""] } : s))
-  const removeField = (si: number, fi: number) => setLangkahList(prev =>
-    prev.map((s, i) => i === si ? { fields: s.fields.filter((_, k) => k !== fi) } : s))
+  const updateStep = (si: number, patch: Partial<LangkahStep>) => setLangkahList(prev =>
+    prev.map((s, i) => i === si ? { ...s, ...patch } : s))
 
   const handleDelete = async (id: string) => {
     await deleteGoal.mutateAsync(id)
@@ -373,18 +446,35 @@ export default function GoalPage() {
             <div className="col-span-2 sm:col-span-4 pt-3.5">
               <p className="text-[11px] font-semibold uppercase text-green-800">Langkah Aksi</p>
               {(() => {
-                const steps = parseLangkah(goalUtama.langkah_aksi)
-                // Ratakan semua field dari semua step jadi 1 daftar berurutan (penomoran per-field)
-                const allFields: string[] = []
-                for (const st of steps) for (const f of st.fields) if (f.trim().length > 0) allFields.push(f.trim())
-                if (allFields.length === 0) return <p className="text-green-700/60">—</p>
+                const parsed = parseLangkah(goalUtama.langkah_aksi)
+                const steps = parsed.steps
+                if (steps.length === 0) return <p className="text-green-700/60">—</p>
+                const statusLabel: Record<string, string> = { belum: 'Belum', proses: 'Proses', selesai: 'Selesai' }
+                const statusClass: Record<string, string> = {
+                  belum: 'bg-slate-100 text-slate-600 border-slate-200',
+                  proses: 'bg-amber-100 text-amber-700 border-amber-200',
+                  selesai: 'bg-green-100 text-green-700 border-green-200',
+                }
+                const prioClass: Record<string, string> = {
+                  p1: 'bg-red-100 text-red-700 border-red-200',
+                  p2: 'bg-orange-100 text-orange-700 border-orange-200',
+                  p3: 'bg-blue-100 text-blue-700 border-blue-200',
+                  p4: 'bg-slate-100 text-slate-500 border-slate-200',
+                }
                 return (
-                  <div className="flex flex-wrap gap-1.5 mt-1.5">
-                    {allFields.map((f, i) => (
-                      <span key={i} className="inline-flex items-center gap-1.5 rounded-lg bg-green-100 border border-green-200 px-2 py-1">
+                  <div className="mt-1.5 space-y-1.5">
+                    {steps.map((s, i) => (
+                      <div key={i} className={cn(
+                        "flex flex-wrap items-center gap-1.5 rounded-lg border px-2 py-1",
+                        s.status === 'selesai' ? 'bg-green-50 border-green-200' : 'bg-green-100 border-green-200'
+                      )}>
                         <span className="shrink-0 flex items-center justify-center h-4 w-4 rounded-full bg-green-600 text-white text-[10px] font-bold leading-none">{i + 1}</span>
-                        <span className="text-green-900 text-[13px] leading-snug break-words">{f}</span>
-                      </span>
+                        <span className={cn("text-green-900 text-[13px] leading-snug break-words flex-1 min-w-[120px]", s.status === 'selesai' && "line-through opacity-70")}>{s.text}</span>
+                        {s.tanggal && <span className="text-[10px] text-slate-500 border border-slate-200 rounded px-1">{format(new Date(s.tanggal + 'T00:00:00'), 'd MMM', { locale: id })}</span>}
+                        {s.estimasi_menit > 0 && <span className="text-[10px] text-slate-500 border border-slate-200 rounded px-1">{s.estimasi_menit}m</span>}
+                        <span className={cn("text-[10px] border rounded px-1", prioClass[s.prioritas] || prioClass.p4)}>{s.prioritas.toUpperCase()}</span>
+                        <span className={cn("text-[10px] border rounded px-1", statusClass[s.status] || statusClass.belum)}>{statusLabel[s.status] || 'Belum'}</span>
+                      </div>
                     ))}
                   </div>
                 )
@@ -412,6 +502,26 @@ export default function GoalPage() {
                   ? `Sisa waktu: ${Math.floor(remainingMs / 86400000)} hari ${Math.floor((remainingMs % 86400000) / 3600000)} jam ${Math.floor((remainingMs % 3600000) / 60000)} menit`
                   : 'Periode goal telah berakhir'}
                 <span className="text-green-700/70"> · {progressPct.toFixed(1)}% berlalu</span>
+              </p>
+            </div>
+          )}
+          {goalGroupId && totalSteps > 0 && (
+            <div className="mt-4 pt-3 border-t border-green-200">
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase text-green-800">
+                  <ClipboardList className="h-3.5 w-3.5" /> Progress Langkah
+                </span>
+                <span className="text-[11px] font-medium text-slate-600 tabular-nums">{doneSteps}/{totalSteps} selesai</span>
+              </div>
+              <div className="h-2.5 w-full rounded-full bg-green-200/60 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-emerald-600 transition-[width] duration-500 ease-linear"
+                  style={{ width: `${stepProgressPct}%` }}
+                />
+              </div>
+              <p className="mt-1.5 text-[11px] text-slate-600 tabular-nums">
+                {stepProgressPct}% langkah terselesaikan
+                <span className="text-green-700/70"> · tersinkron dengan tab Semua</span>
               </p>
             </div>
           )}
@@ -560,25 +670,39 @@ export default function GoalPage() {
                         </div>
                       </div>
                       <div className="space-y-1.5">
-                        {step.fields.map((f, fi) => (
-                          <div key={fi} className="flex items-center gap-1.5">
-                            <Input
-                              value={f}
-                              placeholder={`Field ${fi + 1}`}
-                              onChange={(e) => updateField(si, fi, e.target.value)}
-                              className="h-8 text-sm"
-                            />
-                            <Button type="button" size="sm" variant="ghost" aria-label="Hapus field"
-                              onClick={() => removeField(si, fi)}
-                              className="h-7 w-7 shrink-0 p-0 text-red-500 hover:text-red-700">
-                              <X className="h-3.5 w-3.5" />
-                            </Button>
+                        <Input
+                          value={step.text}
+                          placeholder={`Langkah ${si + 1}`}
+                          onChange={(e) => updateStep(si, { text: e.target.value })}
+                          className="h-8 text-sm"
+                        />
+                        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                          <div className="space-y-0.5">
+                            <Label className="text-[10px] text-slate-500">Tanggal</Label>
+                            <Input type="date" value={step.tanggal} onChange={(e) => updateStep(si, { tanggal: e.target.value })} className="h-7 text-[11px] px-1.5" />
                           </div>
-                        ))}
-                        <Button type="button" size="sm" variant="outline" onClick={() => addField(si)}
-                          className="h-6 gap-1 text-[11px] px-2">
-                          <Plus className="h-3 w-3" /> Tambah Field
-                        </Button>
+                          <div className="space-y-0.5">
+                            <Label className="text-[10px] text-slate-500">Estimasi (mnt)</Label>
+                            <Input type="number" min={0} value={step.estimasi_menit} onChange={(e) => updateStep(si, { estimasi_menit: Number(e.target.value) || 0 })} className="h-7 text-[11px] px-1.5" />
+                          </div>
+                          <div className="space-y-0.5">
+                            <Label className="text-[10px] text-slate-500">Prioritas</Label>
+                            <select value={step.prioritas} onChange={(e) => updateStep(si, { prioritas: e.target.value as LangkahPrioritas })} className="h-7 rounded-md border border-slate-200 bg-white text-[11px] px-1.5">
+                              <option value="p1">P1</option>
+                              <option value="p2">P2</option>
+                              <option value="p3">P3</option>
+                              <option value="p4">P4</option>
+                            </select>
+                          </div>
+                          <div className="space-y-0.5">
+                            <Label className="text-[10px] text-slate-500">Status</Label>
+                            <select value={step.status} onChange={(e) => updateStep(si, { status: e.target.value as LangkahStatus })} className="h-7 rounded-md border border-slate-200 bg-white text-[11px] px-1.5">
+                              <option value="belum">Belum</option>
+                              <option value="proses">Proses</option>
+                              <option value="selesai">Selesai</option>
+                            </select>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -591,7 +715,7 @@ export default function GoalPage() {
                 onClick={handleSave}
                 disabled={
                   ((editState?.id && !promoteMode) && (!editState?.nama_goal.trim() || parseRupiah(hargaInput) <= 0)) ||
-                  (promoteMode && (!editState?.tempo.trim() || !editState?.action_harian.trim() || serializeLangkah(langkahList).trim() === ""))
+                  (promoteMode && (!editState?.tempo.trim() || !editState?.action_harian.trim() || serializeLangkah({ group_id: null, steps: langkahList }).trim() === ""))
                 }
               >Simpan</Button>
             </div>
