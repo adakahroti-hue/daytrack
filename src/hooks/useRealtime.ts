@@ -247,9 +247,9 @@ export function useSyukurRealtime(queryKeys: string[][] = [['syukur']]) {
   })
 }
 
-export function useKesenanganRealtime(queryKeys: string[][] = [['senang']]) {
+export function useKesenanganRealtime(queryKeys: string[][] = [['playlist']]) {
   return useRealtime({
-    table: 'senang',
+    table: 'playlist',
     queryKeys,
   })
 }

@@ -22,7 +22,7 @@ export async function upsertKesenangan(formData: KesenanganFormData) {
   const validated = kesenanganSchema.parse(formData)
   
   const { data: existing } = await supabase
-    .from("senang")
+    .from("playlist")
     .select("id")
     .eq("user_id", user.id)
     .eq("tanggal", validated.tanggal)
@@ -39,7 +39,7 @@ export async function upsertKesenangan(formData: KesenanganFormData) {
   let data, error
   if (existing) {
     const result = await supabase
-      .from("senang")
+      .from("playlist")
       .update(insertData)
       .eq("id", existing.id)
       .eq("user_id", user.id)
@@ -49,7 +49,7 @@ export async function upsertKesenangan(formData: KesenanganFormData) {
     error = result.error
   } else {
     const result = await supabase
-      .from("senang")
+      .from("playlist")
       .insert(insertData)
       .select()
       .single()
@@ -61,10 +61,10 @@ export async function upsertKesenangan(formData: KesenanganFormData) {
   if (error && /status/i.test(error.message)) {
     const { status: _ignored, ...withoutStatus } = insertData as Record<string, unknown>
     if (existing) {
-      const result = await supabase.from("senang").update(withoutStatus).eq("id", existing.id).eq("user_id", user.id).select().single()
+      const result = await supabase.from("playlist").update(withoutStatus).eq("id", existing.id).eq("user_id", user.id).select().single()
       data = result.data; error = result.error
     } else {
-      const result = await supabase.from("senang").insert(withoutStatus).select().single()
+      const result = await supabase.from("playlist").insert(withoutStatus).select().single()
       data = result.data; error = result.error
     }
   }
@@ -86,7 +86,7 @@ export async function getKesenangan(tanggal: string) {
   if (!user) throw new Error("Unauthorized")
 
   const { data, error } = await supabase
-    .from("senang")
+    .from("playlist")
     .select("*")
     .eq("user_id", user.id)
     .eq("tanggal", tanggal)
@@ -103,7 +103,7 @@ export async function getKesenanganRange(startDate: string, endDate: string) {
   if (!user) throw new Error("Unauthorized")
 
   const { data, error } = await supabase
-    .from("senang")
+    .from("playlist")
     .select("*")
     .eq("user_id", user.id)
     .gte("tanggal", startDate)
@@ -118,7 +118,7 @@ export async function deleteKesenangan(id: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const { error } = await supabase.from("senang").delete().eq("id", id).eq("user_id", user.id)
+  const { error } = await supabase.from("playlist").delete().eq("id", id).eq("user_id", user.id)
   if (error) throw new Error(error.message)
   revalidatePath("/kesenangan")
   return { error: null }
@@ -137,7 +137,7 @@ export async function createKesenangan(formData: KesenanganFormData) {
     kesenangan: validated.kesenangan ?? "",
     status: validated.status ?? "belum",
   }
-  const { data, error } = await supabase.from("senang").insert(insertData).select().single()
+  const { data, error } = await supabase.from("playlist").insert(insertData).select().single()
   if (error) throw new Error(error.message)
   revalidatePath("/kesenangan")
   return { data, error: null }
@@ -152,7 +152,7 @@ export async function updateKesenangan(id: string, formData: { tanggal?: string;
   if (formData.hari !== undefined) updateData.hari = formData.hari
   if (formData.kesenangan !== undefined) updateData.kesenangan = formData.kesenangan
   if (formData.status !== undefined) updateData.status = formData.status
-  const { data, error } = await supabase.from("senang").update(updateData).eq("id", id).eq("user_id", user.id).select().single()
+  const { data, error } = await supabase.from("playlist").update(updateData).eq("id", id).eq("user_id", user.id).select().single()
   if (error) throw new Error(error.message)
   revalidatePath("/kesenangan")
   return { data, error: null }
