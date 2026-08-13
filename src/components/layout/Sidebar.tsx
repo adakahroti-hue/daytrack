@@ -47,6 +47,7 @@ import {
   User,
   CheckCircle2,
   Dices,
+  ListMusic,
   HandCoins,
   Wallet,
   DollarSign,
@@ -149,7 +150,7 @@ const navigation: NavSection[] = [
     title: 'Pelajaran',
     icon: Shield,
     items: [
-      { title: 'Playlist', href: '/kesenangan', icon: Hourglass },
+      { title: 'Playlist', href: '/kesenangan', icon: ListMusic },
       { title: 'Refleksi', href: '/masalah', icon: PersonStanding },
     ],
   },
