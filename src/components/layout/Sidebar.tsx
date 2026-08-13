@@ -52,7 +52,7 @@ import {
   DollarSign,
   ShoppingCart,
   Target,
-  Radar,
+  ScanSearch,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useTasks } from '@/hooks/useTasks'
@@ -98,7 +98,7 @@ const navigation: NavSection[] = [
   },
   {
     title: 'SWOT',
-    icon: Radar,
+    icon: ScanSearch,
     href: '/swot',
   },
   {
