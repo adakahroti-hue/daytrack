@@ -50,10 +50,10 @@ type ActionDraft = {
 }
 
 const KAT: { key: SwotKategori; label: string; accent: string; ring: string; icon: React.ReactNode }[] = [
-  { key: "strength", label: "Strength", accent: "bg-emerald-50 border-emerald-200", ring: "text-emerald-700", icon: <TrendingUp className="h-4 w-4" /> },
-  { key: "weakness", label: "Weakness", accent: "bg-rose-50 border-rose-200", ring: "text-rose-700", icon: <TrendingDown className="h-4 w-4" /> },
-  { key: "opportunity", label: "Opportunity", accent: "bg-sky-50 border-sky-200", ring: "text-sky-700", icon: <Target className="h-4 w-4" /> },
-  { key: "threat", label: "Threat", accent: "bg-amber-50 border-amber-200", ring: "text-amber-700", icon: <Flag className="h-4 w-4" /> },
+  { key: "strength", label: "Kekuatan", accent: "bg-emerald-50 border-emerald-200", ring: "text-emerald-700", icon: <TrendingUp className="h-4 w-4" /> },
+  { key: "weakness", label: "Kelemahan", accent: "bg-rose-50 border-rose-200", ring: "text-rose-700", icon: <TrendingDown className="h-4 w-4" /> },
+  { key: "opportunity", label: "Peluang", accent: "bg-sky-50 border-sky-200", ring: "text-sky-700", icon: <Target className="h-4 w-4" /> },
+  { key: "threat", label: "Ancaman", accent: "bg-amber-50 border-amber-200", ring: "text-amber-700", icon: <Flag className="h-4 w-4" /> },
 ]
 
 const PRIO_LABEL: Record<SwotPrioritas, string> = { rendah: "Rendah", sedang: "Sedang", tinggi: "Tinggi" }
