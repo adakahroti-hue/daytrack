@@ -151,7 +151,9 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
     case 'tugas': return 'Jadwal Tugas'
     case 'ibadah': return 'Ibadah'
     case 'kesehatan': return 'Kesehatan'
-    case 'mental': return 'Kesehatan Mental'
+    case 'mental':
+      if (subPage === 'kesenangan') return 'Playlist'
+      return 'Kesehatan Mental'
     case 'perbaikan': return 'Perbaikan Diri'
     case 'keuangan': return 'Keuangan'
     case 'swot': return 'Analisis SWOT'
