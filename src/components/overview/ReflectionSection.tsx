@@ -1,6 +1,6 @@
 'use client'
 
-import { Brain, NotebookPen, Hourglass, PersonStanding } from 'lucide-react'
+import { Brain, NotebookPen, PersonStanding } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useMasalahLogRange } from '@/hooks/useMasalahLogs'
 import { useKesenanganRange } from '@/hooks/useKesenangan'
@@ -41,8 +41,8 @@ export function MentalCard({
           <Icon className={cn('h-4 w-4', iconColor)} />
         </div>
       </div>
-      <div className="mt-3 grid gap-3 sm:grid-cols-2 items-start divide-y divide-slate-200 sm:divide-y-0 sm:divide-x">
-        <div className="pb-3 sm:pb-0 sm:pr-4">
+      <div className="mt-3 space-y-3">
+        <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1"><PersonStanding className="h-3.5 w-3.5 text-purple-500" /> Refleksi</p>
           {masalahItems.length > 0 ? (
             <ul className="mt-2 space-y-1">
@@ -55,21 +55,6 @@ export function MentalCard({
             </ul>
           ) : (
             <p className="mt-2 pl-[18px] text-sm text-slate-500">{masalahEmptyText}</p>
-          )}
-        </div>
-        <div className="pt-3 sm:pt-0 sm:pl-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1"><Hourglass className="h-3.5 w-3.5 text-purple-500" /> Kesenangan Ditunda</p>
-          {funItems.length > 0 ? (
-            <ul className="mt-2 space-y-1">
-              {funItems.map(item => (
-                <li key={item} className="flex items-start gap-2 text-sm text-slate-600 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-purple-50/50 hover:border-purple-100 transition-colors">
-                  <span className={cn('mt-1.5 h-1 w-1 rounded-full shrink-0', dotColor)} />
-                  <span className="line-clamp-2">{item}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-2 pl-[18px] text-sm text-slate-500">{funEmptyText}</p>
           )}
         </div>
       </div>
