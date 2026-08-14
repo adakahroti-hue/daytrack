@@ -324,8 +324,8 @@ export default function TidurPage() {
                                     : 'text-slate-400 border-dashed border-slate-300 hover:bg-slate-50 hover:text-slate-600'
                               )}
                             >
-                              {isDone && <Check className="h-3.5 w-3.5 shrink-0" />}
-                              {isDone ? 'Tepat Waktu' : isBegadang ? 'Begadang' : <X className="h-3.5 w-3.5 shrink-0 text-slate-400" />}
+                            {isDone && entry?.jam_tidur && <Check className="h-3.5 w-3.5 shrink-0" />}
+                              {entry?.jam_tidur ? (isDone ? 'Tepat Waktu' : isBegadang ? 'Begadang' : <X className="h-3.5 w-3.5 shrink-0 text-slate-400" />) : null}
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="center" className="w-40">
