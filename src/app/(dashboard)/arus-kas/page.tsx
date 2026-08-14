@@ -308,15 +308,7 @@ export default function ArusKasPage() {
                       <td colSpan={7} className={cn("px-3 py-3", TABLE_BORDER)}>
                         <div className="space-y-2">
                           <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2 min-w-0">
-                              <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border shrink-0",
-                                isMasuk ? "bg-green-100 text-green-700 border-green-200" : "bg-red-50 text-red-600 border-red-200")}>
-                                {isMasuk ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownLeft className="h-3 w-3" />}
-                                {isMasuk ? "Masuk" : "Keluar"}
-                              </span>
-                              <span className="text-[11px] text-slate-500 tabular-nums">{dateDisplay}</span>
-                              <span className={cn("inline-block px-1.5 py-0.5 rounded-full text-[10px] border font-medium", DAY_BADGE_COLORS[dayName] || "bg-slate-100 text-slate-700 border-slate-200")}>{dayName}</span>
-                            </div>
+                            <div className="min-w-0" />
                             <div className="flex flex-col items-end gap-1 shrink-0">
                             <span className={cn("font-bold tabular-nums text-sm", isMasuk ? "text-green-700" : "text-red-600")}>
                               {isMasuk ? "+" : "−"}{formatRupiah(entry.nominal).replace("Rp ", "")}
@@ -337,6 +329,15 @@ export default function ArusKasPage() {
                           {!isMasuk && entry.dompet && (
                             <p className="text-[11px] text-slate-500">Dompet: {DOMPET_OPTIONS.find(d => d.value === entry.dompet)?.label}</p>
                           )}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border shrink-0",
+                              isMasuk ? "bg-green-100 text-green-700 border-green-200" : "bg-red-50 text-red-600 border-red-200")}>
+                              {isMasuk ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownLeft className="h-3 w-3" />}
+                              {isMasuk ? "Masuk" : "Keluar"}
+                            </span>
+                            <span className="text-[11px] text-slate-500 tabular-nums">{dateDisplay}</span>
+                            <span className={cn("inline-block px-1.5 py-0.5 rounded-full text-[10px] border font-medium", DAY_BADGE_COLORS[dayName] || "bg-slate-100 text-slate-700 border-slate-200")}>{dayName}</span>
+                          </div>
                         </div>
                       </td>
                     </tr>
