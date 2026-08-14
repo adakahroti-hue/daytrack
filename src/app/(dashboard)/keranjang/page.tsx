@@ -215,40 +215,42 @@ export default function KeranjangPage() {
                     <tr className={cn("sm:hidden border-b", TABLE_BORDER, rowIdx % 2 === 0 ? "bg-white" : "bg-slate-50/30")}>
                       <td colSpan={6} className={cn("px-3 py-3", TABLE_BORDER)}>
                         <div className="space-y-2">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-sm font-semibold text-slate-800 break-words min-w-0">{entry.nama_barang}</span>
-                            <span className="shrink-0 font-bold tabular-nums text-sm text-slate-800">{formatRupiah(entry.harga)}</span>
-                          </div>
-                          <div className="flex items-center gap-2 flex-wrap text-[11px] text-slate-500">
-                            <span className="tabular-nums">{dateDisplay}</span>
-                            <span className={cn("inline-block px-1.5 py-0.5 rounded-full border font-medium", DAY_BADGE_COLORS[dayName] || "bg-slate-100 text-slate-700 border-slate-200")}>{dayName}</span>
-                            <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border",
-                              entry.dompet === "kebutuhan" && "bg-emerald-50 text-emerald-700 border-emerald-200",
-                              entry.dompet === "tabungan" && "bg-sky-50 text-sky-700 border-sky-200",
-                              entry.dompet === "self_reward" && "bg-amber-50 text-amber-700 border-amber-200",
-                              entry.dompet === "sedekah" && "bg-violet-50 text-violet-700 border-violet-200")}>
-                              {DOMPET_OPTIONS.find(d => d.value === entry.dompet)?.label}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1.5 pt-0.5">
-                            {isBelum ? (
-                              <Button size="sm" aria-label="Tandai sudah dibeli" onClick={() => handleBeli(entry.id)}
-                                className="h-7 flex-1 gap-1 bg-green-600 hover:bg-green-700 text-white text-[11px] px-1.5">
-                                <Check className="h-3 w-3" /> Sudah
-                              </Button>
-                            ) : (
-                              <span className="inline-flex h-7 flex-1 items-center justify-center gap-1 rounded-md bg-green-100 text-green-700 text-[11px] font-medium border border-green-200">
-                                <Check className="h-3 w-3" /> Dibeli
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                            <span className="text-sm font-semibold text-slate-800 break-words">{entry.nama_barang}</span>
+                            <span className="ml-2 shrink-0 font-bold tabular-nums text-sm text-slate-800">{formatRupiah(entry.harga)}</span>
+                            <div className="flex items-center gap-2 flex-wrap text-[11px] text-slate-500 mt-1">
+                              <span className="tabular-nums">{dateDisplay}</span>
+                              <span className={cn("inline-block px-1.5 py-0.5 rounded-full border font-medium", DAY_BADGE_COLORS[dayName] || "bg-slate-100 text-slate-700 border-slate-200")}>{dayName}</span>
+                              <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border",
+                                entry.dompet === "kebutuhan" && "bg-emerald-50 text-emerald-700 border-emerald-200",
+                                entry.dompet === "tabungan" && "bg-sky-50 text-sky-700 border-sky-200",
+                                entry.dompet === "self_reward" && "bg-amber-50 text-amber-700 border-amber-200",
+                                entry.dompet === "sedekah" && "bg-violet-50 text-violet-700 border-violet-200")}>
+                                {DOMPET_OPTIONS.find(d => d.value === entry.dompet)?.label}
                               </span>
-                            )}
-                            <Button size="sm" aria-label="Edit keranjang" onClick={() => openEdit(entry)}
-                              className="h-7 flex-1 gap-1 bg-slate-600 hover:bg-slate-700 text-white text-[11px] px-1.5">
-                              <Pencil className="h-3 w-3" /> Edit
-                            </Button>
-                            <Button size="sm" aria-label="Hapus keranjang" onClick={() => handleDelete(entry.id)}
-                              className="h-7 flex-1 gap-1 bg-red-600 hover:bg-red-700 text-white text-[11px] px-1.5">
-                              <Trash2 className="h-3 w-3" /> Hapus
-                            </Button>
+                            </div>
+                            </div>
+                            <div className="flex items-center gap-1 shrink-0">
+                              {isBelum ? (
+                                <Button size="icon" aria-label="Tandai sudah dibeli" onClick={() => handleBeli(entry.id)}
+                                  className="h-6 w-6 p-0 bg-green-600 hover:bg-green-700 text-white">
+                                  <Check className="h-3 w-3" />
+                                </Button>
+                              ) : (
+                                <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-green-100 text-green-700 border border-green-200">
+                                  <Check className="h-3 w-3" />
+                                </span>
+                              )}
+                              <Button size="icon" aria-label="Edit keranjang" onClick={() => openEdit(entry)}
+                                className="h-6 w-6 p-0 bg-slate-600 hover:bg-slate-700 text-white">
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                              <Button size="icon" aria-label="Hapus keranjang" onClick={() => handleDelete(entry.id)}
+                                className="h-6 w-6 p-0 bg-red-600 hover:bg-red-700 text-white">
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </td>

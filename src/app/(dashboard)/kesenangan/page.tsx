@@ -230,11 +230,6 @@ export default function KesenanganPage() {
                               className="h-7 flex-1 gap-1 bg-red-600 hover:bg-red-700 text-white text-[11px] px-1.5">
                               <Trash2 className="h-3 w-3" /> Hapus
                             </Button>
-                            <Button size="sm" aria-label="Salin teks kesenangan" onClick={() => handleCopy(entry)}
-                              className={cn('h-7 flex-1 gap-1 text-[11px] px-1.5', copiedId === entry.id ? 'bg-purple-100 text-purple-700 border border-purple-200' : 'bg-purple-600 hover:bg-purple-700 text-white')}>
-                              {copiedId === entry.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                              {copiedId === entry.id ? 'Tersalin' : 'Copy'}
-                            </Button>
                           </div>
                         </div>
                       </td>
