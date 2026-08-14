@@ -57,6 +57,7 @@ const STATUS_OPTIONS: StatusOption[] = [
 
 const REASON_LABELS: Record<string, string> = {
   ketiduran: 'Ketiduran',
+  tidur: 'Tidur',
   malas: 'Malas',
   lupa: 'Lupa',
   sibuk: 'Sibuk',
@@ -68,6 +69,8 @@ const REASON_LABELS: Record<string, string> = {
 }
 
 const REASON_OPTIONS: StatusOption[] = [
+  { value: 'ketiduran', label: 'Ketiduran', isDone: false },
+  { value: 'tidur', label: 'Tidur', isDone: false },
   { value: 'malas', label: 'Malas', isDone: false },
   { value: 'lupa', label: 'Lupa', isDone: false },
   { value: 'sibuk', label: 'Sibuk', isDone: false },

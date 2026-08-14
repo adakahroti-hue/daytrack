@@ -27,7 +27,7 @@ const StatusAnalytics = dynamic(() => import('@/components/analytics/StatusAnaly
 // ─── Constants ────────────────────────────────────
 
 // Revisi 4 (batch 5): alasan begadang
-const BEGADANG_REASONS = ['Tak Bisa Tidur', 'Gabut', 'Kerja', 'Main Game', 'Minum Kopi', 'Nongkrong', 'Lapar']
+const BEGADANG_REASONS = ['Tak Bisa Tidur', 'Gabut', 'Kerja', 'Main Game', 'Minum Kopi', 'Nonton', 'Nongkrong', 'Lapar']
 
 // JAM_TIDUR_OPTIONS dipindah ke src/lib/tidur-options.ts (dipakai juga di Overview — batch 24)
 
