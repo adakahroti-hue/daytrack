@@ -317,24 +317,26 @@ export default function ArusKasPage() {
                               <span className="text-[11px] text-slate-500 tabular-nums">{dateDisplay}</span>
                               <span className={cn("inline-block px-1.5 py-0.5 rounded-full text-[10px] border font-medium", DAY_BADGE_COLORS[dayName] || "bg-slate-100 text-slate-700 border-slate-200")}>{dayName}</span>
                             </div>
-                            <span className={cn("font-bold tabular-nums text-sm shrink-0", isMasuk ? "text-green-700" : "text-red-600")}>
+                            <div className="flex flex-col items-end gap-1 shrink-0">
+                            <span className={cn("font-bold tabular-nums text-sm", isMasuk ? "text-green-700" : "text-red-600")}>
                               {isMasuk ? "+" : "−"}{formatRupiah(entry.nominal).replace("Rp ", "")}
                             </span>
+                            <div className="flex items-center gap-1">
+                              <Button size="icon" aria-label="Edit arus kas" onClick={() => openEdit(entry)}
+                                className="h-6 w-6 p-0 bg-slate-600 hover:bg-slate-700 text-white">
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                              <Button size="icon" aria-label="Hapus arus kas" onClick={() => handleDelete(entry.id)}
+                                className="h-6 w-6 p-0 bg-red-600 hover:bg-red-700 text-white">
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                            </div>
                           </div>
                           <p className="text-sm text-slate-800 whitespace-normal break-words leading-snug">{entry.alasan || "-"}</p>
                           {!isMasuk && entry.dompet && (
                             <p className="text-[11px] text-slate-500">Dompet: {DOMPET_OPTIONS.find(d => d.value === entry.dompet)?.label}</p>
                           )}
-                          <div className="flex items-center gap-1.5 pt-0.5">
-                            <Button size="sm" aria-label="Edit arus kas" onClick={() => openEdit(entry)}
-                              className="h-7 flex-1 gap-1 bg-slate-600 hover:bg-slate-700 text-white text-[11px] px-1.5">
-                              <Pencil className="h-3 w-3" /> Edit
-                            </Button>
-                            <Button size="sm" aria-label="Hapus arus kas" onClick={() => handleDelete(entry.id)}
-                              className="h-7 flex-1 gap-1 bg-red-600 hover:bg-red-700 text-white text-[11px] px-1.5">
-                              <Trash2 className="h-3 w-3" /> Hapus
-                            </Button>
-                          </div>
                         </div>
                       </td>
                     </tr>

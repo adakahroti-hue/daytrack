@@ -215,20 +215,20 @@ export default function KesenanganPage() {
                         <div className="space-y-2">
                           <span className="inline-block text-[11px] font-semibold text-slate-400 tabular-nums">No. {rowIdx + 1}</span>
                           <p className="text-sm text-slate-800 whitespace-normal break-words leading-snug">{entry.kesenangan}</p>
-                          <div className="flex items-center gap-1.5 pt-0.5">
+                          <div className="flex items-center justify-end gap-1 pt-0.5">
                             <button type="button" onClick={() => handleSetStatus(entry, !isDone)}
                               className={cn('h-7 flex-1 inline-flex items-center justify-center gap-1 rounded-md text-[11px] font-medium border',
                                 isDone ? 'bg-green-100 text-green-700 border-green-200' : 'bg-amber-50 text-amber-700 border-amber-200')}>
                               {isDone ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
                               {isDone ? 'Sudah' : 'Belum'}
                             </button>
-                            <Button size="sm" aria-label="Edit kesenangan" onClick={() => openEdit(entry)}
-                              className="h-7 flex-1 gap-1 bg-slate-600 hover:bg-slate-700 text-white text-[11px] px-1.5">
-                              <Pencil className="h-3 w-3" /> Edit
+                            <Button size="icon" aria-label="Edit kesenangan" onClick={() => openEdit(entry)}
+                              className="h-6 w-6 p-0 bg-slate-600 hover:bg-slate-700 text-white">
+                              <Pencil className="h-3 w-3" />
                             </Button>
-                            <Button size="sm" aria-label="Hapus kesenangan" onClick={() => handleDeleteEntry(entry.id)}
-                              className="h-7 flex-1 gap-1 bg-red-600 hover:bg-red-700 text-white text-[11px] px-1.5">
-                              <Trash2 className="h-3 w-3" /> Hapus
+                            <Button size="icon" aria-label="Hapus kesenangan" onClick={() => handleDeleteEntry(entry.id)}
+                              className="h-6 w-6 p-0 bg-red-600 hover:bg-red-700 text-white">
+                              <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
                         </div>
