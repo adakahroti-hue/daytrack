@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>DayTrack — Login</title>
+    <style>
+      body { font-family: system-ui, sans-serif; padding: 24px; text-align: center; color: #333; }
+      .ok { color: #1a73e8; }
+    </style>
+  </head>
+  <body>
+    <h2>DayTrack YouTube Collector</h2>
+    <p id="msg">Memverifikasi login…</p>
+    <script src="vendor/supabase.min.js"></script>
+    <script src="config.js"></script>
+    <script>
+      (function () {
+        const cfg = window.DAYTRACK_CONFIG;
+        const sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.ANON_KEY);
+        const params = new URLSearchParams(location.hash.slice(1));
+        const hasToken = params.get("access_token") || params.get("code");
+        if (hasToken) {
+          sb.auth.getSession().then(async () => {
+            const { data } = await sb.auth.getUser();
+            document.getElementById("msg").innerHTML =
+              '<span class="ok">Login berhasil! Kamu bisa tutup tab ini & buka extension.</span>';
+            setTimeout(() => { window.location.href = "https://www.youtube.com"; }, 1500);
+          });
+        } else {
+          document.getElementById("msg").textContent =
+            "Tidak ada token. Coba klik ulang magic link dari email.";
+        }
+      })();
+    </script>
+  </body>
+</html>

@@ -21,8 +21,8 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["content.js"],
-      "matches": ["https://www.youtube.com/*"]
+      "resources": ["content.js", "callback.html", "vendor/supabase.min.js"],
+      "matches": ["https://www.youtube.com/*", "https://ftskhfwlhfbmettbgecp.supabase.co/*"]
     }
   ]
 }
