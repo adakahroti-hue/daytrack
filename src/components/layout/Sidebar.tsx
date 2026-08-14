@@ -93,11 +93,6 @@ const navigation: NavSection[] = [
     href: '/overview',
   },
   {
-    title: 'SWOT',
-    icon: ScanSearch,
-    href: '/swot',
-  },
-  {
     title: 'Goal',
     icon: Target,
     href: '/goal',
@@ -152,6 +147,7 @@ const navigation: NavSection[] = [
     items: [
       { title: 'Playlist', href: '/kesenangan', icon: ListMusic },
       { title: 'Refleksi', href: '/masalah', icon: PersonStanding },
+      { title: 'SWOT', href: '/swot', icon: ScanSearch },
     ],
   },
   {
