@@ -1,9 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { Check, Minus, Mosque, BookOpen, GlassWater, Repeat, Sparkles, Shield, Moon, ArrowRight, Flower } from 'lucide-react'
+import { Check, Minus, Mosque, BookOpen, GlassWater, Repeat, Sparkles, Shield, Moon, ArrowRight, Flower, Wallet } from 'lucide-react'
 import { format, differenceInCalendarDays } from 'date-fns'
-import { cn } from '@/lib/utils'
+import { cn, formatRupiah } from '@/lib/utils'
 import { JAM_TIDUR_OPTIONS } from '@/lib/tidur-options'
 import { usePrayerLogRange } from '@/hooks/usePrayerLogs'
 import { useQuranLogRange } from '@/hooks/useQuranLogs'
@@ -14,6 +14,7 @@ import { usePmoLogRange } from '@/hooks/usePmoLogs'
 import { useTidurLogRange } from '@/hooks/useTidurLogs'
 import { useMasalahLogRange } from '@/hooks/useMasalahLogs'
 import { useKesenanganRange } from '@/hooks/useKesenangan'
+import { useArusKasRange } from '@/hooks/useArusKas'
 import { PERIOD_LABEL, type OverviewPeriod, FocusTodayCard } from './FocusTodaySection'
 import { MentalCard } from './ReflectionSection'
 
@@ -147,6 +148,15 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
   const { data: doaEntries = [] } = useDoaLogRange(startStr, endStr)
   const { data: pmoEntries = [] } = usePmoLogRange(startStr, endStr)
   const { data: tidurEntries = [] } = useTidurLogRange(startStr, endStr)
+
+  // Arus Kas — saldo & sisa alokasi kebutuhan
+  const { data: arusKasEntries = [] } = useArusKasRange(startStr, endStr)
+  const arusKas = (arusKasEntries as any[]) || []
+  const akMasuk = arusKas.filter(e => e.tipe === 'uang_masuk').reduce((s, e) => s + (e.nominal || 0), 0)
+  const akKeluar = arusKas.filter(e => e.tipe === 'uang_keluar').reduce((s, e) => s + (e.nominal || 0), 0)
+  const akSaldo = akMasuk - akKeluar
+  const akPakaiKebutuhan = arusKas.filter(e => e.tipe === 'uang_keluar' && e.dompet === 'kebutuhan').reduce((s, e) => s + (e.nominal || 0), 0)
+  const akKebutuhanSisa = Math.max(0, Math.round((akMasuk * 70) / 100) - akPakaiKebutuhan)
   const countDays = (entries: any[], match: (e: any) => boolean) =>
     new Set(entries.filter(match).map(e => e.tanggal)).size
   const checklist = [
@@ -349,6 +359,22 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Rekor</p>
                 <p className="text-sm font-bold text-slate-900 tabular-nums">{pmoRekor} <span className="text-xs font-medium text-slate-500">hari</span></p>
               </div>
+            </div>
+          </div>
+        </RoutineCard>
+
+        {/* Keuangan — Kebutuhan & Saldo dari tab Arus Kas */}
+        <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan">
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Kebutuhan</p>
+              <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">{formatRupiah(akKebutuhanSisa)}</p>
+              <p className="text-[11px] text-slate-400">sisa alokasi</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Saldo</p>
+              <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">{formatRupiah(akSaldo)}</p>
+              <p className="text-[11px] text-slate-400">masuk − keluar</p>
             </div>
           </div>
         </RoutineCard>
