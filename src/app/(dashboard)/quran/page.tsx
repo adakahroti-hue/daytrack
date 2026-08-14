@@ -553,7 +553,7 @@ export default function QuranPage() {
                 ))}
               </tr>
             </thead>
-            <tbody className={cn(effectiveLocked && 'pointer-events-none select-none')}>
+            <tbody className={cn(effectiveLocked ? 'sm:pointer-events-none sm:select-none' : '')}>
               {isLoading ? (
                 <tr>
                   <td colSpan={7} className="text-center py-12 text-slate-400">
