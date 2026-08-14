@@ -308,7 +308,7 @@ export default function ArusKasPage() {
                       <td colSpan={7} className={cn("px-2.5 py-2.5", TABLE_BORDER)}>
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between gap-2">
-                            <div className="flex flex-col items-end gap-1 shrink-0">
+                            <div className="flex flex-row items-center gap-1 shrink-0">
                             <span className={cn("font-bold tabular-nums text-sm", isMasuk ? "text-green-700" : "text-red-600")}>
                               {isMasuk ? "+" : "−"}{formatRupiah(entry.nominal).replace("Rp ", "")}
                             </span>
