@@ -196,7 +196,7 @@ export default function KeranjangPage() {
               </th>
             </tr>
           </thead>
-          <tbody className={cn(effectiveLocked && "pointer-events-none select-none")}>
+          <tbody className={cn(effectiveLocked ? "sm:pointer-events-none sm:select-none" : "")}>
             {isLoading ? (
               <tr><td colSpan={6} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
             ) : error ? (
@@ -307,7 +307,7 @@ export default function KeranjangPage() {
           </tbody>
         </table>
       </div>
-      {lockControl}
+      <div className="hidden sm:block">{lockControl}</div>
 
       <Button onClick={openAdd} size="icon" aria-label="Tambah Keranjang" className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-white shadow-lg">
         <Plus className="h-6 w-6" />
