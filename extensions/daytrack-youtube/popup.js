@@ -43,7 +43,7 @@
     setStatus("Mengirim magic link...");
     const { error } = await sb.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: chrome.runtime.getURL("callback.html") },
+      options: { emailRedirectTo: "https://www.youtube.com" },
     });
     if (error) return setStatus("Gagal: " + error.message, true);
     setStatus("Cek email kamu, klik link magic-nya. Lalu buka extension lagi.");

@@ -3,7 +3,7 @@
   "name": "DayTrack YouTube Collector",
   "version": "0.1.0",
   "description": "Centang video YouTube lalu masukkan ke tab Playlist DayTrack",
-  "permissions": ["storage", "activeTab", "scripting"],
+  "permissions": ["storage", "activeTab", "scripting", "tabs"],
   "host_permissions": ["https://www.youtube.com/*", "https://ftskhfwlhfbmettbgecp.supabase.co/*"],
   "action": {
     "default_popup": "popup.html",
