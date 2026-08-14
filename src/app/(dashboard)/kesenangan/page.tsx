@@ -213,15 +213,19 @@ export default function KesenanganPage() {
                     <tr className={cn('sm:hidden border-b', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30')}>
                       <td colSpan={4} className={cn('px-3 py-3', TABLE_BORDER)}>
                         <div className="space-y-2">
-                          <span className="inline-block text-[11px] font-semibold text-slate-400 tabular-nums">No. {rowIdx + 1}</span>
-                          <p className="text-sm text-slate-800 whitespace-normal break-words leading-snug">{entry.kesenangan}</p>
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-sm text-slate-800 whitespace-normal break-words leading-snug flex-1">{entry.kesenangan}</p>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-[11px] font-semibold text-slate-400 tabular-nums">No. {rowIdx + 1}</span>
+                              <button type="button" onClick={() => handleSetStatus(entry, !isDone)}
+                                className={cn('inline-flex items-center justify-center gap-1 rounded-md text-[11px] font-medium border px-2 py-1',
+                                  isDone ? 'bg-green-100 text-green-700 border-green-200' : 'bg-amber-50 text-amber-700 border-amber-200')}>
+                                {isDone ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                                {isDone ? 'Sudah' : 'Belum'}
+                              </button>
+                            </div>
+                          </div>
                           <div className="flex items-center justify-end gap-1 pt-0.5">
-                            <button type="button" onClick={() => handleSetStatus(entry, !isDone)}
-                              className={cn('h-7 flex-1 inline-flex items-center justify-center gap-1 rounded-md text-[11px] font-medium border',
-                                isDone ? 'bg-green-100 text-green-700 border-green-200' : 'bg-amber-50 text-amber-700 border-amber-200')}>
-                              {isDone ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
-                              {isDone ? 'Sudah' : 'Belum'}
-                            </button>
                             <Button size="icon" aria-label="Edit kesenangan" onClick={() => openEdit(entry)}
                               className="h-6 w-6 p-0 bg-slate-600 hover:bg-slate-700 text-white">
                               <Pencil className="h-3 w-3" />
