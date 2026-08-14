@@ -213,8 +213,8 @@ export default function KesenanganPage() {
                     <tr className={cn('sm:hidden border-b', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30')}>
                       <td colSpan={4} className={cn('px-3 py-3', TABLE_BORDER)}>
                         <div className="space-y-2">
-                          <div className="flex items-start justify-between gap-2">
-                            <p className="text-sm text-slate-800 whitespace-normal break-words leading-snug flex-1">{entry.kesenangan}</p>
+                          <p className="text-sm text-slate-800 whitespace-normal break-words leading-snug">{entry.kesenangan}</p>
+                          <div className="flex items-center justify-between gap-2 pt-0.5">
                             <div className="flex items-center gap-2 shrink-0">
                               <span className="text-[11px] font-semibold text-slate-400 tabular-nums">No. {rowIdx + 1}</span>
                               <button type="button" onClick={() => handleSetStatus(entry, !isDone)}
@@ -224,16 +224,16 @@ export default function KesenanganPage() {
                                 {isDone ? 'Sudah' : 'Belum'}
                               </button>
                             </div>
-                          </div>
-                          <div className="flex items-center justify-end gap-1 pt-0.5">
-                            <Button size="icon" aria-label="Edit kesenangan" onClick={() => openEdit(entry)}
-                              className="h-6 w-6 p-0 bg-slate-600 hover:bg-slate-700 text-white">
-                              <Pencil className="h-3 w-3" />
-                            </Button>
-                            <Button size="icon" aria-label="Hapus kesenangan" onClick={() => handleDeleteEntry(entry.id)}
-                              className="h-6 w-6 p-0 bg-red-600 hover:bg-red-700 text-white">
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
+                            <div className="flex items-center gap-1 shrink-0">
+                              <Button size="icon" aria-label="Edit kesenangan" onClick={() => openEdit(entry)}
+                                className="h-6 w-6 p-0 bg-slate-600 hover:bg-slate-700 text-white">
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                              <Button size="icon" aria-label="Hapus kesenangan" onClick={() => handleDeleteEntry(entry.id)}
+                                className="h-6 w-6 p-0 bg-red-600 hover:bg-red-700 text-white">
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </td>
