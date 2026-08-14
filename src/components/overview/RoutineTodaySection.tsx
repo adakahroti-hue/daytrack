@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Check, Minus, Mosque, BookOpen, GlassWater, Repeat, Sparkles, Shield, Moon, ArrowRight, Flower, Wallet } from 'lucide-react'
+import { Check, Minus, Mosque, BookOpen, GlassWater, Repeat, Sparkles, Shield, Moon, ArrowRight, Flower, Wallet, HandCoins } from 'lucide-react'
 import { format, differenceInCalendarDays } from 'date-fns'
 import { cn, formatRupiah } from '@/lib/utils'
 import { JAM_TIDUR_OPTIONS } from '@/lib/tidur-options'
@@ -10,6 +10,7 @@ import { useQuranLogRange } from '@/hooks/useQuranLogs'
 import { useWaterLogRange } from '@/hooks/useMinumAirLogs'
 import { useSyukurLogRange } from '@/hooks/useSyukurLogs'
 import { useDoaLogRange } from '@/hooks/useDoaLogs'
+import { useSedekahLogRange } from '@/hooks/useSedekahLogs'
 import { usePmoLogRange } from '@/hooks/usePmoLogs'
 import { useTidurLogRange } from '@/hooks/useTidurLogs'
 import { useMasalahLogRange } from '@/hooks/useMasalahLogs'
@@ -146,6 +147,8 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
   // Checklist
   const { data: syukurEntries = [] } = useSyukurLogRange(startStr, endStr)
   const { data: doaEntries = [] } = useDoaLogRange(startStr, endStr)
+  const { data: sedekahEntries = [] } = useSedekahLogRange(startStr, endStr)
+  const sedekahCount = (sedekahEntries as any[]).filter(e => e.status === 'sudah').length
   const { data: pmoEntries = [] } = usePmoLogRange(startStr, endStr)
   const { data: tidurEntries = [] } = useTidurLogRange(startStr, endStr)
 
@@ -276,6 +279,10 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
               <div className="flex items-center gap-1.5">
                 <span className={cn('text-[22px] font-bold leading-none tabular-nums', numColor(checklist[1].days >= daysElapsed))}>{checklist[1].days}<span className={cn('text-lg', numColorSoft(checklist[1].days >= daysElapsed))}>/{daysElapsed}</span></span>
                 <span className="text-xs text-slate-700">Mendoakan orang lain</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className={cn('text-[22px] font-bold leading-none tabular-nums', numColor(sedekahCount >= daysElapsed))}>{sedekahCount}<span className={cn('text-lg', numColorSoft(sedekahCount >= daysElapsed))}>/{daysElapsed}</span></span>
+                <span className="text-xs text-slate-700">Sedekah</span>
               </div>
             </div>
           </div>
