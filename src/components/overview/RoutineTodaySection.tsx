@@ -155,10 +155,10 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
   // Arus Kas — saldo & sisa alokasi kebutuhan
   const { data: arusKasEntries = [] } = useArusKasRange(startStr, endStr)
   const arusKas = (arusKasEntries as any[]) || []
-  const akMasuk = arusKas.filter(e => e.tipe === 'uang_masuk').reduce((s, e) => s + (e.nominal || 0), 0)
-  const akKeluar = arusKas.filter(e => e.tipe === 'uang_keluar').reduce((s, e) => s + (e.nominal || 0), 0)
+  const akMasuk = arusKas.filter(e => e.kategori === 'uang_masuk').reduce((s, e) => s + (e.nominal || 0), 0)
+  const akKeluar = arusKas.filter(e => e.kategori === 'uang_keluar').reduce((s, e) => s + (e.nominal || 0), 0)
   const akSaldo = akMasuk - akKeluar
-  const akPakaiKebutuhan = arusKas.filter(e => e.tipe === 'uang_keluar' && e.dompet === 'kebutuhan').reduce((s, e) => s + (e.nominal || 0), 0)
+  const akPakaiKebutuhan = arusKas.filter(e => e.kategori === 'uang_keluar' && e.dompet === 'kebutuhan').reduce((s, e) => s + (e.nominal || 0), 0)
   const akKebutuhanSisa = Math.max(0, Math.round((akMasuk * 70) / 100) - akPakaiKebutuhan)
   const countDays = (entries: any[], match: (e: any) => boolean) =>
     new Set(entries.filter(match).map(e => e.tanggal)).size
