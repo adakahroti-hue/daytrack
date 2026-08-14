@@ -305,10 +305,9 @@ export default function ArusKasPage() {
                   <Fragment key={entry.id}>
                     {/* ── Mobile: kartu ringkas (sm:hidden) ── */}
                     <tr className={cn("sm:hidden border-b", TABLE_BORDER, rowIdx % 2 === 0 ? "bg-white" : "bg-slate-50/30")}>
-                      <td colSpan={7} className={cn("px-3 py-3", TABLE_BORDER)}>
-                        <div className="space-y-2">
+                      <td colSpan={7} className={cn("px-2.5 py-2.5", TABLE_BORDER)}>
+                        <div className="space-y-1.5">
                           <div className="flex items-center justify-between gap-2">
-                            <div className="min-w-0" />
                             <div className="flex flex-col items-end gap-1 shrink-0">
                             <span className={cn("font-bold tabular-nums text-sm", isMasuk ? "text-green-700" : "text-red-600")}>
                               {isMasuk ? "+" : "−"}{formatRupiah(entry.nominal).replace("Rp ", "")}
@@ -325,11 +324,11 @@ export default function ArusKasPage() {
                             </div>
                             </div>
                           </div>
-                          <p className="text-sm text-slate-800 whitespace-normal break-words leading-snug">{entry.alasan || "-"}</p>
+                          <p className="text-[13px] text-slate-800 whitespace-normal break-words leading-tight">{entry.alasan || "-"}</p>
                           {!isMasuk && entry.dompet && (
                             <p className="text-[11px] text-slate-500">Dompet: {DOMPET_OPTIONS.find(d => d.value === entry.dompet)?.label}</p>
                           )}
-                          <div className="flex items-center gap-2 flex-wrap">
+                          <div className="flex items-center gap-1.5 flex-wrap">
                             <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border shrink-0",
                               isMasuk ? "bg-green-100 text-green-700 border-green-200" : "bg-red-50 text-red-600 border-red-200")}>
                               {isMasuk ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownLeft className="h-3 w-3" />}
