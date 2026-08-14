@@ -212,16 +212,16 @@ export default function MasalahPage() {
                     {/* ── Mobile: kartu ringkas (sm:hidden) ── */}
                     <tr className={cn('sm:hidden border-b', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30')}>
                       <td colSpan={4} className={cn('px-3 py-3', TABLE_BORDER)}>
-                        <div className="space-y-2">
-                          <p className="text-sm text-slate-800 whitespace-normal break-words leading-snug">{entry.masalah}</p>
-                          <div className="flex items-center gap-1.5 pt-0.5">
-                            <Button size="sm" aria-label="Edit refleksi" onClick={() => openEdit(entry)}
-                              className="h-7 flex-1 gap-1 bg-slate-600 hover:bg-slate-700 text-white text-[11px] px-1.5">
-                              <Pencil className="h-3 w-3" /> Edit
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-sm text-slate-800 whitespace-normal break-words leading-snug flex-1">{entry.masalah}</p>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <Button size="icon" aria-label="Edit refleksi" onClick={() => openEdit(entry)}
+                              className="h-6 w-6 p-0 bg-slate-600 hover:bg-slate-700 text-white">
+                              <Pencil className="h-3 w-3" />
                             </Button>
-                            <Button size="sm" aria-label="Hapus refleksi" onClick={() => handleDeleteEntry(entry.id)}
-                              className="h-7 flex-1 gap-1 bg-red-600 hover:bg-red-700 text-white text-[11px] px-1.5">
-                              <Trash2 className="h-3 w-3" /> Hapus
+                            <Button size="icon" aria-label="Hapus refleksi" onClick={() => handleDeleteEntry(entry.id)}
+                              className="h-6 w-6 p-0 bg-red-600 hover:bg-red-700 text-white">
+                              <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
                         </div>

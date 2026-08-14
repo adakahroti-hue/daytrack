@@ -179,11 +179,11 @@ export default function SwotPage() {
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
 
       {/* Header: ringkasan jumlah di sebelah kanan */}
-      <div className="flex items-center justify-end gap-2 flex-wrap">
+      <div className="grid grid-cols-4 sm:flex sm:justify-end gap-1.5 sm:gap-2">
         {KAT.map((k) => (
-          <div key={k.key} className={cn("flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5", k.accent)}>
+          <div key={k.key} className={cn("flex items-center justify-center gap-1 rounded-lg border px-1.5 py-1 sm:px-2.5 sm:py-1.5", k.accent)}>
             <span className={cn("flex items-center gap-1 text-[11px] font-semibold", k.ring)}>
-              {k.icon} {k.label}
+              {k.icon} <span className="hidden sm:inline">{k.label}</span>
             </span>
             <span className={cn("text-base font-bold tabular-nums", k.ring)}>{counts[k.key]}</span>
           </div>
