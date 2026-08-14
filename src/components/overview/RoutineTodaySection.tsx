@@ -152,8 +152,10 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
   const { data: pmoEntries = [] } = usePmoLogRange(startStr, endStr)
   const { data: tidurEntries = [] } = useTidurLogRange(startStr, endStr)
 
-  // Arus Kas — saldo & sisa alokasi kebutuhan
-  const { data: arusKasEntries = [] } = useArusKasRange(startStr, endStr)
+  // Arus Kas — saldo & sisa alokasi kebutuhan (range di-cap ke today, sama seperti tab Arus Kas)
+  const akTodayStr = format(new Date(), 'yyyy-MM-dd')
+  const akEndStr = endStr > akTodayStr ? akTodayStr : endStr
+  const { data: arusKasEntries = [] } = useArusKasRange(startStr, akEndStr)
   const arusKas = (arusKasEntries as any[]) || []
   const akMasuk = arusKas.filter(e => e.kategori === 'uang_masuk').reduce((s, e) => s + (e.nominal || 0), 0)
   const akKeluar = arusKas.filter(e => e.kategori === 'uang_keluar').reduce((s, e) => s + (e.nominal || 0), 0)
