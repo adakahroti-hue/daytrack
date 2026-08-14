@@ -213,7 +213,13 @@ export default function KesenanganPage() {
                     <tr className={cn('sm:hidden border-b', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30')}>
                       <td colSpan={4} className={cn('px-3 py-3', TABLE_BORDER)}>
                         <div className="space-y-2">
-                          <p className="text-sm text-slate-800 whitespace-normal break-words leading-snug">{entry.kesenangan}</p>
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-sm text-slate-800 whitespace-normal break-words leading-snug flex-1">{entry.kesenangan}</p>
+                            <Button size="icon" aria-label="Salin teks kesenangan" onClick={() => handleCopy(entry)}
+                              className={cn('h-6 w-6 p-0 shrink-0', copiedId === entry.id ? 'bg-purple-100 text-purple-700 border border-purple-200' : 'bg-purple-600 hover:bg-purple-700 text-white')}>
+                              {copiedId === entry.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                            </Button>
+                          </div>
                           <div className="flex items-center justify-between gap-2 pt-0.5">
                             <div className="flex items-center gap-2 shrink-0">
                               <span className="text-[11px] font-semibold text-slate-400 tabular-nums">No. {rowIdx + 1}</span>

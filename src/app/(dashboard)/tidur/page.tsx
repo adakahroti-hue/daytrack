@@ -209,7 +209,7 @@ export default function TidurPage() {
               </th>
             </tr>
           </thead>
-          <tbody className={cn(effectiveLocked && 'pointer-events-none select-none')}>
+          <tbody className={cn(effectiveLocked ? 'sm:pointer-events-none sm:select-none' : '')}>
             {isLoading ? (
               <tr>
                 <td colSpan={7} className="text-center py-12 text-slate-400">
@@ -396,7 +396,7 @@ export default function TidurPage() {
           </tbody>
         </table>
       </div>
-      {lockControl}
+      <div className="hidden sm:block">{lockControl}</div>
 
       {/* Revisi 6: Ringkasan */}
       <StatusAnalytics
