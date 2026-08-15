@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from 'react'
+import { Fragment, useMemo } from 'react'
 import {
   format,
   eachDayOfInterval,
@@ -12,8 +12,9 @@ import {
   endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, CalendarDays, Sparkles, Check, X, Trash2, MessageCircle } from 'lucide-react'
+import { Calendar, CalendarDays, Sparkles, Check, X, Trash2, MessageCircle, Pencil } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useSyukurLogRange, useUpsertSyukurLog, useDeleteSyukurLog } from '@/hooks/useSyukurLogs'
 import { useRealtime } from '@/hooks/useRealtime'
@@ -153,7 +154,7 @@ export default function SyukurPage() {
       {/* Tabel gaya Quran: Tanggal | Hari | Status */}
       <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)] landscape:max-lg:max-h-none rounded-lg border bg-white', TABLE_BORDER)}>
         <table className="w-full border-collapse text-xs sm:text-sm">
-          <thead className="sticky top-0 z-20 bg-white">
+          <thead className={cn('hidden sm:table-header-group sticky top-0 z-20 bg-white')}>
             <tr className={cn('border-b', TABLE_BORDER)}>
               <th className={cn('dt-col-stick sticky left-0 z-30 bg-white px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[72px] sm:min-w-[100px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
@@ -205,88 +206,157 @@ export default function SyukurPage() {
                 const isMissed = entry?.status === 'belum'
 
                 return (
-                  <tr
-                    key={dateStr}
-                    className={cn('border-b transition-colors', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30', 'hover:bg-blue-50/40')}
-                  >
-                    <td className={cn('dt-col-stick sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
-                      <span className="sm:hidden">{format(date, 'd MMM', { locale: id })}</span>
-                      <span className="hidden sm:inline">{dateDisplay}</span>
-                    </td>
-                    <td className={cn('px-2 sm:px-3 py-2 text-center border-r dt-col-stick sm:sticky sm:left-[100px] sm:z-10 sm:bg-inherit', TABLE_BORDER)}>
-                      <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs border font-medium', DAY_BADGE_COLORS[dayName] || 'bg-slate-100 text-slate-700 border-slate-200')}>
-                        {dayName}
-                      </span>
-                    </td>
-                    <td className={cn('px-2 sm:px-3 py-2 text-center border-r', TABLE_BORDER)}>
-                      <div className="flex items-center justify-center min-h-[36px]">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button
-                              type="button"
-                              className={cn(
-                                'inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium border transition-colors cursor-pointer whitespace-normal leading-tight text-center',
-                                isMissed
-                                  ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'
-                                  : isDone
-                                    ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200'
-                                    : 'text-slate-400 border-dashed border-slate-300 hover:bg-slate-50 hover:text-slate-600'
+                  <Fragment key={dateStr}>
+                    {/* ── Mobile: kartu ringkas (sm:hidden) ── */}
+                    <tr className={cn('sm:hidden border-b', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30')}>
+                      <td colSpan={4} className={cn('px-3 py-3', TABLE_BORDER)}>
+                        <div className="space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <span className="text-sm font-semibold text-slate-800">{dateDisplay}</span>
+                              <span className={cn('ml-2 shrink-0 inline-block px-1.5 py-0.5 rounded-full text-[11px] border font-medium', DAY_BADGE_COLORS[dayName] || 'bg-slate-100 text-slate-700 border-slate-200')}>{dayName}</span>
+                              {isDone ? (
+                                <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2 py-0.5 text-[11px] font-medium border border-green-200">
+                                  <Check className="h-3 w-3" /> Sudah
+                                </span>
+                              ) : isMissed ? (
+                                <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-red-50 text-red-600 px-2 py-0.5 text-[11px] font-medium border border-red-200">
+                                  <X className="h-3 w-3" /> Tidak
+                                </span>
+                              ) : (
+                                <span className="ml-2 text-slate-400 text-[11px]">-</span>
                               )}
-                            >
-                              {isDone && <Check className="h-3.5 w-3.5 shrink-0" />}
-                              {isDone ? 'Sudah' : isMissed ? 'Tidak' : <X className="h-3.5 w-3.5 shrink-0 text-slate-400" />}
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="center" className="w-44">
-                            <DropdownMenuItem onClick={() => { handleSetStatus(dateStr, 'sudah') }} className="flex items-center gap-2">
-                              <Check className="h-4 w-4 text-green-600" /> Sudah
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => { if (!isMissed) handleSetStatus(dateStr, 'belum') }} className="flex items-center gap-2">
-                              <X className="h-4 w-4 text-red-500" /> Tidak
-                            </DropdownMenuItem>
-                            {entry && (
-                              <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => handleClear(dateStr)} className="flex items-center gap-2 text-destructive focus:text-destructive">
-                                  <Trash2 className="h-4 w-4" /> Batalkan
-                                </DropdownMenuItem>
-                              </>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </td>
-                    <td className={cn('px-2 sm:px-3 py-2 text-center', TABLE_BORDER)}>
-                      {isDone ? (
-                        <span className="text-slate-400">—</span>
-                      ) : isMissed ? (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button
-                              type="button"
-                              className="font-medium text-slate-700 hover:underline cursor-pointer"
-                            >
-                              <span className="truncate">{entry?.alasan_tidak ? (ALASAN_LABELS[entry.alasan_tidak] ?? entry.alasan_tidak) : 'Pilih alasan'}</span>
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="start" className="w-44">
-                            {SYUKUR_REASONS.map(r => (
-                              <DropdownMenuItem
-                                key={r.value}
-                                onClick={() => handleSetStatus(dateStr, 'belum', r.value)}
-                                className="flex items-center gap-2"
+                              {isMissed && entry?.alasan_tidak && (
+                                <div className="mt-1 text-[11px] text-slate-500">{ALASAN_LABELS[entry.alasan_tidak] ?? entry.alasan_tidak}</div>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1 shrink-0">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button size="icon" aria-label="Ubah status syukur" className="h-6 w-6 p-0 bg-slate-600 hover:bg-slate-700 text-white">
+                                    <Pencil className="h-3 w-3" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="center" className="w-44">
+                                  <DropdownMenuItem onClick={() => { handleSetStatus(dateStr, 'sudah') }} className="flex items-center gap-2">
+                                    <Check className="h-4 w-4 text-green-600" /> Sudah
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => { if (!isMissed) handleSetStatus(dateStr, 'belum') }} className="flex items-center gap-2">
+                                    <X className="h-4 w-4 text-red-500" /> Tidak
+                                  </DropdownMenuItem>
+                                  {isMissed && (
+                                    <>
+                                      <DropdownMenuSeparator />
+                                      {SYUKUR_REASONS.map(r => (
+                                        <DropdownMenuItem
+                                          key={r.value}
+                                          onClick={() => handleSetStatus(dateStr, 'belum', r.value)}
+                                          className="flex items-center gap-2"
+                                        >
+                                          {entry?.alasan_tidak === r.value ? <Check className="h-4 w-4 text-green-600" /> : <span className="w-4 h-4" />}
+                                          {r.label}
+                                        </DropdownMenuItem>
+                                      ))}
+                                    </>
+                                  )}
+                                  {entry && (
+                                    <>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem onClick={() => handleClear(dateStr)} className="flex items-center gap-2 text-destructive focus:text-destructive">
+                                        <Trash2 className="h-4 w-4" /> Batalkan
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    {/* ── Desktop: tabel penuh (hidden sm:table-row) ── */}
+                    <tr
+                      className={cn('hidden sm:table-row border-b transition-colors', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30', 'hover:bg-blue-50/40')}
+                    >
+                      <td className={cn('dt-col-stick sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums', TABLE_BORDER)}>
+                        <span className="sm:hidden">{format(date, 'd MMM', { locale: id })}</span>
+                        <span className="hidden sm:inline">{dateDisplay}</span>
+                      </td>
+                      <td className={cn('px-2 sm:px-3 py-2 text-center border-r dt-col-stick sm:sticky sm:left-[100px] sm:z-10 sm:bg-inherit', TABLE_BORDER)}>
+                        <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs border font-medium', DAY_BADGE_COLORS[dayName] || 'bg-slate-100 text-slate-700 border-slate-200')}>
+                          {dayName}
+                        </span>
+                      </td>
+                      <td className={cn('px-2 sm:px-3 py-2 text-center border-r', TABLE_BORDER)}>
+                        <div className="flex items-center justify-center min-h-[36px]">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button
+                                type="button"
+                                className={cn(
+                                  'inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium border transition-colors cursor-pointer whitespace-normal leading-tight text-center',
+                                  isMissed
+                                    ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'
+                                    : isDone
+                                      ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200'
+                                      : 'text-slate-400 border-dashed border-slate-300 hover:bg-slate-50 hover:text-slate-600'
+                                )}
                               >
-                                {entry?.alasan_tidak === r.value ? <Check className="h-4 w-4 text-green-600" /> : <span className="w-4 h-4" />}
-                                {r.label}
+                                {isDone && <Check className="h-3.5 w-3.5 shrink-0" />}
+                                {isDone ? 'Sudah' : isMissed ? 'Tidak' : <X className="h-3.5 w-3.5 shrink-0 text-slate-400" />}
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="center" className="w-44">
+                              <DropdownMenuItem onClick={() => { handleSetStatus(dateStr, 'sudah') }} className="flex items-center gap-2">
+                                <Check className="h-4 w-4 text-green-600" /> Sudah
                               </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      ) : (
-                        <span className="text-slate-400">Pilih “Tidak” dulu</span>
-                      )}
-                    </td>
-                  </tr>
+                              <DropdownMenuItem onClick={() => { if (!isMissed) handleSetStatus(dateStr, 'belum') }} className="flex items-center gap-2">
+                                <X className="h-4 w-4 text-red-500" /> Tidak
+                              </DropdownMenuItem>
+                              {entry && (
+                                <>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem onClick={() => handleClear(dateStr)} className="flex items-center gap-2 text-destructive focus:text-destructive">
+                                    <Trash2 className="h-4 w-4" /> Batalkan
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </td>
+                      <td className={cn('px-2 sm:px-3 py-2 text-center', TABLE_BORDER)}>
+                        {isDone ? (
+                          <span className="text-slate-400">—</span>
+                        ) : isMissed ? (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button
+                                type="button"
+                                className="font-medium text-slate-700 hover:underline cursor-pointer"
+                              >
+                                <span className="truncate">{entry?.alasan_tidak ? (ALASAN_LABELS[entry.alasan_tidak] ?? entry.alasan_tidak) : 'Pilih alasan'}</span>
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="w-44">
+                              {SYUKUR_REASONS.map(r => (
+                                <DropdownMenuItem
+                                  key={r.value}
+                                  onClick={() => handleSetStatus(dateStr, 'belum', r.value)}
+                                  className="flex items-center gap-2"
+                                >
+                                  {entry?.alasan_tidak === r.value ? <Check className="h-4 w-4 text-green-600" /> : <span className="w-4 h-4" />}
+                                  {r.label}
+                                </DropdownMenuItem>
+                              ))}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        ) : (
+                          <span className="text-slate-400">Pilih "Tidak" dulu</span>
+                        )}
+                      </td>
+                    </tr>
+                  </Fragment>
                 )
               })
             )}
