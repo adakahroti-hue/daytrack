@@ -51,10 +51,10 @@ const renderDonutLabel = (props: any) => {
   const radius = innerRadius + (outerRadius - innerRadius) / 2
   const x = cx + radius * Math.cos(-midAngle * RADIAN)
   const y = cy + radius * Math.sin(-midAngle * RADIAN)
-  const pct = payload?.percent ?? Math.round((percent ?? 0) * 100)
+  const text = payload?.labelValue ?? `${Math.round((payload?.percent ?? percent ?? 0) * 100)}%`
   return (
     <text x={x} y={y} fill="#ffffff" fontSize={11} fontWeight={700} textAnchor="middle" dominantBaseline="central">
-      {`${pct}%`}
+      {text}
     </text>
   )
 }
@@ -178,12 +178,14 @@ export function QuranAnalytics({ logMap, columns }: QuranAnalyticsProps) {
           total += 1
           if (isTidakBaca(entry.status)) missed += 1
         }
+        const pct = total > 0 ? Math.round(((total - missed) / total) * 100) : 0
         return {
           key: col.key,
           name: col.label,
           missed,
           total,
-          percent: total > 0 ? Math.round(((total - missed) / total) * 100) : 0,
+          percent: pct,
+          labelValue: `${pct}%`,
         }
       })
       .filter(s => s.total > 0)
@@ -203,11 +205,10 @@ export function QuranAnalytics({ logMap, columns }: QuranAnalyticsProps) {
     }
     const total = [...counts.values()].reduce((s, c) => s + c, 0)
     return [...counts.entries()]
-      .map(([name, count]) => ({
-        name,
-        count,
-        percent: total > 0 ? Math.round((count / total) * 100) : 0,
-      }))
+      .map(([name, count]) => {
+        const pct = total > 0 ? Math.round((count / total) * 100) : 0
+        return { name, count, percent: pct, labelValue: `${pct}%` }
+      })
       .sort((a, b) => b.count - a.count)
   }, [logMap, columns])
 
