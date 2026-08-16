@@ -33,6 +33,7 @@ interface EditState {
   id: string | null
   judul: string
   isi: string
+  label: string
   warna: CatatanWarna
 }
 
@@ -80,9 +81,9 @@ export default function CatatanPage() {
     })
   }
 
-  const openAdd = () => setEditState({ id: null, judul: "", isi: "", warna: "yellow" })
+  const openAdd = () => setEditState({ id: null, judul: "", isi: "", label: "", warna: "yellow" })
   const openEdit = (n: any) =>
-    setEditState({ id: n.id, judul: n.judul, isi: n.isi, warna: n.warna as CatatanWarna })
+    setEditState({ id: n.id, judul: n.judul, isi: n.isi, label: n.label ?? "", warna: n.warna as CatatanWarna })
 
   const handleSave = async () => {
     if (!editState) return
@@ -92,12 +93,13 @@ export default function CatatanPage() {
       if (editState.id) {
         await updateCatatan.mutateAsync({
           id: editState.id,
-          data: { judul: editState.judul.trim(), isi: editState.isi.trim(), warna: editState.warna },
+          data: { judul: editState.judul.trim(), isi: editState.isi.trim(), label: editState.label.trim(), warna: editState.warna },
         })
       } else {
         await createCatatan.mutateAsync({
           judul: editState.judul.trim(),
           isi: editState.isi.trim(),
+          label: editState.label.trim(),
           warna: editState.warna,
         })
       }
@@ -134,7 +136,14 @@ export default function CatatanPage() {
             return (
               <div key={n.id} className={cn("rounded-lg border shadow-sm p-3 flex flex-col min-h-[140px]", c.card)}>
                 <div className={cn("h-1 w-10 rounded-full mb-2", c.bar)} />
-                <p className={cn("text-sm font-bold break-words leading-snug", c.text)}>{n.judul}</p>
+                <div className="flex items-start justify-between gap-2">
+                  <p className={cn("text-sm font-bold break-words leading-snug", c.text)}>{n.judul}</p>
+                  {n.label && (
+                    <span className="shrink-0 rounded-full bg-slate-900/10 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+                      {n.label}
+                    </span>
+                  )}
+                </div>
                 <p className="mt-1 text-sm text-slate-700 whitespace-pre-wrap break-words flex-1 leading-snug">{n.isi}</p>
                 <div className="flex items-center justify-end gap-1 pt-2 mt-auto">
                   <Button size="icon" aria-label="Edit catatan" onClick={() => openEdit(n)}
@@ -165,6 +174,16 @@ export default function CatatanPage() {
                 placeholder="Judul catatan"
                 value={editState?.judul ?? ""}
                 onChange={(e) => setEditState(prev => prev ? { ...prev, judul: e.target.value } : prev)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="catatan-label">Label / Kategori</Label>
+              <Input
+                id="catatan-label"
+                placeholder="mis. Ide, Belajar, Penting"
+                maxLength={50}
+                value={editState?.label ?? ""}
+                onChange={(e) => setEditState(prev => prev ? { ...prev, label: e.target.value } : prev)}
               />
             </div>
             <div className="space-y-1.5">

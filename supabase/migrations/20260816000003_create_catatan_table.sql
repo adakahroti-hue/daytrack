@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS public.catatan (
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
     judul TEXT NOT NULL,
     isi TEXT NOT NULL,
+    label TEXT NOT NULL DEFAULT '',
     warna TEXT NOT NULL DEFAULT 'yellow'
         CHECK (warna IN ('yellow', 'green', 'blue', 'pink', 'orange')),
     created_at TIMESTAMPTZ DEFAULT NOW(),

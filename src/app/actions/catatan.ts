@@ -8,6 +8,7 @@ const catatanSchema = z.object({
   judul: z.string().min(1, "Judul wajib diisi"),
   isi: z.string().min(1, "Isi wajib diisi"),
   warna: z.enum(["yellow", "green", "blue", "pink", "orange"]).default("yellow"),
+  label: z.string().max(50, "Maksimal 50 karakter").optional().default(""),
 })
 
 export type CatatanFormData = z.infer<typeof catatanSchema>
@@ -17,6 +18,7 @@ export interface CatatanEntry {
   user_id: string
   judul: string
   isi: string
+  label: string
   warna: "yellow" | "green" | "blue" | "pink" | "orange"
   created_at: string
   updated_at: string
@@ -35,6 +37,7 @@ export async function createCatatan(formData: CatatanFormData) {
       judul: validated.judul,
       isi: validated.isi,
       warna: validated.warna,
+      label: validated.label ?? "",
     })
     .select()
     .single()
@@ -43,7 +46,7 @@ export async function createCatatan(formData: CatatanFormData) {
   return { data, error: null }
 }
 
-export async function updateCatatan(id: string, formData: { judul?: string; isi?: string; warna?: "yellow" | "green" | "blue" | "pink" | "orange" }) {
+export async function updateCatatan(id: string, formData: { judul?: string; isi?: string; warna?: "yellow" | "green" | "blue" | "pink" | "orange"; label?: string }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
@@ -52,6 +55,7 @@ export async function updateCatatan(id: string, formData: { judul?: string; isi?
   if (formData.judul !== undefined) updateData.judul = formData.judul
   if (formData.isi !== undefined) updateData.isi = formData.isi
   if (formData.warna !== undefined) updateData.warna = formData.warna
+  if (formData.label !== undefined) updateData.label = formData.label
 
   const { data, error } = await supabase
     .from("catatan")
@@ -81,7 +85,7 @@ export async function getCatatanAll() {
   if (!user) throw new Error("Unauthorized")
   const { data, error } = await supabase
     .from("catatan")
-    .select("id, user_id, judul, isi, warna, created_at, updated_at")
+    .select("id, user_id, judul, isi, label, warna, created_at, updated_at")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
   if (error) throw new Error(error.message)
