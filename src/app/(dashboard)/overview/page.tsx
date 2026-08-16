@@ -3,7 +3,6 @@
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns'
 import { type OverviewPeriod } from '@/components/overview/FocusTodaySection'
 import { RoutineTodaySection } from '@/components/overview/RoutineTodaySection'
-import { MasukanSection } from '@/components/overview/MasukanSection'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
 
 // Revisi batch 18: kartu "Tugas" digabung ke grid Rutinitas (tema hitam-putih).
@@ -38,7 +37,6 @@ export default function OverviewPage() {
   return (
     <div className="space-y-3">
       <RoutineTodaySection startStr={startStr} endStr={endStr} period={summaryPeriod} />
-      <MasukanSection startStr={startStr} endStr={endStr} />
     </div>
   )
 }
