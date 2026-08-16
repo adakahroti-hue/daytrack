@@ -54,6 +54,7 @@ import {
   ShoppingCart,
   Target,
   ScanSearch,
+  StickyNote,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useTasks } from '@/hooks/useTasks'
@@ -121,6 +122,7 @@ const navigation: NavSection[] = [
       { title: 'Playlist', href: '/kesenangan', icon: ListMusic },
       { title: 'Refleksi', href: '/masalah', icon: PersonStanding },
       { title: 'SWOT', href: '/swot', icon: ScanSearch },
+      { title: 'Catatan', href: '/catatan', icon: StickyNote },
     ],
   },
   {
