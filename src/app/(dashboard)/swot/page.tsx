@@ -197,15 +197,15 @@ export default function SwotPage() {
         ))}
       </div>
 
-      {/* Grid kategori, dikelompokkan Internal / Eksternal */}
-      <div className="space-y-3">
+      {/* Grid kategori, dikelompokkan Internal / Eksternal — 2 kolom vertikal */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {GROUPS.map((g) => (
           <div key={g.key} className="rounded-2xl border border-slate-300 bg-slate-50/60 p-3">
             <div className="flex items-baseline gap-2 px-1 pb-2.5">
               <h2 className="text-sm font-bold text-slate-800">{g.label}</h2>
               <span className="text-[11px] text-slate-400">{g.sub}</span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="space-y-3">
               {g.kats.map((katKey) => {
                 const k = KAT_BY_KEY[katKey]
                 const list = items.filter((it) => it.kategori === k.key)
