@@ -119,10 +119,10 @@ const navigation: NavSection[] = [
     title: 'Pelajaran',
     icon: Shield,
     items: [
-      { title: 'Playlist', href: '/kesenangan', icon: ListMusic },
       { title: 'Refleksi', href: '/masalah', icon: PersonStanding },
       { title: 'SWOT', href: '/swot', icon: ScanSearch },
       { title: 'Catatan', href: '/catatan', icon: StickyNote },
+      { title: 'Playlist', href: '/kesenangan', icon: ListMusic },
     ],
   },
   {
