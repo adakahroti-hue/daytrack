@@ -137,7 +137,7 @@ export default function CatatanPage() {
               <div key={n.id} className={cn("rounded-lg border shadow-sm p-3 flex flex-col min-h-[140px]", c.card)}>
                 <div className={cn("h-1 w-10 rounded-full mb-2", c.bar)} />
                 <div className="flex items-start justify-between gap-2">
-                  <p className={cn("text-sm font-bold break-words leading-snug", c.text)}>{n.judul}</p>
+                  <p className={cn("text-base font-bold break-words leading-snug", c.text)}>{n.judul}</p>
                   {n.label && (
                     <span className="shrink-0 rounded-full bg-slate-900/10 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
                       {n.label}
