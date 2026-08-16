@@ -3,17 +3,20 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   getSwotItems,
+  getSwotTopics,
   getSwotActions,
-  getSwotHistory,
   createSwotItem,
   updateSwotItem,
   deleteSwotItem,
+  createSwotTopic,
+  renameSwotTopic,
+  deleteSwotTopic,
   createSwotAction,
   updateSwotAction,
   deleteSwotAction,
   type SwotItem,
+  type SwotTopic,
   type SwotAction,
-  type SwotHistoryEntry,
   type SwotKategori,
   type SwotPrioritas,
   type SwotTren,
@@ -27,25 +30,49 @@ export function useSwotItems() {
   })
 }
 
-export function useSwotActions() {
+export function useSwotTopics() {
   return useQuery({
-    queryKey: ["swot", "actions"],
-    queryFn: () => getSwotActions(),
+    queryKey: ["swot", "topics"],
+    queryFn: () => getSwotTopics(),
   })
 }
 
-export function useSwotHistory() {
+export function useSwotActions(topicId?: string) {
   return useQuery({
-    queryKey: ["swot", "history"],
-    queryFn: () => getSwotHistory(),
+    queryKey: ["swot", "actions", topicId ?? "all"],
+    queryFn: () => getSwotActions(topicId),
   })
 }
 
 export function useCreateSwotItem() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: { kategori: SwotKategori; judul: string; prioritas?: SwotPrioritas; tren?: SwotTren; status?: SwotStatus }) =>
+    mutationFn: (data: { topic_id: string; kategori: SwotKategori; judul: string; prioritas?: SwotPrioritas; tren?: SwotTren; status?: SwotStatus }) =>
       createSwotItem(data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["swot"] }),
+  })
+}
+
+export function useCreateSwotTopic() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (judul: string) => createSwotTopic(judul),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["swot"] }),
+  })
+}
+
+export function useRenameSwotTopic() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, judul }: { id: string; judul: string }) => renameSwotTopic(id, judul),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["swot"] }),
+  })
+}
+
+export function useDeleteSwotTopic() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => deleteSwotTopic(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["swot"] }),
   })
 }
@@ -69,7 +96,7 @@ export function useDeleteSwotItem() {
 export function useCreateSwotAction() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: { target: string; langkah_aksi?: string | null; deadline?: string | null; progress?: number; swot_item_id?: string | null }) =>
+    mutationFn: (data: { topic_id?: string | null; target: string; langkah_aksi?: string | null; deadline?: string | null; progress?: number; swot_item_id?: string | null }) =>
       createSwotAction(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["swot"] }),
   })

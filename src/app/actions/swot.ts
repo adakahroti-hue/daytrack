@@ -12,6 +12,7 @@ export type SwotStatus = "aktif" | "ditindak" | "selesai"
 export interface SwotItem {
   id: string
   user_id: string
+  topic_id: string
   kategori: SwotKategori
   judul: string
   prioritas: SwotPrioritas
@@ -21,9 +22,18 @@ export interface SwotItem {
   updated_at: string
 }
 
+export interface SwotTopic {
+  id: string
+  user_id: string
+  judul: string
+  created_at: string
+  updated_at: string
+}
+
 export interface SwotAction {
   id: string
   user_id: string
+  topic_id: string | null
   swot_item_id: string | null
   target: string
   langkah_aksi: string | null
@@ -67,6 +77,7 @@ export async function getSwotItems(): Promise<SwotItem[]> {
 }
 
 export async function createSwotItem(data: {
+  topic_id: string
   kategori: SwotKategori
   judul: string
   prioritas?: SwotPrioritas
@@ -77,6 +88,7 @@ export async function createSwotItem(data: {
   const user = await assertUser(supabase)
   const { error } = await supabase.from("swot_items").insert({
     user_id: user.id,
+    topic_id: data.topic_id,
     kategori: data.kategori,
     judul: data.judul,
     prioritas: data.prioritas || "sedang",
@@ -126,20 +138,75 @@ export async function deleteSwotItem(id: string) {
   return { error: null }
 }
 
-// ── ACTIONS (Action Plan) ──
-export async function getSwotActions(): Promise<SwotAction[]> {
+// ── TOPICS (multi-analisis) ──
+export async function getSwotTopics(): Promise<SwotTopic[]> {
   const supabase = await createClient()
   const user = await assertUser(supabase)
   const { data, error } = await supabase
-    .from("swot_actions")
+    .from("swot_topics")
     .select("*")
     .eq("user_id", user.id)
     .order("created_at", { ascending: true })
+  if (error) throw new Error(error.message)
+  return (data || []) as SwotTopic[]
+}
+
+export async function createSwotTopic(judul: string) {
+  const supabase = await createClient()
+  const user = await assertUser(supabase)
+  const { data, error } = await supabase
+    .from("swot_topics")
+    .insert({ user_id: user.id, judul: judul.trim() })
+    .select()
+    .single()
+  if (error) throw new Error(error.message)
+  revalidateSwot()
+  return { data, error: null }
+}
+
+export async function renameSwotTopic(id: string, judul: string) {
+  const supabase = await createClient()
+  const user = await assertUser(supabase)
+  const { error } = await supabase
+    .from("swot_topics")
+    .update({ judul: judul.trim(), updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("user_id", user.id)
+  if (error) throw new Error(error.message)
+  revalidateSwot()
+  return { error: null }
+}
+
+export async function deleteSwotTopic(id: string) {
+  const supabase = await createClient()
+  const user = await assertUser(supabase)
+  // Hapus topik + item terkait (ON DELETE CASCADE di topic_id)
+  const { error } = await supabase
+    .from("swot_topics")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id)
+  if (error) throw new Error(error.message)
+  revalidateSwot()
+  return { error: null }
+}
+
+// ── ACTIONS (Action Plan) ──
+export async function getSwotActions(topicId?: string): Promise<SwotAction[]> {
+  const supabase = await createClient()
+  const user = await assertUser(supabase)
+  let q = supabase
+    .from("swot_actions")
+    .select("*")
+    .eq("user_id", user.id)
+  if (topicId) q = q.eq("topic_id", topicId)
+  const { data, error } = await q.order("created_at", { ascending: true })
   if (error) throw new Error(error.message)
   return (data || []) as SwotAction[]
 }
 
 export async function createSwotAction(data: {
+  topic_id?: string | null
   target: string
   langkah_aksi?: string | null
   deadline?: string | null
@@ -150,6 +217,7 @@ export async function createSwotAction(data: {
   const user = await assertUser(supabase)
   const { error } = await supabase.from("swot_actions").insert({
     user_id: user.id,
+    topic_id: data.topic_id || null,
     target: data.target,
     langkah_aksi: data.langkah_aksi || null,
     deadline: data.deadline || null,
