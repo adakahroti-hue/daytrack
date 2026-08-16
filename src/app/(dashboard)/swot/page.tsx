@@ -56,6 +56,13 @@ const KAT: { key: SwotKategori; label: string; accent: string; ring: string; ico
   { key: "threat", label: "Ancaman", accent: "border-slate-200", ring: "text-amber-700", icon: <Flag className="h-4 w-4" /> },
 ]
 
+// Grouping SWOT: Internal (dalam diri) & Eksternal (dari luar)
+const GROUPS: { key: string; label: string; sub: string; kats: SwotKategori[] }[] = [
+  { key: "internal", label: "Internal", sub: "Dari dalam diri", kats: ["strength", "weakness"] },
+  { key: "eksternal", label: "Eksternal", sub: "Dari luar", kats: ["opportunity", "threat"] },
+]
+const KAT_BY_KEY = Object.fromEntries(KAT.map((k) => [k.key, k])) as Record<SwotKategori, (typeof KAT)[number]>
+
 // Radio button dekoratif (estetika) — warna mengikuti kategori card
 const RADIO_RING: Record<SwotKategori, string> = {
   strength: "border-emerald-500",
@@ -190,54 +197,65 @@ export default function SwotPage() {
         ))}
       </div>
 
-      {/* 4 Grid kategori */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {KAT.map((k) => {
-          const list = items.filter((it) => it.kategori === k.key)
-          return (
-            <div key={k.key} className={cn("rounded-xl border p-3", k.accent)}>
-              <div className="flex items-center justify-between mb-2">
-                <div className={cn("flex items-center gap-1.5 text-sm font-bold", k.ring)}>
-                  {k.icon} {k.label}
-                </div>
-                <Button size="icon" variant="outline" aria-label="Tambah Item" onClick={() => openAddItem(k.key)}
-                  className="h-6 w-6 p-0">
-                  <Plus className="h-3 w-3" />
-                </Button>
-              </div>
-              {itemsLoading ? (
-                <p className="text-xs text-slate-400 py-2">Memuat…</p>
-              ) : list.length === 0 ? (
-                <p className="text-xs text-slate-400 py-2">Belum ada item. Klik “Tambah Item”.</p>
-              ) : (
-                <div className="space-y-2">
-                  {list.map((it) => (
-                    <div key={it.id} className="py-1.5 pl-4 flex items-start gap-2.5">
-                      <span className={cn("mt-1 h-3.5 w-3.5 shrink-0 rounded-full border-2 flex items-center justify-center", RADIO_RING[k.key])} aria-hidden="true">
-                        <span className={cn("h-1.5 w-1.5 rounded-full", RADIO_DOT[k.key])} />
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-medium text-slate-800 break-words flex-1">{it.judul}</p>
-                          <div className="flex items-center gap-1 shrink-0">
-                            <Button size="sm" variant="ghost" aria-label="Edit" onClick={() => openEditItem(it)}
-                              className="h-6 w-6 p-0 text-slate-500 hover:text-slate-700">
-                              <Pencil className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button size="sm" variant="ghost" aria-label="Hapus" onClick={() => handleDeleteItem(it.id)}
-                              className="h-6 w-6 p-0 text-red-500 hover:text-red-700">
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+      {/* Grid kategori, dikelompokkan Internal / Eksternal */}
+      <div className="space-y-3">
+        {GROUPS.map((g) => (
+          <div key={g.key} className="rounded-2xl border border-slate-300 bg-slate-50/60 p-3">
+            <div className="flex items-baseline gap-2 px-1 pb-2.5">
+              <h2 className="text-sm font-bold text-slate-800">{g.label}</h2>
+              <span className="text-[11px] text-slate-400">{g.sub}</span>
             </div>
-          )
-        })}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {g.kats.map((katKey) => {
+                const k = KAT_BY_KEY[katKey]
+                const list = items.filter((it) => it.kategori === k.key)
+                return (
+                  <div key={k.key} className={cn("rounded-xl border p-3 bg-white", k.accent)}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className={cn("flex items-center gap-1.5 text-sm font-bold", k.ring)}>
+                        {k.icon} {k.label}
+                      </div>
+                      <Button size="icon" variant="outline" aria-label="Tambah Item" onClick={() => openAddItem(k.key)}
+                        className="h-6 w-6 p-0">
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    {itemsLoading ? (
+                      <p className="text-xs text-slate-400 py-2">Memuat…</p>
+                    ) : list.length === 0 ? (
+                      <p className="text-xs text-slate-400 py-2">Belum ada item. Klik “Tambah Item”.</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {list.map((it) => (
+                          <div key={it.id} className="py-1.5 pl-4 flex items-start gap-2.5">
+                            <span className={cn("mt-1 h-3.5 w-3.5 shrink-0 rounded-full border-2 flex items-center justify-center", RADIO_RING[k.key])} aria-hidden="true">
+                              <span className={cn("h-1.5 w-1.5 rounded-full", RADIO_DOT[k.key])} />
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2">
+                                <p className="text-sm font-medium text-slate-800 break-words flex-1">{it.judul}</p>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <Button size="sm" variant="ghost" aria-label="Edit" onClick={() => openEditItem(it)}
+                                    className="h-6 w-6 p-0 text-slate-500 hover:text-slate-700">
+                                    <Pencil className="h-3.5 w-3.5" />
+                                  </Button>
+                                  <Button size="sm" variant="ghost" aria-label="Hapus" onClick={() => handleDeleteItem(it.id)}
+                                    className="h-6 w-6 p-0 text-red-500 hover:text-red-700">
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Prioritas & Action Plan */}
