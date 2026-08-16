@@ -38,12 +38,22 @@ const DAY_BADGE_COLORS: Record<string, string> = {
 
 const TABLE_BORDER = "border-slate-900"
 
+// Warna badge dompet (konsisten di tabel + kartu mobile)
+const DOMPET_BADGE: Record<string, string> = {
+  kebutuhan: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  tabungan: "bg-sky-50 text-sky-700 border-sky-200",
+  self_reward: "bg-amber-50 text-amber-700 border-amber-200",
+  sedekah: "bg-violet-50 text-violet-700 border-violet-200",
+  paylater: "bg-rose-50 text-rose-700 border-rose-200",
+}
+
 // Pilihan dompet sumber dana (hanya untuk uang keluar)
-const DOMPET_OPTIONS: { value: "kebutuhan" | "tabungan" | "self_reward" | "sedekah"; label: string }[] = [
+const DOMPET_OPTIONS: { value: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" | "paylater"; label: string }[] = [
   { value: "kebutuhan", label: "Kebutuhan" },
   { value: "tabungan", label: "Tabungan" },
   { value: "self_reward", label: "Self Reward" },
   { value: "sedekah", label: "Sedekah" },
+  { value: "paylater", label: "Paylater" },
 ]
 
 // Alokasi otomatis dari total uang masuk (pay yourself first)
@@ -61,7 +71,7 @@ interface ArusKasEntry {
   kategori: "uang_masuk" | "uang_keluar"
   nominal: number
   alasan: string | null
-  dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" | null
+  dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" | "paylater" | null
   created_at: string
 }
 
@@ -71,7 +81,7 @@ interface EditState {
   kategori: "uang_masuk" | "uang_keluar"
   nominal: number
   alasan: string
-  dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" | null
+  dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" | "paylater" | null
 }
 
 function startOfDaySafe(d: Date): Date {
@@ -122,7 +132,7 @@ export default function ArusKasPage() {
   const [editState, setEditState] = useState<EditState | null>(null)
   const [nominalInput, setNominalInput] = useState("")
   const [filterKategori, setFilterKategori] = useState<"semua" | "uang_masuk" | "uang_keluar">("semua")
-  const [filterDompet, setFilterDompet] = useState<"semua" | "kebutuhan" | "tabungan" | "self_reward" | "sedekah">("semua")
+  const [filterDompet, setFilterDompet] = useState<"semua" | "kebutuhan" | "tabungan" | "self_reward" | "sedekah" | "paylater">("semua")
 
   const entries = useMemo(() => {
     let list = [...(logs as ArusKasEntry[])]
@@ -136,11 +146,15 @@ export default function ArusKasPage() {
   const ringkasan = useMemo(() => {
     let masuk = 0
     let keluar = 0
+    let paylater = 0
     for (const l of logs as ArusKasEntry[]) {
       if (l.kategori === "uang_masuk") masuk += l.nominal
-      else keluar += l.nominal
+      else {
+        keluar += l.nominal
+        if (l.dompet === "paylater") paylater += l.nominal
+      }
     }
-    return { masuk, keluar, saldo: masuk - keluar }
+    return { masuk, keluar, saldo: masuk - keluar, paylater }
   }, [logs])
 
   // Alokasi uang masuk otomatis (persen dari total uang masuk) dikurangi pemakaian per dompet
@@ -198,7 +212,7 @@ export default function ArusKasPage() {
   return (
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
       {/* Saldo + Alokasi Uang Masuk sebaris */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 items-stretch">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 items-stretch">
         {alokasi.map((item) => (
           <div key={item.label} className={cn("rounded-xl border bg-white p-4", TABLE_BORDER)}>
             <p className={cn("text-xs font-semibold uppercase tracking-wide flex items-center gap-1", item.text)}>
@@ -207,6 +221,16 @@ export default function ArusKasPage() {
             <p className="mt-1 text-lg font-bold text-slate-800 tabular-nums">{formatRupiah(item.nilai)}</p>
           </div>
         ))}
+        {/* Card Paylater (total utang paylater di periode) */}
+        <div className={cn("rounded-xl border bg-white p-3 col-span-2 sm:col-span-1", TABLE_BORDER)}>
+          <div className="flex flex-col justify-center h-full gap-1.5">
+            <p className="text-xs font-semibold uppercase tracking-wide text-rose-600 flex items-center gap-1">
+              <Wallet className="h-4 w-4" /> Paylater
+            </p>
+            <p className="text-lg font-bold text-rose-700 tabular-nums">{formatRupiah(ringkasan.paylater)}</p>
+            <p className="text-[11px] text-slate-400">Total utang (uang keluar)</p>
+          </div>
+        </div>
         {/* Card Saldo (lebih besar, paling kanan) */}
         <div className={cn("rounded-xl border bg-white p-3 col-span-2", TABLE_BORDER)}>
           <div className="flex flex-col justify-center h-full gap-1.5">
@@ -366,11 +390,7 @@ export default function ArusKasPage() {
                           <span className="text-slate-400">-</span>
                         ) : (
                           <span className={cn("inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border",
-                            entry.dompet === "kebutuhan" && "bg-emerald-50 text-emerald-700 border-emerald-200",
-                            entry.dompet === "tabungan" && "bg-sky-50 text-sky-700 border-sky-200",
-                            entry.dompet === "self_reward" && "bg-amber-50 text-amber-700 border-amber-200",
-                            entry.dompet === "sedekah" && "bg-violet-50 text-violet-700 border-violet-200",
-                            !entry.dompet && "bg-slate-100 text-slate-500 border-slate-200")}>
+                            entry.dompet ? (DOMPET_BADGE[entry.dompet] ?? "bg-slate-100 text-slate-500 border-slate-200") : "bg-slate-100 text-slate-500 border-slate-200")}>
                             {entry.dompet ? DOMPET_OPTIONS.find(d => d.value === entry.dompet)?.label : "-"}
                           </span>
                         )}

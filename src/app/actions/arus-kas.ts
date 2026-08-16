@@ -9,7 +9,7 @@ const arusKasSchema = z.object({
   kategori: z.enum(["uang_masuk", "uang_keluar"]),
   nominal: z.number().int().nonnegative(),
   alasan: z.string().optional(),
-  dompet: z.enum(["kebutuhan", "tabungan", "self_reward", "sedekah"]).nullable().optional(),
+  dompet: z.enum(["kebutuhan", "tabungan", "self_reward", "sedekah", "paylater"]).nullable().optional(),
 })
 
 export type ArusKasFormData = z.infer<typeof arusKasSchema>
@@ -21,7 +21,7 @@ export interface ArusKasEntry {
   kategori: "uang_masuk" | "uang_keluar"
   nominal: number
   alasan: string | null
-  dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" | null
+  dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" | "paylater" | null
   created_at: string
   updated_at: string
 }
