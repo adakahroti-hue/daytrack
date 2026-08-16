@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { Plus, Pencil, Trash2, StickyNote } from "lucide-react"
+import { useState, useRef } from "react"
+import { Plus, Pencil, Trash2, StickyNote, List, ListOrdered } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -46,6 +46,39 @@ export default function CatatanPage() {
 
   const [editState, setEditState] = useState<EditState | null>(null)
   const [isBusy, setIsBusy] = useState(false)
+  const isiRef = useRef<HTMLTextAreaElement>(null)
+
+  // Sisipkan awalan di baris kursor: bullet ("• ") atau number ("N. ")
+  const insertPrefix = (mode: "bullet" | "number") => {
+    const el = isiRef.current
+    if (!el || !editState) return
+    const value = editState.isi
+    const pos = el.selectionStart ?? value.length
+    const before = value.slice(0, pos)
+    const after = value.slice(pos)
+    // Tentukan awal baris saat ini
+    const lineStart = before.lastIndexOf("\n") + 1
+    const lineSoFar = before.slice(lineStart)
+    let prefix = ""
+    if (mode === "bullet") {
+      prefix = "• "
+    } else {
+      // Hitung nomor berdasarkan jumlah baris bernomor sebelumnya di teks
+      const headText = before.slice(0, lineStart)
+      const prevNumbered = (headText.match(/^\d+\.\s/gm) || []).length
+      prefix = `${prevNumbered + 1}. `
+    }
+    // Jika baris sudah punya prefix yang sama, jangan dobel
+    if (lineSoFar.startsWith(prefix)) return
+    const newValue = before + prefix + after
+    setEditState(prev => prev ? { ...prev, isi: newValue } : prev)
+    // Kembalikan fokus & letakkan kursor setelah prefix
+    requestAnimationFrame(() => {
+      const np = pos + prefix.length
+      el.focus()
+      el.setSelectionRange(np, np)
+    })
+  }
 
   const openAdd = () => setEditState({ id: null, judul: "", isi: "", warna: "yellow" })
   const openEdit = (n: any) =>
@@ -136,8 +169,19 @@ export default function CatatanPage() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="catatan-isi">Isi</Label>
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Button type="button" variant="outline" size="sm" onClick={() => insertPrefix("bullet")}
+                  className="h-7 gap-1 text-[11px] px-2" aria-label="Tambah bullet">
+                  <List className="h-3.5 w-3.5" /> Bullet
+                </Button>
+                <Button type="button" variant="outline" size="sm" onClick={() => insertPrefix("number")}
+                  className="h-7 gap-1 text-[11px] px-2" aria-label="Tambah nomor">
+                  <ListOrdered className="h-3.5 w-3.5" /> Number
+                </Button>
+              </div>
               <Textarea
                 id="catatan-isi"
+                ref={isiRef}
                 placeholder="Tulis isi catatan..."
                 rows={10}
                 className="resize-y min-h-[220px]"
