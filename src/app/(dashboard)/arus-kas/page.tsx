@@ -227,7 +227,7 @@ export default function ArusKasPage() {
             <p className="text-xs font-semibold uppercase tracking-wide text-rose-600 flex items-center gap-1">
               <Wallet className="h-4 w-4" /> Paylater
             </p>
-            <p className="text-lg font-bold text-rose-700 tabular-nums">{formatRupiah(ringkasan.paylater)}</p>
+            <p className="text-lg font-bold text-rose-700 tabular-nums">−{formatRupiah(ringkasan.paylater)}</p>
             <p className="text-[11px] text-slate-400">Total utang (uang keluar)</p>
           </div>
         </div>
