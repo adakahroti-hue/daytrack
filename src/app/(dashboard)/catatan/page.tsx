@@ -120,7 +120,7 @@ export default function CatatanPage() {
       )}
 
       <Dialog open={!!editState} onOpenChange={(open) => !open && setEditState(null)}>
-        <DialogContent className="max-w-[92vw] sm:max-w-md">
+        <DialogContent className="max-w-[92vw] sm:max-w-lg lg:max-w-xl">
           <DialogHeader>
             <DialogTitle>{editState?.id ? "Edit Catatan" : "Tambah Catatan"}</DialogTitle>
           </DialogHeader>
@@ -139,7 +139,8 @@ export default function CatatanPage() {
               <Textarea
                 id="catatan-isi"
                 placeholder="Tulis isi catatan..."
-                rows={5}
+                rows={10}
+                className="resize-y min-h-[220px]"
                 value={editState?.isi ?? ""}
                 onChange={(e) => setEditState(prev => prev ? { ...prev, isi: e.target.value } : prev)}
               />
