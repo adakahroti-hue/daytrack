@@ -107,6 +107,14 @@ const navigation: NavSection[] = [
     ],
   },
   {
+    title: 'Keuangan',
+    icon: Wallet,
+    items: [
+      { title: 'Arus Kas', href: '/arus-kas', icon: DollarSign },
+      { title: 'Belanja', href: '/keranjang', icon: ShoppingCart },
+    ],
+  },
+  {
     title: 'Ibadah',
     icon: Mosque,
     items: [
@@ -131,14 +139,6 @@ const navigation: NavSection[] = [
       { title: 'Minum Air', href: '/minum-air', icon: GlassWater },
       { title: 'PMO', href: '/pmo', icon: Shield },
       { title: 'Tidur', href: '/tidur', icon: Moon },
-    ],
-  },
-  {
-    title: 'Keuangan',
-    icon: Wallet,
-    items: [
-      { title: 'Arus Kas', href: '/arus-kas', icon: DollarSign },
-      { title: 'Belanja', href: '/keranjang', icon: ShoppingCart },
     ],
   },
   {
