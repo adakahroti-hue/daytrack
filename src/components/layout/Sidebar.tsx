@@ -115,6 +115,15 @@ const navigation: NavSection[] = [
     ],
   },
   {
+    title: 'Pelajaran',
+    icon: Shield,
+    items: [
+      { title: 'Playlist', href: '/kesenangan', icon: ListMusic },
+      { title: 'Refleksi', href: '/masalah', icon: PersonStanding },
+      { title: 'SWOT', href: '/swot', icon: ScanSearch },
+    ],
+  },
+  {
     title: 'Ibadah',
     icon: Mosque,
     items: [
@@ -139,15 +148,6 @@ const navigation: NavSection[] = [
       { title: 'Minum Air', href: '/minum-air', icon: GlassWater },
       { title: 'PMO', href: '/pmo', icon: Shield },
       { title: 'Tidur', href: '/tidur', icon: Moon },
-    ],
-  },
-  {
-    title: 'Pelajaran',
-    icon: Shield,
-    items: [
-      { title: 'Playlist', href: '/kesenangan', icon: ListMusic },
-      { title: 'Refleksi', href: '/masalah', icon: PersonStanding },
-      { title: 'SWOT', href: '/swot', icon: ScanSearch },
     ],
   },
   {
