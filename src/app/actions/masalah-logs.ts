@@ -107,3 +107,17 @@ export async function getMasalahLogRange(startDate: string, endDate: string) {
   if (error) throw new Error(error.message)
   return data || []
 }
+
+// Tampilkan SELURUH refleksi (journal) — tidak dibatasi periode tanggal.
+export async function getMasalahLogAll() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+  const { data, error } = await supabase
+    .from("refleksi")
+    .select("id, user_id, tanggal, masalah, status, created_at, updated_at")
+    .eq("user_id", user.id)
+    .order("tanggal", { ascending: false })
+  if (error) throw new Error(error.message)
+  return data || []
+}

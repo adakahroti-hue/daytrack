@@ -3,24 +3,17 @@
 import { Fragment, useMemo, useState } from 'react'
 import {
   format,
-  startOfWeek,
-  endOfWeek,
-  startOfMonth,
-  endOfMonth,
-  startOfYear,
-  endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, CalendarDays, Shield, Trash2, Plus, Pencil, Wrench, CheckCircle2, Hash } from 'lucide-react'
+import { Shield, Trash2, Plus, Pencil, Wrench, CheckCircle2, Hash } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
-import { useMasalahLogRange, useUpsertMasalahLog, useUpdateMasalahLog, useDeleteMasalahLog } from '@/hooks/useMasalahLogs'
-import { useRealtime } from '@/hooks/useRealtime'
-import { useHeaderControls } from '@/components/layout/HeaderControls'
+import { useMasalahLogAll, useUpsertMasalahLog, useUpdateMasalahLog, useDeleteMasalahLog } from "@/hooks/useMasalahLogs"
+import { useRealtime } from "@/hooks/useRealtime"
 
 // ─── Constants ────────────────────────────────────
 
@@ -63,49 +56,14 @@ interface EditState {
   status: 'belum' | 'sudah'
 }
 
-function startOfDaySafe(d: Date): Date {
-  const x = new Date(d)
-  x.setHours(0, 0, 0, 0)
-  return x
-}
-
 // ─── Main Component ────────────────────────────────
 
 export default function MasalahPage() {
-  // Periode & tanggal dari HeaderControls (toolbar di header)
-  const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
   const todayStr = format(new Date(), 'yyyy-MM-dd')
 
-  const { rangeStart, rangeEnd } = useMemo(() => {
-    const today = new Date()
-    let start: Date
-    let end: Date
-    if (period === 'daily') {
-      start = startOfDaySafe(anchorDate)
-      end = anchorDate
-    } else if (period === 'weekly') {
-      start = startOfWeek(anchorDate, { weekStartsOn: 1 })
-      end = endOfWeek(anchorDate, { weekStartsOn: 1 })
-    } else if (period === 'monthly') {
-      start = startOfMonth(anchorDate)
-      end = endOfMonth(anchorDate)
-    } else {
-      start = startOfYear(anchorDate)
-      end = endOfYear(anchorDate)
-    }
-    const cappedEnd = end > today ? today : end
-    return { rangeStart: start, rangeEnd: cappedEnd }
-  }, [period, anchorDate])
-
-  const startDate = format(rangeStart, 'yyyy-MM-dd')
-  const endDate = format(rangeEnd, 'yyyy-MM-dd')
-
-  const { data: logs = [], isLoading, error } = useMasalahLogRange(startDate, endDate)
-  useRealtime({
-    table: 'refleksi',
-    filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
-    queryKeys: [['refleksi', 'range', startDate, endDate]],
-  })
+  // Refleksi = journal: tampilkan SELURUH entri, tidak dibatasi periode tanggal.
+  const { data: logs = [], isLoading, error } = useMasalahLogAll()
+  useRealtime({ table: 'refleksi', queryKeys: [['refleksi', 'all']] })
 
   const upsertMasalahLog = useUpsertMasalahLog()
   const updateMasalahLog = useUpdateMasalahLog()
@@ -113,10 +71,10 @@ export default function MasalahPage() {
 
   const [editState, setEditState] = useState<EditState | null>(null)
 
-  // Urutkan entri: terlama di atas, terbaru di bawah (tanggal baru di bagian bawah)
+  // Urutkan entri: terbaru (tanggal besar) di atas
   const entries = useMemo(() => {
     return [...(logs as MasalahLogEntry[])].sort((a, b) =>
-      a.tanggal.localeCompare(b.tanggal) || (a.created_at || '').localeCompare(b.created_at || ''))
+      b.tanggal.localeCompare(a.tanggal) || (b.created_at || '').localeCompare(a.created_at || ''))
   }, [logs])
 
   const openAdd = () => setEditState({ id: null, tanggal: todayStr, masalah: '', status: 'belum' })
@@ -200,7 +158,7 @@ export default function MasalahPage() {
               </tr>
             ) : entries.length === 0 ? (
               <tr>
-                <td colSpan={4} className="text-center py-12 text-slate-400 text-sm">Belum ada refleksi tercatat pada periode ini.</td>
+                <td colSpan={4} className="text-center py-12 text-slate-400 text-sm">Belum ada refleksi tercatat.</td>
               </tr>
             ) : (
               entries.map((entry, rowIdx) => {

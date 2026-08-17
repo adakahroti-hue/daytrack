@@ -1,11 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { getMasalahLog, getMasalahLogRange, upsertMasalahLog, updateMasalahLog, deleteMasalahLog } from "@/app/actions/masalah-logs"
+import { getMasalahLog, getMasalahLogRange, getMasalahLogAll, upsertMasalahLog, updateMasalahLog, deleteMasalahLog } from "@/app/actions/masalah-logs"
 import type { MasalahLogFormData } from "@/app/actions/masalah-logs"
 export function useMasalahLog(tanggal: string) {
   return useQuery({ queryKey: ["refleksi", tanggal], queryFn: () => getMasalahLog(tanggal), enabled: !!tanggal })
 }
 export function useMasalahLogRange(startDate: string, endDate: string) {
   return useQuery({ queryKey: ["refleksi", "range", startDate, endDate], queryFn: () => getMasalahLogRange(startDate, endDate), enabled: !!startDate && !!endDate })
+}
+export function useMasalahLogAll() {
+  return useQuery({ queryKey: ["refleksi", "all"], queryFn: () => getMasalahLogAll() })
 }
 export function useUpsertMasalahLog() {
   const queryClient = useQueryClient()
