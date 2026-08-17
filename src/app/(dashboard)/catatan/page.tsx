@@ -13,12 +13,12 @@ import { useRealtime } from "@/hooks/useRealtime"
 
 type CatatanWarna = "yellow" | "green" | "blue" | "pink" | "orange"
 
-const NOTE_COLORS: Record<CatatanWarna, { card: string; bar: string; text: string }> = {
-  yellow: { card: "bg-amber-50 border-amber-200", bar: "bg-amber-400", text: "text-amber-900" },
-  green: { card: "bg-emerald-50 border-emerald-200", bar: "bg-emerald-400", text: "text-emerald-900" },
-  blue: { card: "bg-sky-50 border-sky-200", bar: "bg-sky-400", text: "text-sky-900" },
-  pink: { card: "bg-pink-50 border-pink-200", bar: "bg-pink-400", text: "text-pink-900" },
-  orange: { card: "bg-orange-50 border-orange-200", bar: "bg-orange-400", text: "text-orange-900" },
+const NOTE_COLORS: Record<CatatanWarna, { card: string; bar: string; text: string; badge: string }> = {
+  yellow: { card: "bg-amber-50 border-amber-200", bar: "bg-amber-400", text: "text-amber-900", badge: "bg-amber-400 text-amber-950" },
+  green: { card: "bg-emerald-50 border-emerald-200", bar: "bg-emerald-400", text: "text-emerald-900", badge: "bg-emerald-400 text-emerald-950" },
+  blue: { card: "bg-sky-50 border-sky-200", bar: "bg-sky-400", text: "text-sky-900", badge: "bg-sky-400 text-sky-950" },
+  pink: { card: "bg-pink-50 border-pink-200", bar: "bg-pink-400", text: "text-pink-900", badge: "bg-pink-400 text-pink-950" },
+  orange: { card: "bg-orange-50 border-orange-200", bar: "bg-orange-400", text: "text-orange-900", badge: "bg-orange-400 text-orange-950" },
 }
 
 const WARNA_OPTIONS: { value: CatatanWarna; label: string }[] = [
@@ -139,7 +139,7 @@ export default function CatatanPage() {
                 <div className="flex items-start justify-between gap-2">
                   <p className={cn("text-base font-bold break-words leading-snug", c.text)}>{n.judul}</p>
                   {n.label && (
-                    <span className="shrink-0 rounded-full bg-slate-900/10 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+                    <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold", c.badge)}>
                       {n.label}
                     </span>
                   )}
