@@ -26,6 +26,10 @@ export interface SwotTopic {
   id: string
   user_id: string
   judul: string
+  so_note?: string | null
+  wo_note?: string | null
+  st_note?: string | null
+  wt_note?: string | null
   created_at: string
   updated_at: string
 }
@@ -184,6 +188,28 @@ export async function deleteSwotTopic(id: string) {
   const { error } = await supabase
     .from("swot_topics")
     .delete()
+    .eq("id", id)
+    .eq("user_id", user.id)
+  if (error) throw new Error(error.message)
+  revalidateSwot()
+  return { error: null }
+}
+
+// ── UPDATE Kombinasi Logika (SO/WO/ST/WT) ──
+export async function updateSwotTopicCombos(
+  id: string,
+  data: { so_note?: string | null; wo_note?: string | null; st_note?: string | null; wt_note?: string | null }
+) {
+  const supabase = await createClient()
+  const user = await assertUser(supabase)
+  const updateData: Record<string, any> = { updated_at: new Date().toISOString() }
+  if (data.so_note !== undefined) updateData.so_note = data.so_note
+  if (data.wo_note !== undefined) updateData.wo_note = data.wo_note
+  if (data.st_note !== undefined) updateData.st_note = data.st_note
+  if (data.wt_note !== undefined) updateData.wt_note = data.wt_note
+  const { error } = await supabase
+    .from("swot_topics")
+    .update(updateData)
     .eq("id", id)
     .eq("user_id", user.id)
   if (error) throw new Error(error.message)

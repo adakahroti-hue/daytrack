@@ -11,6 +11,7 @@ import {
   createSwotTopic,
   renameSwotTopic,
   deleteSwotTopic,
+  updateSwotTopicCombos,
   createSwotAction,
   updateSwotAction,
   deleteSwotAction,
@@ -73,6 +74,15 @@ export function useDeleteSwotTopic() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => deleteSwotTopic(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["swot"] }),
+  })
+}
+
+export function useUpdateSwotTopicCombos() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { so_note?: string | null; wo_note?: string | null; st_note?: string | null; wt_note?: string | null } }) =>
+      updateSwotTopicCombos(id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["swot"] }),
   })
 }
