@@ -191,11 +191,11 @@ export default function CatatanPage() {
                 {isiTrimmed && <p className="text-[11px] text-slate-400 mt-1">Klik untuk baca selengkapnya…</p>}
                 <div className="flex items-center justify-end gap-1 pt-2 mt-auto">
                   <Button size="icon" aria-label="Edit catatan" onClick={(e) => { e.stopPropagation(); openEdit(n) }}
-                    className={cn("h-6 w-6 p-0", isDesktop ? "bg-slate-600 hover:bg-slate-700 text-white" : "text-slate-500 hover:text-slate-700")}>
+                    className={cn("h-6 w-6 p-0", isDesktop ? "bg-slate-100 text-slate-600 hover:bg-slate-200" : "text-slate-500 hover:text-slate-700")}>
                     <Pencil className="h-3 w-3" />
                   </Button>
                   <Button size="icon" aria-label="Hapus catatan" onClick={(e) => { e.stopPropagation(); handleDelete(n.id) }}
-                    className={cn("h-6 w-6 p-0", isDesktop ? "bg-red-600 hover:bg-red-700 text-white" : "text-red-500 hover:text-red-700")}>
+                    className={cn("h-6 w-6 p-0", isDesktop ? "bg-rose-100 text-rose-600 hover:bg-rose-200" : "text-rose-500 hover:text-rose-600")}>
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
