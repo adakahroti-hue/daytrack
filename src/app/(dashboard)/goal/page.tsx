@@ -5,12 +5,6 @@ export const dynamic = "force-dynamic"
 import { useMemo, useState, useEffect } from "react"
 import {
   format,
-  startOfWeek,
-  endOfWeek,
-  startOfMonth,
-  endOfMonth,
-  startOfYear,
-  endOfYear,
   addDays,
 } from "date-fns"
 import { id } from "date-fns/locale"
@@ -22,12 +16,11 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { useTableLock } from "@/components/ui/table-lock"
-import { useGoalRange, useCreateGoal, useDeleteGoal, useUpdateGoal, usePromoteGoal, useGoalUtama, useUpdateGoalUtama, useDeleteGoalUtama } from "@/hooks/useGoal"
+import { useAllGoals, useCreateGoal, useDeleteGoal, useUpdateGoal, usePromoteGoal, useGoalUtama, useUpdateGoalUtama, useDeleteGoalUtama } from "@/hooks/useGoal"
 import { syncGoalLangkahToTasks } from "@/app/actions/tasks"
 import { getGoalUtama, type GoalUtamaEntry } from "@/app/actions/goal"
 import { useTasksByGroup } from "@/hooks/useTasks"
 import { useRealtime } from "@/hooks/useRealtime"
-import { useHeaderControls } from "@/components/layout/HeaderControls"
 
 const TABLE_BORDER = "border-slate-900"
 
@@ -144,46 +137,16 @@ function serializeLangkah(data: LangkahData): string {
   return JSON.stringify({ group_id: data.group_id || null, steps })
 }
 
-function startOfDaySafe(d: Date): Date {
-  const x = new Date(d)
-  x.setHours(0, 0, 0, 0)
-  return x
-}
-
 export default function GoalPage() {
   const { effectiveLocked, lockControl } = useTableLock()
-  const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
   const todayStr = format(new Date(), "yyyy-MM-dd")
 
-  const { rangeStart, rangeEnd } = useMemo(() => {
-    const today = new Date()
-    let start: Date
-    let end: Date
-    if (period === "daily") {
-      start = startOfDaySafe(anchorDate)
-      end = anchorDate
-    } else if (period === "weekly") {
-      start = startOfWeek(anchorDate, { weekStartsOn: 1 })
-      end = endOfWeek(anchorDate, { weekStartsOn: 1 })
-    } else if (period === "monthly") {
-      start = startOfMonth(anchorDate)
-      end = endOfMonth(anchorDate)
-    } else {
-      start = startOfYear(anchorDate)
-      end = endOfYear(anchorDate)
-    }
-    const cappedEnd = end > today ? today : end
-    return { rangeStart: start, rangeEnd: cappedEnd }
-  }, [period, anchorDate])
-
-  const startDate = format(rangeStart, "yyyy-MM-dd")
-  const endDate = format(rangeEnd, "yyyy-MM-dd")
-
-  const { data: logs = [], isLoading, error } = useGoalRange(startDate, endDate)
+  // Tabel goal: ambil SEMUA goal (tidak difilter waktu).
+  // Isi tabel murni berdasar jumlah ide, bebas dari filter header (daily/weekly/monthly/yearly).
+  const { data: logs = [], isLoading, error } = useAllGoals()
   useRealtime({
     table: "goal",
-    filter: `tanggal_set=gte.${startDate},tanggal_set=lte.${endDate}`,
-    queryKeys: [["goal", "range", startDate, endDate]],
+    queryKeys: [["goal", "all"]],
   })
 
   const createGoal = useCreateGoal()

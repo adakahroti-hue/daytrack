@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   getGoalRange,
+  getAllGoals,
   createGoal,
   updateGoal,
   deleteGoal,
@@ -18,6 +19,13 @@ export function useGoalRange(startDate: string, endDate: string) {
     queryKey: ["goal", "range", startDate, endDate],
     queryFn: () => getGoalRange(startDate, endDate),
     enabled: !!startDate && !!endDate,
+  })
+}
+
+export function useAllGoals() {
+  return useQuery({
+    queryKey: ["goal", "all"],
+    queryFn: () => getAllGoals(),
   })
 }
 

@@ -101,6 +101,21 @@ export async function deleteGoal(id: string) {
   return { error: null }
 }
 
+// Ambil SEMUA goal user (tidak difilter tanggal) — untuk tabel goal.
+// Tabel goal murni berdasar jumlah ide, tidak terpengaruh filter waktu header.
+export async function getAllGoals(): Promise<GoalEntry[]> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+  const { data, error } = await supabase
+    .from("goal")
+    .select("id, user_id, tanggal_set, tanggal_deadline, nama_goal, proyeksi_harga, tempo, action_harian, langkah_aksi, is_utama, created_at, updated_at")
+    .eq("user_id", user.id)
+    .order("tanggal_set", { ascending: true })
+  if (error) throw new Error(error.message)
+  return data || []
+}
+
 // ── GOAL UTAMA (tabel terpisah) ──
 export async function getGoalRange(startDate: string, endDate: string) {
   const supabase = await createClient()
