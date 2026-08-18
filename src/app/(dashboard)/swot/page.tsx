@@ -150,6 +150,30 @@ export default function SwotWorkspacePage() {
         </div>
       )}
 
+      {/* Kombinasi Logika SWOT */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-1.5 text-sm font-bold text-slate-800">
+          <Target className="h-4 w-4 text-purple-600" /> Kombinasi Logika
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {[
+            { code: "SO", t1: "Strength", t2: "Opportunity", desc: "Gunakan Strength untuk mengambil Opportunity", cls: "border-emerald-200 bg-emerald-50 text-emerald-700" },
+            { code: "WO", t1: "Weakness", t2: "Opportunity", desc: "Perbaiki Weakness agar bisa mengambil Opportunity", cls: "border-rose-200 bg-rose-50 text-rose-700" },
+            { code: "ST", t1: "Strength", t2: "Threat", desc: "Gunakan Strength untuk menghadapi Threat", cls: "border-amber-200 bg-amber-50 text-amber-700" },
+            { code: "WT", t1: "Weakness", t2: "Threat", desc: "Kurangi Weakness dan hindari Threat", cls: "border-slate-200 bg-slate-50 text-slate-700" },
+          ].map((c) => (
+            <div key={c.code} className={`rounded-xl border p-3 shadow-sm ${c.cls}`}>
+              <div className="flex items-center gap-2">
+                <span className="text-base font-bold tabular-nums">{c.code}</span>
+                <span className="text-[10px] font-medium opacity-70">{c.t1} × {c.t2}</span>
+              </div>
+              <p className="mt-1.5 text-xs leading-snug font-medium">{c.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+
       <Dialog open={dialog} onOpenChange={setDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
