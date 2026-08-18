@@ -29,6 +29,28 @@ const WARNA_OPTIONS: { value: CatatanWarna; label: string }[] = [
   { value: "orange", label: "Orange" },
 ]
 
+function NoteLines({ text, maxLines, className }: { text: string; maxLines?: number; className?: string }) {
+  const lines = (text || "").split("\n")
+  const shown = maxLines ? lines.slice(0, maxLines) : lines
+  return (
+    <div className={className}>
+      {shown.map((ln, i) => {
+        const isList = /^(•\s|\d+\.\s)/.test(ln)
+        const style = isList
+          ? ln.startsWith("• ")
+            ? { paddingLeft: "1.1em", textIndent: "-1.1em" }
+            : { paddingLeft: "1.5em", textIndent: "-1.5em" }
+          : undefined
+        return (
+          <div key={i} style={style} className="whitespace-pre-wrap break-words">
+            {ln || " "}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 interface EditState {
   id: string | null
   judul: string
@@ -163,7 +185,7 @@ export default function CatatanPage() {
                     </span>
                   )}
                 </div>
-                <p className={cn("mt-1 text-sm text-slate-700 whitespace-pre-wrap break-words flex-1 leading-snug line-clamp-12", c.text)}>{isiPreview}</p>
+                <NoteLines text={isiPreview} className={cn("mt-1 text-sm leading-snug flex-1", c.text)} />
                 {isiTrimmed && <p className="text-[11px] text-slate-400 mt-1">Klik untuk baca selengkapnya…</p>}
                 <div className="flex items-center justify-end gap-1 pt-2 mt-auto">
                   <Button size="icon" aria-label="Edit catatan" onClick={(e) => { e.stopPropagation(); openEdit(n) }}
@@ -196,9 +218,7 @@ export default function CatatanPage() {
               )}
             </DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-slate-700 whitespace-pre-wrap break-words leading-snug max-h-[60vh] overflow-y-auto">
-            {viewState?.isi}
-          </p>
+          <NoteLines text={viewState?.isi ?? ""} className="text-sm leading-snug max-h-[60vh] overflow-y-auto text-slate-700" />
           <div className="flex justify-end gap-2 pt-1">
             <Button variant="outline" onClick={() => setViewState(null)}>Tutup</Button>
             <Button onClick={() => {
