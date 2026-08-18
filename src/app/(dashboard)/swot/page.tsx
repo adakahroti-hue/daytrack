@@ -28,7 +28,6 @@ import {
   useCreateSwotTopic,
   useRenameSwotTopic,
   useDeleteSwotTopic,
-  useUpdateSwotTopicCombos,
 } from "@/hooks/useSwot"
 import type { SwotKategori } from "@/app/actions/swot"
 
@@ -50,21 +49,6 @@ export default function SwotWorkspacePage() {
   const [dialog, setDialog] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
   const [draft, setDraft] = useState("")
-
-  const updateCombos = useUpdateSwotTopicCombos()
-
-  // Edit inline Kombinasi Logika (SO/WO/ST/WT) per topic
-  const [comboEdit, setComboEdit] = useState<{ topicId: string; key: "so_note" | "wo_note" | "st_note" | "wt_note" } | null>(null)
-  const [comboText, setComboText] = useState("")
-  const openCombo = (t: any, key: "so_note" | "wo_note" | "st_note" | "wt_note") => {
-    setComboEdit({ topicId: t.id, key })
-    setComboText((t[key] as string) || "")
-  }
-  const saveCombo = async () => {
-    if (!comboEdit) return
-    await updateCombos.mutateAsync({ id: comboEdit.topicId, data: { [comboEdit.key]: comboText.trim() } })
-    setComboEdit(null)
-  }
 
   const countsByTopic = useMemo(() => {
     const map: Record<string, Record<SwotKategori, number>> = {}
@@ -154,42 +138,6 @@ export default function SwotWorkspacePage() {
                       <span className="text-[9px] leading-none mt-0.5">{k.label}</span>
                     </div>
                   ))}
-                </div>
-
-                {/* Kombinasi Logika per analisis — bisa diisi teks */}
-                <div className="mt-3 grid grid-cols-2 gap-1.5">
-                  {([
-                    { key: "so_note" as const, code: "SO", sub: "Strength × Opportunity", cls: "border-emerald-200 bg-emerald-50 text-emerald-700" },
-                    { key: "wo_note" as const, code: "WO", sub: "Weakness × Opportunity", cls: "border-rose-200 bg-rose-50 text-rose-700" },
-                    { key: "st_note" as const, code: "ST", sub: "Strength × Threat", cls: "border-amber-200 bg-amber-50 text-amber-700" },
-                    { key: "wt_note" as const, code: "WT", sub: "Weakness × Threat", cls: "border-slate-200 bg-slate-50 text-slate-700" },
-                  ]).map((c) => {
-                    const isEditing = comboEdit?.topicId === t.id && comboEdit?.key === c.key
-                    return (
-                      <div key={c.key} className={`rounded-lg border p-2 ${c.cls}`}>
-                        <button type="button" onClick={() => openCombo(t, c.key)}
-                          className="flex w-full items-center gap-1.5 text-left">
-                          <span className="text-[11px] font-bold tabular-nums">{c.code}</span>
-                          <span className="text-[9px] font-medium opacity-70">{c.sub}</span>
-                        </button>
-                        {isEditing ? (
-                          <textarea
-                            autoFocus
-                            value={comboText}
-                            onChange={(e) => setComboText(e.target.value)}
-                            onBlur={saveCombo}
-                            placeholder="Tulis kombinasi..."
-                            rows={3}
-                            className="mt-1 w-full resize-y rounded-md border border-slate-300 bg-white px-1.5 py-1 text-[11px] text-slate-800 focus:outline-none focus:ring-1 focus:ring-purple-400"
-                          />
-                        ) : (
-                          <p className="mt-1 whitespace-pre-wrap break-words text-[11px] leading-snug font-medium">
-                            {(t[c.key] as string) || <span className="opacity-50 font-normal">Klik untuk isi</span>}
-                          </p>
-                        )}
-                      </div>
-                    )
-                  })}
                 </div>
 
                 <Link href={`/swot/${t.id}`}

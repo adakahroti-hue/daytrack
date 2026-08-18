@@ -35,6 +35,8 @@ import {
   useCreateSwotAction,
   useUpdateSwotAction,
   useDeleteSwotAction,
+  useUpdateSwotTopicCombos,
+  useSwotTopics,
 } from "@/hooks/useSwot"
 import type { SwotKategori, SwotPrioritas, SwotTren, SwotStatus } from "@/app/actions/swot"
 
@@ -82,6 +84,7 @@ export default function SwotDetailPage() {
   const params = useParams<{ id: string }>()
   const topicId = params.id as string
 
+  const { data: topics = [], isLoading: topicsLoading } = useSwotTopics()
   const { data: items = [], isLoading: itemsLoading } = useSwotItems()
   const { data: actions = [], isLoading: actionsLoading } = useSwotActions(topicId)
 
@@ -115,6 +118,11 @@ export default function SwotDetailPage() {
   const scopedActions = useMemo(
     () => (actions as any[]).filter((a) => (a.topic_id ?? null) === topicId),
     [actions, topicId]
+  )
+
+  const comboTopic = useMemo(
+    () => (topics as any[]).find((t) => t.id === topicId) || null,
+    [topics, topicId]
   )
 
   const counts = useMemo(() => {
@@ -174,6 +182,20 @@ export default function SwotDetailPage() {
   }
 
   const isBusy = createItem.isPending || updateItem.isPending || deleteItem.isPending || createAction.isPending || updateAction.isPending || deleteAction.isPending
+
+  // Edit inline Kombinasi Logika (SO/WO/ST/WT) untuk analisis ini
+  const updateCombos = useUpdateSwotTopicCombos()
+  const [comboEdit, setComboEdit] = useState<"so_note" | "wo_note" | "st_note" | "wt_note" | null>(null)
+  const [comboText, setComboText] = useState("")
+  const openCombo = (key: "so_note" | "wo_note" | "st_note" | "wt_note", val: string | null) => {
+    setComboEdit(key)
+    setComboText(val || "")
+  }
+  const saveCombo = async () => {
+    if (!comboEdit) return
+    await updateCombos.mutateAsync({ id: topicId, data: { [comboEdit]: comboText.trim() } })
+    setComboEdit(null)
+  }
 
   return (
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
@@ -306,7 +328,49 @@ export default function SwotDetailPage() {
               </div>
             ))}
           </div>
-        )}
+        )}\n      </div>\n\n      {/* Kombinasi Logika — SO/WO/ST/WT (bisa diisi teks) */}
+      <div className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
+        <div className="flex items-center gap-1.5 text-sm font-bold text-slate-800 mb-2">
+          <Target className="h-4 w-4 text-primary" /> Kombinasi Logika
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {([
+            { key: "so_note" as const, code: "SO", sub: "Strength × Opportunity", desc: "Gunakan Strength untuk mengambil Opportunity", cls: "border-emerald-200 bg-emerald-50 text-emerald-700" },
+            { key: "wo_note" as const, code: "WO", sub: "Weakness × Opportunity", desc: "Perbaiki Weakness agar bisa mengambil Opportunity", cls: "border-rose-200 bg-rose-50 text-rose-700" },
+            { key: "st_note" as const, code: "ST", sub: "Strength × Threat", desc: "Gunakan Strength untuk menghadapi Threat", cls: "border-amber-200 bg-amber-50 text-amber-700" },
+            { key: "wt_note" as const, code: "WT", sub: "Weakness × Threat", desc: "Kurangi Weakness dan hindari Threat", cls: "border-slate-200 bg-slate-50 text-slate-700" },
+          ]).map((c) => {
+            const val = comboTopic ? (comboTopic[c.key] as string | null) : null
+            const isEditing = comboEdit === c.key
+            return (
+              <div key={c.key} className={`rounded-xl border p-3 ${c.cls}`}>
+                <button type="button" onClick={() => openCombo(c.key, val)}
+                  className="flex w-full items-center justify-between gap-2 text-left">
+                  <span className="flex items-center gap-1.5">
+                    <span className="text-base font-bold tabular-nums">{c.code}</span>
+                    <span className="text-[10px] font-medium opacity-70">{c.sub}</span>
+                  </span>
+                  <Pencil className="h-3 w-3 opacity-50" />
+                </button>
+                {isEditing ? (
+                  <textarea
+                    autoFocus
+                    value={comboText}
+                    onChange={(e) => setComboText(e.target.value)}
+                    onBlur={saveCombo}
+                    placeholder="Tulis kombinasi..."
+                    rows={3}
+                    className="mt-1.5 w-full resize-y rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-purple-400"
+                  />
+                ) : (
+                  <p className="mt-1.5 whitespace-pre-wrap break-words text-xs leading-snug font-medium">
+                    {val || <span className="opacity-50 font-normal">{c.desc} — klik untuk isi</span>}
+                  </p>
+                )}
+              </div>
+            )
+          })}
+        </div>
       </div>
 
       {/* Dialog Item */}
