@@ -59,11 +59,16 @@ const KAT: { key: SwotKategori; label: string; accent: string; ring: string; ico
   { key: "weakness", label: "Kelemahan", accent: "border-slate-200", ring: "text-rose-700", icon: <TrendingDown className="h-4 w-4" /> },
   { key: "opportunity", label: "Peluang", accent: "border-slate-200", ring: "text-sky-700", icon: <Target className="h-4 w-4" /> },
   { key: "threat", label: "Ancaman", accent: "border-slate-200", ring: "text-amber-700", icon: <Flag className="h-4 w-4" /> },
+  { key: "so", label: "SO", accent: "border-slate-200", ring: "text-emerald-700", icon: <TrendingUp className="h-4 w-4" /> },
+  { key: "wo", label: "WO", accent: "border-slate-200", ring: "text-rose-700", icon: <TrendingDown className="h-4 w-4" /> },
+  { key: "st", label: "ST", accent: "border-slate-200", ring: "text-amber-700", icon: <Flag className="h-4 w-4" /> },
+  { key: "wt", label: "WT", accent: "border-slate-200", ring: "text-slate-700", icon: <Flag className="h-4 w-4" /> },
 ]
 
 const GROUPS: { key: string; label: string; sub: string; kats: SwotKategori[] }[] = [
   { key: "internal", label: "Internal", sub: "Dari dalam diri", kats: ["strength", "weakness"] },
   { key: "eksternal", label: "Eksternal", sub: "Dari luar", kats: ["opportunity", "threat"] },
+  { key: "combo", label: "Kombinasi Logika", sub: "SO . WO . ST . WT", kats: ["so", "wo", "st", "wt"] },
 ]
 const KAT_BY_KEY = Object.fromEntries(KAT.map((k) => [k.key, k])) as Record<SwotKategori, (typeof KAT)[number]>
 
@@ -72,12 +77,27 @@ const RADIO_RING: Record<SwotKategori, string> = {
   weakness: "border-rose-500",
   opportunity: "border-sky-500",
   threat: "border-amber-500",
+  so: "border-emerald-500",
+  wo: "border-rose-500",
+  st: "border-amber-500",
+  wt: "border-slate-500",
 }
 const RADIO_DOT: Record<SwotKategori, string> = {
   strength: "bg-emerald-500",
   weakness: "bg-rose-500",
   opportunity: "bg-sky-500",
   threat: "bg-amber-500",
+  so: "bg-emerald-500",
+  wo: "bg-rose-500",
+  st: "bg-amber-500",
+  wt: "bg-slate-500",
+}
+
+const COMBO_SUBTITLE: Record<string, string> = {
+  so: "Strength x Opportunity",
+  wo: "Weakness x Opportunity",
+  st: "Strength x Threat",
+  wt: "Weakness x Threat",
 }
 
 export default function SwotDetailPage() {
@@ -126,7 +146,7 @@ export default function SwotDetailPage() {
   )
 
   const counts = useMemo(() => {
-    const c: Record<SwotKategori, number> = { strength: 0, weakness: 0, opportunity: 0, threat: 0 }
+    const c: Record<SwotKategori, number> = { strength: 0, weakness: 0, opportunity: 0, threat: 0, so: 0, wo: 0, st: 0, wt: 0 }
     scopedItems.forEach((it) => { c[it.kategori as SwotKategori]++ })
     return c
   }, [scopedItems])
@@ -227,12 +247,16 @@ export default function SwotDetailPage() {
             <div className="space-y-3">
               {g.kats.map((katKey) => {
                 const k = KAT_BY_KEY[katKey]
+                const isCombo = ["so", "wo", "st", "wt"].includes(katKey)
                 const list = scopedItems.filter((it) => it.kategori === k.key)
                 return (
                   <div key={k.key} className={cn("rounded-xl border p-3 bg-white", k.accent)}>
                     <div className="flex items-center justify-between mb-2">
                       <div className={cn("flex items-center gap-1.5 text-sm font-bold", k.ring)}>
                         {k.icon} {k.label}
+                        {isCombo && (
+                          <span className="text-[10px] font-medium opacity-60">{COMBO_SUBTITLE[katKey]}</span>
+                        )}
                       </div>
                       <Button size="icon" variant="outline" aria-label="Tambah Item" onClick={() => openAddItem(k.key)}
                         className="h-6 w-6 p-0">
@@ -328,51 +352,9 @@ export default function SwotDetailPage() {
               </div>
             ))}
           </div>
-        )}\n      </div>\n\n      {/* Kombinasi Logika — SO/WO/ST/WT (bisa diisi teks) */}
-      <div className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
-        <div className="flex items-center gap-1.5 text-sm font-bold text-slate-800 mb-2">
-          <Target className="h-4 w-4 text-primary" /> Kombinasi Logika
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {([
-            { key: "so_note" as const, code: "SO", sub: "Strength × Opportunity", desc: "Gunakan Strength untuk mengambil Opportunity", cls: "border-emerald-200 bg-emerald-50 text-emerald-700" },
-            { key: "wo_note" as const, code: "WO", sub: "Weakness × Opportunity", desc: "Perbaiki Weakness agar bisa mengambil Opportunity", cls: "border-rose-200 bg-rose-50 text-rose-700" },
-            { key: "st_note" as const, code: "ST", sub: "Strength × Threat", desc: "Gunakan Strength untuk menghadapi Threat", cls: "border-amber-200 bg-amber-50 text-amber-700" },
-            { key: "wt_note" as const, code: "WT", sub: "Weakness × Threat", desc: "Kurangi Weakness dan hindari Threat", cls: "border-slate-200 bg-slate-50 text-slate-700" },
-          ]).map((c) => {
-            const val = comboTopic ? (comboTopic[c.key] as string | null) : null
-            const isEditing = comboEdit === c.key
-            return (
-              <div key={c.key} className={`rounded-xl border p-3 ${c.cls}`}>
-                <button type="button" onClick={() => openCombo(c.key, val)}
-                  className="flex w-full items-center justify-between gap-2 text-left">
-                  <span className="flex items-center gap-1.5">
-                    <span className="text-base font-bold tabular-nums">{c.code}</span>
-                    <span className="text-[10px] font-medium opacity-70">{c.sub}</span>
-                  </span>
-                  <Pencil className="h-3 w-3 opacity-50" />
-                </button>
-                {isEditing ? (
-                  <textarea
-                    autoFocus
-                    value={comboText}
-                    onChange={(e) => setComboText(e.target.value)}
-                    onBlur={saveCombo}
-                    placeholder="Tulis kombinasi..."
-                    rows={3}
-                    className="mt-1.5 w-full resize-y rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-purple-400"
-                  />
-                ) : (
-                  <p className="mt-1.5 whitespace-pre-wrap break-words text-xs leading-snug font-medium">
-                    {val || <span className="opacity-50 font-normal">{c.desc} — klik untuk isi</span>}
-                  </p>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      </div>
 
+        )}
+        </div>
       {/* Dialog Item */}
       <Dialog open={itemDialog} onOpenChange={setItemDialog}>
         <DialogContent className="max-w-md">

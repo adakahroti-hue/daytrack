@@ -54,7 +54,7 @@ export default function SwotWorkspacePage() {
     const map: Record<string, Record<SwotKategori, number>> = {}
     ;(items as any[]).forEach((it) => {
       const t = it.topic_id
-      if (!map[t]) map[t] = { strength: 0, weakness: 0, opportunity: 0, threat: 0 }
+      if (!map[t]) map[t] = { strength: 0, weakness: 0, opportunity: 0, threat: 0, so: 0, wo: 0, st: 0, wt: 0 }
       if (map[t][it.kategori as SwotKategori] != null) map[t][it.kategori as SwotKategori]++
     })
     return map

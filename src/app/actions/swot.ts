@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 
 // ── Tipe ──
-export type SwotKategori = "strength" | "weakness" | "opportunity" | "threat"
+export type SwotKategori = "strength" | "weakness" | "opportunity" | "threat" | "so" | "wo" | "st" | "wt"
 export type SwotPrioritas = "rendah" | "sedang" | "tinggi"
 export type SwotTren = "membaik" | "stagnan" | "memburuk"
 export type SwotStatus = "aktif" | "ditindak" | "selesai"
