@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { useCatatanAll, useCreateCatatan, useUpdateCatatan, useDeleteCatatan } from "@/hooks/useCatatan"
 import { useRealtime } from "@/hooks/useRealtime"
+import { useIsDesktop } from "@/hooks/useMediaQuery"
 
 type CatatanWarna = "yellow" | "green" | "blue" | "pink" | "orange"
 
@@ -79,6 +80,7 @@ export default function CatatanPage() {
   const [viewState, setViewState] = useState<ViewState | null>(null)
   const [isBusy, setIsBusy] = useState(false)
   const isiRef = useRef<HTMLTextAreaElement>(null)
+  const isDesktop = useIsDesktop()
 
   // Sisipkan awalan di baris kursor: bullet ("• ") atau number ("N. ")
   const insertPrefix = (mode: "bullet" | "number") => {
@@ -168,8 +170,8 @@ export default function CatatanPage() {
           {notes.map((n) => {
             const c = NOTE_COLORS[(n.warna as CatatanWarna) || "yellow"]
             const isiLines = (n.isi || "").split("\n")
-            const isiPreview = isiLines.slice(0, 12).join("\n")
-            const isiTrimmed = isiLines.length > 12
+            const isiPreview = isDesktop ? isiLines.slice(0, 12).join("\n") : isiLines.join("\n")
+            const isiTrimmed = isDesktop && isiLines.length > 12
             return (
               <div key={n.id}
                 role="button" tabIndex={0}
