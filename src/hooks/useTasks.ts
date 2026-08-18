@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { createTask, updateTask, deleteTask, toggleTaskStatus, bulkDeleteTasks, bulkResetTasks, bulkUpdateTaskDate, pauseTask, resumeTask } from "@/app/actions/tasks"
+import { createTask, updateTask, deleteTask, toggleTaskStatus, bulkDeleteTasks, bulkResetTasks, bulkUpdateTaskDate, pauseTask, resumeTask, reorderTaskGroup } from "@/app/actions/tasks"
 import { createClient } from "@/lib/supabase/client"
 import { getTaskActiveSeconds } from "@/lib/utils"
 import { TaskFormData } from "@/app/actions/tasks"
@@ -287,6 +287,40 @@ export function useBulkUpdateTaskDate() {
   return useMutation({
     mutationFn: ({ ids, tanggal }: { ids: string[]; tanggal: string }) => bulkUpdateTaskDate(ids, tanggal),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tugas"] })
+    },
+  })
+}
+
+export function useReorderTaskGroup() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ upId, downId }: { upId: string; downId: string }) => reorderTaskGroup(upId, downId),
+    onMutate: async ({ upId, downId }) => {
+      await queryClient.cancelQueries({ queryKey: ["tugas"] })
+      const previousTasks = queryClient.getQueriesData({ queryKey: ["tugas"] })
+      queryClient.setQueriesData({ queryKey: ["tugas"] }, (old: any) => {
+        if (!old) return old
+        const a = old.find((t: any) => t.id === upId)
+        const b = old.find((t: any) => t.id === downId)
+        if (!a || !b || a.group_order == null || b.group_order == null) return old
+        const oa = a.group_order
+        const ob = b.group_order
+        return old.map((t: any) => {
+          if (t.id === upId) return { ...t, group_order: ob }
+          if (t.id === downId) return { ...t, group_order: oa }
+          return t
+        })
+      })
+      return { previousTasks }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousTasks) {
+        context.previousTasks.forEach(([key, data]: any) => queryClient.setQueryData(key, data))
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["tugas"] })
     },
   })

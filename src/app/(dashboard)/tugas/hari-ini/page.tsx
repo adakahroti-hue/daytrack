@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, memo } from 'react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Plus, Edit, Trash2, Clock, Play, Pause, Check, CheckCircle2, MoreHorizontal, AlertTriangle, Layers } from 'lucide-react'
+import { Plus, Edit, Trash2, Clock, Play, Pause, Check, CheckCircle2, MoreHorizontal, AlertTriangle, Layers, ChevronUp, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -13,7 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, getMissionPriorityIcon, getMissionGroupName, CARD_BASE, CARD_HOVER, getTaskActualDurationText, compareTaskEstimasiVsActual, getTaskLiveDurationText } from '@/lib/utils'
 import { TaskForm } from '@/components/tasks/TaskForm'
 import { TaskGroupRibbon, TaskGroupDialog } from '@/components/tasks/task-group'
-import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus, usePauseTask, useResumeTask, useBulkDeleteTasks } from '@/hooks/useTasks'
+import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus, usePauseTask, useResumeTask, useBulkDeleteTasks, useReorderTaskGroup } from '@/hooks/useTasks'
 import { useTasksRealtime } from '@/hooks/useRealtime'
 import { Suspense } from 'react'
 
@@ -76,6 +76,10 @@ const TaskCard = memo(({
   selectionMode,
   selected,
   onToggleSelect,
+  onMoveUp,
+  onMoveDown,
+  canMoveUp,
+  canMoveDown,
 }: {
   task: Task
   onEdit: (task: Task) => void
@@ -88,6 +92,10 @@ const TaskCard = memo(({
   selectionMode?: boolean
   selected?: boolean
   onToggleSelect?: (id: string) => void
+  onMoveUp?: () => void
+  onMoveDown?: () => void
+  canMoveUp?: boolean
+  canMoveDown?: boolean
 }) => {
   const isCompleted = task.status === 'selesai'
   const isInProgress = task.status === 'proses'
@@ -182,6 +190,32 @@ const TaskCard = memo(({
             )}
             <h3 className={cn("font-medium text-base leading-tight capitalize flex-1", task.group_id && "pl-7")}>{task.nama}</h3>
           </div>
+          {task.group_id && (canMoveUp || canMoveDown) && (
+            <div className="flex flex-col shrink-0 -mt-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-5 w-5 p-0 text-slate-400 hover:text-slate-700 disabled:opacity-20"
+                aria-label="Pindah ke atas"
+                disabled={!canMoveUp}
+                onClick={(e) => { e.stopPropagation(); onMoveUp?.() }}
+              >
+                <ChevronUp className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-5 w-5 p-0 text-slate-400 hover:text-slate-700 disabled:opacity-20"
+                aria-label="Pindah ke bawah"
+                disabled={!canMoveDown}
+                onClick={(e) => { e.stopPropagation(); onMoveDown?.() }}
+              >
+                <ChevronDown className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -330,6 +364,7 @@ function HariIniPageClient() {
   const pauseTask = usePauseTask()
   const resumeTask = useResumeTask()
   const bulkDeleteTasks = useBulkDeleteTasks()
+  const reorderTaskGroup = useReorderTaskGroup()
 
   const toggleSelect = (id: string) => {
     setSelectedIds(prev => {
@@ -395,6 +430,19 @@ function HariIniPageClient() {
 
   const handlePause = (id: string) => pauseTask.mutate(id)
   const handleResume = (id: string) => resumeTask.mutate(id)
+
+  // Edit urutan dalam paket penanda: swap group_order dengan tetangga (atas/bawah)
+  const handleReorder = (task: Task, dir: 'up' | 'down') => {
+    if (!task.group_id || task.group_order == null) return
+    const members = todayTasks
+      .filter((t: Task) => t.group_id === task.group_id && t.group_order != null)
+      .sort((a: Task, b: Task) => (a.group_order ?? 0) - (b.group_order ?? 0))
+    const idx = members.findIndex((t: Task) => t.id === task.id)
+    if (idx === -1) return
+    const target = dir === 'up' ? members[idx - 1] : members[idx + 1]
+    if (!target) return
+    reorderTaskGroup.mutate({ upId: dir === 'up' ? task.id : target.id, downId: dir === 'up' ? target.id : task.id })
+  }
 
   const handleSubmit = (data: TaskFormData) => {
     if (editingTask) {
@@ -539,6 +587,10 @@ function HariIniPageClient() {
                   onPause={handlePause}
                   onResume={handleResume}
                   onStart={handleStartRequest}
+                  onMoveUp={() => handleReorder(task, 'up')}
+                  onMoveDown={() => handleReorder(task, 'down')}
+                  canMoveUp={task.group_id != null && task.group_order != null && task.group_order > 1}
+                  canMoveDown={task.group_id != null && task.group_order != null && task.group_order < (inProgressTasks.filter((t: Task) => t.group_id === task.group_id && t.group_order != null).length)}
                   selectionMode={selectionMode}
                   selected={selectedIds.has(task.id)}
                   onToggleSelect={toggleSelect}
@@ -572,6 +624,10 @@ function HariIniPageClient() {
                         onPause={handlePause}
                         onResume={handleResume}
                         onStart={handleStartRequest}
+                        onMoveUp={() => handleReorder(task, 'up')}
+                        onMoveDown={() => handleReorder(task, 'down')}
+                        canMoveUp={task.group_id != null && task.group_order != null && task.group_order > 1}
+                        canMoveDown={task.group_id != null && task.group_order != null && task.group_order < (tasks.filter((t: Task) => t.group_id === task.group_id && t.group_order != null).length)}
                         selectionMode={selectionMode}
                         selected={selectedIds.has(task.id)}
                         onToggleSelect={toggleSelect}

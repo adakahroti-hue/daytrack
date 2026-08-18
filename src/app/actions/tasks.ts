@@ -320,6 +320,41 @@ export async function resumeTask(id: string) {
   return { data, error: null }
 }
 
+// ── Reorder urutan dalam paket penanda (swap group_order dua task) ──
+// Dipakai di tab Hari Ini: tombol panah ↑↓ untuk ubah urutan parent/child dalam 1 paket.
+export async function reorderTaskGroup(upId: string, downId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  // Ambil group_order kedua task (harus 1 paket yang sama milik user)
+  const { data: pair, error: fetchErr } = await supabase
+    .from("tugas")
+    .select("id, group_id, group_order")
+    .in("id", [upId, downId])
+    .eq("user_id", user.id)
+  if (fetchErr) throw new Error(fetchErr.message)
+  if (!pair || pair.length !== 2) throw new Error("Tugas tidak ditemukan")
+  const a = pair.find((t) => t.id === upId)
+  const b = pair.find((t) => t.id === downId)
+  if (!a || !b) throw new Error("Tugas tidak ditemukan")
+  if (!a.group_id || a.group_id !== b.group_id) throw new Error("Bukan paket yang sama")
+  if (a.group_order == null || b.group_order == null) throw new Error("Urutan tidak valid")
+
+  // Swap group_order
+  const oa = a.group_order
+  const ob = b.group_order
+  const { error: e1 } = await supabase.from("tugas").update({ group_order: ob }).eq("id", upId).eq("user_id", user.id)
+  if (e1) throw new Error(e1.message)
+  const { error: e2 } = await supabase.from("tugas").update({ group_order: oa }).eq("id", downId).eq("user_id", user.id)
+  if (e2) throw new Error(e2.message)
+
+  revalidatePath("/tugas/hari-ini")
+  revalidatePath("/tugas/semua")
+  revalidatePath("/overview")
+  return { error: null }
+}
+
 // Jadwalkan ulang otomatis tugas yang terlewat (tanggal < hari ini, belum selesai)
 // ke hari ini, dengan catatan tanggal aslinya di kolom terlewat_tanggal.
 export async function rescheduleMissedTasks(today: string) {
