@@ -170,8 +170,8 @@ export default function CatatanPage() {
           {notes.map((n) => {
             const c = NOTE_COLORS[(n.warna as CatatanWarna) || "yellow"]
             const isiLines = (n.isi || "").split("\n")
-            const isiPreview = isDesktop ? isiLines.slice(0, 12).join("\n") : isiLines.join("\n")
-            const isiTrimmed = isDesktop && isiLines.length > 12
+            const isiPreview = isDesktop ? isiLines.slice(0, 6).join("\n") : isiLines.join("\n")
+            const isiTrimmed = isDesktop && isiLines.length > 6
             return (
               <div key={n.id}
                 role="button" tabIndex={0}
