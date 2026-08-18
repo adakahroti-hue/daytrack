@@ -177,7 +177,7 @@ export default function CatatanPage() {
                 role="button" tabIndex={0}
                 onClick={() => openView(n)}
                 onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openView(n) } }}
-                className={cn("rounded-lg border shadow-sm p-3 flex flex-col min-h-[140px] cursor-pointer transition-colors hover:brightness-[0.98] focus:outline-none focus:ring-2 focus:ring-purple-300")}>
+                className={cn("rounded-lg border shadow-sm p-2.5 sm:p-3 flex flex-col min-h-[120px] sm:min-h-[140px] cursor-pointer transition-colors hover:brightness-[0.98] focus:outline-none focus:ring-2 focus:ring-purple-300")}>
                 <div className={cn("h-1 w-10 rounded-full mb-2", c.bar)} />
                 <div className="flex items-start justify-between gap-2">
                   <p className={cn("text-base font-bold break-words leading-snug", c.text)}>{n.judul}</p>
@@ -191,11 +191,11 @@ export default function CatatanPage() {
                 {isiTrimmed && <p className="text-[11px] text-slate-400 mt-1">Klik untuk baca selengkapnya…</p>}
                 <div className="flex items-center justify-end gap-1 pt-2 mt-auto">
                   <Button size="icon" aria-label="Edit catatan" onClick={(e) => { e.stopPropagation(); openEdit(n) }}
-                    className="h-6 w-6 p-0 bg-slate-600 hover:bg-slate-700 text-white">
+                    className={cn("h-6 w-6 p-0", isDesktop ? "bg-slate-600 hover:bg-slate-700 text-white" : "text-slate-500 hover:text-slate-700")}>
                     <Pencil className="h-3 w-3" />
                   </Button>
                   <Button size="icon" aria-label="Hapus catatan" onClick={(e) => { e.stopPropagation(); handleDelete(n.id) }}
-                    className="h-6 w-6 p-0 bg-red-600 hover:bg-red-700 text-white">
+                    className={cn("h-6 w-6 p-0", isDesktop ? "bg-red-600 hover:bg-red-700 text-white" : "text-red-500 hover:text-red-700")}>
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
