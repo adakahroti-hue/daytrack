@@ -37,6 +37,14 @@ interface EditState {
   warna: CatatanWarna
 }
 
+interface ViewState {
+  id: string
+  judul: string
+  isi: string
+  label: string
+  warna: CatatanWarna
+}
+
 export default function CatatanPage() {
   const { data: notes = [], isLoading } = useCatatanAll()
   useRealtime({ table: "catatan", queryKeys: [["catatan"]] })
@@ -46,6 +54,7 @@ export default function CatatanPage() {
   const deleteCatatan = useDeleteCatatan()
 
   const [editState, setEditState] = useState<EditState | null>(null)
+  const [viewState, setViewState] = useState<ViewState | null>(null)
   const [isBusy, setIsBusy] = useState(false)
   const isiRef = useRef<HTMLTextAreaElement>(null)
 
@@ -84,6 +93,9 @@ export default function CatatanPage() {
   const openAdd = () => setEditState({ id: null, judul: "", isi: "", label: "", warna: "yellow" })
   const openEdit = (n: any) =>
     setEditState({ id: n.id, judul: n.judul, isi: n.isi, label: n.label ?? "", warna: n.warna as CatatanWarna })
+
+  const openView = (n: any) =>
+    setViewState({ id: n.id, judul: n.judul, isi: n.isi, label: n.label ?? "", warna: n.warna as CatatanWarna })
 
   const handleSave = async () => {
     if (!editState) return
@@ -133,8 +145,15 @@ export default function CatatanPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           {notes.map((n) => {
             const c = NOTE_COLORS[(n.warna as CatatanWarna) || "yellow"]
+            const isiLines = (n.isi || "").split("\n")
+            const isiPreview = isiLines.slice(0, 12).join("\n")
+            const isiTrimmed = isiLines.length > 12
             return (
-              <div key={n.id} className={cn("rounded-lg border shadow-sm p-3 flex flex-col min-h-[140px]", c.card)}>
+              <div key={n.id}
+                role="button" tabIndex={0}
+                onClick={() => openView(n)}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openView(n) } }}
+                className={cn("rounded-lg border shadow-sm p-3 flex flex-col min-h-[140px] cursor-pointer transition-colors hover:brightness-[0.98] focus:outline-none focus:ring-2 focus:ring-purple-300")}>
                 <div className={cn("h-1 w-10 rounded-full mb-2", c.bar)} />
                 <div className="flex items-start justify-between gap-2">
                   <p className={cn("text-base font-bold break-words leading-snug", c.text)}>{n.judul}</p>
@@ -144,13 +163,14 @@ export default function CatatanPage() {
                     </span>
                   )}
                 </div>
-                <p className="mt-1 text-sm text-slate-700 whitespace-pre-wrap break-words flex-1 leading-snug">{n.isi}</p>
+                <p className={cn("mt-1 text-sm text-slate-700 whitespace-pre-wrap break-words flex-1 leading-snug line-clamp-12", c.text)}>{isiPreview}</p>
+                {isiTrimmed && <p className="text-[11px] text-slate-400 mt-1">Klik untuk baca selengkapnya…</p>}
                 <div className="flex items-center justify-end gap-1 pt-2 mt-auto">
-                  <Button size="icon" aria-label="Edit catatan" onClick={() => openEdit(n)}
+                  <Button size="icon" aria-label="Edit catatan" onClick={(e) => { e.stopPropagation(); openEdit(n) }}
                     className="h-6 w-6 p-0 bg-slate-600 hover:bg-slate-700 text-white">
                     <Pencil className="h-3 w-3" />
                   </Button>
-                  <Button size="icon" aria-label="Hapus catatan" onClick={() => handleDelete(n.id)}
+                  <Button size="icon" aria-label="Hapus catatan" onClick={(e) => { e.stopPropagation(); handleDelete(n.id) }}
                     className="h-6 w-6 p-0 bg-red-600 hover:bg-red-700 text-white">
                     <Trash2 className="h-3 w-3" />
                   </Button>
@@ -160,6 +180,35 @@ export default function CatatanPage() {
           })}
         </div>
       )}
+
+      <Dialog open={!!viewState} onOpenChange={(open) => !open && setViewState(null)}>
+        <DialogContent className="max-w-[92vw] sm:max-w-lg lg:max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {viewState && (
+                <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", NOTE_COLORS[(viewState.warna as CatatanWarna) || "yellow"].bar)} />
+              )}
+              {viewState?.judul}
+              {viewState?.label && (
+                <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold", NOTE_COLORS[(viewState.warna as CatatanWarna) || "yellow"].badge)}>
+                  {viewState.label}
+                </span>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-slate-700 whitespace-pre-wrap break-words leading-snug max-h-[60vh] overflow-y-auto">
+            {viewState?.isi}
+          </p>
+          <div className="flex justify-end gap-2 pt-1">
+            <Button variant="outline" onClick={() => setViewState(null)}>Tutup</Button>
+            <Button onClick={() => {
+              const v = viewState
+              setViewState(null)
+              if (v) openEdit({ id: v.id, judul: v.judul, isi: v.isi, label: v.label, warna: v.warna })
+            }}>Edit</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!editState} onOpenChange={(open) => !open && setEditState(null)}>
         <DialogContent className="max-w-[92vw] sm:max-w-lg lg:max-w-xl">
