@@ -245,7 +245,9 @@ export default function SwotDetailPage() {
                         {isCombo && (
                           <span className="text-[10px] font-medium opacity-60">{COMBO_SUBTITLE[katKey]}</span>
                         )}
-                        <span className="ml-auto rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 tabular-nums">{list.length}</span>
+                        {isCombo && (
+                          <span className="ml-auto rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 tabular-nums">{list.length}</span>
+                        )}
                       </div>
                       <Button size="icon" variant="outline" aria-label="Tambah Item" onClick={() => openAddItem(k.key)}
                         className="h-6 w-6 p-0">
