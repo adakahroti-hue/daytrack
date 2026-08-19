@@ -65,10 +65,10 @@ const KAT: { key: SwotKategori; label: string; accent: string; ring: string; ico
   { key: "wt", label: "WT", accent: "border-slate-200", ring: "text-slate-700", icon: <Flag className="h-4 w-4" /> },
 ]
 
-const GROUPS: { key: string; label: string; sub: string; kats: SwotKategori[] }[] = [
+const GROUPS: { key: string; label: string; sub: string; kats: SwotKategori[]; cols?: string }[] = [
   { key: "internal", label: "Internal", sub: "Dari dalam diri", kats: ["strength", "weakness"] },
   { key: "eksternal", label: "Eksternal", sub: "Dari luar", kats: ["opportunity", "threat"] },
-  { key: "combo", label: "Kombinasi Logika", sub: "SO . WO . ST . WT", kats: ["so", "wo", "st", "wt"] },
+  { key: "combo", label: "Kombinasi Logika", sub: "SO . WO . ST . WT", kats: ["so", "wo", "st", "wt"], cols: "grid-cols-2" },
 ]
 const KAT_BY_KEY = Object.fromEntries(KAT.map((k) => [k.key, k])) as Record<SwotKategori, (typeof KAT)[number]>
 
@@ -244,7 +244,7 @@ export default function SwotDetailPage() {
               <h2 className="text-sm font-bold text-slate-800">{g.label}</h2>
               <span className="text-[11px] text-slate-400">{g.sub}</span>
             </div>
-            <div className="space-y-3">
+            <div className={g.cols ? cn("grid gap-3", g.cols) : "space-y-3"}>
               {g.kats.map((katKey) => {
                 const k = KAT_BY_KEY[katKey]
                 const isCombo = ["so", "wo", "st", "wt"].includes(katKey)
