@@ -19,7 +19,6 @@ import {
   CalendarClock,
   Loader2,
   ArrowLeft,
-  Hash,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -227,15 +226,6 @@ export default function SwotDetailPage() {
 
       {/* Grid kategori — 2 kolom vertikal */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {/* Card Jumlah — total semua item */}
-        <div className="rounded-xl border border-slate-300 bg-white p-3 flex items-center justify-between md:col-span-2">
-          <div className="flex items-center gap-1.5 text-sm font-bold text-slate-800">
-            <Hash className="h-4 w-4" /> Jumlah
-          </div>
-          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 tabular-nums">
-            {KAT.reduce((sum, k) => sum + (counts[k.key] || 0), 0)}
-          </span>
-        </div>
         {GROUPS.map((g) => (
           <div key={g.key} className={cn("rounded-2xl border border-slate-300 bg-slate-50/60 p-3", g.span)}>
             <div className="flex items-baseline gap-2 px-1 pb-2.5">
