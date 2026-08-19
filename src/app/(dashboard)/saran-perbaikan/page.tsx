@@ -1,15 +1,7 @@
 "use client"
 
 import { Fragment, useMemo, useState } from 'react'
-import {
-  format,
-  startOfWeek,
-  endOfWeek,
-  startOfMonth,
-  endOfMonth,
-  startOfYear,
-  endOfYear,
-} from 'date-fns'
+import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { Hash, Lightbulb, Trash2, Plus, Pencil, Wrench } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -18,9 +10,8 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
-import { useSaranPerbaikanRange, useCreateSaranPerbaikan, useUpdateSaranPerbaikan, useDeleteSaranPerbaikan } from '@/hooks/useSaranPerbaikan'
+import { useSaranPerbaikanRange, useAllSaranPerbaikan, useCreateSaranPerbaikan, useUpdateSaranPerbaikan, useDeleteSaranPerbaikan } from '@/hooks/useSaranPerbaikan'
 import { useRealtime } from '@/hooks/useRealtime'
-import { useHeaderControls } from '@/components/layout/HeaderControls'
 
 // ─── Constants ────────────────────────────────────
 
@@ -52,39 +43,12 @@ function startOfDaySafe(d: Date): Date {
 // Revisi 1 (batch 7): model entri seperti tab Masalah — tabel kosong sampai ada inputan,
 // tanggal mengikuti inputan (bukan grid semua tanggal). Tab ini bernama "Masukan".
 export default function SaranPerbaikanPage() {
-  // Periode & tanggal dari HeaderControls (toolbar di header)
-  const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
   const todayStr = format(new Date(), 'yyyy-MM-dd')
 
-  const { rangeStart, rangeEnd } = useMemo(() => {
-    const today = new Date()
-    let start: Date
-    let end: Date
-    if (period === 'daily') {
-      start = startOfDaySafe(anchorDate)
-      end = anchorDate
-    } else if (period === 'weekly') {
-      start = startOfWeek(anchorDate, { weekStartsOn: 1 })
-      end = endOfWeek(anchorDate, { weekStartsOn: 1 })
-    } else if (period === 'monthly') {
-      start = startOfMonth(anchorDate)
-      end = endOfMonth(anchorDate)
-    } else {
-      start = startOfYear(anchorDate)
-      end = endOfYear(anchorDate)
-    }
-    const cappedEnd = end > today ? today : end
-    return { rangeStart: start, rangeEnd: cappedEnd }
-  }, [period, anchorDate])
-
-  const startDate = format(rangeStart, 'yyyy-MM-dd')
-  const endDate = format(rangeEnd, 'yyyy-MM-dd')
-
-  const { data: logs = [], isLoading, error } = useSaranPerbaikanRange(startDate, endDate)
+  const { data: logs = [], isLoading, error } = useAllSaranPerbaikan()
   useRealtime({
     table: 'saran_perbaikan',
-    filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
-    queryKeys: [['saran-perbaikan', 'range', startDate, endDate]],
+    queryKeys: [['saran-perbaikan', 'all']],
   })
 
   const createSaranPerbaikan = useCreateSaranPerbaikan()

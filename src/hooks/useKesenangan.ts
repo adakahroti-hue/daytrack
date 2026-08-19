@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { 
   getKesenangan, 
-  getKesenanganRange, 
+  getKesenanganRange,
+  getAllKesenangan,
   upsertKesenangan,
   deleteKesenangan,
   createKesenangan,
@@ -22,6 +23,13 @@ export function useKesenanganRange(startDate: string, endDate: string) {
     queryKey: ["playlist", "range", startDate, endDate],
     queryFn: () => getKesenanganRange(startDate, endDate),
     enabled: !!startDate && !!endDate,
+  })
+}
+
+export function useAllKesenangan() {
+  return useQuery({
+    queryKey: ["playlist", "all"],
+    queryFn: () => getAllKesenangan(),
   })
 }
 

@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { getSaranPerbaikan, upsertSaranPerbaikan, deleteSaranPerbaikan, getSaranPerbaikanRange, createSaranPerbaikan, updateSaranPerbaikan } from "@/app/actions/saran-perbaikan"
+import { getSaranPerbaikan, getSaranPerbaikanRange, getAllSaranPerbaikan, upsertSaranPerbaikan, deleteSaranPerbaikan, createSaranPerbaikan, updateSaranPerbaikan } from "@/app/actions/saran-perbaikan"
 import { SaranPerbaikanFormData } from "@/app/actions/saran-perbaikan"
 
 export function useSaranPerbaikan(tanggal: string) {
@@ -17,6 +17,13 @@ export function useSaranPerbaikanRange(startDate: string, endDate: string) {
     queryKey: ["saran-perbaikan", "range", startDate, endDate],
     queryFn: () => getSaranPerbaikanRange(startDate, endDate),
     enabled: !!startDate && !!endDate,
+  })
+}
+
+export function useAllSaranPerbaikan() {
+  return useQuery({
+    queryKey: ["saran-perbaikan", "all"],
+    queryFn: () => getAllSaranPerbaikan(),
   })
 }
 

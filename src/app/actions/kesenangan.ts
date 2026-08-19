@@ -114,6 +114,20 @@ export async function getKesenanganRange(startDate: string, endDate: string) {
   return data || []
 }
 
+// Ambil semua entri (tanpa filter waktu) — dipakai tab Playlist
+export async function getAllKesenangan() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+  const { data, error } = await supabase
+    .from("playlist")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("tanggal", { ascending: true })
+  if (error) throw new Error(error.message)
+  return data || []
+}
+
 export async function deleteKesenangan(id: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

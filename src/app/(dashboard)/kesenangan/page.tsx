@@ -1,15 +1,7 @@
 "use client"
 
 import { Fragment, useMemo, useState } from 'react'
-import {
-  format,
-  startOfWeek,
-  endOfWeek,
-  startOfMonth,
-  endOfMonth,
-  startOfYear,
-  endOfYear,
-} from 'date-fns'
+import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { Hash, Smile, Check, X, Trash2, Plus, Pencil, Wrench, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -19,9 +11,8 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
-import { useKesenanganRange, useCreateKesenangan, useUpdateKesenangan, useDeleteKesenangan } from '@/hooks/useKesenangan'
+import { useAllKesenangan, useCreateKesenangan, useUpdateKesenangan, useDeleteKesenangan } from '@/hooks/useKesenangan'
 import { useRealtime } from '@/hooks/useRealtime'
-import { useHeaderControls } from '@/components/layout/HeaderControls'
 
 // ─── Constants ────────────────────────────────────
 
@@ -55,39 +46,12 @@ function startOfDaySafe(d: Date): Date {
 // Revisi 1 (batch 7): model entri seperti tab Masalah — tabel kosong sampai ada inputan,
 // tanggal mengikuti inputan (bukan grid semua tanggal).
 export default function KesenanganPage() {
-  // Periode & tanggal dari HeaderControls (toolbar di header)
-  const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
   const todayStr = format(new Date(), 'yyyy-MM-dd')
 
-  const { rangeStart, rangeEnd } = useMemo(() => {
-    const today = new Date()
-    let start: Date
-    let end: Date
-    if (period === 'daily') {
-      start = startOfDaySafe(anchorDate)
-      end = anchorDate
-    } else if (period === 'weekly') {
-      start = startOfWeek(anchorDate, { weekStartsOn: 1 })
-      end = endOfWeek(anchorDate, { weekStartsOn: 1 })
-    } else if (period === 'monthly') {
-      start = startOfMonth(anchorDate)
-      end = endOfMonth(anchorDate)
-    } else {
-      start = startOfYear(anchorDate)
-      end = endOfYear(anchorDate)
-    }
-    const cappedEnd = end > today ? today : end
-    return { rangeStart: start, rangeEnd: cappedEnd }
-  }, [period, anchorDate])
-
-  const startDate = format(rangeStart, 'yyyy-MM-dd')
-  const endDate = format(rangeEnd, 'yyyy-MM-dd')
-
-  const { data: logs = [], isLoading, error } = useKesenanganRange(startDate, endDate)
+  const { data: logs = [], isLoading, error } = useAllKesenangan()
   useRealtime({
     table: 'senang',
-    filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
-    queryKeys: [['senang', 'range', startDate, endDate]],
+    queryKeys: [['senang', 'all'], ['playlist', 'all']],
   })
 
   const createKesenangan = useCreateKesenangan()

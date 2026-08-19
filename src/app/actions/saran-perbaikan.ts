@@ -122,6 +122,20 @@ export async function getSaranPerbaikanRange(startDate: string, endDate: string)
   return data || []
 }
 
+// Ambil semua entri (tanpa filter waktu) — dipakai tab Masukan
+export async function getAllSaranPerbaikan() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+  const { data, error } = await supabase
+    .from("saran_perbaikan")
+    .select("id, user_id, tanggal, hari, saran, created_at")
+    .eq("user_id", user.id)
+    .order("tanggal", { ascending: true })
+  if (error) throw new Error(error.message)
+  return data || []
+}
+
 export async function createSaranPerbaikan(formData: SaranPerbaikanFormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
