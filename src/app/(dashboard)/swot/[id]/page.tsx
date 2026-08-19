@@ -19,6 +19,7 @@ import {
   CalendarClock,
   Loader2,
   ArrowLeft,
+  Hash,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -224,20 +225,17 @@ export default function SwotDetailPage() {
         <ArrowLeft className="h-4 w-4" /> Semua Analisis SWOT
       </Link>
 
-      {/* Header ringkasan */}
-      <div className="grid grid-cols-4 sm:flex sm:justify-end gap-1.5 sm:gap-2">
-        {KAT.map((k) => (
-          <div key={k.key} className={cn("flex items-center justify-center gap-1 rounded-lg border px-1.5 py-1 sm:px-2.5 sm:py-1.5", k.accent)}>
-            <span className={cn("flex items-center gap-1 text-[11px] font-semibold", k.ring)}>
-              {k.icon} <span className="hidden sm:inline">{k.label}</span>
-            </span>
-            <span className={cn("text-base font-bold tabular-nums", k.ring)}>{counts[k.key]}</span>
-          </div>
-        ))}
-      </div>
-
       {/* Grid kategori — 2 kolom vertikal */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {/* Card Jumlah — total semua item */}
+        <div className="rounded-xl border border-slate-300 bg-white p-3 flex items-center justify-between md:col-span-2">
+          <div className="flex items-center gap-1.5 text-sm font-bold text-slate-800">
+            <Hash className="h-4 w-4" /> Jumlah
+          </div>
+          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 tabular-nums">
+            {KAT.reduce((sum, k) => sum + (counts[k.key] || 0), 0)}
+          </span>
+        </div>
         {GROUPS.map((g) => (
           <div key={g.key} className="rounded-2xl border border-slate-300 bg-slate-50/60 p-3">
             <div className="flex items-baseline gap-2 px-1 pb-2.5">
@@ -257,6 +255,7 @@ export default function SwotDetailPage() {
                         {isCombo && (
                           <span className="text-[10px] font-medium opacity-60">{COMBO_SUBTITLE[katKey]}</span>
                         )}
+                        <span className="ml-auto rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 tabular-nums">{list.length}</span>
                       </div>
                       <Button size="icon" variant="outline" aria-label="Tambah Item" onClick={() => openAddItem(k.key)}
                         className="h-6 w-6 p-0">
