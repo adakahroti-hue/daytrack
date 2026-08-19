@@ -66,10 +66,10 @@ const KAT: { key: SwotKategori; label: string; accent: string; ring: string; ico
   { key: "wt", label: "WT", accent: "border-slate-200", ring: "text-slate-700", icon: <Flag className="h-4 w-4" /> },
 ]
 
-const GROUPS: { key: string; label: string; sub: string; kats: SwotKategori[]; cols?: string }[] = [
+const GROUPS: { key: string; label: string; sub: string; kats: SwotKategori[]; cols?: string; span?: string }[] = [
   { key: "internal", label: "Internal", sub: "Dari dalam diri", kats: ["strength", "weakness"] },
   { key: "eksternal", label: "Eksternal", sub: "Dari luar", kats: ["opportunity", "threat"] },
-  { key: "combo", label: "Kombinasi Logika", sub: "SO . WO . ST . WT", kats: ["so", "wo", "st", "wt"], cols: "grid-cols-2" },
+  { key: "combo", label: "Kombinasi Logika", sub: "SO . WO . ST . WT", kats: ["so", "wo", "st", "wt"], cols: "grid-cols-2", span: "md:col-span-2" },
 ]
 const KAT_BY_KEY = Object.fromEntries(KAT.map((k) => [k.key, k])) as Record<SwotKategori, (typeof KAT)[number]>
 
@@ -237,7 +237,7 @@ export default function SwotDetailPage() {
           </span>
         </div>
         {GROUPS.map((g) => (
-          <div key={g.key} className="rounded-2xl border border-slate-300 bg-slate-50/60 p-3">
+          <div key={g.key} className={cn("rounded-2xl border border-slate-300 bg-slate-50/60 p-3", g.span)}>
             <div className="flex items-baseline gap-2 px-1 pb-2.5">
               <h2 className="text-sm font-bold text-slate-800">{g.label}</h2>
               <span className="text-[11px] text-slate-400">{g.sub}</span>
