@@ -60,16 +60,16 @@ const KAT: { key: SwotKategori; label: string; accent: string; ring: string; ico
   { key: "weakness", label: "Kelemahan", accent: "border-slate-200", ring: "text-rose-700", icon: <TrendingDown className="h-4 w-4" /> },
   { key: "opportunity", label: "Peluang", accent: "border-slate-200", ring: "text-sky-700", icon: <Target className="h-4 w-4" /> },
   { key: "threat", label: "Ancaman", accent: "border-slate-200", ring: "text-amber-700", icon: <Flag className="h-4 w-4" /> },
-  { key: "so", label: "SO", accent: "border-slate-200", ring: "text-emerald-700", icon: <TrendingUp className="h-4 w-4" /> },
-  { key: "wo", label: "WO", accent: "border-slate-200", ring: "text-rose-700", icon: <TrendingDown className="h-4 w-4" /> },
-  { key: "st", label: "ST", accent: "border-slate-200", ring: "text-amber-700", icon: <Flag className="h-4 w-4" /> },
-  { key: "wt", label: "WT", accent: "border-slate-200", ring: "text-slate-700", icon: <Flag className="h-4 w-4" /> },
+  { key: "so", label: "Strategi SO", accent: "border-slate-200", ring: "text-emerald-700", icon: <TrendingUp className="h-4 w-4" /> },
+  { key: "wo", label: "Strategi WO", accent: "border-slate-200", ring: "text-rose-700", icon: <TrendingDown className="h-4 w-4" /> },
+  { key: "st", label: "Strategi ST", accent: "border-slate-200", ring: "text-amber-700", icon: <Flag className="h-4 w-4" /> },
+  { key: "wt", label: "Strategi WT", accent: "border-slate-200", ring: "text-slate-700", icon: <Flag className="h-4 w-4" /> },
 ]
 
 const GROUPS: { key: string; label: string; sub: string; kats: SwotKategori[]; cols?: string; span?: string }[] = [
   { key: "internal", label: "Internal", sub: "Dari dalam diri", kats: ["strength", "weakness"] },
   { key: "eksternal", label: "Eksternal", sub: "Dari luar", kats: ["opportunity", "threat"] },
-  { key: "combo", label: "Kombinasi Logika", sub: "SO . WO . ST . WT", kats: ["so", "wo", "st", "wt"], cols: "grid-cols-2", span: "md:col-span-2" },
+  { key: "combo", label: "Strategi Kombinasi", sub: "SO . WO . ST . WT", kats: ["so", "wo", "st", "wt"], cols: "grid-cols-2", span: "md:col-span-2" },
 ]
 const KAT_BY_KEY = Object.fromEntries(KAT.map((k) => [k.key, k])) as Record<SwotKategori, (typeof KAT)[number]>
 
@@ -95,10 +95,10 @@ const RADIO_DOT: Record<SwotKategori, string> = {
 }
 
 const COMBO_SUBTITLE: Record<string, string> = {
-  so: "Strength x Opportunity",
-  wo: "Weakness x Opportunity",
-  st: "Strength x Threat",
-  wt: "Weakness x Threat",
+  so: "Kekuatan × Peluang",
+  wo: "Kelemahan × Peluang",
+  st: "Kekuatan × Ancaman",
+  wt: "Kelemahan × Ancaman",
 }
 
 export default function SwotDetailPage() {
