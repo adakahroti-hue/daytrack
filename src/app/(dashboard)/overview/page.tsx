@@ -22,12 +22,12 @@ export default function OverviewPage() {
   const summaryPeriod: OverviewPeriod = periodMap[period] ?? 'harian'
 
   const rangeStart =
-    summaryPeriod === 'mingguan' ? startOfWeek(currentDate, { weekStartsOn: 1 })
+    summaryPeriod === 'mingguan' || summaryPeriod === 'shot' ? startOfWeek(currentDate, { weekStartsOn: 1 })
     : summaryPeriod === 'bulanan' ? startOfMonth(currentDate)
     : summaryPeriod === 'tahunan' ? startOfYear(currentDate)
     : currentDate
   const rangeEnd =
-    summaryPeriod === 'mingguan' ? endOfWeek(currentDate, { weekStartsOn: 1 })
+    summaryPeriod === 'mingguan' || summaryPeriod === 'shot' ? endOfWeek(currentDate, { weekStartsOn: 1 })
     : summaryPeriod === 'bulanan' ? endOfMonth(currentDate)
     : summaryPeriod === 'tahunan' ? endOfYear(currentDate)
     : currentDate
