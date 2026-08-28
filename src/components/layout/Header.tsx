@@ -331,9 +331,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 ? format(currentDate, 'MMM yyyy', { locale: id })
                 : period === 'yearly'
                 ? format(currentDate, 'yyyy', { locale: id })
-                : period === 'weekly' || period === 'shot'
-                ? format(currentDate, 'd MMM', { locale: id })
-                : format(currentDate, 'd MMM', { locale: id })}
+                : formatDateForPeriod(currentDate, period)}
             </span>
           </div>
           )}
