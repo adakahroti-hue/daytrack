@@ -55,6 +55,7 @@ import {
   Target,
   ScanSearch,
   StickyNote,
+  Brain,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useTasks } from '@/hooks/useTasks'
@@ -120,6 +121,7 @@ const navigation: NavSection[] = [
     icon: Shield,
     items: [
       { title: 'Refleksi', href: '/masalah', icon: PersonStanding },
+      { title: 'Mental Block', href: '/mental-block', icon: Brain },
       { title: 'SWOT', href: '/swot', icon: ScanSearch },
       { title: 'Catatan', href: '/catatan', icon: StickyNote },
       { title: 'Playlist', href: '/kesenangan', icon: ListMusic },
