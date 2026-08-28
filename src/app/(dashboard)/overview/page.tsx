@@ -3,7 +3,7 @@
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns'
 import { type OverviewPeriod } from '@/components/overview/FocusTodaySection'
 import { RoutineTodaySection } from '@/components/overview/RoutineTodaySection'
-import { useHeaderControls } from '@/components/layout/HeaderControls'
+import { useHeaderControls, getShotRange } from '@/components/layout/HeaderControls'
 
 // Revisi batch 18: kartu "Tugas" digabung ke grid Rutinitas (tema hitam-putih).
 // Revisi batch 26: hapus ReflectionSection (card Mental duplikat di mingguan/bulanan/tahunan) —
@@ -21,13 +21,16 @@ export default function OverviewPage() {
   }
   const summaryPeriod: OverviewPeriod = periodMap[period] ?? 'harian'
 
+  const [shotStart, shotEnd] = getShotRange(currentDate)
   const rangeStart =
-    summaryPeriod === 'mingguan' || summaryPeriod === 'shot' ? startOfWeek(currentDate, { weekStartsOn: 1 })
+    summaryPeriod === 'mingguan' ? startOfWeek(currentDate, { weekStartsOn: 1 })
+    : summaryPeriod === 'shot' ? shotStart
     : summaryPeriod === 'bulanan' ? startOfMonth(currentDate)
     : summaryPeriod === 'tahunan' ? startOfYear(currentDate)
     : currentDate
   const rangeEnd =
-    summaryPeriod === 'mingguan' || summaryPeriod === 'shot' ? endOfWeek(currentDate, { weekStartsOn: 1 })
+    summaryPeriod === 'mingguan' ? endOfWeek(currentDate, { weekStartsOn: 1 })
+    : summaryPeriod === 'shot' ? shotEnd
     : summaryPeriod === 'bulanan' ? endOfMonth(currentDate)
     : summaryPeriod === 'tahunan' ? endOfYear(currentDate)
     : currentDate

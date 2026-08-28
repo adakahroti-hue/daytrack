@@ -222,7 +222,7 @@ function getCategoryDescription(category: string, period: Period, subPage: strin
         case 'daily': return 'Ringkasan aktivitas harian Anda'
         case 'yesterday': return 'Ringkasan aktivitas kemarin'
         case 'weekly': return 'Ringkasan aktivitas mingguan Anda'
-        case 'shot': return 'Ringkasan aktivitas Senin\u2013Minggu Anda'
+        case 'shot': return 'Ringkasan aktivitas Minggu\u2013Sabtu Anda'
         case 'monthly': return 'Ringkasan aktivitas bulanan Anda'
         case 'yearly': return 'Ringkasan aktivitas tahunan Anda'
       }
@@ -319,7 +319,7 @@ export function HeaderControlsProvider({
         case 'weekly':
           return startOfWeek(prev, { weekStartsOn: 1 })
         case 'shot':
-          return startOfWeek(prev, { weekStartsOn: 1 })
+          return startOfWeek(prev, { weekStartsOn: 0 })
         case 'daily':
         default:
           return prev
@@ -406,6 +406,15 @@ export function useIsToday(date: Date) {
   return isSameDay(date, new Date())
 }
 
+// Shot: rentang Minggu–Sabtu (7 hari). Kalau hari ini Minggu, mundur 1 minggu
+// supaya pagi Minggu menampilkan minggu yang baru lewat (bisa di-review).
+export function getShotRange(date: Date): [Date, Date] {
+  const base = startOfWeek(date, { weekStartsOn: 0 })
+  const shift = date.getDay() === 0 ? -7 : 0
+  const start = addDays(base, shift)
+  return [start, addDays(start, 6)]
+}
+
 // Format date based on period
 export function formatDateForPeriod(date: Date, period: Period) {
   switch (period) {
@@ -415,10 +424,10 @@ export function formatDateForPeriod(date: Date, period: Period) {
       const weekStart = startOfWeek(date, { weekStartsOn: 1 })
       const weekEnd = endOfWeek(date, { weekStartsOn: 1 })
       return `${format(weekStart, 'd MMM', { locale: id })} - ${format(weekEnd, 'd MMM yyyy', { locale: id })}`
-    case 'shot':
-      const shotStart = startOfWeek(date, { weekStartsOn: 1 })
-      const shotEnd = endOfWeek(date, { weekStartsOn: 1 })
+    case 'shot': {
+      const [shotStart, shotEnd] = getShotRange(date)
       return `${format(shotStart, 'd MMM', { locale: id })} - ${format(shotEnd, 'd MMM yyyy', { locale: id })}`
+    }
     case 'yearly':
       return format(date, 'yyyy', { locale: id })
     case 'daily':
