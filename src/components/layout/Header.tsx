@@ -178,7 +178,6 @@ export function Header({ onMenuClick }: HeaderProps) {
   const isTidur = pathname === '/tidur'
   const isPmo = pathname === '/pmo'
   const isMasalah = pathname === '/masalah'
-  const isMentalBlock = pathname === '/mental-block'
   const isKesenangan = pathname === '/kesenangan'
   const isSaranPerbaikan = pathname === '/saran-perbaikan'
   // Tab keuangan (Arus Kas & Keranjang) ikut pakai toolbar navigasi tanggal + toggle periode ibadah-style di header
@@ -188,7 +187,8 @@ export function Header({ onMenuClick }: HeaderProps) {
   const isKeuangan = isArusKas || isKeranjang
 
   // Semua tab bergaya tabel Quran memakai toolbar navigasi tanggal + toggle periode di header
-  const isTableTab = isSholat || isQuran || isMinumAir || isDoa || isSyukur || isTidur || isPmo || isMasalah || isMentalBlock || isKesenangan || isSaranPerbaikan || isSedekah || isKeuangan || isGoal
+  // Mental Block sengaja TIDAK masuk isTableTab: data journal (fetch all), tidak terpengaruh filter waktu.
+  const isTableTab = isSholat || isQuran || isMinumAir || isDoa || isSyukur || isTidur || isPmo || isMasalah || isKesenangan || isSaranPerbaikan || isSedekah || isKeuangan || isGoal
   // Revisi: tombol show/hide filter tanggal — toggle & navigasi tanggal mobile baru tampil setelah diklik
   const [showMobileControls, setShowMobileControls] = useState(false)
 
