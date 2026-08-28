@@ -101,7 +101,7 @@ function RoutineCard({
   )
 }
 
-// ─── Donut x/y (pie chart) untuk card Ibadah di filter mingguan ───
+// ─── Donut x/y (pie chart) untuk card Ibadah & Kesehatan di filter mingguan ───
 function XyDonut({
   value,
   target,
@@ -278,7 +278,9 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                   return (
                     <div key={s.key} className="flex flex-col items-center gap-0.5 min-w-0">
                       <span className="text-xs leading-tight text-slate-500">{s.label}</span>
-                      {isHarian ? (
+                      {isWeekly ? (
+                        <XyDonut value={sholatPerWaktu[i]} target={daysElapsed} color="#10b981" size={40} />
+                      ) : isHarian ? (
                         done
                           ? <Check className="h-3 w-3 text-emerald-600" />
                           : <Minus className="h-3 w-3 text-slate-300" />
@@ -317,7 +319,9 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                   return (
                     <div key={s.key} className="flex flex-col items-center gap-0.5 min-w-0">
                       <span className="text-xs leading-tight text-slate-500">{QURAN_PILL_LABELS[s.key] ?? s.label}</span>
-                      {isHarian ? (
+                      {isWeekly ? (
+                        <XyDonut value={quranPerSesi[i]} target={daysElapsed} color="#14b8a6" size={40} />
+                      ) : isHarian ? (
                         done
                           ? <Check className="h-3 w-3 text-teal-600" />
                           : <Minus className="h-3 w-3 text-slate-300" />
@@ -366,19 +370,26 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
         <RoutineCard tint="bg-white border-slate-200" icon={Shield} iconColor="text-sky-500" title="Kesehatan">
           <div className="mt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <div className="min-w-0 lg:flex-1">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-                  <GlassWater className="h-3.5 w-3.5 text-sky-500" /> Minum Air
-                </p>
-                <p className="mt-2 pl-[18px] flex items-baseline gap-1.5 leading-none">
-                  <span className={cn('text-[22px] font-bold tabular-nums', numColor(gelas >= targetGelasPeriod))}>{gelas}<span className={cn('text-lg', numColorSoft(gelas >= targetGelasPeriod))}>/{targetGelasPeriod}</span></span>
-                  <span className="text-sm font-medium text-slate-500">gelas</span>
-                </p>
-                {isHarian && gelas >= TARGET_GELAS && (
-                  <p className="text-xs text-slate-500 mt-1">
-                    Target tercapai 🎉
+              <div className="min-w-0 lg:flex-1 flex items-center gap-3">
+                {isWeekly && <XyDonut value={gelas} target={targetGelasPeriod} color="#0ea5e9" />}
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
+                    <GlassWater className="h-3.5 w-3.5 text-sky-500" /> Minum Air
                   </p>
-                )}
+                  {isWeekly ? (
+                    <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{gelas}/{targetGelasPeriod}</span> gelas</p>
+                  ) : (
+                    <p className="mt-2 pl-[18px] flex items-baseline gap-1.5 leading-none">
+                      <span className={cn('text-[22px] font-bold tabular-nums', numColor(gelas >= targetGelasPeriod))}>{gelas}<span className={cn('text-lg', numColorSoft(gelas >= targetGelasPeriod))}>/{targetGelasPeriod}</span></span>
+                      <span className="text-sm font-medium text-slate-500">gelas</span>
+                    </p>
+                  )}
+                  {isHarian && gelas >= TARGET_GELAS && (
+                    <p className="text-xs text-slate-500 mt-1">
+                      Target tercapai 🎉
+                    </p>
+                  )}
+                </div>
               </div>
               <div className="grid grid-cols-5 gap-x-2 lg:gap-x-6 shrink-0 w-full lg:w-auto">
                 {WATER_SESSIONS.map((s, i) => {
@@ -386,7 +397,9 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
                   return (
                     <div key={s.key} className="flex flex-col items-center gap-0.5 min-w-0">
                       <span className="text-xs leading-tight text-slate-500">{WATER_PILL_LABELS[s.key] ?? s.label}</span>
-                      {isHarian ? (
+                      {isWeekly ? (
+                        <XyDonut value={waterPerSesi[i]} target={daysElapsed} color="#0ea5e9" size={40} />
+                      ) : isHarian ? (
                         done
                           ? <Check className="h-3 w-3 text-sky-600" />
                           : <Minus className="h-3 w-3 text-slate-300" />
@@ -406,11 +419,18 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
               <Moon className="h-3.5 w-3.5 text-sky-500" /> Waktu Tidur
             </p>
             <div className="mt-1.5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-              <div className="min-w-0">
-                <p className="pl-[18px] flex items-baseline gap-1.5 leading-none">
-                  <span className={cn('text-[22px] font-bold tabular-nums', numColor(checklist[3].days >= daysElapsed))}>{checklist[3].days}<span className={cn('text-lg', numColorSoft(checklist[3].days >= daysElapsed))}>/{daysElapsed}</span></span>
-                  <span className="text-sm font-medium text-slate-500">tepat</span>
-                </p>
+              <div className="min-w-0 flex items-center gap-3">
+                {isWeekly && <XyDonut value={checklist[3].days} target={daysElapsed} color="#0ea5e9" size={52} />}
+                <div className="min-w-0">
+                  {isWeekly ? (
+                    <p className="text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{checklist[3].days}/{daysElapsed}</span> tepat</p>
+                  ) : (
+                    <p className="pl-[18px] flex items-baseline gap-1.5 leading-none">
+                      <span className={cn('text-[22px] font-bold tabular-nums', numColor(checklist[3].days >= daysElapsed))}>{checklist[3].days}<span className={cn('text-lg', numColorSoft(checklist[3].days >= daysElapsed))}>/{daysElapsed}</span></span>
+                      <span className="text-sm font-medium text-slate-500">tepat</span>
+                    </p>
+                  )}
+                </div>
               </div>
               <div className="grid grid-cols-5 lg:grid-cols-7 gap-x-2 lg:gap-x-6 shrink-0 w-full lg:w-auto">
                 {JAM_TIDUR_OPTIONS.map(o => {
@@ -432,10 +452,17 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
               <Shield className="h-3.5 w-3.5 text-sky-500" /> Bebas PMO
             </p>
             <div className="mt-1.5 flex items-end justify-between gap-3">
-              <p className="pl-[18px] flex items-baseline gap-1.5 leading-none">
-                <span className={cn('text-[22px] font-bold tabular-nums', numColor(checklist[2].days >= daysElapsed))}>{checklist[2].days}<span className={cn('text-lg', numColorSoft(checklist[2].days >= daysElapsed))}>/{daysElapsed}</span></span>
-                <span className="text-sm font-medium text-slate-500">berhasil</span>
-              </p>
+              <div className="flex items-center gap-3">
+                {isWeekly && <XyDonut value={checklist[2].days} target={daysElapsed} color="#0ea5e9" size={52} />}
+                {isWeekly ? (
+                  <p className="text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{checklist[2].days}/{daysElapsed}</span> berhasil</p>
+                ) : (
+                  <p className="pl-[18px] flex items-baseline gap-1.5 leading-none">
+                    <span className={cn('text-[22px] font-bold tabular-nums', numColor(checklist[2].days >= daysElapsed))}>{checklist[2].days}<span className={cn('text-lg', numColorSoft(checklist[2].days >= daysElapsed))}>/{daysElapsed}</span></span>
+                    <span className="text-sm font-medium text-slate-500">berhasil</span>
+                  </p>
+                )}
+              </div>
               <div className="text-right">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Rekor</p>
                 <p className="text-sm font-bold text-slate-900 tabular-nums">{pmoRekor} <span className="text-xs font-medium text-slate-500">hari</span></p>
