@@ -101,9 +101,59 @@ function RoutineCard({
   )
 }
 
+// ─── Donut x/y (pie chart) untuk card Ibadah di filter mingguan ───
+function XyDonut({
+  value,
+  target,
+  color,
+  size = 60,
+  label,
+}: {
+  value: number
+  target: number
+  color: string
+  size?: number
+  label?: string
+}) {
+  const pct = target > 0 ? Math.max(0, Math.min(100, Math.round((value / target) * 100))) : 0
+  const stroke = Math.max(5, Math.round(size * 0.11))
+  const r = (size - stroke) / 2
+  const c = 2 * Math.PI * r
+  const offset = c - (pct / 100) * c
+  const fontSize = Math.round(size * 0.24)
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <div className="relative shrink-0" style={{ width: size, height: size }}>
+        <svg width={size} height={size} className="-rotate-90" viewBox={`0 0 ${size} ${size}`}>
+          <circle cx={size / 2} cy={size / 2} r={r} stroke="#e2e8f0" strokeWidth={stroke} fill="none" />
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            stroke={color}
+            strokeWidth={stroke}
+            strokeLinecap="round"
+            fill="none"
+            strokeDasharray={c}
+            strokeDashoffset={offset}
+            className="transition-all duration-700 ease-out"
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center leading-none">
+          <span className="font-bold tabular-nums text-slate-900" style={{ fontSize }}>
+            {value}<span style={{ fontSize: Math.round(fontSize * 0.7) }} className="text-slate-400">/{target}</span>
+          </span>
+        </div>
+      </div>
+      {label && <span className="text-[10px] sm:text-xs text-slate-700 text-center leading-tight">{label}</span>}
+    </div>
+  )
+}
+
 export function RoutineTodaySection({ startStr, endStr, period }: { startStr: string; endStr: string; period: OverviewPeriod }) {
   const isHarian = period === 'harian' || period === 'kemarin'
   const isKemarin = period === 'kemarin'
+  const isWeekly = period === 'mingguan'
 
   const todayStr = format(new Date(), 'yyyy-MM-dd')
   const cappedEnd = endStr < todayStr ? endStr : todayStr
@@ -206,14 +256,21 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
         <RoutineCard tint="bg-white border-slate-200" icon={Mosque} iconColor="text-emerald-500" title="Ibadah">
           <div className="mt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <div className="min-w-0 lg:flex-1">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-                  <Mosque className="h-3.5 w-3.5 text-emerald-500" /> Sholat 5 Waktu
-                </p>
-                <p className="mt-2 pl-[18px] flex items-baseline gap-1.5 leading-none">
-                  <span className={cn('text-[22px] font-bold tabular-nums', numColor(sholatCount >= sholatTarget))}>{sholatCount}<span className={cn('text-lg', numColorSoft(sholatCount >= sholatTarget))}>/{sholatTarget}</span></span>
-                  <span className="text-sm font-medium text-slate-500">sholat</span>
-                </p>
+              <div className="min-w-0 lg:flex-1 flex items-center gap-3">
+                {isWeekly && <XyDonut value={sholatCount} target={sholatTarget} color="#10b981" />}
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
+                    <Mosque className="h-3.5 w-3.5 text-emerald-500" /> Sholat 5 Waktu
+                  </p>
+                  {isWeekly ? (
+                    <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{sholatCount}/{sholatTarget}</span> sholat</p>
+                  ) : (
+                    <p className="mt-2 pl-[18px] flex items-baseline gap-1.5 leading-none">
+                      <span className={cn('text-[22px] font-bold tabular-nums', numColor(sholatCount >= sholatTarget))}>{sholatCount}<span className={cn('text-lg', numColorSoft(sholatCount >= sholatTarget))}>/{sholatTarget}</span></span>
+                      <span className="text-sm font-medium text-slate-500">sholat</span>
+                    </p>
+                  )}
+                </div>
               </div>
               <div className="grid grid-cols-5 gap-x-2 lg:gap-x-6 shrink-0 w-full lg:w-auto">
                 {SHOLAT_5.map((s, i) => {
@@ -238,14 +295,21 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
           </div>
           <div className="mt-4 pt-4 border-t border-slate-100">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <div className="min-w-0 lg:flex-1">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-                  <BookOpen className="h-3.5 w-3.5 text-emerald-500" /> Baca Quran
-                </p>
-                <p className="mt-2 pl-[18px] flex items-baseline gap-1.5 leading-none">
-                  <span className={cn('text-[22px] font-bold tabular-nums', numColor(quranCount >= quranTarget))}>{quranCount}<span className={cn('text-lg', numColorSoft(quranCount >= quranTarget))}>/{quranTarget}</span></span>
-                  <span className="text-sm font-medium text-slate-500">sesi</span>
-                </p>
+              <div className="min-w-0 lg:flex-1 flex items-center gap-3">
+                {isWeekly && <XyDonut value={quranCount} target={quranTarget} color="#14b8a6" />}
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
+                    <BookOpen className="h-3.5 w-3.5 text-emerald-500" /> Baca Quran
+                  </p>
+                  {isWeekly ? (
+                    <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{quranCount}/{quranTarget}</span> sesi</p>
+                  ) : (
+                    <p className="mt-2 pl-[18px] flex items-baseline gap-1.5 leading-none">
+                      <span className={cn('text-[22px] font-bold tabular-nums', numColor(quranCount >= quranTarget))}>{quranCount}<span className={cn('text-lg', numColorSoft(quranCount >= quranTarget))}>/{quranTarget}</span></span>
+                      <span className="text-sm font-medium text-slate-500">sesi</span>
+                    </p>
+                  )}
+                </div>
               </div>
               <div className="grid grid-cols-5 gap-x-2 lg:gap-x-6 shrink-0 w-full lg:w-auto">
                 {QURAN_SESSIONS.map((s, i) => {
@@ -273,20 +337,28 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
               <Sparkles className="h-3.5 w-3.5 text-emerald-500" /> Optimasi Hoki
             </p>
-            <div className="mt-1.5 pl-[18px] flex items-center gap-x-3 sm:gap-x-10 lg:gap-x-12 gap-y-1.5 flex-wrap text-sm">
-              <div className="flex items-center gap-1">
-                <span className={cn('text-[18px] sm:text-[22px] font-bold leading-none tabular-nums', numColor(checklist[0].days >= daysElapsed))}>{checklist[0].days}<span className={cn('text-sm sm:text-lg', numColorSoft(checklist[0].days >= daysElapsed))}>/{daysElapsed}</span></span>
-                <span className="text-[10px] sm:text-xs text-slate-700">Bersyukur</span>
+            {isWeekly ? (
+              <div className="mt-1.5 pl-[18px] flex items-center gap-x-4 sm:gap-x-8 gap-y-3 flex-wrap text-sm">
+                <XyDonut value={checklist[0].days} target={daysElapsed} color="#10b981" size={44} label="Bersyukur" />
+                <XyDonut value={checklist[1].days} target={daysElapsed} color="#10b981" size={44} label="Doakan" />
+                <XyDonut value={sedekahCount} target={daysElapsed} color="#10b981" size={44} label="Sedekah" />
               </div>
-              <div className="flex items-center gap-1">
-                <span className={cn('text-[18px] sm:text-[22px] font-bold leading-none tabular-nums', numColor(checklist[1].days >= daysElapsed))}>{checklist[1].days}<span className={cn('text-sm sm:text-lg', numColorSoft(checklist[1].days >= daysElapsed))}>/{daysElapsed}</span></span>
-                <span className="text-[10px] sm:text-xs text-slate-700">Doakan orang</span>
+            ) : (
+              <div className="mt-1.5 pl-[18px] flex items-center gap-x-3 sm:gap-x-10 lg:gap-x-12 gap-y-1.5 flex-wrap text-sm">
+                <div className="flex items-center gap-1">
+                  <span className={cn('text-[18px] sm:text-[22px] font-bold leading-none tabular-nums', numColor(checklist[0].days >= daysElapsed))}>{checklist[0].days}<span className={cn('text-sm sm:text-lg', numColorSoft(checklist[0].days >= daysElapsed))}>/{daysElapsed}</span></span>
+                  <span className="text-[10px] sm:text-xs text-slate-700">Bersyukur</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className={cn('text-[18px] sm:text-[22px] font-bold leading-none tabular-nums', numColor(checklist[1].days >= daysElapsed))}>{checklist[1].days}<span className={cn('text-sm sm:text-lg', numColorSoft(checklist[1].days >= daysElapsed))}>/{daysElapsed}</span></span>
+                  <span className="text-[10px] sm:text-xs text-slate-700">Doakan orang</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className={cn('text-[18px] sm:text-[22px] font-bold leading-none tabular-nums', numColor(sedekahCount >= daysElapsed))}>{sedekahCount}<span className={cn('text-sm sm:text-lg', numColorSoft(sedekahCount >= daysElapsed))}>/{daysElapsed}</span></span>
+                  <span className="text-[10px] sm:text-xs text-slate-700">Sedekah</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1">
-                <span className={cn('text-[18px] sm:text-[22px] font-bold leading-none tabular-nums', numColor(sedekahCount >= daysElapsed))}>{sedekahCount}<span className={cn('text-sm sm:text-lg', numColorSoft(sedekahCount >= daysElapsed))}>/{daysElapsed}</span></span>
-                <span className="text-[10px] sm:text-xs text-slate-700">Sedekah</span>
-              </div>
-            </div>
+            )}
           </div>
         </RoutineCard>
 
