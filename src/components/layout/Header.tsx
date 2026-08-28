@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, Mosque, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, Target, History, Brain } from 'lucide-react'
+import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, Mosque, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, Target, History, Brain, Flame } from 'lucide-react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
@@ -196,6 +196,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const periodLabels = {
     yesterday: { label: 'Kemarin', icon: History },
     daily: { label: 'Harian', icon: Clock },
+    shot: { label: 'Shot', icon: Flame },
     weekly: { label: 'Mingguan', icon: CalendarDays },
     monthly: { label: 'Bulanan', icon: CalendarRange },
     yearly: { label: 'Tahunan', icon: Calendar },
@@ -208,7 +209,7 @@ export function Header({ onMenuClick }: HeaderProps) {
     { value: 'yearly', label: 'Tahunan' },
   ] as const
 
-  const handlePeriodChange = (key: 'yesterday' | 'daily' | 'weekly' | 'monthly' | 'yearly') => {
+  const handlePeriodChange = (key: 'yesterday' | 'daily' | 'shot' | 'weekly' | 'monthly' | 'yearly') => {
     if (key === 'yesterday') selectYesterday()
     else {
       // Revisi batch 14: klik Harian → tanggal navigasi kembali ke hari ini
@@ -330,7 +331,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 ? format(currentDate, 'MMM yyyy', { locale: id })
                 : period === 'yearly'
                 ? format(currentDate, 'yyyy', { locale: id })
-                : period === 'weekly'
+                : period === 'weekly' || period === 'shot'
                 ? format(currentDate, 'd MMM', { locale: id })
                 : format(currentDate, 'd MMM', { locale: id })}
             </span>
@@ -349,7 +350,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                   variant={period === key ? 'default' : 'ghost'}
                   size="sm"
                   className="h-8 px-2 gap-1 justify-center"
-                  onClick={() => handlePeriodChange(key as 'yesterday' | 'daily' | 'weekly' | 'monthly' | 'yearly')}
+                  onClick={() => handlePeriodChange(key as 'yesterday' | 'daily' | 'shot' | 'weekly' | 'monthly' | 'yearly')}
                 >
                   <Icon className="h-3.5 w-3.5 flex-shrink-0" />
                   <span className="hidden sm:inline truncate">{label}</span>
@@ -412,7 +413,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                   <button
                     key={key}
                     type="button"
-                    onClick={() => handlePeriodChange(key as 'yesterday' | 'daily' | 'weekly' | 'monthly' | 'yearly')}
+                    onClick={() => handlePeriodChange(key as 'yesterday' | 'daily' | 'shot' | 'weekly' | 'monthly' | 'yearly')}
                     className={cn(
                       'flex-1 px-1 py-1.5 rounded-md text-[11px] font-medium transition-colors whitespace-nowrap',
                       period === key

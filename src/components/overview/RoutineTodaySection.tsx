@@ -153,7 +153,8 @@ function XyDonut({
 export function RoutineTodaySection({ startStr, endStr, period }: { startStr: string; endStr: string; period: OverviewPeriod }) {
   const isHarian = period === 'harian' || period === 'kemarin'
   const isKemarin = period === 'kemarin'
-  const isWeekly = period === 'mingguan'
+  // Shot = minggu berjalan Senin-Minggu (tampilan sama dengan mingguan, termasuk donut x/y)
+  const isWeekly = period === 'mingguan' || period === 'shot'
 
   const todayStr = format(new Date(), 'yyyy-MM-dd')
   const cappedEnd = endStr < todayStr ? endStr : todayStr

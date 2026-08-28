@@ -15,6 +15,7 @@ export default function OverviewPage() {
     daily: 'harian',
     yesterday: 'kemarin',
     weekly: 'mingguan',
+    shot: 'shot',
     monthly: 'bulanan',
     yearly: 'tahunan',
   }

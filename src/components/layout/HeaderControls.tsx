@@ -6,7 +6,7 @@ import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
 import { Flag, Calendar, Clock, Hourglass, Layers, type LucideIcon } from 'lucide-react'
 
-type Period = 'monthly' | 'weekly' | 'daily' | 'yesterday' | 'yearly'
+type Period = 'monthly' | 'weekly' | 'daily' | 'yesterday' | 'yearly' | 'shot'
 
 export type IbadahPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly'
 
@@ -149,6 +149,7 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
         case 'daily': return 'Overview Harian'
         case 'yesterday': return 'Overview Kemarin'
         case 'weekly': return 'Overview Mingguan'
+        case 'shot': return 'Overview Shot'
         case 'monthly': return 'Overview Bulanan'
         case 'yearly': return 'Overview Tahunan'
       }
@@ -221,6 +222,7 @@ function getCategoryDescription(category: string, period: Period, subPage: strin
         case 'daily': return 'Ringkasan aktivitas harian Anda'
         case 'yesterday': return 'Ringkasan aktivitas kemarin'
         case 'weekly': return 'Ringkasan aktivitas mingguan Anda'
+        case 'shot': return 'Ringkasan aktivitas Senin\u2013Minggu Anda'
         case 'monthly': return 'Ringkasan aktivitas bulanan Anda'
         case 'yearly': return 'Ringkasan aktivitas tahunan Anda'
       }
@@ -293,6 +295,8 @@ export function HeaderControlsProvider({
           return addMonths(prev, amount)
         case 'weekly':
           return addWeeks(prev, amount)
+        case 'shot':
+          return addWeeks(prev, amount)
         case 'yearly':
           return amount === -1 ? subYears(prev, 1) : addYears(prev, 1)
         case 'daily':
@@ -313,6 +317,8 @@ export function HeaderControlsProvider({
         case 'monthly':
           return startOfMonth(prev)
         case 'weekly':
+          return startOfWeek(prev, { weekStartsOn: 1 })
+        case 'shot':
           return startOfWeek(prev, { weekStartsOn: 1 })
         case 'daily':
         default:
@@ -409,6 +415,10 @@ export function formatDateForPeriod(date: Date, period: Period) {
       const weekStart = startOfWeek(date, { weekStartsOn: 1 })
       const weekEnd = endOfWeek(date, { weekStartsOn: 1 })
       return `${format(weekStart, 'd MMM', { locale: id })} - ${format(weekEnd, 'd MMM yyyy', { locale: id })}`
+    case 'shot':
+      const shotStart = startOfWeek(date, { weekStartsOn: 1 })
+      const shotEnd = endOfWeek(date, { weekStartsOn: 1 })
+      return `${format(shotStart, 'd MMM', { locale: id })} - ${format(shotEnd, 'd MMM yyyy', { locale: id })}`
     case 'yearly':
       return format(date, 'yyyy', { locale: id })
     case 'daily':

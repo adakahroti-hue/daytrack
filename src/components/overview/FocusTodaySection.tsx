@@ -8,12 +8,13 @@ import { useTasks } from '@/hooks/useTasks'
 
 // ─── Revisi batch 18: kartu "Tugas" untuk tab Overview (tema hitam-putih) ───
 
-export type OverviewPeriod = 'harian' | 'kemarin' | 'mingguan' | 'bulanan' | 'tahunan'
+export type OverviewPeriod = 'harian' | 'kemarin' | 'mingguan' | 'shot' | 'bulanan' | 'tahunan'
 
 export const PERIOD_LABEL: Record<OverviewPeriod, string> = {
   harian: 'Hari Ini',
   kemarin: 'Kemarin',
   mingguan: 'Minggu Ini',
+  shot: 'Shot Ini',
   bulanan: 'Bulan Ini',
   tahunan: 'Tahun Ini',
 }
