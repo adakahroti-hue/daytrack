@@ -125,7 +125,7 @@ export function useToggleTaskStatus() {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: "proses" | "belum" | "selesai" }) => toggleTaskStatus(id, status),
+    mutationFn: ({ id, status }: { id: string; status: "proses" | "belum" | "selesai" | "ide" }) => toggleTaskStatus(id, status),
     onMutate: async ({ id, status }) => {
       await queryClient.cancelQueries({ queryKey: ["tugas"] })
       const previousTasks = queryClient.getQueriesData({ queryKey: ["tugas"] })

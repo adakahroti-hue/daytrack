@@ -24,7 +24,7 @@ type Task = {
   tanggal?: string
   estimasi_menit: number
   prioritas: 'p1' | 'p2' | 'p3' | 'p4'
-  status: 'belum' | 'proses' | 'selesai'
+  status: 'belum' | 'proses' | 'selesai' | 'ide'
   started_at: string | null
   completed_at: string | null
   created_at: string
@@ -42,7 +42,7 @@ type TaskFormData = {
   tanggal?: string
   estimasi_menit: number
   prioritas: 'p1' | 'p2' | 'p3' | 'p4'
-  status: 'belum' | 'proses' | 'selesai'
+  status: 'belum' | 'proses' | 'selesai' | 'ide'
 }
 
 type EditingTask = TaskFormData & { id: string }
@@ -84,7 +84,7 @@ const TaskCard = memo(({
   task: Task
   onEdit: (task: Task) => void
   onDelete: (id: string) => void
-  onStatusChange: (id: string, status: 'belum' | 'proses' | 'selesai') => void
+  onStatusChange: (id: string, status: 'belum' | 'proses' | 'selesai' | 'ide') => void
   onPause: (id: string) => void
   onResume: (id: string) => void
   onStart?: (task: Task) => void
@@ -408,7 +408,7 @@ function HariIniPageClient() {
     }
   }
 
-  const handleStatusChange = (id: string, status: 'belum' | 'proses' | 'selesai') => {
+  const handleStatusChange = (id: string, status: 'belum' | 'proses' | 'selesai' | 'ide') => {
     toggleTaskStatus.mutate({ id, status })
   }
 

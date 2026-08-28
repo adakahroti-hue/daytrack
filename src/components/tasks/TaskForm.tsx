@@ -22,7 +22,7 @@ const taskSchema = z.object({
   tanggal: z.string().optional(),
   estimasi_menit: z.number().int().min(0),
   prioritas: z.enum(['p1', 'p2', 'p3', 'p4']),
-  status: z.enum(['belum', 'proses', 'selesai']),
+  status: z.enum(['belum', 'proses', 'selesai', 'ide']),
 })
 
 type TaskFormData = z.infer<typeof taskSchema>
@@ -38,6 +38,7 @@ const STATUS_OPTIONS = [
   { value: 'belum', label: 'Belum' },
   { value: 'proses', label: 'Proses' },
   { value: 'selesai', label: 'Selesai' },
+  { value: 'ide', label: 'Ide (belum action)' },
 ]
 
 interface TaskFormProps {

@@ -24,7 +24,7 @@ type Task = {
   tanggal?: string
   estimasi_menit: number
   prioritas: 'p1' | 'p2' | 'p3' | 'p4'
-  status: 'belum' | 'proses' | 'selesai'
+  status: 'belum' | 'proses' | 'selesai' | 'ide'
   created_at: string
   updated_at: string
   started_at: string | null
@@ -39,7 +39,7 @@ type TaskFormData = {
   tanggal?: string
   estimasi_menit: number
   prioritas: 'p1' | 'p2' | 'p3' | 'p4'
-  status: 'belum' | 'proses' | 'selesai'
+  status: 'belum' | 'proses' | 'selesai' | 'ide'
 }
 
 type EditingTask = TaskFormData & { id: string }
@@ -60,6 +60,7 @@ const STATUS_SHORT_LABELS: Record<Task['status'], string> = {
   belum: 'Belum',
   proses: 'Proses',
   selesai: 'Selesai',
+  ide: 'Ide',
 }
 
 const PRIORITY_CARD_COLORS: Record<string, string> = {

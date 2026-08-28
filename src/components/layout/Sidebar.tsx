@@ -105,6 +105,7 @@ const navigation: NavSection[] = [
     items: [
       { title: 'Hari Ini', href: '/tugas/hari-ini', icon: Clock },
       { title: 'Semua', href: '/tugas/semua', icon: CalendarDays },
+      { title: 'Bank Ide', href: '/tugas/bank-ide', icon: Lightbulb },
       { title: 'Selesai', href: '/tugas/selesai', icon: CheckCircle2 },
     ],
   },

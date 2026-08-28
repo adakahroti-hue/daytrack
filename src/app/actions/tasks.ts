@@ -9,7 +9,7 @@ const taskSchema = z.object({
   tanggal: z.string().optional(),
   estimasi_menit: z.number().int().min(0).default(0),
   prioritas: z.enum(["p1", "p2", "p3", "p4"]).default("p3"),
-  status: z.enum(["proses", "belum", "selesai"]).default("belum"),
+  status: z.enum(["proses", "belum", "selesai", "ide"]).default("belum"),
   // Revisi batch 12: penanda paket tugas (parent/child/single)
   group_id: z.string().uuid().nullable().optional(),
   group_order: z.number().int().nullable().optional(),
@@ -176,7 +176,7 @@ function computeActiveSeconds(task: {
   return base + elapsed
 }
 
-export async function toggleTaskStatus(id: string, status: "proses" | "belum" | "selesai") {
+export async function toggleTaskStatus(id: string, status: "proses" | "belum" | "selesai" | "ide") {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -430,7 +430,7 @@ export interface GoalStepSync {
   tanggal: string
   estimasi_menit: number
   prioritas: "p1" | "p2" | "p3" | "p4"
-  status: "belum" | "proses" | "selesai"
+  status: "belum" | "proses" | "selesai" | "ide"
 }
 
 export async function syncGoalLangkahToTasks(

@@ -23,7 +23,7 @@ type OverviewTask = {
   nama: string
   tanggal: string
   prioritas: 'p1' | 'p2' | 'p3' | 'p4'
-  status: 'belum' | 'proses' | 'selesai'
+  status: 'belum' | 'proses' | 'selesai' | 'ide'
   estimasi_menit: number
   accumulated_seconds?: number | null
   is_paused?: boolean | null

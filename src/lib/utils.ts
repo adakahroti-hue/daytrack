@@ -86,6 +86,29 @@ export const STATUS_COLORS = {
     ring: 'focus-visible:ring-red-400/50',
     soft: 'bg-red-50 dark:bg-red-900/20',
   },
+  ide: {
+    bg: 'bg-violet-100 dark:bg-violet-900/30',
+    text: 'text-violet-700 dark:text-violet-300',
+    border: 'border-violet-200 dark:border-violet-800',
+    ring: 'focus-visible:ring-violet-400/50',
+    soft: 'bg-violet-50 dark:bg-violet-900/20',
+  },
+}
+
+// Short status labels — dipakai oleh TaskCard (badge) & tab Bank Ide
+export const STATUS_SHORT_LABELS: Record<string, string> = {
+  belum: 'Belum',
+  proses: 'Proses',
+  selesai: 'Selesai',
+  ide: 'Ide',
+}
+
+// Card background per prioritas (sticky-note style) — dipakai TaskCard shared
+export const PRIORITY_CARD_COLORS: Record<string, string> = {
+  p1: 'bg-rose-50 border-rose-300 hover:border-rose-400 dark:bg-rose-950/40 dark:border-rose-800',
+  p2: 'bg-amber-50 border-amber-300 hover:border-amber-400 dark:bg-amber-950/40 dark:border-amber-800',
+  p3: 'bg-green-50 border-green-300 hover:border-green-400 dark:bg-green-950/40 dark:border-green-800',
+  p4: 'bg-purple-50 border-purple-300 hover:border-purple-400 dark:bg-purple-950/40 dark:border-purple-800',
 }
 
 // Priority Colors - Soft tones for badges

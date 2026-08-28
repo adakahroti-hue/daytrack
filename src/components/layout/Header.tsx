@@ -102,6 +102,7 @@ const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   '/overview': LayoutDashboard,
   '/tugas/hari-ini': Clock,
   '/tugas/semua': CalendarDays,
+  '/tugas/bank-ide': Lightbulb,
   '/tugas/selesai': CheckCircle2,
   '/sholat': Mosque,
   '/quran': BookOpen,
