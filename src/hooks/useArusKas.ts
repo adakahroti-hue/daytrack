@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   getArusKasRange,
+  getArusKasAll,
   createArusKas,
   deleteArusKas,
   updateArusKas,
@@ -14,6 +15,14 @@ export function useArusKasRange(startDate: string, endDate: string) {
     queryKey: ["arus-kas", "range", startDate, endDate],
     queryFn: () => getArusKasRange(startDate, endDate),
     enabled: !!startDate && !!endDate,
+  })
+}
+
+// Filter "Semua": seluruh catatan tanpa batas periode.
+export function useArusKasAll() {
+  return useQuery({
+    queryKey: ["arus-kas", "all"],
+    queryFn: () => getArusKasAll(),
   })
 }
 

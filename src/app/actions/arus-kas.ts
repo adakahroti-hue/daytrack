@@ -136,3 +136,17 @@ export async function getArusKasRange(startDate: string, endDate: string) {
   if (error) throw new Error(error.message)
   return data || []
 }
+
+// Filter "Semua": ambil SELURUH catatan arus kas tanpa batas periode.
+export async function getArusKasAll() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+  const { data, error } = await supabase
+    .from("arus_kas")
+    .select("id, user_id, tanggal, kategori, nominal, alasan, dompet, created_at")
+    .eq("user_id", user.id)
+    .order("tanggal", { ascending: true })
+  if (error) throw new Error(error.message)
+  return data || []
+}

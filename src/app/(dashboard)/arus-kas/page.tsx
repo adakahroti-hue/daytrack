@@ -22,7 +22,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { formatRupiah, parseRupiah } from "@/lib/utils"
-import { useArusKasRange, useCreateArusKas, useDeleteArusKas, useUpdateArusKas } from "@/hooks/useArusKas"
+import { useArusKasRange, useArusKasAll, useCreateArusKas, useDeleteArusKas, useUpdateArusKas } from "@/hooks/useArusKas"
 import { useRealtime } from "@/hooks/useRealtime"
 import { useHeaderControls } from "@/components/layout/HeaderControls"
 
@@ -118,11 +118,16 @@ export default function ArusKasPage() {
   const startDate = format(rangeStart, "yyyy-MM-dd")
   const endDate = format(rangeEnd, "yyyy-MM-dd")
 
-  const { data: logs = [], isLoading, error } = useArusKasRange(startDate, endDate)
+  // Filter "Semua": abaikan periode, tampilkan SELURUH catatan arus kas.
+  const [showAll, setShowAll] = useState(false)
+
+  const rangeQuery = useArusKasRange(startDate, endDate)
+  const allQuery = useArusKasAll()
+  const { data: logs = [], isLoading, error } = showAll ? allQuery : rangeQuery
   useRealtime({
     table: "arus_kas",
-    filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
-    queryKeys: [["arus-kas", "range", startDate, endDate]],
+    filter: showAll ? undefined : `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
+    queryKeys: showAll ? [["arus-kas", "all"]] : [["arus-kas", "range", startDate, endDate]],
   })
 
   const createArusKas = useCreateArusKas()
@@ -258,6 +263,17 @@ export default function ArusKasPage() {
 
       {/* Filter */}
       <div className="flex flex-wrap items-center gap-2">
+        {/* Toggle Semua: abaikan batas periode (tampilkan seluruh catatan) */}
+        <Button
+          variant={showAll ? "default" : "outline"}
+          size="sm"
+          className={cn("gap-1.5", showAll && "bg-[#0F172A] hover:bg-[#1E293B] text-white")}
+          onClick={() => setShowAll(v => !v)}
+        >
+          <Calendar className="h-3.5 w-3.5" />
+          {showAll ? "Semua (periode diabaikan)" : "Semua"}
+        </Button>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="gap-1.5">
