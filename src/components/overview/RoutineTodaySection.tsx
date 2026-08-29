@@ -582,26 +582,38 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
               <Moon className="h-3.5 w-3.5 text-sky-500" /> Waktu Tidur
             </p>
-            <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs text-slate-500">Rata-rata durasi</span>
-                <span className="font-semibold text-slate-900 tabular-nums">{avgDurasi > 0 ? `${avgDurasi} jam` : '—'}</span>
+            <div className="mt-1.5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className="min-w-0 flex items-center gap-3">
+                {isWeekly ? (
+                  <XyDonut value={checklist[3].days} target={daysElapsed} color="#0ea5e9" size={52} />
+                ) : (
+                  <div className="flex items-baseline gap-1.5 leading-none pl-[2px]">
+                    <span className={cn('text-[22px] font-bold tabular-nums', numColor(checklist[3].days >= daysElapsed))}>{checklist[3].days}<span className={cn('text-lg', numColorSoft(checklist[3].days >= daysElapsed))}>/{daysElapsed}</span></span>
+                  </div>
+                )}
+                <span className="text-sm font-medium text-slate-500">hari tepat</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs text-slate-500">Tidur paling lambat</span>
-                <span className="font-semibold text-slate-900 tabular-nums">{tidurPalingLambat ?? '—'}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs text-slate-500">Bangun paling lambat</span>
-                <span className="font-semibold text-slate-900 tabular-nums">{bangunPalingLambat ?? '—'}</span>
-              </div>
-              {tidurTopAlasan && (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm lg:justify-end">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-slate-500">Alasan begadang</span>
-                  <span className="font-semibold text-rose-600">{REASON_LABELS[tidurTopAlasan] ?? tidurTopAlasan}</span>
-                  <span className="text-xs text-slate-400">({tidurTopAlasanCount}×)</span>
+                  <span className="text-xs text-slate-500">Rata-rata durasi</span>
+                  <span className="font-semibold text-slate-900 tabular-nums">{avgDurasi > 0 ? `${avgDurasi} jam` : '—'}</span>
                 </div>
-              )}
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-slate-500">Tidur paling lambat</span>
+                  <span className="font-semibold text-slate-900 tabular-nums">{tidurPalingLambat ?? '—'}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-slate-500">Bangun paling lambat</span>
+                  <span className="font-semibold text-slate-900 tabular-nums">{bangunPalingLambat ?? '—'}</span>
+                </div>
+                {tidurTopAlasan && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs text-slate-500">Alasan begadang</span>
+                    <span className="font-semibold text-rose-600">{REASON_LABELS[tidurTopAlasan] ?? tidurTopAlasan}</span>
+                    <span className="text-xs text-slate-400">({tidurTopAlasanCount}×)</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           <div className="mt-3 pt-3 border-t border-slate-100">
