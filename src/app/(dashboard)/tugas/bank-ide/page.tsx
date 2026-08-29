@@ -148,7 +148,7 @@ function BankIdePageClient() {
 
       <Button
         onClick={() => { setEditingTask(null); setIsFormOpen(true) }}
-        className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 bg-violet-600 hover:bg-violet-700 text-white"
+        className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 bg-red-600 hover:bg-red-700 text-white"
         aria-label="Tambah ide baru"
         size="icon"
       >
