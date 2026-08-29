@@ -494,37 +494,8 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               )}
             </div>
           )}
-          {/* #3: Optimasi Hoki — isi card Optimasi Hidup dipindahkan sini (batch 25) */}
-          <div className="mt-3 pt-3 border-t border-slate-100">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-              <Sparkles className="h-3.5 w-3.5 text-emerald-500" /> Optimasi Hoki
-            </p>
-            {isWeekly ? (
-              <div className="mt-1.5 pl-[18px] flex items-center gap-x-4 sm:gap-x-8 gap-y-3 flex-wrap text-sm">
-                <XyDonut value={checklist[0].days} target={daysElapsed} color="#10b981" size={44} label="Bersyukur" />
-                <XyDonut value={checklist[1].days} target={daysElapsed} color="#10b981" size={44} label="Doakan" />
-                <XyDonut value={sedekahCount} target={daysElapsed} color="#10b981" size={44} label="Sedekah" />
-              </div>
-            ) : (
-              <div className="mt-1.5 pl-[18px] flex items-center gap-x-3 sm:gap-x-10 lg:gap-x-12 gap-y-1.5 flex-wrap text-sm">
-                <div className="flex items-center gap-1">
-                  <span className={cn('text-[18px] sm:text-[22px] font-bold leading-none tabular-nums', numColor(checklist[0].days >= daysElapsed))}>{checklist[0].days}<span className={cn('text-sm sm:text-lg', numColorSoft(checklist[0].days >= daysElapsed))}>/{daysElapsed}</span></span>
-                  <span className="text-[10px] sm:text-xs text-slate-700">Bersyukur</span>
-                  {syukurReason && <span className="text-[10px] text-rose-500">· {REASON_LABELS[syukurReason.reason] ?? syukurReason.reason}</span>}
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className={cn('text-[18px] sm:text-[22px] font-bold leading-none tabular-nums', numColor(checklist[1].days >= daysElapsed))}>{checklist[1].days}<span className={cn('text-sm sm:text-lg', numColorSoft(checklist[1].days >= daysElapsed))}>/{daysElapsed}</span></span>
-                  <span className="text-[10px] sm:text-xs text-slate-700">Doakan orang</span>
-                  {doaReason && <span className="text-[10px] text-rose-500">· {doaReason.reason}</span>}
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className={cn('text-[18px] sm:text-[22px] font-bold leading-none tabular-nums', numColor(sedekahCount >= daysElapsed))}>{sedekahCount}<span className={cn('text-sm sm:text-lg', numColorSoft(sedekahCount >= daysElapsed))}>/{daysElapsed}</span></span>
-                  <span className="text-[10px] sm:text-xs text-slate-700">Sedekah</span>
-                  {sedekahReason && <span className="text-[10px] text-rose-500">· {REASON_LABELS[sedekahReason.reason] ?? sedekahReason.reason}</span>}
-                </div>
-              </div>
-            )}
-          </div>
+          {/* #3: Optimasi Hoki dipindah jadi card tersendiri di bawah */}
+
         </RoutineCard>
 
         {/* Kesehatan — Minum Air + Waktu Tidur + Bebas PMO (mockup batch 23: kolom kanan) */}
@@ -656,6 +627,8 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           </div>
         </RoutineCard>
 
+        {/* Keuangan + Optimasi Hoki — sebaris (grid 2 kolom) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {/* Keuangan — Kebutuhan & Saldo dari tab Arus Kas */}
         <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan">
           <div className="mt-3 grid grid-cols-2 gap-3">
@@ -671,6 +644,36 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             </div>
           </div>
         </RoutineCard>
+
+        {/* Optimasi Hoki — card tersendiri (sebaris dengan Keuangan) */}
+        <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-emerald-500" title="Optimasi Hoki">
+          {isWeekly ? (
+            <div className="mt-3 flex items-center gap-x-4 sm:gap-x-8 gap-y-3 flex-wrap text-sm">
+              <XyDonut value={checklist[0].days} target={daysElapsed} color="#10b981" size={44} label="Bersyukur" />
+              <XyDonut value={checklist[1].days} target={daysElapsed} color="#10b981" size={44} label="Doakan" />
+              <XyDonut value={sedekahCount} target={daysElapsed} color="#10b981" size={44} label="Sedekah" />
+            </div>
+          ) : (
+            <div className="mt-3 flex items-center gap-x-3 sm:gap-x-10 lg:gap-x-12 gap-y-1.5 flex-wrap text-sm">
+              <div className="flex items-center gap-1">
+                <span className={cn('text-[18px] sm:text-[22px] font-bold leading-none tabular-nums', numColor(checklist[0].days >= daysElapsed))}>{checklist[0].days}<span className={cn('text-sm sm:text-lg', numColorSoft(checklist[0].days >= daysElapsed))}>/{daysElapsed}</span></span>
+                <span className="text-[10px] sm:text-xs text-slate-700">Bersyukur</span>
+                {syukurReason && <span className="text-[10px] text-rose-500">· {REASON_LABELS[syukurReason.reason] ?? syukurReason.reason}</span>}
+              </div>
+              <div className="flex items-center gap-1">
+                <span className={cn('text-[18px] sm:text-[22px] font-bold leading-none tabular-nums', numColor(checklist[1].days >= daysElapsed))}>{checklist[1].days}<span className={cn('text-sm sm:text-lg', numColorSoft(checklist[1].days >= daysElapsed))}>/{daysElapsed}</span></span>
+                <span className="text-[10px] sm:text-xs text-slate-700">Doakan orang</span>
+                {doaReason && <span className="text-[10px] text-rose-500">· {doaReason.reason}</span>}
+              </div>
+              <div className="flex items-center gap-1">
+                <span className={cn('text-[18px] sm:text-[22px] font-bold leading-none tabular-nums', numColor(sedekahCount >= daysElapsed))}>{sedekahCount}<span className={cn('text-sm sm:text-lg', numColorSoft(sedekahCount >= daysElapsed))}>/{daysElapsed}</span></span>
+                <span className="text-[10px] sm:text-xs text-slate-700">Sedekah</span>
+                {sedekahReason && <span className="text-[10px] text-rose-500">· {REASON_LABELS[sedekahReason.reason] ?? sedekahReason.reason}</span>}
+              </div>
+            </div>
+          )}
+        </RoutineCard>
+        </div>
 
       </div>
     </section>
