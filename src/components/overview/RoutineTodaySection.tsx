@@ -627,25 +627,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           </div>
         </RoutineCard>
 
-        {/* Keuangan + Optimasi Hoki — sebaris (grid 2 kolom) */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        {/* Keuangan — Kebutuhan & Saldo dari tab Arus Kas */}
-        <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan">
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Kebutuhan</p>
-              <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">{formatRupiah(akKebutuhanSisa)}</p>
-              <p className="text-[11px] text-slate-400">sisa alokasi</p>
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Saldo</p>
-              <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">{formatRupiah(akSaldo)}</p>
-              <p className="text-[11px] text-slate-400">masuk − keluar</p>
-            </div>
-          </div>
-        </RoutineCard>
-
-        {/* Optimasi Hoki — card tersendiri (sebaris dengan Keuangan) */}
+        {/* Optimasi Hoki — card tersendiri (di bawah Kesehatan) */}
         <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-emerald-500" title="Optimasi Hoki">
           {period === 'mingguan' ? (
             <div className="mt-3 flex items-center gap-x-4 sm:gap-x-8 gap-y-3 flex-wrap text-sm">
@@ -679,7 +661,22 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             </div>
           )}
         </RoutineCard>
-        </div>
+
+        {/* Keuangan — Kebutuhan & Saldo dari tab Arus Kas */}
+        <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan">
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Kebutuhan</p>
+              <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">{formatRupiah(akKebutuhanSisa)}</p>
+              <p className="text-[11px] text-slate-400">sisa alokasi</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Saldo</p>
+              <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">{formatRupiah(akSaldo)}</p>
+              <p className="text-[11px] text-slate-400">masuk − keluar</p>
+            </div>
+          </div>
+        </RoutineCard>
 
       </div>
     </section>
