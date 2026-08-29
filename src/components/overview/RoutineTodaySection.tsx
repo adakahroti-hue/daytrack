@@ -631,7 +631,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* Bersyukur */}
           <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-emerald-500" title="Bersyukur">
-            <div className="mt-3 flex items-center gap-3">
+            <div className={cn('mt-3 flex gap-3', period === 'shot' ? 'flex-col sm:flex-row sm:items-center' : 'flex-col')}>
               <XyDonut value={checklist[0].days} target={daysElapsed} color="#10b981" size={52} label="Bersyukur" />
               {syukurReason && (
                 <p className="text-[11px] text-rose-500">Alasan: {REASON_LABELS[syukurReason.reason] ?? syukurReason.reason}</p>
@@ -640,7 +640,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           </RoutineCard>
           {/* Doakan */}
           <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-emerald-500" title="Doakan">
-            <div className="mt-3 flex items-center gap-3">
+            <div className={cn('mt-3 flex gap-3', period === 'shot' ? 'flex-col sm:flex-row sm:items-center' : 'flex-col')}>
               <XyDonut value={checklist[1].days} target={daysElapsed} color="#10b981" size={52} label="Doakan" />
               {doaReason && (
                 <p className="text-[11px] text-rose-500">Alasan: {doaReason.reason}</p>
@@ -649,7 +649,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           </RoutineCard>
           {/* Sedekah */}
           <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-emerald-500" title="Sedekah">
-            <div className="mt-3 flex items-center gap-3">
+            <div className={cn('mt-3 flex gap-3', period === 'shot' ? 'flex-col sm:flex-row sm:items-center' : 'flex-col')}>
               <XyDonut value={sedekahCount} target={daysElapsed} color="#10b981" size={52} label="Sedekah" />
               {sedekahReason && (
                 <p className="text-[11px] text-rose-500">Alasan: {REASON_LABELS[sedekahReason.reason] ?? sedekahReason.reason}</p>
