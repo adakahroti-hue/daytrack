@@ -631,7 +631,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-emerald-500" title="Hoki">
           <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
             {/* Bersyukur */}
-            <div className={cn('flex flex-col gap-3', period === 'shot' ? 'sm:flex-row sm:items-center' : '')}>
+            <div className="flex items-center gap-3 flex-wrap">
               <XyDonut value={checklist[0].days} target={daysElapsed} color="#8b5cf6" size={52} label="Bersyukur" />
               {syukurReason && (
                 <p className="text-[11px] text-rose-500">Alasan: <span className="text-slate-900">{REASON_LABELS[syukurReason.reason] ?? syukurReason.reason}</span> <span className="text-slate-400">({syukurReason.count}×)</span></p>
@@ -639,7 +639,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             </div>
             <div className="border-t sm:border-t-0 sm:border-l border-slate-100" />
             {/* Doakan */}
-            <div className={cn('flex flex-col gap-3', period === 'shot' ? 'sm:flex-row sm:items-center' : '')}>
+            <div className="flex items-center gap-3 flex-wrap">
               <XyDonut value={checklist[1].days} target={daysElapsed} color="#8b5cf6" size={52} label="Doakan" />
               {doaReason && (
                 <p className="text-[11px] text-rose-500">Alasan: <span className="text-slate-900">{doaReason.reason}</span> <span className="text-slate-400">({doaReason.count}×)</span></p>
@@ -647,7 +647,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             </div>
             <div className="border-t sm:border-t-0 sm:border-l border-slate-100" />
             {/* Sedekah */}
-            <div className={cn('flex flex-col gap-3', period === 'shot' ? 'sm:flex-row sm:items-center' : '')}>
+            <div className="flex items-center gap-3 flex-wrap">
               <XyDonut value={sedekahCount} target={daysElapsed} color="#8b5cf6" size={52} label="Sedekah" />
               {sedekahReason && (
                 <p className="text-[11px] text-rose-500">Alasan: <span className="text-slate-900">{REASON_LABELS[sedekahReason.reason] ?? sedekahReason.reason}</span> <span className="text-slate-400">({sedekahReason.count}×)</span></p>
