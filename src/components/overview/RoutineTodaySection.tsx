@@ -65,6 +65,11 @@ const REASON_LABELS: Record<string, string> = {
   tak_ada_tempat: 'Tak ada tempat',
   bersama_teman: 'Bersama teman',
   lainnya: 'Lainnya',
+  'Lambat Makan Pagi': 'Lambat Makan Pagi',
+  'Lambat Makan Malam': 'Lambat Makan Malam',
+  'Kurang Aktivitas': 'Kurang Aktivitas',
+  'Makan Malam Sedikit': 'Makan Malam Sedikit',
+  'Laptopan Lama': 'Laptopan Lama',
 }
 
 const QURAN_PILL_LABELS: Record<string, string> = {
