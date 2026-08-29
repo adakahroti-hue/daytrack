@@ -38,9 +38,14 @@ export default function OverviewPage() {
   const startStr = format(rangeStart, 'yyyy-MM-dd')
   const endStr = format(rangeEnd, 'yyyy-MM-dd')
 
+  // Metrik di-cap ke hari ini (jangan hitung hari yang belum dilewati) — khusus shot.
+  // Tampilan durasi/rentang tetap full Minggu–Sabtu (pakai endStr di atas).
+  const todayStr = format(new Date(), 'yyyy-MM-dd')
+  const metricEndStr = summaryPeriod === 'shot' && endStr > todayStr ? todayStr : endStr
+
   return (
     <div className="space-y-3">
-      <RoutineTodaySection startStr={startStr} endStr={endStr} period={summaryPeriod} />
+      <RoutineTodaySection startStr={startStr} endStr={endStr} metricEndStr={metricEndStr} period={summaryPeriod} />
     </div>
   )
 }

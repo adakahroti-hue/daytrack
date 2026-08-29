@@ -150,7 +150,7 @@ function XyDonut({
   )
 }
 
-export function RoutineTodaySection({ startStr, endStr, period }: { startStr: string; endStr: string; period: OverviewPeriod }) {
+export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: { startStr: string; endStr: string; metricEndStr: string; period: OverviewPeriod }) {
   const isHarian = period === 'harian' || period === 'kemarin'
   const isKemarin = period === 'kemarin'
   // Shot = rentang Minggu–Sabtu (tampilan sama dengan mingguan, termasuk donut x/y)
@@ -250,7 +250,7 @@ export function RoutineTodaySection({ startStr, endStr, period }: { startStr: st
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {/* Kartu Tugas — full width (mockup batch 23) */}
         <div className="col-span-full">
-          <FocusTodayCard startStr={startStr} endStr={endStr} period={period} />
+          <FocusTodayCard startStr={startStr} endStr={metricEndStr} period={period} />
         </div>
 
         {/* Ibadah — revisi batch 23: mengikuti mockup (angka kiri, pill kanan) */}
