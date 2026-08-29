@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Check, Minus, Mosque, BookOpen, GlassWater, Repeat, Sparkles, Shield, Moon, ArrowRight, Wallet, HandCoins, Sun } from 'lucide-react'
+import { Check, Minus, Mosque, BookOpen, GlassWater, Repeat, Sparkles, Shield, Moon, ArrowRight, Wallet, HandCoins, Sun, PersonStanding } from 'lucide-react'
 import { format, differenceInCalendarDays } from 'date-fns'
 import { cn, formatRupiah } from '@/lib/utils'
 import { useSholatSunnahRange } from '@/hooks/useSholatSunnah'
@@ -14,6 +14,7 @@ import { useSedekahLogRange } from '@/hooks/useSedekahLogs'
 import { usePmoLogRange } from '@/hooks/usePmoLogs'
 import { useTidurLogRange } from '@/hooks/useTidurLogs'
 import { useArusKasRange } from '@/hooks/useArusKas'
+import { useMasalahLogRange } from '@/hooks/useMasalahLogs'
 import { PERIOD_LABEL, type OverviewPeriod, FocusTodayCard } from './FocusTodaySection'
 
 // ─── Revisi batch 18: section "Rutinitas" untuk tab Overview (tema hitam-putih) ───
@@ -321,6 +322,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   // Rekor PMO — hari_ke terbesar dalam rentang (streak terpanjang tercatat)
   const pmoRekor = (pmoEntries as any[]).reduce((m, e) => Math.max(m, e.hari_ke || 0), 0)
   const label = PERIOD_LABEL[period]
+
+  // Refleksi (journal) — 5 poin terbaru dalam rentang periode (sumber: tab Refleksi /masalah)
+  const { data: refleksiEntries = [] } = useMasalahLogRange(startStr, endStr)
+  const refleksiList = (refleksiEntries as any[])
+    .filter(e => e.masalah)
+    .sort((a, b) => b.tanggal.localeCompare(a.tanggal) || (b.created_at || '').localeCompare(a.created_at || ''))
+    .slice(0, 5)
+    .map(e => ({ id: e.id, masalah: e.masalah as string }))
 
   return (
     <section>
@@ -667,6 +676,24 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">{formatRupiah(akSaldo)}</p>
               <p className="text-[11px] text-slate-400">masuk − keluar</p>
             </div>
+          </div>
+        </RoutineCard>
+
+        {/* Refleksi — 5 poin terbaru dari tab Refleksi */}
+        <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-purple-500" title="Refleksi" href="/masalah" linkColor="text-purple-500 hover:text-purple-700">
+          <div className="mt-3">
+            {refleksiList.length > 0 ? (
+              <ul className="space-y-1.5">
+                {refleksiList.map((r) => (
+                  <li key={r.id} className="flex items-start gap-2 text-sm text-slate-600 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50">
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-purple-400 shrink-0" />
+                    <span className="line-clamp-2 min-w-0">{r.masalah}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-1 text-sm text-slate-500">Belum ada refleksi pada periode ini.</p>
+            )}
           </div>
         </RoutineCard>
 
