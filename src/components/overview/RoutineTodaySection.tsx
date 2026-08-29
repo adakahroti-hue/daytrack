@@ -602,20 +602,20 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               </div>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm lg:justify-end">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-slate-500">Rata-rata durasi</span>
+                  <span className="text-xs text-slate-500">Avg Durasi</span>
                   <span className="font-semibold text-slate-900 tabular-nums">{avgDurasi > 0 ? `${avgDurasi} jam` : '—'}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-slate-500">Tidur paling lambat</span>
+                  <span className="text-xs text-slate-500">Tidur lambat</span>
                   <span className="font-semibold text-slate-900 tabular-nums">{tidurPalingLambat ?? '—'}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-slate-500">Bangun paling lambat</span>
+                  <span className="text-xs text-slate-500">Bangun lambat</span>
                   <span className="font-semibold text-slate-900 tabular-nums">{bangunPalingLambat ?? '—'}</span>
                 </div>
                 {tidurTopAlasan && (
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-slate-500">Alasan begadang</span>
+                    <span className="text-xs text-slate-500">Alasan</span>
                     <span className="font-semibold text-rose-600">{REASON_LABELS[tidurTopAlasan] ?? tidurTopAlasan}</span>
                     <span className="text-xs text-slate-400">({tidurTopAlasanCount}×)</span>
                   </div>

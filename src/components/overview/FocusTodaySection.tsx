@@ -165,7 +165,6 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
                 <span className="text-slate-400"> / </span>
                 <span className="tabular-nums">{displayTotal}</span> selesai
               </p>
-              <p className="text-xs text-slate-400 mt-0.5">tugas diproses tidak dihitung</p>
             </div>
           </div>
 
