@@ -108,7 +108,7 @@ function TaskCardComponent({
               isInProgress
                 ? 'bg-blue-50 border-blue-300 hover:border-blue-400 dark:bg-blue-950/40 dark:border-blue-800'
                 : isIde
-                  ? 'bg-violet-50 border-violet-300 hover:border-violet-400 dark:bg-violet-950/40 dark:border-violet-800'
+                  ? 'bg-white border-slate-200 hover:border-slate-300 dark:bg-white dark:border-slate-200'
                   : PRIORITY_CARD_COLORS[task.prioritas]
             ),
         CARD_HOVER,
