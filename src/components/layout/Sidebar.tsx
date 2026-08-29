@@ -54,6 +54,7 @@ import {
   ShoppingCart,
   Target,
   ScanSearch,
+  Wrench,
   StickyNote,
   Brain,
 } from 'lucide-react'
@@ -123,9 +124,6 @@ const navigation: NavSection[] = [
     items: [
       { title: 'Refleksi', href: '/masalah', icon: PersonStanding },
       { title: 'Mental Block', href: '/mental-block', icon: Brain },
-      { title: 'SWOT', href: '/swot', icon: ScanSearch },
-      { title: 'Catatan', href: '/catatan', icon: StickyNote },
-      { title: 'Playlist', href: '/kesenangan', icon: ListMusic },
     ],
   },
   {
@@ -153,6 +151,15 @@ const navigation: NavSection[] = [
       { title: 'Minum Air', href: '/minum-air', icon: GlassWater },
       { title: 'PMO', href: '/pmo', icon: Shield },
       { title: 'Tidur', href: '/tidur', icon: Moon },
+    ],
+  },
+  {
+    title: 'Tools',
+    icon: Wrench,
+    items: [
+      { title: 'Catatan', href: '/catatan', icon: StickyNote },
+      { title: 'SWOT', href: '/swot', icon: ScanSearch },
+      { title: 'Playlist', href: '/kesenangan', icon: ListMusic },
     ],
   },
   {
