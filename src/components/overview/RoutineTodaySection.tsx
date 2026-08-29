@@ -629,25 +629,23 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
 
         {/* Optimasi Hoki — 1 card "Hoki" berisi 3 sub (Bersyukur / Doakan / Sedekah) sejajar horizontal */}
         <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-emerald-500" title="Hoki">
-          <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="mt-3 grid grid-cols-3 gap-2 sm:gap-3">
             {/* Bersyukur */}
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex flex-col items-center gap-1.5 text-center">
               <XyDonut value={checklist[0].days} target={daysElapsed} color="#8b5cf6" size={52} label="Bersyukur" />
               {syukurReason && (
                 <p className="text-[11px] text-rose-500">Alasan: <span className="text-slate-900">{REASON_LABELS[syukurReason.reason] ?? syukurReason.reason}</span> <span className="text-slate-400">({syukurReason.count}×)</span></p>
               )}
             </div>
-            <div className="border-t sm:border-t-0 sm:border-l border-slate-100" />
             {/* Doakan */}
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex flex-col items-center gap-1.5 text-center">
               <XyDonut value={checklist[1].days} target={daysElapsed} color="#8b5cf6" size={52} label="Doakan" />
               {doaReason && (
                 <p className="text-[11px] text-rose-500">Alasan: <span className="text-slate-900">{doaReason.reason}</span> <span className="text-slate-400">({doaReason.count}×)</span></p>
               )}
             </div>
-            <div className="border-t sm:border-t-0 sm:border-l border-slate-100" />
             {/* Sedekah */}
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex flex-col items-center gap-1.5 text-center">
               <XyDonut value={sedekahCount} target={daysElapsed} color="#8b5cf6" size={52} label="Sedekah" />
               {sedekahReason && (
                 <p className="text-[11px] text-rose-500">Alasan: <span className="text-slate-900">{REASON_LABELS[sedekahReason.reason] ?? sedekahReason.reason}</span> <span className="text-slate-400">({sedekahReason.count}×)</span></p>
