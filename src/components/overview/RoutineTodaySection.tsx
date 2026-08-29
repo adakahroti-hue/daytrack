@@ -638,7 +638,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
 
         {/* Optimasi Hoki — 1 card "Hoki" berisi 3 sub (Bersyukur / Doakan / Sedekah) sejajar horizontal */}
         <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-emerald-500" title="Hoki">
-          <div className="mt-3 grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="mt-3 px-2 sm:px-3 py-1 grid grid-cols-3 gap-2 sm:gap-3">
             {/* Bersyukur */}
             <div className="flex items-center gap-2 text-left">
               <XyDonut value={checklist[0].days} target={daysElapsed} color="#8b5cf6" size={52} label="Bersyukur" />
@@ -647,14 +647,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               )}
             </div>
             {/* Doakan */}
-            <div className="flex items-center gap-2 text-left border-l border-slate-100">
+            <div className="flex items-center gap-2 text-left border-l border-slate-100 pl-3 sm:pl-4">
               <XyDonut value={checklist[1].days} target={daysElapsed} color="#8b5cf6" size={52} label="Doakan" />
               {doaReason && (
                 <p className="text-[11px] text-rose-500 leading-tight">Alasan: <span className="text-slate-900">{doaReason.reason}</span> <span className="text-slate-400">({doaReason.count}×)</span></p>
               )}
             </div>
             {/* Sedekah */}
-            <div className="flex items-center gap-2 text-left border-l border-slate-100">
+            <div className="flex items-center gap-2 text-left border-l border-slate-100 pl-3 sm:pl-4">
               <XyDonut value={sedekahCount} target={daysElapsed} color="#8b5cf6" size={52} label="Sedekah" />
               {sedekahReason && (
                 <p className="text-[11px] text-rose-500">Alasan: <span className="text-slate-900">{REASON_LABELS[sedekahReason.reason] ?? sedekahReason.reason}</span> <span className="text-slate-400">({sedekahReason.count}×)</span></p>
