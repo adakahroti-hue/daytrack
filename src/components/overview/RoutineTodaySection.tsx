@@ -328,7 +328,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const refleksiList = (refleksiEntries as any[])
     .filter(e => e.masalah)
     .sort((a, b) => b.tanggal.localeCompare(a.tanggal) || (b.created_at || '').localeCompare(a.created_at || ''))
-    .slice(0, 5)
+    .slice(0, 3)
     .map(e => ({ id: e.id, masalah: e.masalah as string }))
 
   return (
