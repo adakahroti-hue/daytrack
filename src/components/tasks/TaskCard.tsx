@@ -238,7 +238,7 @@ function TaskCardComponent({
             className={cn(
               'w-auto sm:w-auto',
               isCompleted && 'bg-muted text-muted-foreground hover:bg-muted/80 border-border',
-              isIde && 'bg-violet-600 hover:bg-violet-700 text-white shadow-sm',
+              isIde && 'bg-black hover:bg-neutral-800 text-white shadow-sm',
               isPending && `${BRAND_COLORS.primary} ${BRAND_COLORS.primaryHover} shadow-sm`,
               isInProgress && 'bg-green-600 hover:bg-green-700 text-white shadow-sm'
             )}
