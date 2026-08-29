@@ -647,7 +647,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
 
         {/* Optimasi Hoki — card tersendiri (sebaris dengan Keuangan) */}
         <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-emerald-500" title="Optimasi Hoki">
-          {isWeekly ? (
+          {period === 'mingguan' ? (
             <div className="mt-3 flex items-center gap-x-4 sm:gap-x-8 gap-y-3 flex-wrap text-sm">
               <XyDonut value={checklist[0].days} target={daysElapsed} color="#10b981" size={44} label="Bersyukur" />
               <XyDonut value={checklist[1].days} target={daysElapsed} color="#10b981" size={44} label="Doakan" />
