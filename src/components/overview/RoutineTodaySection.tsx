@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { Check, Minus, Mosque, BookOpen, GlassWater, Repeat, Sparkles, Shield, Moon, ArrowRight, Flower, Wallet, HandCoins, Sun } from 'lucide-react'
 import { format, differenceInCalendarDays } from 'date-fns'
 import { cn, formatRupiah } from '@/lib/utils'
-import { JAM_TIDUR_OPTIONS } from '@/lib/tidur-options'
 import { useSholatSunnahRange } from '@/hooks/useSholatSunnah'
 import { usePrayerLogRange } from '@/hooks/usePrayerLogs'
 import { useQuranLogRange } from '@/hooks/useQuranLogs'
@@ -258,6 +257,45 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const sedekahCount = (sedekahEntries as any[]).filter(e => e.status === 'sudah').length
   const { data: pmoEntries = [] } = usePmoLogRange(startStr, endStr)
   const { data: tidurEntries = [] } = useTidurLogRange(startStr, endStr)
+  // Minum Air — insight waktu sering terlewat
+  const waterMissedIdx = waterPerSesi.indexOf(Math.min(...waterPerSesi))
+  const waterMostMissed = daysElapsed - waterPerSesi[waterMissedIdx]
+
+  // Tidur — rata-rata durasi, tidur paling lambat, bangun paling lambat, alasan begadang terpopuler
+  const tidurRows = tidurEntries as any[]
+  const durasiVals = tidurRows.map(e => e.durasi_jam).filter((v: number | null) => typeof v === 'number' && v > 0)
+  const avgDurasi = durasiVals.length ? Math.round(durasiVals.reduce((a: number, b: number) => a + b, 0) / durasiVals.length * 10) / 10 : 0
+  const jamTidurList = tidurRows.map(e => e.jam_tidur).filter(Boolean).sort() as string[]
+  const jamBangunList = tidurRows.map(e => e.jam_bangun).filter(Boolean).sort() as string[]
+  const tidurPalingLambat = jamTidurList.length ? jamTidurList[jamTidurList.length - 1] : null
+  const bangunPalingLambat = jamBangunList.length ? jamBangunList[jamBangunList.length - 1] : null
+  const tidurAlasanCount = new Map<string, number>()
+  tidurRows.forEach(e => { if (e.status === 'begadang' && e.alasan_tidak) { const k = e.alasan_tidak as string; tidurAlasanCount.set(k, (tidurAlasanCount.get(k) || 0) + 1) } })
+  let tidurTopAlasan = null as string | null
+  let tidurTopAlasanCount = 0
+  tidurAlasanCount.forEach((v, k) => { if (v > tidurTopAlasanCount) { tidurTopAlasanCount = v; tidurTopAlasan = k } })
+
+  // PMO — alasan relapse terpopuler (jika ada)
+  const pmoRows = pmoEntries as any[]
+  const pmoRelapse = pmoRows.filter(e => e.status === 'relapse')
+  const pmoAlasanCount = new Map<string, number>()
+  pmoRelapse.forEach(e => { if (e.alasan) { const k = e.alasan as string; pmoAlasanCount.set(k, (pmoAlasanCount.get(k) || 0) + 1) } })
+  let pmoTopAlasan = null as string | null
+  let pmoTopAlasanCount = 0
+  pmoAlasanCount.forEach((v, k) => { if (v > pmoTopAlasanCount) { pmoTopAlasanCount = v; pmoTopAlasan = k } })
+
+  // Syukur / Doa / Sedekah — alasan tidak melakukannya (terpopuler per masing-masing)
+  const topReasonOf = (entries: any[], getKey: (e: any) => string | null) => {
+    const m = new Map<string, number>()
+    entries.forEach(e => { const k = getKey(e); if (k) m.set(k, (m.get(k) || 0) + 1) })
+    let top: string | null = null; let c = 0
+    m.forEach((v, k) => { if (v > c) { c = v; top = k } })
+    return top ? { reason: top, count: c } : null
+  }
+  const syukurReason = topReasonOf(syukurEntries as any[], e => e.alasan_tidak ?? null)
+  const doaReason = topReasonOf(doaEntries as any[], e => e.alasan ?? null)
+  const sedekahReason = topReasonOf(sedekahEntries as any[], e => e.alasan_tidak ?? null)
+
 
   // Arus Kas — saldo & sisa alokasi kebutuhan (range di-cap ke today, sama seperti tab Arus Kas)
   const akTodayStr = format(new Date(), 'yyyy-MM-dd')
@@ -283,15 +321,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const { data: kesenanganEntries = [] } = useKesenanganRange(startStr, endStr)
   const funList = (kesenanganEntries as any[]).filter(e => e.status === 'belum').map(e => e.kesenangan as string).filter(Boolean).slice(0, 3)
 
-  // Jam tidur terbanyak (untuk card tidur — mingguan/bulanan/tahunan)
-  const tidurTopJam = (() => {
-    const counts = new Map<string, number>()
-    for (const e of tidurEntries as any[]) {
-      if (e.jam_tidur) counts.set(e.jam_tidur, (counts.get(e.jam_tidur) ?? 0) + 1)
-    }
-    if (counts.size === 0) return null
-    return [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0]
-  })()
   // Rekor PMO — hari_ke terbesar dalam rentang (streak terpanjang tercatat)
   const pmoRekor = (pmoEntries as any[]).reduce((m, e) => Math.max(m, e.hari_ke || 0), 0)
   const label = PERIOD_LABEL[period]
@@ -484,14 +513,17 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                 <div className="flex items-center gap-1">
                   <span className={cn('text-[18px] sm:text-[22px] font-bold leading-none tabular-nums', numColor(checklist[0].days >= daysElapsed))}>{checklist[0].days}<span className={cn('text-sm sm:text-lg', numColorSoft(checklist[0].days >= daysElapsed))}>/{daysElapsed}</span></span>
                   <span className="text-[10px] sm:text-xs text-slate-700">Bersyukur</span>
+                  {syukurReason && <span className="text-[10px] text-rose-500">· {REASON_LABELS[syukurReason.reason] ?? syukurReason.reason}</span>}
                 </div>
                 <div className="flex items-center gap-1">
                   <span className={cn('text-[18px] sm:text-[22px] font-bold leading-none tabular-nums', numColor(checklist[1].days >= daysElapsed))}>{checklist[1].days}<span className={cn('text-sm sm:text-lg', numColorSoft(checklist[1].days >= daysElapsed))}>/{daysElapsed}</span></span>
                   <span className="text-[10px] sm:text-xs text-slate-700">Doakan orang</span>
+                  {doaReason && <span className="text-[10px] text-rose-500">· {doaReason.reason}</span>}
                 </div>
                 <div className="flex items-center gap-1">
                   <span className={cn('text-[18px] sm:text-[22px] font-bold leading-none tabular-nums', numColor(sedekahCount >= daysElapsed))}>{sedekahCount}<span className={cn('text-sm sm:text-lg', numColorSoft(sedekahCount >= daysElapsed))}>/{daysElapsed}</span></span>
                   <span className="text-[10px] sm:text-xs text-slate-700">Sedekah</span>
+                  {sedekahReason && <span className="text-[10px] text-rose-500">· {REASON_LABELS[sedekahReason.reason] ?? sedekahReason.reason}</span>}
                 </div>
               </div>
             )}
@@ -550,33 +582,26 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
               <Moon className="h-3.5 w-3.5 text-sky-500" /> Waktu Tidur
             </p>
-            <div className="mt-1.5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-              <div className="min-w-0 flex items-center gap-3">
-                {isWeekly && <XyDonut value={checklist[3].days} target={daysElapsed} color="#0ea5e9" size={52} />}
-                <div className="min-w-0">
-                  {isWeekly ? (
-                    <p className="text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{checklist[3].days}/{daysElapsed}</span> tepat</p>
-                  ) : (
-                    <p className="pl-[18px] flex items-baseline gap-1.5 leading-none">
-                      <span className={cn('text-[22px] font-bold tabular-nums', numColor(checklist[3].days >= daysElapsed))}>{checklist[3].days}<span className={cn('text-lg', numColorSoft(checklist[3].days >= daysElapsed))}>/{daysElapsed}</span></span>
-                      <span className="text-sm font-medium text-slate-500">tepat</span>
-                    </p>
-                  )}
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-slate-500">Rata-rata durasi</span>
+                <span className="font-semibold text-slate-900 tabular-nums">{avgDurasi > 0 ? `${avgDurasi} jam` : '—'}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-slate-500">Tidur paling lambat</span>
+                <span className="font-semibold text-slate-900 tabular-nums">{tidurPalingLambat ?? '—'}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-slate-500">Bangun paling lambat</span>
+                <span className="font-semibold text-slate-900 tabular-nums">{bangunPalingLambat ?? '—'}</span>
+              </div>
+              {tidurTopAlasan && (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-slate-500">Alasan begadang</span>
+                  <span className="font-semibold text-rose-600">{REASON_LABELS[tidurTopAlasan] ?? tidurTopAlasan}</span>
+                  <span className="text-xs text-slate-400">({tidurTopAlasanCount}×)</span>
                 </div>
-              </div>
-              <div className="grid grid-cols-5 lg:grid-cols-7 gap-x-2 lg:gap-x-6 shrink-0 w-full lg:w-auto">
-                {JAM_TIDUR_OPTIONS.map(o => {
-                  const matched = tidurTopJam && o.value === tidurTopJam
-                  return (
-                    <div key={o.value} className={cn("flex flex-col items-center gap-0.5 min-w-0", !o.value.startsWith('01') ? "" : "pt-3 lg:pt-0")}>
-                      <span className="text-xs leading-tight text-slate-500">{o.label}</span>
-                      {matched
-                        ? <Check className="h-3 w-3 text-indigo-600" />
-                        : <Minus className="h-3 w-3 text-slate-300" />}
-                    </div>
-                  )
-                })}
-              </div>
+              )}
             </div>
           </div>
           <div className="mt-3 pt-3 border-t border-slate-100">
@@ -600,6 +625,15 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                 <p className="text-sm font-bold text-slate-900 tabular-nums">{pmoRekor} <span className="text-xs font-medium text-slate-500">hari</span></p>
               </div>
             </div>
+            {pmoTopAlasan && (
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
+                <span className="flex items-center gap-1">
+                  <span className="font-medium text-slate-700">Alasan relapse:</span>
+                  <span className="font-semibold text-rose-600">{pmoTopAlasan}</span>
+                  <span className="text-slate-400">({pmoTopAlasanCount}×)</span>
+                </span>
+              </div>
+            )}
           </div>
         </RoutineCard>
 
