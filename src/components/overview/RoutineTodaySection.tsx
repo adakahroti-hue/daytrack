@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Check, Minus, Mosque, BookOpen, GlassWater, Repeat, Sparkles, Shield, Moon, ArrowRight, Flower, Wallet, HandCoins, Sun } from 'lucide-react'
+import { Check, Minus, Mosque, BookOpen, GlassWater, Repeat, Sparkles, Shield, Moon, ArrowRight, Wallet, HandCoins, Sun } from 'lucide-react'
 import { format, differenceInCalendarDays } from 'date-fns'
 import { cn, formatRupiah } from '@/lib/utils'
 import { useSholatSunnahRange } from '@/hooks/useSholatSunnah'
@@ -13,11 +13,8 @@ import { useDoaLogRange } from '@/hooks/useDoaLogs'
 import { useSedekahLogRange } from '@/hooks/useSedekahLogs'
 import { usePmoLogRange } from '@/hooks/usePmoLogs'
 import { useTidurLogRange } from '@/hooks/useTidurLogs'
-import { useMasalahLogRange } from '@/hooks/useMasalahLogs'
-import { useKesenanganRange } from '@/hooks/useKesenangan'
 import { useArusKasRange } from '@/hooks/useArusKas'
 import { PERIOD_LABEL, type OverviewPeriod, FocusTodayCard } from './FocusTodaySection'
-import { MentalCard } from './ReflectionSection'
 
 // ─── Revisi batch 18: section "Rutinitas" untuk tab Overview (tema hitam-putih) ───
 
@@ -321,12 +318,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
     { label: 'Bebas PMO', days: countDays(pmoEntries as any[], e => e.status === 'berhasil') },
     { label: 'Tidur tepat waktu', days: countDays(tidurEntries as any[], e => e.status === 'tepat') },
   ]
-  // Refleksi & Kesenangan Ditunda (harian/kemarin — sebaris dengan checklist)
-  const { data: masalahEntries = [] } = useMasalahLogRange(startStr, endStr)
-  const masalahList = (masalahEntries as any[]).map(e => e.masalah as string).filter(Boolean).slice(0, 3)
-  const { data: kesenanganEntries = [] } = useKesenanganRange(startStr, endStr)
-  const funList = (kesenanganEntries as any[]).filter(e => e.status === 'belum').map(e => e.kesenangan as string).filter(Boolean).slice(0, 3)
-
   // Rekor PMO — hari_ke terbesar dalam rentang (streak terpanjang tercatat)
   const pmoRekor = (pmoEntries as any[]).reduce((m, e) => Math.max(m, e.hari_ke || 0), 0)
   const label = PERIOD_LABEL[period]
@@ -583,6 +574,16 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                 })}
               </div>
             </div>
+            {/* Insight Minum Air */}
+            {waterMostMissed > 0 && (
+              <div className="mt-3 flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-xs text-slate-500">
+                <span className="flex items-center gap-1 ml-auto">
+                  <span className="font-medium text-slate-700">Sering terlewat:</span>
+                  <span className="font-semibold text-rose-600">{WATER_PILL_LABELS[WATER_SESSIONS[waterMissedIdx].key] ?? WATER_SESSIONS[waterMissedIdx].label}</span>
+                  <span className="text-slate-400">({waterMostMissed}×)</span>
+                </span>
+              </div>
+            )}
           </div>
           <div className="mt-4 pt-4 border-t border-slate-100">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -671,22 +672,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           </div>
         </RoutineCard>
 
-        {/* Mental — full width (mockup batch 23: bawah) */}
-        <div className="col-span-full">
-          <MentalCard
-            tint="bg-white border-slate-200"
-            icon={Flower}
-            iconColor="text-purple-500"
-            dotColor="bg-purple-500"
-            linkColor="text-slate-500 hover:text-slate-700"
-            title="Mental"
-            masalahItems={masalahList}
-            funItems={funList}
-            masalahEmptyText="Tidak ada refleksi tercatat."
-            funEmptyText="Tidak ada kesenangan ditunda."
-            href="/masalah"
-          />
-        </div>
       </div>
     </section>
   )
