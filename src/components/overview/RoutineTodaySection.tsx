@@ -56,6 +56,18 @@ const WATER_PILL_LABELS: Record<string, string> = {
   setelah_maghrib: 'Maghrib', sebelum_tidur: 'Tidur',
 }
 
+const REASON_LABELS: Record<string, string> = {
+  malas: 'Malas',
+  lupa: 'Lupa',
+  ketiduran: 'Ketiduran',
+  sibuk: 'Sibuk',
+  sakit: 'Sakit',
+  perjalanan: 'Perjalanan',
+  tak_ada_tempat: 'Tak ada tempat',
+  bersama_teman: 'Bersama teman',
+  lainnya: 'Lainnya',
+}
+
 const QURAN_PILL_LABELS: Record<string, string> = {
   setelah_subuh: 'Subuh', setelah_dzuhur: 'Dzuhur', setelah_ashar: 'Ashar',
   setelah_maghrib: 'Maghrib', setelah_isya: 'Isya',
@@ -200,6 +212,36 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const sunnahCount = sunnahPerWaktu.reduce((a, b) => a + b, 0)
   const sunnahTarget = 2 * daysElapsed
 
+  // Insight Sholat 5 Waktu: waktu paling sering terlewat + alasan paling sering
+  const sholatMissedIdx = sholatPerWaktu.indexOf(Math.min(...sholatPerWaktu))
+  const sholatMostMissed = daysElapsed - sholatPerWaktu[sholatMissedIdx]
+  const sholatReasonCount = new Map<string, number>()
+  ;(prayerRows as any[]).forEach(r => {
+    SHOLAT_5.forEach(s => {
+      if (!r?.[`sholat_${s.key}`] && r?.[`alasan_${s.key}`]) {
+        const k = r[`alasan_${s.key}`] as string
+        sholatReasonCount.set(k, (sholatReasonCount.get(k) || 0) + 1)
+      }
+    })
+  })
+  let sholatTopReason = null as string | null
+  let sholatTopReasonCount = 0
+  sholatReasonCount.forEach((v, k) => { if (v > sholatTopReasonCount) { sholatTopReasonCount = v; sholatTopReason = k } })
+
+  // Insight Baca Quran: sesi paling sering terlewat + alasan paling sering
+  const quranMissedIdx = quranPerSesi.indexOf(Math.min(...quranPerSesi))
+  const quranMostMissed = daysElapsed - quranPerSesi[quranMissedIdx]
+  const quranReasonCount = new Map<string, number>()
+  ;(quranRows as any[]).forEach(e => {
+    if (e.status !== 'sudah' && e.alasan) {
+      const k = e.alasan as string
+      quranReasonCount.set(k, (quranReasonCount.get(k) || 0) + 1)
+    }
+  })
+  let quranTopReason = null as string | null
+  let quranTopReasonCount = 0
+  quranReasonCount.forEach((v, k) => { if (v > quranTopReasonCount) { quranTopReasonCount = v; quranTopReason = k } })
+
   // Minum Air
   const { data: waterEntries = [] } = useWaterLogRange(startStr, endStr)
   const totalMl = (waterEntries as any[]).reduce((sum, e) => sum + (e.jumlah_ml || 0), 0)
@@ -310,6 +352,23 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               </div>
             </div>
           </div>
+          {/* Insight Sholat 5 Waktu */}
+          {sholatMostMissed > 0 && (
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
+              <span className="flex items-center gap-1">
+                <span className="font-medium text-slate-700">Sering terlewat:</span>
+                <span className="font-semibold text-rose-600">{SHOLAT_5[sholatMissedIdx].label}</span>
+                <span className="text-slate-400">({sholatMostMissed}×)</span>
+              </span>
+              {sholatTopReason && (
+                <span className="flex items-center gap-1">
+                  <span className="font-medium text-slate-700">Alasan:</span>
+                  <span className="font-semibold text-slate-800">{REASON_LABELS[sholatTopReason] ?? sholatTopReason}</span>
+                  <span className="text-slate-400">({sholatTopReasonCount}×)</span>
+                </span>
+              )}
+            </div>
+          )}
           <div className="mt-4 pt-4 border-t border-slate-100">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
@@ -392,6 +451,23 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               </div>
             </div>
           </div>
+          {/* Insight Baca Quran */}
+          {quranMostMissed > 0 && (
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
+              <span className="flex items-center gap-1">
+                <span className="font-medium text-slate-700">Sering terlewat:</span>
+                <span className="font-semibold text-rose-600">{QURAN_SESSIONS[quranMissedIdx].label}</span>
+                <span className="text-slate-400">({quranMostMissed}×)</span>
+              </span>
+              {quranTopReason && (
+                <span className="flex items-center gap-1">
+                  <span className="font-medium text-slate-700">Alasan:</span>
+                  <span className="font-semibold text-slate-800">{REASON_LABELS[quranTopReason] ?? quranTopReason}</span>
+                  <span className="text-slate-400">({quranTopReasonCount}×)</span>
+                </span>
+              )}
+            </div>
+          )}
           {/* #3: Optimasi Hoki — isi card Optimasi Hidup dipindahkan sini (batch 25) */}
           <div className="mt-3 pt-3 border-t border-slate-100">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
