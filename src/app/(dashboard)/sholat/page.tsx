@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { usePrayerLogRange, useTogglePrayer, useUpdatePrayerQuality } from '@/hooks/usePrayerLogs'
 import { useRealtime } from '@/hooks/useRealtime'
-import { useHeaderControls } from '@/components/layout/HeaderControls'
+import { useHeaderControls, getIbadahRange, formatIbadahShotLabel } from '@/components/layout/HeaderControls'
 import nextDynamic from 'next/dynamic'
 import { AnalyticsSkeleton } from '@/components/ui/analytics-skeleton'
 const SholatAnalytics = nextDynamic(() => import('@/components/sholat/SholatAnalytics').then(m => m.SholatAnalytics), { ssr: false, loading: () => <AnalyticsSkeleton /> })
@@ -377,36 +377,13 @@ export default function SholatPage() {
   // Hitung rentang tanggal berdasarkan periode + anchor
   const { rangeStart, rangeEnd, periodLabel, isCurrentPeriod } = useMemo(() => {
     const today = new Date()
-    let start: Date
-    let end: Date
-    if (period === 'daily') {
-      start = startOfDaySafe(anchorDate)
-      end = anchorDate
-    } else if (period === 'weekly') {
-      start = startOfWeek(anchorDate, { weekStartsOn: 1 })
-      end = endOfWeek(anchorDate, { weekStartsOn: 1 })
-    } else if (period === 'monthly') {
-      start = startOfMonth(anchorDate)
-      end = endOfMonth(anchorDate)
-    } else {
-      start = startOfYear(anchorDate)
-      end = endOfYear(anchorDate)
-    }
+    const { start, end } = getIbadahRange(period, anchorDate)
     // Batasi end ke hari ini bila periode mencakup hari ini (hindari ratusan baris kosong masa depan)
     const cappedEnd = end > today ? today : end
     // Periode "saat ini" = rentang penuh (start..end) mencakup hari ini
     const isCurrent = start <= today && end >= startOfDaySafe(today)
 
-    let label: string
-    if (period === 'daily') {
-      label = format(anchorDate, 'EEEE, d MMMM yyyy', { locale: id })
-    } else if (period === 'weekly') {
-      label = `${format(start, 'd MMM', { locale: id })} – ${format(end, 'd MMM yyyy', { locale: id })}`
-    } else if (period === 'monthly') {
-      label = format(anchorDate, 'MMMM yyyy', { locale: id })
-    } else {
-      label = format(anchorDate, 'yyyy', { locale: id })
-    }
+    const label = formatIbadahShotLabel(period, anchorDate)
     return { rangeStart: start, rangeEnd: cappedEnd, periodLabel: label, isCurrentPeriod: isCurrent }
   }, [period, anchorDate])
 

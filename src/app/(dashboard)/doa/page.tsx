@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useDoaLogRange, useUpsertDoaLog, useDeleteDoaLog } from '@/hooks/useDoaLogs'
 import { useRealtime } from '@/hooks/useRealtime'
-import { useHeaderControls } from '@/components/layout/HeaderControls'
+import { useHeaderControls, getIbadahRange } from '@/components/layout/HeaderControls'
 import dynamic from 'next/dynamic'
 import { AnalyticsSkeleton } from '@/components/ui/analytics-skeleton'
 const StatusAnalytics = dynamic(() => import('@/components/analytics/StatusAnalytics').then(m => m.StatusAnalytics), { ssr: false, loading: () => <AnalyticsSkeleton /> })
@@ -65,21 +65,7 @@ export default function DoaPage() {
 
   const { rangeStart, rangeEnd } = useMemo(() => {
     const today = new Date()
-    let start: Date
-    let end: Date
-    if (period === 'daily') {
-      start = startOfDaySafe(anchorDate)
-      end = anchorDate
-    } else if (period === 'weekly') {
-      start = startOfWeek(anchorDate, { weekStartsOn: 1 })
-      end = endOfWeek(anchorDate, { weekStartsOn: 1 })
-    } else if (period === 'monthly') {
-      start = startOfMonth(anchorDate)
-      end = endOfMonth(anchorDate)
-    } else {
-      start = startOfYear(anchorDate)
-      end = endOfYear(anchorDate)
-    }
+    const { start, end } = getIbadahRange(period, anchorDate)
     const cappedEnd = end > today ? today : end
     return { rangeStart: start, rangeEnd: cappedEnd }
   }, [period, anchorDate])

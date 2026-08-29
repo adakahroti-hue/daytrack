@@ -1,14 +1,14 @@
 "use client"
 
 import { createContext, useContext, useState, ReactNode, useCallback, useMemo, useEffect } from 'react'
-import { format, isSameDay, subDays, addDays, subWeeks, addWeeks, subMonths, addMonths, addYears, subYears, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns'
+import { format, isSameDay, subDays, addDays, subWeeks, addWeeks, subMonths, addMonths, addYears, subYears, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfDay, startOfYear, endOfYear, addDays as addDaysFn } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
 import { Flag, Calendar, Clock, Hourglass, Layers, type LucideIcon } from 'lucide-react'
 
 type Period = 'monthly' | 'weekly' | 'daily' | 'yesterday' | 'yearly' | 'shot'
 
-export type IbadahPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly'
+export type IbadahPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly' | 'shot'
 
 // Group mode untuk board tugas tab Semua — state-nya dipakai bersama:
 // Header merender toggle-nya (di samping kartu Proses), halaman semua memakai nilainya untuk grouping
@@ -342,6 +342,7 @@ export function HeaderControlsProvider({
         case 'daily':
           return addDays(prev, direction === 'prev' ? -1 : 1)
         case 'weekly':
+        case 'shot':
           return direction === 'prev' ? subWeeks(prev, 1) : addWeeks(prev, 1)
         case 'monthly':
           return direction === 'prev' ? subMonths(prev, 1) : addMonths(prev, 1)
@@ -437,6 +438,31 @@ export function formatDateForPeriod(date: Date, period: Period) {
   }
 }
 
+// Hitung rentang (start,end) untuk periode ibadah/table berdasarkan anchorDate.
+// shot = Minggu–Sabtu (7 hari), sama seperti overview.
+export function getIbadahRange(period: IbadahPeriod, anchorDate: Date): { start: Date; end: Date } {
+  let start: Date
+  let end: Date
+  if (period === 'daily') {
+    start = startOfDay(anchorDate)
+    end = anchorDate
+  } else if (period === 'weekly') {
+    start = startOfWeek(anchorDate, { weekStartsOn: 1 })
+    end = endOfWeek(anchorDate, { weekStartsOn: 1 })
+  } else if (period === 'shot') {
+    const [s, e] = getShotRange(anchorDate)
+    start = s
+    end = e
+  } else if (period === 'monthly') {
+    start = startOfMonth(anchorDate)
+    end = endOfMonth(anchorDate)
+  } else {
+    start = startOfYear(anchorDate)
+    end = endOfYear(anchorDate)
+  }
+  return { start, end }
+}
+
 // Rev 10: format label periode untuk tab Sholat/Quran (toolbar di header)
 export function formatIbadahPeriodLabel(date: Date, period: IbadahPeriod) {
   switch (period) {
@@ -452,4 +478,13 @@ export function formatIbadahPeriodLabel(date: Date, period: IbadahPeriod) {
     default:
       return format(date, 'yyyy', { locale: id })
   }
+}
+
+// Label rentang untuk periode ibadah (termasuk shot).
+export function formatIbadahShotLabel(period: IbadahPeriod, anchorDate: Date): string {
+  if (period === 'shot') {
+    const [s, e] = getShotRange(anchorDate)
+    return `${format(s, 'd MMM', { locale: id })} – ${format(e, 'd MMM yyyy', { locale: id })}`
+  }
+  return formatIbadahPeriodLabel(anchorDate, period)
 }

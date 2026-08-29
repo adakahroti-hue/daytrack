@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useSholatSunnahRange, useToggleSholatSunnah, useUpdateSholatSunnahQuality } from '@/hooks/useSholatSunnah'
 import { useRealtime } from '@/hooks/useRealtime'
-import { useHeaderControls } from '@/components/layout/HeaderControls'
+import { useHeaderControls, getIbadahRange } from '@/components/layout/HeaderControls'
 import nextDynamic from 'next/dynamic'
 import { AnalyticsSkeleton } from '@/components/ui/analytics-skeleton'
 const SholatSunnahAnalytics = nextDynamic(() => import('@/components/sholat/SholatSunnahAnalytics').then(m => m.SholatSunnahAnalytics), { ssr: false, loading: () => <AnalyticsSkeleton /> })
@@ -340,21 +340,7 @@ export default function SholatSunnahPage() {
 
   const { rangeStart, rangeEnd } = useMemo(() => {
     const today = new Date()
-    let start: Date
-    let end: Date
-    if (period === 'daily') {
-      start = startOfDaySafe(anchorDate)
-      end = anchorDate
-    } else if (period === 'weekly') {
-      start = startOfWeek(anchorDate, { weekStartsOn: 1 })
-      end = endOfWeek(anchorDate, { weekStartsOn: 1 })
-    } else if (period === 'monthly') {
-      start = startOfMonth(anchorDate)
-      end = endOfMonth(anchorDate)
-    } else {
-      start = startOfYear(anchorDate)
-      end = endOfYear(anchorDate)
-    }
+    const { start, end } = getIbadahRange(period, anchorDate)
     const cappedEnd = end > today ? today : end
     return { rangeStart: start, rangeEnd: cappedEnd }
   }, [period, anchorDate])

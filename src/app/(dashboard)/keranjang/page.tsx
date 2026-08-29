@@ -23,7 +23,7 @@ import { formatRupiah, parseRupiah } from "@/lib/utils"
 import { useTableLock } from "@/components/ui/table-lock"
 import { useKeranjangRange, useCreateKeranjang, useDeleteKeranjang, useBeliKeranjang, useUpdateKeranjang } from "@/hooks/useKeranjang"
 import { useRealtime } from "@/hooks/useRealtime"
-import { useHeaderControls } from "@/components/layout/HeaderControls"
+import { useHeaderControls, getIbadahRange } from '@/components/layout/HeaderControls'
 
 const DAY_BADGE_COLORS: Record<string, string> = {
   Senin: "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -69,21 +69,7 @@ export default function KeranjangPage() {
 
   const { rangeStart, rangeEnd } = useMemo(() => {
     const today = new Date()
-    let start: Date
-    let end: Date
-    if (period === "daily") {
-      start = startOfDaySafe(anchorDate)
-      end = anchorDate
-    } else if (period === "weekly") {
-      start = startOfWeek(anchorDate, { weekStartsOn: 1 })
-      end = endOfWeek(anchorDate, { weekStartsOn: 1 })
-    } else if (period === "monthly") {
-      start = startOfMonth(anchorDate)
-      end = endOfMonth(anchorDate)
-    } else {
-      start = startOfYear(anchorDate)
-      end = endOfYear(anchorDate)
-    }
+    const { start, end } = getIbadahRange(period, anchorDate)
     const cappedEnd = end > today ? today : end
     return { rangeStart: start, rangeEnd: cappedEnd }
   }, [period, anchorDate])

@@ -7,7 +7,7 @@ import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, C
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
-import { useHeaderControls, formatDateForPeriod, formatIndonesianDate, formatIbadahPeriodLabel, GROUP_MODES } from './HeaderControls'
+import { useHeaderControls, formatDateForPeriod, formatIndonesianDate, formatIbadahPeriodLabel, formatIbadahShotLabel, GROUP_MODES } from './HeaderControls'
 import { useTasks } from '@/hooks/useTasks'
 import { usePmoLogRange } from '@/hooks/usePmoLogs'
 import { getEstimasiText } from '@/lib/utils'
@@ -204,6 +204,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   const ibadahPeriodOptions = [
     { value: 'daily', label: 'Harian' },
+    { value: 'shot', label: 'Shot' },
     { value: 'weekly', label: 'Mingguan' },
     { value: 'monthly', label: 'Bulanan' },
     { value: 'yearly', label: 'Tahunan' },
@@ -490,7 +491,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <div className="flex items-center gap-1.5 min-w-0">
                   <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
                   <span className="text-xs font-medium truncate">
-                    {formatIbadahPeriodLabel(ibadahDate, ibadahPeriod)}
+                    {formatIbadahShotLabel(ibadahPeriod, ibadahDate)}
                   </span>
                 </div>
                 <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => navigateIbadah('next')} aria-label="Periode selanjutnya">
