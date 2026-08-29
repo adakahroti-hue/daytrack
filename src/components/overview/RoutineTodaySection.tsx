@@ -389,8 +389,8 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           </div>
           {/* Insight Sholat 5 Waktu */}
           {sholatMostMissed > 0 && (
-            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
-              <span className="flex items-center gap-1">
+            <div className="mt-3 flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-xs text-slate-500">
+              <span className="flex items-center gap-1 ml-auto">
                 <span className="font-medium text-slate-700">Sering terlewat:</span>
                 <span className="font-semibold text-rose-600">{SHOLAT_5[sholatMissedIdx].label}</span>
                 <span className="text-slate-400">({sholatMostMissed}×)</span>
@@ -488,8 +488,8 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           </div>
           {/* Insight Baca Quran */}
           {quranMostMissed > 0 && (
-            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
-              <span className="flex items-center gap-1">
+            <div className="mt-3 flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-xs text-slate-500">
+              <span className="flex items-center gap-1 ml-auto">
                 <span className="font-medium text-slate-700">Sering terlewat:</span>
                 <span className="font-semibold text-rose-600">{QURAN_SESSIONS[quranMissedIdx].label}</span>
                 <span className="text-slate-400">({quranMostMissed}×)</span>
@@ -644,8 +644,8 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               </div>
             </div>
             {pmoTopAlasan && (
-              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
-                <span className="flex items-center gap-1">
+              <div className="mt-2 flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-xs text-slate-500">
+                <span className="flex items-center gap-1 ml-auto">
                   <span className="font-medium text-slate-700">Alasan relapse:</span>
                   <span className="font-semibold text-rose-600">{pmoTopAlasan}</span>
                   <span className="text-slate-400">({pmoTopAlasanCount}×)</span>
