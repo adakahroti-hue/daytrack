@@ -3,12 +3,20 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   getKeranjangRange,
+  getKeranjangAll,
   createKeranjang,
   updateKeranjang,
   deleteKeranjang,
   beliKeranjang,
 } from "@/app/actions/keranjang"
 import type { KeranjangFormData } from "@/app/actions/keranjang"
+
+export function useKeranjangAll() {
+  return useQuery({
+    queryKey: ["keranjang", "all"],
+    queryFn: () => getKeranjangAll(),
+  })
+}
 
 export function useKeranjangRange(startDate: string, endDate: string) {
   return useQuery({

@@ -21,7 +21,7 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { formatRupiah, parseRupiah } from "@/lib/utils"
 import { useTableLock } from "@/components/ui/table-lock"
-import { useKeranjangRange, useCreateKeranjang, useDeleteKeranjang, useBeliKeranjang, useUpdateKeranjang } from "@/hooks/useKeranjang"
+import { useKeranjangRange, useKeranjangAll, useCreateKeranjang, useDeleteKeranjang, useBeliKeranjang, useUpdateKeranjang } from "@/hooks/useKeranjang"
 import { useRealtime } from "@/hooks/useRealtime"
 import { useHeaderControls, getIbadahRange } from '@/components/layout/HeaderControls'
 
@@ -66,6 +66,7 @@ export default function KeranjangPage() {
   const { effectiveLocked, lockControl } = useTableLock()
   const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
   const todayStr = format(new Date(), "yyyy-MM-dd")
+  const [showAll, setShowAll] = useState(false)
 
   const { rangeStart, rangeEnd } = useMemo(() => {
     const today = new Date()
@@ -77,11 +78,15 @@ export default function KeranjangPage() {
   const startDate = format(rangeStart, "yyyy-MM-dd")
   const endDate = format(rangeEnd, "yyyy-MM-dd")
 
-  const { data: logs = [], isLoading, error } = useKeranjangRange(startDate, endDate)
+  const { data: rangeData = [], isLoading: isRangeLoading, error: rangeError } = useKeranjangRange(startDate, endDate)
+  const { data: allData = [], isLoading: isAllLoading, error: allError } = useKeranjangAll()
+  const logs = showAll ? allData : rangeData
+  const isLoading = showAll ? isAllLoading : isRangeLoading
+  const error = showAll ? allError : rangeError
   useRealtime({
     table: "keranjang",
     filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
-    queryKeys: [["keranjang", "range", startDate, endDate]],
+    queryKeys: [["keranjang", "range", startDate, endDate], ["keranjang", "all"]],
   })
 
   const createKeranjang = useCreateKeranjang()
@@ -156,6 +161,37 @@ export default function KeranjangPage() {
           <ShoppingCart className="h-4 w-4" /> Total Rencana Belanja (belum dibeli)
         </p>
         <p className="mt-1 text-lg font-bold text-slate-800">{formatRupiah(totalHarga)}</p>
+      </div>
+
+      {/* Filter: Semua — tampilkan seluruh data yang pernah diinput */}
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setShowAll(false)}
+          className={cn(
+            "px-3 h-8 rounded-md text-xs font-medium transition-colors",
+            !showAll
+              ? "bg-[#0F172A] text-white shadow-sm"
+              : "bg-muted/50 text-slate-600 hover:text-slate-900 hover:bg-white/60 border border-border"
+          )}
+        >
+          Periode
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowAll(true)}
+          className={cn(
+            "px-3 h-8 rounded-md text-xs font-medium transition-colors",
+            showAll
+              ? "bg-[#0F172A] text-white shadow-sm"
+              : "bg-muted/50 text-slate-600 hover:text-slate-900 hover:bg-white/60 border border-border"
+          )}
+        >
+          Semua
+        </button>
+        {showAll && (
+          <span className="text-xs text-slate-500">Menampilkan semua data yang pernah diinput</span>
+        )}
       </div>
 
       <div className={cn("relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-320px)] landscape:max-lg:max-h-none rounded-lg border bg-white", TABLE_BORDER)}>

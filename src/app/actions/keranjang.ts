@@ -107,6 +107,19 @@ export async function deleteKeranjang(id: string) {
   return { error: null }
 }
 
+export async function getKeranjangAll() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+  const { data, error } = await supabase
+    .from("keranjang")
+    .select("id, user_id, tanggal, nama_barang, harga, status, dompet, created_at")
+    .eq("user_id", user.id)
+    .order("tanggal", { ascending: true })
+  if (error) throw new Error(error.message)
+  return data || []
+}
+
 export async function getKeranjangRange(startDate: string, endDate: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
