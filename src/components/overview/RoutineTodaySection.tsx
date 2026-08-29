@@ -634,7 +634,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             <div className={cn('mt-3 flex gap-3', period === 'shot' ? 'flex-col sm:flex-row sm:items-center' : 'flex-col')}>
               <XyDonut value={checklist[0].days} target={daysElapsed} color="#10b981" size={52} label="Bersyukur" />
               {syukurReason && (
-                <p className="text-[11px] text-rose-500">Alasan: {REASON_LABELS[syukurReason.reason] ?? syukurReason.reason}</p>
+                <p className="text-[11px] text-rose-500">Alasan: <span className="text-slate-900">{REASON_LABELS[syukurReason.reason] ?? syukurReason.reason}</span> <span className="text-slate-400">({syukurReason.count}×)</span></p>
               )}
             </div>
           </RoutineCard>
@@ -643,7 +643,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             <div className={cn('mt-3 flex gap-3', period === 'shot' ? 'flex-col sm:flex-row sm:items-center' : 'flex-col')}>
               <XyDonut value={checklist[1].days} target={daysElapsed} color="#10b981" size={52} label="Doakan" />
               {doaReason && (
-                <p className="text-[11px] text-rose-500">Alasan: {doaReason.reason}</p>
+                <p className="text-[11px] text-rose-500">Alasan: <span className="text-slate-900">{doaReason.reason}</span> <span className="text-slate-400">({doaReason.count}×)</span></p>
               )}
             </div>
           </RoutineCard>
@@ -652,7 +652,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             <div className={cn('mt-3 flex gap-3', period === 'shot' ? 'flex-col sm:flex-row sm:items-center' : 'flex-col')}>
               <XyDonut value={sedekahCount} target={daysElapsed} color="#10b981" size={52} label="Sedekah" />
               {sedekahReason && (
-                <p className="text-[11px] text-rose-500">Alasan: {REASON_LABELS[sedekahReason.reason] ?? sedekahReason.reason}</p>
+                <p className="text-[11px] text-rose-500">Alasan: <span className="text-slate-900">{REASON_LABELS[sedekahReason.reason] ?? sedekahReason.reason}</span> <span className="text-slate-400">({sedekahReason.count}×)</span></p>
               )}
             </div>
           </RoutineCard>
