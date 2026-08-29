@@ -1,10 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { Check, Minus, Mosque, BookOpen, GlassWater, Repeat, Sparkles, Shield, Moon, ArrowRight, Flower, Wallet, HandCoins } from 'lucide-react'
+import { Check, Minus, Mosque, BookOpen, GlassWater, Repeat, Sparkles, Shield, Moon, ArrowRight, Flower, Wallet, HandCoins, Sun } from 'lucide-react'
 import { format, differenceInCalendarDays } from 'date-fns'
 import { cn, formatRupiah } from '@/lib/utils'
 import { JAM_TIDUR_OPTIONS } from '@/lib/tidur-options'
+import { useSholatSunnahRange } from '@/hooks/useSholatSunnah'
 import { usePrayerLogRange } from '@/hooks/usePrayerLogs'
 import { useQuranLogRange } from '@/hooks/useQuranLogs'
 import { useWaterLogRange } from '@/hooks/useMinumAirLogs'
@@ -35,6 +36,11 @@ const QURAN_SESSIONS = [
   { key: 'setelah_ashar', label: 'Setelah Ashar' },
   { key: 'setelah_maghrib', label: 'Setelah Maghrib' },
   { key: 'setelah_isya', label: 'Setelah Isya' },
+] as const
+
+const SUNNAH_TIMES = [
+  { key: 'dhuha', label: 'Dhuha' },
+  { key: 'tahajud', label: 'Tahajud' },
 ] as const
 
 const WATER_SESSIONS = [
@@ -186,6 +192,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const quranCount = quranPerSesi.reduce((a, b) => a + b, 0)
   const quranTarget = 5 * daysElapsed
 
+  // Sholat Sunnah (Dhuha + Tahajud)
+  const { data: sunnahRows = [] } = useSholatSunnahRange(startStr, endStr)
+  const sunnahPerWaktu = SUNNAH_TIMES.map(s =>
+    (sunnahRows as any[]).filter(row => !!row?.[`sholat_${s.key}`]).length
+  )
+  const sunnahCount = sunnahPerWaktu.reduce((a, b) => a + b, 0)
+  const sunnahTarget = 2 * daysElapsed
+
   // Minum Air
   const { data: waterEntries = [] } = useWaterLogRange(startStr, endStr)
   const totalMl = (waterEntries as any[]).reduce((sum, e) => sum + (e.jumlah_ml || 0), 0)
@@ -288,6 +302,47 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                       ) : (
                         <span className={cn('text-[11px] font-semibold tabular-nums', done ? 'text-emerald-600' : 'text-slate-500')}>
                           {sholatPerWaktu[i]}/{daysElapsed}
+                        </span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 pt-4 border-t border-slate-100">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className="min-w-0 lg:flex-1 flex items-center gap-3">
+                {isWeekly && <XyDonut value={sunnahCount} target={sunnahTarget} color="#22c55e" />}
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
+                    <Sun className="h-3.5 w-3.5 text-amber-500" /> Sholat Sunnah
+                  </p>
+                  {isWeekly ? (
+                    <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{sunnahCount}/{sunnahTarget}</span> sholat</p>
+                  ) : (
+                    <p className="mt-2 pl-[18px] flex items-baseline gap-1.5 leading-none">
+                      <span className={cn('text-[22px] font-bold tabular-nums', numColor(sunnahCount >= sunnahTarget))}>{sunnahCount}<span className={cn('text-lg', numColorSoft(sunnahCount >= sunnahTarget))}>/{sunnahTarget}</span></span>
+                      <span className="text-sm font-medium text-slate-500">sholat</span>
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-x-2 lg:gap-x-6 shrink-0 w-full lg:w-auto">
+                {SUNNAH_TIMES.map((s, i) => {
+                  const done = isHarian ? sunnahPerWaktu[i] > 0 : sunnahPerWaktu[i] >= daysElapsed
+                  return (
+                    <div key={s.key} className="flex flex-col items-center gap-0.5 min-w-0">
+                      <span className="text-xs leading-tight text-slate-500">{s.label}</span>
+                      {isWeekly ? (
+                        <XyDonut value={sunnahPerWaktu[i]} target={daysElapsed} color="#22c55e" size={40} />
+                      ) : isHarian ? (
+                        done
+                          ? <Check className="h-3 w-3 text-amber-600" />
+                          : <Minus className="h-3 w-3 text-slate-300" />
+                      ) : (
+                        <span className={cn('text-[11px] font-semibold tabular-nums', done ? 'text-amber-600' : 'text-slate-500')}>
+                          {sunnahPerWaktu[i]}/{daysElapsed}
                         </span>
                       )}
                     </div>
