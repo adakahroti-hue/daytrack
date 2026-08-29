@@ -241,7 +241,7 @@ export function HeaderControlsProvider({
   title = 'Daytrack',
   description,
   initialDate,
-  initialPeriod = 'daily',
+  initialPeriod = 'shot',
   initialPage = 'overview',
   onRefresh,
   isLoading = false,
@@ -328,7 +328,8 @@ export function HeaderControlsProvider({
   }, [period])
 
   // Rev 10: state periode & tanggal untuk tab Sholat/Quran — toolbar dirender di header
-  const [ibadahPeriod, setIbadahPeriodState] = useState<IbadahPeriod>('weekly')
+  // default 'shot' (Minggu–Sabtu) sesuai permintaan
+  const [ibadahPeriod, setIbadahPeriodState] = useState<IbadahPeriod>('shot')
   const [ibadahDate, setIbadahDate] = useState<Date>(new Date())
 
   const setIbadahPeriod = useCallback((p: IbadahPeriod) => {
