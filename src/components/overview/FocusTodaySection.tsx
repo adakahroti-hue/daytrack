@@ -148,8 +148,9 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
 
       {isShot ? (
         /* ── Filter Shot: pie Keseluruhan vs Selesai + breakdown prioritas (tanpa tugas diproses) ── */
-        <div className="mt-3 space-y-3">
-          <div className="flex items-center gap-3">
+        <div className="mt-3 flex flex-col sm:flex-row sm:items-stretch sm:gap-4">
+          {/* Kiri: Keseluruhan vs Selesai */}
+          <div className="flex items-center gap-3 sm:flex-1">
             <PieSegments
               size={64}
               segments={[
@@ -168,7 +169,11 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
             </div>
           </div>
 
-          <div className="pt-3 border-t border-slate-100">
+          {/* Divider vertikal — hanya desktop */}
+          <div className="hidden sm:block w-px bg-slate-100 shrink-0" />
+
+          {/* Kanan: Kategori Prioritas */}
+          <div className="pt-3 sm:pt-0 border-t border-slate-100 sm:border-0 sm:flex-1">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Kategori Prioritas</p>
             <div className="flex items-center gap-3">
               <PieSegments size={64} segments={priorityCounts.map(p => ({ value: p.value, color: p.color }))} />
