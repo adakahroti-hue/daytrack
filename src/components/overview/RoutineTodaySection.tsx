@@ -267,8 +267,9 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const avgDurasi = durasiVals.length ? Math.round(durasiVals.reduce((a: number, b: number) => a + b, 0) / durasiVals.length * 10) / 10 : 0
   const jamTidurList = tidurRows.map(e => e.jam_tidur).filter(Boolean).sort() as string[]
   const jamBangunList = tidurRows.map(e => e.jam_bangun).filter(Boolean).sort() as string[]
-  const tidurPalingLambat = jamTidurList.length ? jamTidurList[jamTidurList.length - 1] : null
-  const bangunPalingLambat = jamBangunList.length ? jamBangunList[jamBangunList.length - 1] : null
+  const fmtJam = (v: string | null) => v ? v.slice(0, 5) : null
+  const tidurPalingLambat = fmtJam(jamTidurList.length ? jamTidurList[jamTidurList.length - 1] : null)
+  const bangunPalingLambat = fmtJam(jamBangunList.length ? jamBangunList[jamBangunList.length - 1] : null)
   const tidurAlasanCount = new Map<string, number>()
   tidurRows.forEach(e => { if (e.status === 'begadang' && e.alasan_tidak) { const k = e.alasan_tidak as string; tidurAlasanCount.set(k, (tidurAlasanCount.get(k) || 0) + 1) } })
   let tidurTopAlasan = null as string | null
