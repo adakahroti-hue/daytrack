@@ -638,14 +638,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               )}
             </div>
             {/* Doakan */}
-            <div className="flex flex-col items-center gap-1.5 text-center">
+            <div className="flex flex-col items-center gap-1.5 text-center border-l border-slate-100">
               <XyDonut value={checklist[1].days} target={daysElapsed} color="#8b5cf6" size={52} label="Doakan" />
               {doaReason && (
                 <p className="text-[11px] text-rose-500">Alasan: <span className="text-slate-900">{doaReason.reason}</span> <span className="text-slate-400">({doaReason.count}×)</span></p>
               )}
             </div>
             {/* Sedekah */}
-            <div className="flex flex-col items-center gap-1.5 text-center">
+            <div className="flex flex-col items-center gap-1.5 text-center border-l border-slate-100">
               <XyDonut value={sedekahCount} target={daysElapsed} color="#8b5cf6" size={52} label="Sedekah" />
               {sedekahReason && (
                 <p className="text-[11px] text-rose-500">Alasan: <span className="text-slate-900">{REASON_LABELS[sedekahReason.reason] ?? sedekahReason.reason}</span> <span className="text-slate-400">({sedekahReason.count}×)</span></p>
