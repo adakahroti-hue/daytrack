@@ -196,7 +196,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const periodLabels = {
     yesterday: { label: 'Kemarin', icon: History },
     daily: { label: 'Harian', icon: Clock },
-    shot: { label: 'Shot', icon: Flame },
+    shot: { label: 'Capture', icon: Flame },
     weekly: { label: 'Mingguan', icon: CalendarDays },
     monthly: { label: 'Bulanan', icon: CalendarRange },
     yearly: { label: 'Tahunan', icon: Calendar },
@@ -204,7 +204,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   const ibadahPeriodOptions = [
     { value: 'daily', label: 'Harian' },
-    { value: 'shot', label: 'Shot' },
+    { value: 'shot', label: 'Capture' },
     { value: 'weekly', label: 'Mingguan' },
     { value: 'monthly', label: 'Bulanan' },
     { value: 'yearly', label: 'Tahunan' },

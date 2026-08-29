@@ -149,7 +149,7 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
         case 'daily': return 'Overview Harian'
         case 'yesterday': return 'Overview Kemarin'
         case 'weekly': return 'Overview Mingguan'
-        case 'shot': return 'Overview Shot'
+        case 'shot': return 'Overview Capture'
         case 'monthly': return 'Overview Bulanan'
         case 'yearly': return 'Overview Tahunan'
       }

@@ -14,7 +14,7 @@ export const PERIOD_LABEL: Record<OverviewPeriod, string> = {
   harian: 'Hari Ini',
   kemarin: 'Kemarin',
   mingguan: 'Minggu Ini',
-  shot: 'Shot Ini',
+  shot: 'Capture Ini',
   bulanan: 'Bulan Ini',
   tahunan: 'Tahun Ini',
 }
