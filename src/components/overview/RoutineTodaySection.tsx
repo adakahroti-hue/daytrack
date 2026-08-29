@@ -627,36 +627,34 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           </div>
         </RoutineCard>
 
-        {/* Optimasi Hoki — dipecah jadi 3 card (Bersyukur / Doakan / Sedekah) */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {/* Bersyukur */}
-          <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-emerald-500" title="Bersyukur">
-            <div className={cn('mt-3 flex gap-3', period === 'shot' ? 'flex-col sm:flex-row sm:items-center' : 'flex-col')}>
-              <XyDonut value={checklist[0].days} target={daysElapsed} color="#10b981" size={52} label="Bersyukur" />
+        {/* Optimasi Hoki — 1 card "Hoki" berisi 3 sub (Bersyukur / Doakan / Sedekah) */}
+        <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-emerald-500" title="Hoki">
+          <div className="mt-3 flex flex-col">
+            {/* Bersyukur */}
+            <div className={cn('flex gap-3 py-3', period === 'shot' ? 'flex-col sm:flex-row sm:items-center' : 'flex-col')}>
+              <XyDonut value={checklist[0].days} target={daysElapsed} color="#8b5cf6" size={52} label="Bersyukur" />
               {syukurReason && (
                 <p className="text-[11px] text-rose-500">Alasan: <span className="text-slate-900">{REASON_LABELS[syukurReason.reason] ?? syukurReason.reason}</span> <span className="text-slate-400">({syukurReason.count}×)</span></p>
               )}
             </div>
-          </RoutineCard>
-          {/* Doakan */}
-          <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-emerald-500" title="Doakan">
-            <div className={cn('mt-3 flex gap-3', period === 'shot' ? 'flex-col sm:flex-row sm:items-center' : 'flex-col')}>
-              <XyDonut value={checklist[1].days} target={daysElapsed} color="#10b981" size={52} label="Doakan" />
+            <div className="border-t border-slate-100" />
+            {/* Doakan */}
+            <div className={cn('flex gap-3 py-3', period === 'shot' ? 'flex-col sm:flex-row sm:items-center' : 'flex-col')}>
+              <XyDonut value={checklist[1].days} target={daysElapsed} color="#8b5cf6" size={52} label="Doakan" />
               {doaReason && (
                 <p className="text-[11px] text-rose-500">Alasan: <span className="text-slate-900">{doaReason.reason}</span> <span className="text-slate-400">({doaReason.count}×)</span></p>
               )}
             </div>
-          </RoutineCard>
-          {/* Sedekah */}
-          <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-emerald-500" title="Sedekah">
-            <div className={cn('mt-3 flex gap-3', period === 'shot' ? 'flex-col sm:flex-row sm:items-center' : 'flex-col')}>
-              <XyDonut value={sedekahCount} target={daysElapsed} color="#10b981" size={52} label="Sedekah" />
+            <div className="border-t border-slate-100" />
+            {/* Sedekah */}
+            <div className={cn('flex gap-3 py-3', period === 'shot' ? 'flex-col sm:flex-row sm:items-center' : 'flex-col')}>
+              <XyDonut value={sedekahCount} target={daysElapsed} color="#8b5cf6" size={52} label="Sedekah" />
               {sedekahReason && (
                 <p className="text-[11px] text-rose-500">Alasan: <span className="text-slate-900">{REASON_LABELS[sedekahReason.reason] ?? sedekahReason.reason}</span> <span className="text-slate-400">({sedekahReason.count}×)</span></p>
               )}
             </div>
-          </RoutineCard>
-        </div>
+          </div>
+        </RoutineCard>
 
         {/* Keuangan — Kebutuhan & Saldo dari tab Arus Kas */}
         <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan">
