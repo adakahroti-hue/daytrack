@@ -654,21 +654,27 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               <XyDonut value={sedekahCount} target={daysElapsed} color="#10b981" size={44} label="Sedekah" />
             </div>
           ) : (
-            <div className="mt-3 flex items-center gap-x-3 sm:gap-x-10 lg:gap-x-12 gap-y-1.5 flex-wrap text-sm">
-              <div className="flex items-center gap-1">
-                <span className={cn('text-[18px] sm:text-[22px] font-bold leading-none tabular-nums', numColor(checklist[0].days >= daysElapsed))}>{checklist[0].days}<span className={cn('text-sm sm:text-lg', numColorSoft(checklist[0].days >= daysElapsed))}>/{daysElapsed}</span></span>
-                <span className="text-[10px] sm:text-xs text-slate-700">Bersyukur</span>
-                {syukurReason && <span className="text-[10px] text-rose-500">· {REASON_LABELS[syukurReason.reason] ?? syukurReason.reason}</span>}
+            <div className="mt-3 flex flex-col gap-y-3 text-sm">
+              <div>
+                <div className="flex items-center gap-1">
+                  <span className={cn('text-[18px] sm:text-[22px] font-bold leading-none tabular-nums', numColor(checklist[0].days >= daysElapsed))}>{checklist[0].days}<span className={cn('text-sm sm:text-lg', numColorSoft(checklist[0].days >= daysElapsed))}>/{daysElapsed}</span></span>
+                  <span className="text-[10px] sm:text-xs text-slate-700">Bersyukur</span>
+                </div>
+                {syukurReason && <p className="mt-0.5 text-[11px] text-rose-500">Alasan: {REASON_LABELS[syukurReason.reason] ?? syukurReason.reason}</p>}
               </div>
-              <div className="flex items-center gap-1">
-                <span className={cn('text-[18px] sm:text-[22px] font-bold leading-none tabular-nums', numColor(checklist[1].days >= daysElapsed))}>{checklist[1].days}<span className={cn('text-sm sm:text-lg', numColorSoft(checklist[1].days >= daysElapsed))}>/{daysElapsed}</span></span>
-                <span className="text-[10px] sm:text-xs text-slate-700">Doakan orang</span>
-                {doaReason && <span className="text-[10px] text-rose-500">· {doaReason.reason}</span>}
+              <div>
+                <div className="flex items-center gap-1">
+                  <span className={cn('text-[18px] sm:text-[22px] font-bold leading-none tabular-nums', numColor(checklist[1].days >= daysElapsed))}>{checklist[1].days}<span className={cn('text-sm sm:text-lg', numColorSoft(checklist[1].days >= daysElapsed))}>/{daysElapsed}</span></span>
+                  <span className="text-[10px] sm:text-xs text-slate-700">Doakan orang</span>
+                </div>
+                {doaReason && <p className="mt-0.5 text-[11px] text-rose-500">Alasan: {doaReason.reason}</p>}
               </div>
-              <div className="flex items-center gap-1">
-                <span className={cn('text-[18px] sm:text-[22px] font-bold leading-none tabular-nums', numColor(sedekahCount >= daysElapsed))}>{sedekahCount}<span className={cn('text-sm sm:text-lg', numColorSoft(sedekahCount >= daysElapsed))}>/{daysElapsed}</span></span>
-                <span className="text-[10px] sm:text-xs text-slate-700">Sedekah</span>
-                {sedekahReason && <span className="text-[10px] text-rose-500">· {REASON_LABELS[sedekahReason.reason] ?? sedekahReason.reason}</span>}
+              <div>
+                <div className="flex items-center gap-1">
+                  <span className={cn('text-[18px] sm:text-[22px] font-bold leading-none tabular-nums', numColor(sedekahCount >= daysElapsed))}>{sedekahCount}<span className={cn('text-sm sm:text-lg', numColorSoft(sedekahCount >= daysElapsed))}>/{daysElapsed}</span></span>
+                  <span className="text-[10px] sm:text-xs text-slate-700">Sedekah</span>
+                </div>
+                {sedekahReason && <p className="mt-0.5 text-[11px] text-rose-500">Alasan: {REASON_LABELS[sedekahReason.reason] ?? sedekahReason.reason}</p>}
               </div>
             </div>
           )}
