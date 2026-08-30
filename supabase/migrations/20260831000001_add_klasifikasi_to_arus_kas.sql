@@ -23,7 +23,7 @@ ALTER TABLE public.arus_kas
              OR klasifikasi IN (
                'beli_makanan', 'cemilan', 'self_reward', 'sedekah', 'laundry',
                'bayar_kos', 'ojek', 'jajan', 'pencuci_muka', 'sabun',
-               'galon_air', 'pulsa', 'gas_kompor', 'pasta_gigi', 'sembako', 'obat_nyamuk', 'lainnya'
+               'galon_air', 'pulsa', 'gas_kompor', 'pasta_gigi', 'sembako', 'obat_nyamuk', 'lainnya', 'lauk', 'hutang'
              )))
   );
 

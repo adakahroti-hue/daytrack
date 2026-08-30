@@ -76,6 +76,8 @@ const KLASIFIKASI_BADGE: Record<string, string> = {
   sembako: "bg-yellow-50 text-yellow-800 border-yellow-200",
   obat_nyamuk: "bg-stone-50 text-stone-700 border-stone-200",
   lainnya: "bg-slate-100 text-slate-500 border-slate-200",
+  lauk: "bg-lime-50 text-lime-700 border-lime-200",
+  hutang: "bg-rose-50 text-rose-700 border-rose-200",
 }
 
 // Opsi klasifikasi uang keluar (hanya satu yang dipilih)
@@ -97,6 +99,8 @@ const KLASIFIKASI_OPTIONS: { value: string; label: string }[] = [
   { value: "sembako", label: "Sembako" },
   { value: "obat_nyamuk", label: "Obat Nyamuk" },
   { value: "lainnya", label: "Lainnya" },
+  { value: "lauk", label: "Lauk" },
+  { value: "hutang", label: "Hutang" },
 ]
 
 // Alokasi otomatis dari total uang masuk (pay yourself first)
