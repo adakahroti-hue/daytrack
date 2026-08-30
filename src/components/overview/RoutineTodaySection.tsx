@@ -410,7 +410,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-purple-500" title="Refleksi" href="/masalah" linkColor="text-purple-500 hover:text-purple-700" className="col-span-1">
           <div className="mt-3">
             {refleksiList.length > 0 ? (
-              <ul className="space-y-1.5">
+              <ul className="space-y-1.5 max-h-[7.5rem] overflow-y-auto pr-1">
                 {refleksiList.map((r) => (
                   <li key={r.id} className="flex items-start gap-2 text-sm text-slate-600 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50">
                     <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-purple-400 shrink-0" />
@@ -719,7 +719,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             </div>
             <div className="mt-1.5 flex items-end justify-between gap-3">
               <div className="flex items-center gap-3">
-                {isWeekly && <XyDonut value={checklist[2].days} target={daysElapsed} color="#0ea5e9" size={52} />}
+                {isWeekly && <XyPie value={checklist[2].days} target={daysElapsed} color="#0ea5e9" size={52} />}
                 {isWeekly ? (
                   <p className="text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{checklist[2].days}/{daysElapsed}</span> berhasil</p>
                 ) : (
