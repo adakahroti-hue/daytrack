@@ -57,6 +57,7 @@ import {
   Wrench,
   StickyNote,
   Brain,
+  Utensils,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useTasks } from '@/hooks/useTasks'
@@ -151,6 +152,7 @@ const navigation: NavSection[] = [
       { title: 'Minum Air', href: '/minum-air', icon: GlassWater },
       { title: 'PMO', href: '/pmo', icon: Shield },
       { title: 'Tidur', href: '/tidur', icon: Moon },
+      { title: 'Makan', href: '/makan', icon: Utensils },
     ],
   },
   {
