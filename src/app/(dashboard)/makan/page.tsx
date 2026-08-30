@@ -254,10 +254,11 @@ export default function MakanPage() {
                           <td className={cn('px-2 sm:px-3 py-2 border-r', TABLE_BORDER)}>
                             <input
                               type="text"
+                              size={Math.max(12, (isiVal || '').length + 1)}
                               value={isiVal}
                               placeholder="Apa yang dimakan?"
                               onChange={(e) => handleSetIsi(dateStr, isiKey, e.target.value)}
-                              className="w-full min-w-0 text-xs sm:text-sm text-slate-700 bg-transparent border-0 border-b border-dashed border-slate-200 focus:border-orange-400 focus:outline-none py-1 px-0.5 placeholder:text-slate-300"
+                              className="text-xs sm:text-sm text-slate-700 bg-transparent border-0 border-b border-dashed border-slate-200 focus:border-orange-400 focus:outline-none py-1 whitespace-normal break-words"
                             />
                           </td>
                         </Fragment>
@@ -275,10 +276,11 @@ export default function MakanPage() {
                     <td className={cn('px-2 sm:px-3 py-2', TABLE_BORDER)}>
                       <input
                         type="text"
+                        size={Math.max(14, (entry?.keterangan ?? '').length + 1)}
                         value={entry?.keterangan ?? ''}
                         placeholder="Catatan..."
                         onChange={(e) => handleSetKeterangan(dateStr, e.target.value)}
-                        className="w-full min-w-0 text-xs sm:text-sm text-slate-700 bg-transparent border-0 border-b border-dashed border-slate-200 focus:border-orange-400 focus:outline-none py-1 px-0.5 placeholder:text-slate-300"
+                        className="text-xs sm:text-sm text-slate-700 bg-transparent border-0 border-b border-dashed border-slate-200 focus:border-orange-400 focus:outline-none py-1 whitespace-normal break-words"
                       />
                     </td>
                   </tr>
