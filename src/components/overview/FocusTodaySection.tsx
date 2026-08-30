@@ -184,15 +184,18 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
           <div className="pt-3 sm:pt-0 border-t border-slate-100 sm:border-0 sm:flex-1">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Kategori Prioritas</p>
             <div className="flex items-center gap-3">
-              <PieSegments size={64} segments={priorityCounts.map(p => ({ value: p.value, color: p.color }))} centerLabel={`${displayTotal > 0 ? Math.round((displaySelesai / displayTotal) * 100) : 0}%`} />
-              <div className="grid grid-cols-2 gap-x-3 gap-y-1 min-w-0 flex-1">
-                {priorityCounts.map(p => (
-                  <div key={p.key} className="flex items-center gap-1.5 min-w-0">
-                    <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: p.color }} />
-                    <span className="text-xs text-slate-600 truncate">{p.label}</span>
-                    <span className="text-xs font-semibold text-slate-900 tabular-nums ml-auto">{p.value}</span>
-                  </div>
-                ))}
+              <PieSegments size={64} segments={priorityCounts.map(p => ({ value: p.value, color: p.color }))} />
+              <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 min-w-0 flex-1">
+                {priorityCounts.map(p => {
+                  const pct = displayTotal > 0 ? Math.round((p.value / displayTotal) * 100) : 0
+                  return (
+                    <div key={p.key} className="flex items-center gap-1.5 min-w-0">
+                      <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: p.color }} />
+                      <span className="text-xs text-slate-600 truncate">{p.label}</span>
+                      <span className="text-xs font-bold tabular-nums ml-auto" style={{ color: p.color }}>{p.value} · {pct}%</span>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           </div>
