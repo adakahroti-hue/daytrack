@@ -162,6 +162,8 @@ export function Header({ onMenuClick }: HeaderProps) {
     navigateIbadah,
     groupMode,
     setGroupMode,
+    arusKasShowAll,
+    setArusKasShowAll,
   } = useHeaderControls()
 
   // Show period toggle only on Overview page
@@ -395,6 +397,19 @@ export function Header({ onMenuClick }: HeaderProps) {
                   {opt.label}
                 </button>
               ))}
+              {isArusKas && (
+                <button
+                  onClick={() => setArusKasShowAll(!arusKasShowAll)}
+                  className={cn(
+                    'px-2.5 h-8 rounded-md text-xs font-medium transition-colors whitespace-nowrap',
+                    arusKasShowAll
+                      ? 'bg-[#0F172A] text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                  )}
+                >
+                  Semua
+                </button>
+              )}
             </div>
           </div>
         )}

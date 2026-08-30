@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic"
 
-import { Fragment, useMemo, useState } from "react"
+import { Fragment, useMemo, useState, useEffect } from "react"
 import {
   format,
   startOfWeek,
@@ -13,7 +13,7 @@ import {
   endOfYear,
 } from "date-fns"
 import { id } from "date-fns/locale"
-import { Calendar, CalendarDays, Wallet, ArrowDownLeft, ArrowUpRight, Trash2, Plus, Pencil, Banknote, MessageSquare, Wrench } from "lucide-react"
+import { Calendar, CalendarDays, Wallet, ArrowDownLeft, ArrowUpRight, Trash2, Plus, Pencil, Banknote, MessageSquare, Wrench, CheckSquare, Square, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -91,7 +91,7 @@ function startOfDaySafe(d: Date): Date {
 }
 
 export default function ArusKasPage() {
-  const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
+  const { ibadahPeriod: period, ibadahDate: anchorDate, arusKasShowAll, setArusKasShowAll } = useHeaderControls()
   const todayStr = format(new Date(), "yyyy-MM-dd")
 
   const { rangeStart, rangeEnd } = useMemo(() => {
@@ -106,6 +106,10 @@ export default function ArusKasPage() {
 
   // Filter "Semua": abaikan periode, tampilkan SELURUH catatan arus kas.
   const [showAll, setShowAll] = useState(false)
+
+  // sinkronkan dengan toggle header
+  useEffect(() => { setShowAll(arusKasShowAll) }, [arusKasShowAll])
+  const toggleShowAll = () => setArusKasShowAll(!arusKasShowAll)
 
   const rangeQuery = useArusKasRange(startDate, endDate)
   const allQuery = useArusKasAll()
@@ -132,6 +136,33 @@ export default function ArusKasPage() {
     return list.sort((a, b) =>
       a.tanggal.localeCompare(b.tanggal) || (a.created_at || "").localeCompare(b.created_at || ""))
   }, [logs, filterKategori, filterDompet])
+
+  // Centang semua + hapus terpilih
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [isDeleting, setIsDeleting] = useState(false)
+  const allIds = entries.map(e => e.id)
+  const allSelected = allIds.length > 0 && allIds.every(id => selectedIds.has(id))
+  const toggleSelectAll = () => {
+    setSelectedIds(allSelected ? new Set() : new Set(allIds))
+  }
+  const toggleSelectOne = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      return next
+    })
+  }
+  const handleDeleteSelected = async () => {
+    if (selectedIds.size === 0) return
+    if (!confirm(`Hapus ${selectedIds.size} catatan arus kas terpilih?`)) return
+    setIsDeleting(true)
+    try {
+      await Promise.all([...selectedIds].map(id => deleteArusKas.mutateAsync(id)))
+      setSelectedIds(new Set())
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
   // Ringkasan
   const ringkasan = useMemo(() => {
@@ -249,16 +280,31 @@ export default function ArusKasPage() {
 
       {/* Filter */}
       <div className="flex flex-wrap items-center gap-2">
-        {/* Toggle Semua: abaikan batas periode (tampilkan seluruh catatan) */}
-        <Button
-          variant={showAll ? "default" : "outline"}
-          size="sm"
-          className={cn("gap-1.5", showAll && "bg-[#0F172A] hover:bg-[#1E293B] text-white")}
-          onClick={() => setShowAll(v => !v)}
-        >
-          <Calendar className="h-3.5 w-3.5" />
-          {showAll ? "Semua (periode diabaikan)" : "Semua"}
-        </Button>
+        {/* Centang semua + hapus terpilih */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={toggleSelectAll}
+            disabled={entries.length === 0}
+          >
+            {allSelected ? <CheckSquare className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
+            {allSelected ? "Batal Centang" : "Centang Semua"}
+          </Button>
+          {selectedIds.size > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+              onClick={handleDeleteSelected}
+              disabled={isDeleting}
+            >
+              {isDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+              Hapus ({selectedIds.size})
+            </Button>
+          )}
+        </div>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -295,6 +341,11 @@ export default function ArusKasPage() {
         <table className="w-full border-collapse text-xs sm:text-sm">
           <thead className={cn("hidden sm:table-header-group sticky top-0 z-20 bg-white")}>
             <tr className={cn("border-b", TABLE_BORDER)}>
+              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r w-10", TABLE_BORDER)}>
+                <button type="button" onClick={toggleSelectAll} aria-label="Centang semua" className="inline-flex items-center justify-center mx-auto">
+                  {allSelected ? <CheckSquare className="h-4 w-4 text-slate-700" /> : <Square className="h-4 w-4 text-slate-400" />}
+                </button>
+              </th>
               <th className={cn("dt-col-stick sticky left-0 z-30 bg-white px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[72px] sm:min-w-[100px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><Calendar className="h-3.5 w-3.5 text-indigo-500" /> Tanggal</div>
               </th>
@@ -320,11 +371,11 @@ export default function ArusKasPage() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={6} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
+              <tr><td colSpan={8} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
             ) : error ? (
-              <tr><td colSpan={6} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
+              <tr><td colSpan={8} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
             ) : entries.length === 0 ? (
-              <tr><td colSpan={6} className="text-center py-12 text-slate-400 text-sm">Belum ada catatan arus kas pada periode ini.</td></tr>
+              <tr><td colSpan={8} className="text-center py-12 text-slate-400 text-sm">Belum ada catatan arus kas pada periode ini.</td></tr>
             ) : (
               entries.map((entry, rowIdx) => {
                 const date = new Date(entry.tanggal + "T00:00:00")
@@ -335,6 +386,11 @@ export default function ArusKasPage() {
                   <Fragment key={entry.id}>
                     {/* ── Mobile: kartu ringkas (sm:hidden) ── */}
                     <tr className={cn("sm:hidden border-b", TABLE_BORDER, rowIdx % 2 === 0 ? "bg-white" : "bg-slate-50/30")}>
+                      <td className={cn("px-2 py-2 align-top", TABLE_BORDER)}>
+                        <button type="button" onClick={() => toggleSelectOne(entry.id)} aria-label="Centang" className="inline-flex items-center justify-center pt-0.5">
+                          {selectedIds.has(entry.id) ? <CheckSquare className="h-4 w-4 text-slate-700" /> : <Square className="h-4 w-4 text-slate-400" />}
+                        </button>
+                      </td>
                       <td colSpan={7} className={cn("px-2.5 py-2.5", TABLE_BORDER)}>
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between gap-2">
@@ -373,6 +429,11 @@ export default function ArusKasPage() {
                     </tr>
                     {/* ── Desktop: tabel penuh (hidden sm:table-row) ── */}
                     <tr className={cn("hidden sm:table-row border-b transition-colors", TABLE_BORDER, rowIdx % 2 === 0 ? "bg-white" : "bg-slate-50/30", "hover:bg-blue-50/40")}>
+                      <td className={cn("px-2 sm:px-3 py-2 text-center border-r", TABLE_BORDER)}>
+                        <button type="button" onClick={() => toggleSelectOne(entry.id)} aria-label="Centang" className="inline-flex items-center justify-center mx-auto">
+                          {selectedIds.has(entry.id) ? <CheckSquare className="h-4 w-4 text-slate-700" /> : <Square className="h-4 w-4 text-slate-400" />}
+                        </button>
+                      </td>
                       <td className={cn("dt-col-stick sticky left-0 z-10 bg-inherit px-2 sm:px-3 py-2 text-center text-slate-700 border-r font-medium tabular-nums text-sm", TABLE_BORDER)}>
                         <span className="sm:hidden">{format(date, "d MMM", { locale: id })}</span>
                         <span className="hidden sm:inline">{dateDisplay}</span>
