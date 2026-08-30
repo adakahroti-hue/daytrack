@@ -204,9 +204,10 @@ function XyPie({
           const y0 = cy + r * Math.sin(a0)
           const x1 = cx + r * Math.cos(a1)
           const y1 = cy + r * Math.sin(a1)
+          const largeArc = frac > 0.5 ? 1 : 0
           return [
-            { d: `M ${cx} ${cy} L ${x0} ${y0} A ${r} ${r} 0 0 1 ${x1} ${y1} Z`, color },
-            { d: `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 1 1 ${x0} ${y0} Z`, color: 'rgba(148,163,184,0.35)' },
+            { d: `M ${cx} ${cy} L ${x0} ${y0} A ${r} ${r} 0 ${largeArc} 1 ${x1} ${y1} Z`, color },
+            { d: `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc === 0 ? 1 : 0} 1 ${x0} ${y0} Z`, color: 'rgba(148,163,184,0.35)' },
           ]
         })()
   const fontSize = Math.round(size * 0.24)
