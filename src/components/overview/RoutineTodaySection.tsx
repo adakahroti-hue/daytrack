@@ -186,12 +186,14 @@ function XyPie({
   color,
   size = 60,
   label,
+  percentLabel,
 }: {
   value: number
   target: number
   color: string
   size?: number
   label?: string
+  percentLabel?: boolean
 }) {
   const cx = size / 2
   const cy = size / 2
@@ -216,7 +218,11 @@ function XyPie({
           ]
         })()
   const fontSize = Math.round(size * 0.24)
-  const reached = value >= target && target > 0
+  const pct = Math.round(frac * 100)
+  // posisi label persen di centroid irisan warna (jika ada irisan warna)
+  const midAngle = -Math.PI / 2 + (frac / 2) * 2 * Math.PI
+  const lx = cx + r * 0.6 * Math.cos(midAngle)
+  const ly = cy + r * 0.6 * Math.sin(midAngle)
   return (
     <div className="flex flex-col items-center gap-1">
       <div className="relative shrink-0" style={{ width: size, height: size }}>
@@ -225,9 +231,9 @@ function XyPie({
             <path key={i} d={s.d} fill={s.color} className="transition-all duration-700 ease-out" />
           ))}
         </svg>
-        {reached && (
-          <div className="absolute inset-0 flex items-center justify-center leading-none">
-            <Check className="text-white drop-shadow" style={{ width: Math.round(size * 0.42), height: Math.round(size * 0.42) }} strokeWidth={3} />
+        {percentLabel && frac > 0 && frac < 1 && (
+          <div className="absolute inset-0 flex items-center justify-center leading-none pointer-events-none">
+            <span className="font-bold tabular-nums" style={{ fontSize: Math.round(size * 0.2), color }}>{pct}%</span>
           </div>
         )}
       </div>
@@ -445,7 +451,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                {isWeekly && <XyPie value={sholatCount} target={sholatTarget} color="#10b981" />}
+                {isWeekly && <XyPie value={sholatCount} target={sholatTarget} color="#10b981" percentLabel />}
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -508,7 +514,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-4 pt-4 border-t border-slate-100">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                {isWeekly && <XyPie value={sunnahCount} target={sunnahTarget} color="#22c55e" />}
+                {isWeekly && <XyPie value={sunnahCount} target={sunnahTarget} color="#22c55e" percentLabel />}
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -554,7 +560,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-4 pt-4 border-t border-slate-100">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                {isWeekly && <XyPie value={quranCount} target={quranTarget} color="#14b8a6" />}
+                {isWeekly && <XyPie value={quranCount} target={quranTarget} color="#14b8a6" percentLabel />}
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -623,7 +629,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                {isWeekly && <XyPie value={gelas} target={targetGelasPeriod} color="#0ea5e9" />}
+                {isWeekly && <XyPie value={gelas} target={targetGelasPeriod} color="#0ea5e9" percentLabel />}
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -693,7 +699,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             <div className="mt-1.5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 flex items-center gap-3">
                 {isWeekly ? (
-                  <XyPie value={checklist[3].days} target={daysElapsed} color="#0ea5e9" size={52} />
+                  <XyPie value={checklist[3].days} target={daysElapsed} color="#0ea5e9" size={52} percentLabel />
                 ) : (
                   <div className="flex items-baseline gap-1.5 leading-none pl-[2px]">
                     <span className={cn('text-[22px] font-bold tabular-nums', numColor(checklist[3].days >= daysElapsed))}>{checklist[3].days}<span className={cn('text-lg', numColorSoft(checklist[3].days >= daysElapsed))}>/{daysElapsed}</span></span>
@@ -735,7 +741,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             </div>
             <div className="mt-1.5 flex items-end justify-between gap-3">
               <div className="flex items-center gap-3">
-                {isWeekly && <XyPie value={checklist[2].days} target={daysElapsed} color="#0ea5e9" size={52} />}
+                {isWeekly && <XyPie value={checklist[2].days} target={daysElapsed} color="#0ea5e9" size={52} percentLabel />}
                 {isWeekly ? (
                   <p className="text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{checklist[2].days}/{daysElapsed}</span> berhasil</p>
                 ) : (
