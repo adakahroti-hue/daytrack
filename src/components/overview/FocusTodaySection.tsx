@@ -42,7 +42,7 @@ function formatSedang(task: OverviewTask): string {
   return 'baru mulai'
 }
 
-// Pie chart multi-segmen (full circle, tanpa lubang) untuk breakdown prioritas di filter shot
+// Pie chart multi-segmen (full circle) untuk breakdown prioritas di filter shot
 function PieSegments({
   segments,
   size = 64,
@@ -53,43 +53,48 @@ function PieSegments({
   centerLabel?: string
 }) {
   const total = segments.reduce((a, s) => a + s.value, 0)
-  const stroke = 0
-  const r = (size - stroke) / 2
-  const c = 2 * Math.PI * r
-  let offset = 0
+  const cx = size / 2
+  const cy = size / 2
+  const r = size / 2 - 1
+  // Bangun wedge path per segmen (mulai dari atas, -90°)
+  let acc = 0
+  const paths = total > 0 ? segments.map((s) => {
+    const frac = s.value / total
+    const a0 = -Math.PI / 2 + acc * 2 * Math.PI
+    acc += frac
+    const a1 = -Math.PI / 2 + acc * 2 * Math.PI
+    const x0 = cx + r * Math.cos(a0)
+    const y0 = cy + r * Math.sin(a0)
+    const x1 = cx + r * Math.cos(a1)
+    const y1 = cy + r * Math.sin(a1)
+    const largeArc = frac > 0.5 ? 1 : 0
+    const d = `M ${cx} ${cy} L ${x0} ${y0} A ${r} ${r} 0 ${largeArc} 1 ${x1} ${y1} Z`
+    return { d, color: s.color }
+  }) : []
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90" viewBox={`0 0 ${size} ${size}`}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         {total > 0 ? (
-          segments.map((s, i) => {
-            const frac = s.value / total
-            const dash = frac * c
-            const el = (
-              <circle
-                key={i}
-                cx={size / 2}
-                cy={size / 2}
-                r={r}
-                stroke={s.color}
-                strokeWidth={size}
-                fill="none"
-                strokeDasharray={`${dash} ${c - dash}`}
-                strokeDashoffset={-offset}
-                className="transition-all duration-700 ease-out"
-              />
-            )
-            offset += dash
-            return el
-          })
+          paths.map((p, i) => (
+            <path key={i} d={p.d} fill={p.color} className="transition-all duration-700 ease-out" />
+          ))
         ) : (
-          <circle cx={size / 2} cy={size / 2} r={r} stroke="#e2e8f0" strokeWidth={size} fill="none" />
+          <circle cx={cx} cy={cy} r={r} fill="#e2e8f0" />
+        )}
+        {/* Garis pemisah tipis antar segmen */}
+        {total > 0 && paths.length > 1 && (
+          paths.map((p, i) => (
+            <path key={`sep-${i}`} d={p.d} fill="none" stroke="#ffffff" strokeWidth={1} />
+          ))
         )}
       </svg>
-      <div className="absolute inset-0 flex items-center justify-center leading-none">
-        <span className="font-bold tabular-nums text-white drop-shadow-sm" style={{ fontSize: Math.round(size * 0.2) }}>
-          {centerLabel ?? total}
-        </span>
-      </div>
+      {centerLabel != null && (
+        <div className="absolute inset-0 flex items-center justify-center leading-none pointer-events-none">
+          <span className="font-bold tabular-nums text-white drop-shadow" style={{ fontSize: Math.round(size * 0.2) }}>
+            {centerLabel}
+          </span>
+        </div>
+      )}
     </div>
   )
 }
