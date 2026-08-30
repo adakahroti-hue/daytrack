@@ -390,16 +390,6 @@ function SidebarContent({
                           >
                             <item.icon className="h-4 w-4 flex-shrink-0" />
                             {item.title}
-                            {taskCounts[item.href] != null && taskCounts[item.href] > 0 && (
-                              <span className={cn(
-                                'ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full',
-                                matchesPath(pathname, item.href)
-                                  ? 'bg-primary-foreground/20 text-primary-foreground'
-                                  : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
-                              )}>
-                                {taskCounts[item.href]}
-                              </span>
-                            )}
                           </Link>
                         </li>
                       ))}
