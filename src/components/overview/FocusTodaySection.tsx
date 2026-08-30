@@ -175,7 +175,7 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
   return (
     <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 flex flex-col">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-slate-700">Tugas {label}</p>
+        <p className="text-sm font-medium text-slate-700">Tugas{period === 'shot' ? '' : ` ${label}`}</p>
         <Link
           href="/tugas/hari-ini"
           aria-label="Lihat tugas"

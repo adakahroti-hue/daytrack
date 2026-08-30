@@ -413,7 +413,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
     <section>
       <div className="flex items-center gap-2 mb-2">
         <Repeat className="h-4 w-4 text-slate-500" />
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Rutinitas {label}</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Rutinitas</h2>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
@@ -766,33 +766,42 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-purple-500" title="Hoki" hideIcon>
           <div className="mt-3 px-2 sm:px-3 py-1 grid grid-cols-3 gap-2 sm:gap-3">
             {/* Bersyukur */}
-            <div className="relative flex items-center gap-2 text-left">
-              <XyDonut value={checklist[0].days} target={daysElapsed} color="#8b5cf6" size={52} label="Bersyukur" />
+            <div className="relative flex flex-col items-center gap-1 text-center">
+              <XyDonut value={checklist[0].days} target={daysElapsed} color="#8b5cf6" size={52} />
               <Link href="/syukur" aria-label="Buka tab Syukur" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
-              {syukurReason && (
+              <p className="text-xs font-medium text-slate-700">Bersyukur <span className="text-slate-900 tabular-nums">{checklist[0].days}/{daysElapsed}</span></p>
+              {syukurReason ? (
                 <p className="text-[11px] text-rose-500 leading-tight">Alasan: <span className="text-slate-900">{REASON_LABELS[syukurReason.reason] ?? syukurReason.reason}</span> <span className="text-slate-400">({syukurReason.count}×)</span></p>
+              ) : (
+                <p className="text-[11px] text-slate-400 leading-tight">&nbsp;</p>
               )}
             </div>
             {/* Doakan */}
-            <div className="relative flex items-center gap-2 text-left border-l border-slate-100 pl-3 sm:pl-4">
-              <XyDonut value={checklist[1].days} target={daysElapsed} color="#8b5cf6" size={52} label="Doakan" />
+            <div className="relative flex flex-col items-center gap-1 text-center border-l border-slate-100 pl-3 sm:pl-4">
+              <XyDonut value={checklist[1].days} target={daysElapsed} color="#8b5cf6" size={52} />
               <Link href="/doa" aria-label="Buka tab Doa" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
-              {doaReason && (
+              <p className="text-xs font-medium text-slate-700">Doakan <span className="text-slate-900 tabular-nums">{checklist[1].days}/{daysElapsed}</span></p>
+              {doaReason ? (
                 <p className="text-[11px] text-rose-500 leading-tight">Alasan: <span className="text-slate-900">{doaReason.reason}</span> <span className="text-slate-400">({doaReason.count}×)</span></p>
+              ) : (
+                <p className="text-[11px] text-slate-400 leading-tight">&nbsp;</p>
               )}
             </div>
             {/* Sedekah */}
-            <div className="relative flex items-center gap-2 text-left border-l border-slate-100 pl-3 sm:pl-4">
-              <XyDonut value={sedekahCount} target={daysElapsed} color="#8b5cf6" size={52} label="Sedekah" />
+            <div className="relative flex flex-col items-center gap-1 text-center border-l border-slate-100 pl-3 sm:pl-4">
+              <XyDonut value={sedekahCount} target={daysElapsed} color="#8b5cf6" size={52} />
               <Link href="/sedekah" aria-label="Buka tab Sedekah" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
-              {sedekahReason && (
-                <p className="text-[11px] text-rose-500">Alasan: <span className="text-slate-900">{REASON_LABELS[sedekahReason.reason] ?? sedekahReason.reason}</span> <span className="text-slate-400">({sedekahReason.count}×)</span></p>
+              <p className="text-xs font-medium text-slate-700">Sedekah <span className="text-slate-900 tabular-nums">{sedekahCount}/{daysElapsed}</span></p>
+              {sedekahReason ? (
+                <p className="text-[11px] text-rose-500 leading-tight">Alasan: <span className="text-slate-900">{REASON_LABELS[sedekahReason.reason] ?? sedekahReason.reason}</span> <span className="text-slate-400">({sedekahReason.count}×)</span></p>
+              ) : (
+                <p className="text-[11px] text-slate-400 leading-tight">&nbsp;</p>
               )}
             </div>
           </div>
