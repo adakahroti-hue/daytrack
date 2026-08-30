@@ -71,6 +71,14 @@ function PieSegments({
     const d = `M ${cx} ${cy} L ${x0} ${y0} A ${r} ${r} 0 ${largeArc} 1 ${x1} ${y1} Z`
     return { d, color: s.color }
   }) : []
+  // Titik tengah (centroid) tiap irisan untuk menaruh label persen
+  let accMid = 0
+  const midAngle = segments.map((s) => {
+    const frac = total > 0 ? s.value / total : 0
+    const mid = -Math.PI / 2 + (accMid + frac / 2) * 2 * Math.PI
+    accMid += frac
+    return mid
+  })
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
@@ -87,6 +95,20 @@ function PieSegments({
             <path key={`sep-${i}`} d={p.d} fill="none" stroke="#ffffff" strokeWidth={1} />
           ))
         )}
+        {/* Label persen di dalam tiap irisan (jika cukup besar) */}
+        {total > 0 && segments.map((s, i) => {
+          const frac = s.value / total
+          if (frac <= 0.06) return null
+          const lx = cx + r * 0.6 * Math.cos(midAngle[i])
+          const ly = cy + r * 0.6 * Math.sin(midAngle[i])
+          const pct = Math.round(frac * 100)
+          return (
+            <text key={`lbl-${i}`} x={lx} y={ly} fill="#ffffff" stroke="#00000055" strokeWidth={0.3}
+              fontSize={Math.max(7, Math.round(size * 0.15))} fontWeight={700} textAnchor="middle" dominantBaseline="central">
+              {pct}%
+            </text>
+          )
+        })}
       </svg>
       {centerLabel != null && (
         <div className="absolute inset-0 flex items-center justify-center leading-none pointer-events-none">
@@ -186,16 +208,13 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
             <div className="flex items-center gap-3">
               <PieSegments size={64} segments={priorityCounts.map(p => ({ value: p.value, color: p.color }))} />
               <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 min-w-0 flex-1">
-                {priorityCounts.map(p => {
-                  const pct = displayTotal > 0 ? Math.round((p.value / displayTotal) * 100) : 0
-                  return (
-                    <div key={p.key} className="flex items-center gap-1.5 min-w-0">
-                      <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: p.color }} />
-                      <span className="text-xs text-slate-600 truncate">{p.label}</span>
-                      <span className="text-xs font-bold tabular-nums ml-auto" style={{ color: p.color }}>{p.value} · {pct}%</span>
-                    </div>
-                  )
-                })}
+                {priorityCounts.map(p => (
+                  <div key={p.key} className="flex items-center gap-1.5 min-w-0">
+                    <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: p.color }} />
+                    <span className="text-xs text-slate-600 truncate">{p.label}</span>
+                    <span className="text-xs font-semibold text-slate-900 tabular-nums ml-auto">{p.value}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
