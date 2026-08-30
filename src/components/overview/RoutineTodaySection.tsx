@@ -145,6 +145,7 @@ function XyDonut({
   const c = 2 * Math.PI * r
   const offset = c - (pct / 100) * c
   const fontSize = Math.round(size * 0.24)
+  const reached = value >= target && target > 0
   return (
     <div className="flex flex-col items-center gap-1">
       <div className="relative shrink-0" style={{ width: size, height: size }}>
@@ -164,9 +165,13 @@ function XyDonut({
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center leading-none">
-          <span className="font-bold tabular-nums text-slate-900" style={{ fontSize }}>
-            {value}<span style={{ fontSize: Math.round(fontSize * 0.7) }} className="text-slate-400">/{target}</span>
-          </span>
+          {reached ? (
+            <Check className="text-emerald-600 drop-shadow" style={{ width: Math.round(size * 0.42), height: Math.round(size * 0.42) }} strokeWidth={3} />
+          ) : (
+            <span className="font-bold tabular-nums text-slate-900" style={{ fontSize }}>
+              {value}<span style={{ fontSize: Math.round(fontSize * 0.7) }} className="text-slate-400">/{target}</span>
+            </span>
+          )}
         </div>
       </div>
       {label && <span className="text-[10px] sm:text-xs text-slate-700 text-center leading-tight">{label}</span>}
@@ -211,6 +216,7 @@ function XyPie({
           ]
         })()
   const fontSize = Math.round(size * 0.24)
+  const reached = value >= target && target > 0
   return (
     <div className="flex flex-col items-center gap-1">
       <div className="relative shrink-0" style={{ width: size, height: size }}>
@@ -219,6 +225,11 @@ function XyPie({
             <path key={i} d={s.d} fill={s.color} className="transition-all duration-700 ease-out" />
           ))}
         </svg>
+        {reached && (
+          <div className="absolute inset-0 flex items-center justify-center leading-none">
+            <Check className="text-white drop-shadow" style={{ width: Math.round(size * 0.42), height: Math.round(size * 0.42) }} strokeWidth={3} />
+          </div>
+        )}
       </div>
       {label && <span className="text-[10px] sm:text-xs text-slate-700 text-center leading-tight">{label}</span>}
     </div>
