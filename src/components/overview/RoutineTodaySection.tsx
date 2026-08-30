@@ -321,17 +321,15 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
     { label: 'Bebas PMO', days: countDays(pmoEntries as any[], e => e.status === 'berhasil') },
     { label: 'Tidur tepat waktu', days: countDays(tidurEntries as any[], e => e.status === 'tepat') },
   ]
-  // Rekor PMO — urutan hari berhasil terpanjang SEPANJANG WAKTU (sama persis dengan
-  // "Rekor" di header tab PMO, dihitung dari data all-time, tak terpengaruh filter periode/capture)
-  const pmoRekor = (() => {
+  // Posisi saat ini = streak berjalan (hari berhasil beruntun terakhir)
+  const pmoCurrentStreak = (() => {
     const sorted = [...(pmoAllEntries as any[])].sort((a: any, b: any) => a.tanggal.localeCompare(b.tanggal))
     let cur = 0
-    let best = 0
-    for (const e of sorted) {
-      if (e.status === 'berhasil') { cur += 1; if (cur > best) best = cur }
-      else if (e.status === 'relapse') cur = 0
+    for (let i = sorted.length - 1; i >= 0; i--) {
+      if (sorted[i].status === 'berhasil') cur += 1
+      else break
     }
-    return best
+    return cur
   })()
   const label = PERIOD_LABEL[period]
 
@@ -662,8 +660,8 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                 )}
               </div>
               <div className="text-right">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Rekor</p>
-                <p className="text-sm font-bold text-slate-900 tabular-nums">{pmoRekor} <span className="text-xs font-medium text-slate-500">hari</span></p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Posisi Saat Ini</p>
+                <p className="text-sm font-bold text-slate-900 tabular-nums">{pmoCurrentStreak} <span className="text-xs font-medium text-slate-500">hari</span></p>
               </div>
             </div>
             {pmoTopAlasan && (
