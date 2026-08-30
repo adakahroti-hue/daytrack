@@ -25,6 +25,7 @@ import { formatRupiah, parseRupiah } from "@/lib/utils"
 import { useArusKasRange, useArusKasAll, useCreateArusKas, useDeleteArusKas, useUpdateArusKas } from "@/hooks/useArusKas"
 import { useRealtime } from "@/hooks/useRealtime"
 import { useHeaderControls, getIbadahRange } from '@/components/layout/HeaderControls'
+import { ArusKasAnalytics } from '@/components/arus-kas/ArusKasAnalytics'
 
 const DAY_BADGE_COLORS: Record<string, string> = {
   Senin: "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -484,6 +485,9 @@ export default function ArusKasPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Diagram lingkaran: uang keluar per dompet & sumber uang masuk */}
+      <ArusKasAnalytics logs={logs as any[]} />
 
       <Button onClick={openAdd} size="icon" aria-label="Tambah Arus Kas" className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-white shadow-lg">
         <Plus className="h-6 w-6" />
