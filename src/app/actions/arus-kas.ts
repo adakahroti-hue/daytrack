@@ -10,6 +10,10 @@ const arusKasSchema = z.object({
   nominal: z.number().int().nonnegative(),
   alasan: z.string().optional(),
   dompet: z.enum(["kebutuhan", "tabungan", "self_reward", "sedekah", "paylater"]).nullable().optional(),
+  klasifikasi: z.enum([
+    "beli_makanan", "cemilan", "self_reward", "sedekah", "laundry", "bayar_kos", "ojek",
+    "jajan", "pencuci_muka", "sabun", "galon_air", "pulsa", "gas_kompor", "pasta_gigi", "sembako",
+  ]).nullable().optional(),
 })
 
 export type ArusKasFormData = z.infer<typeof arusKasSchema>
@@ -22,6 +26,7 @@ export interface ArusKasEntry {
   nominal: number
   alasan: string | null
   dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" | "paylater" | null
+  klasifikasi: "beli_makanan" | "cemilan" | "self_reward" | "sedekah" | "laundry" | "bayar_kos" | "ojek" | "jajan" | "pencuci_muka" | "sabun" | "galon_air" | "pulsa" | "gas_kompor" | "pasta_gigi" | "sembako" | null
   created_at: string
   updated_at: string
 }
@@ -49,6 +54,7 @@ export async function upsertArusKas(formData: ArusKasFormData) {
     nominal: validated.nominal,
     alasan: validated.alasan ?? null,
     dompet: validated.kategori === "uang_keluar" ? (validated.dompet ?? null) : null,
+    klasifikasi: validated.klasifikasi ?? null,
   }
 
   let data, error
@@ -80,6 +86,7 @@ export async function createArusKas(formData: ArusKasFormData) {
     nominal: validated.nominal,
     alasan: validated.alasan ?? null,
     dompet: validated.kategori === "uang_keluar" ? (validated.dompet ?? null) : null,
+    klasifikasi: validated.klasifikasi ?? null,
   }
   const { data, error } = await supabase.from("arus_kas").insert(insertData).select().single()
   if (error) throw new Error(error.message)
@@ -109,6 +116,7 @@ export async function updateArusKas(id: string, formData: ArusKasFormData) {
     nominal: validated.nominal,
     alasan: validated.alasan ?? null,
     dompet: validated.kategori === "uang_keluar" ? (validated.dompet ?? null) : null,
+    klasifikasi: validated.klasifikasi ?? null,
   }
   const { data, error } = await supabase
     .from("arus_kas")
@@ -128,7 +136,7 @@ export async function getArusKasRange(startDate: string, endDate: string) {
   if (!user) throw new Error("Unauthorized")
   const { data, error } = await supabase
     .from("arus_kas")
-    .select("id, user_id, tanggal, kategori, nominal, alasan, dompet, created_at")
+    .select("id, user_id, tanggal, kategori, nominal, alasan, dompet, klasifikasi, created_at")
     .eq("user_id", user.id)
     .gte("tanggal", startDate)
     .lte("tanggal", endDate)
@@ -144,7 +152,7 @@ export async function getArusKasAll() {
   if (!user) throw new Error("Unauthorized")
   const { data, error } = await supabase
     .from("arus_kas")
-    .select("id, user_id, tanggal, kategori, nominal, alasan, dompet, created_at")
+    .select("id, user_id, tanggal, kategori, nominal, alasan, dompet, klasifikasi, created_at")
     .eq("user_id", user.id)
     .order("tanggal", { ascending: true })
   if (error) throw new Error(error.message)

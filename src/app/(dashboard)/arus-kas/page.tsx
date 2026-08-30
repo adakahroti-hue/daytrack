@@ -57,6 +57,44 @@ const DOMPET_OPTIONS: { value: "kebutuhan" | "tabungan" | "self_reward" | "sedek
   { value: "paylater", label: "Paylater" },
 ]
 
+// Warna badge klasifikasi (kategori rinci uang keluar)
+const KLASIFIKASI_BADGE: Record<string, string> = {
+  beli_makanan: "bg-orange-50 text-orange-700 border-orange-200",
+  cemilan: "bg-pink-50 text-pink-700 border-pink-200",
+  self_reward: "bg-amber-50 text-amber-700 border-amber-200",
+  sedekah: "bg-violet-50 text-violet-700 border-violet-200",
+  laundry: "bg-cyan-50 text-cyan-700 border-cyan-200",
+  bayar_kos: "bg-teal-50 text-teal-700 border-teal-200",
+  ojek: "bg-blue-50 text-blue-700 border-blue-200",
+  jajan: "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200",
+  pencuci_muka: "bg-rose-50 text-rose-700 border-rose-200",
+  sabun: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  galon_air: "bg-sky-50 text-sky-700 border-sky-200",
+  pulsa: "bg-indigo-50 text-indigo-700 border-indigo-200",
+  gas_kompor: "bg-lime-50 text-lime-700 border-lime-200",
+  pasta_gigi: "bg-purple-50 text-purple-700 border-purple-200",
+  sembako: "bg-yellow-50 text-yellow-800 border-yellow-200",
+}
+
+// Opsi klasifikasi uang keluar (hanya satu yang dipilih)
+const KLASIFIKASI_OPTIONS: { value: string; label: string }[] = [
+  { value: "beli_makanan", label: "Beli Makanan" },
+  { value: "cemilan", label: "Cemilan" },
+  { value: "self_reward", label: "Self Reward" },
+  { value: "sedekah", label: "Sedekah" },
+  { value: "laundry", label: "Laundry" },
+  { value: "bayar_kos", label: "Bayar Kos" },
+  { value: "ojek", label: "Ojek" },
+  { value: "jajan", label: "Jajan" },
+  { value: "pencuci_muka", label: "Pencuci Muka" },
+  { value: "sabun", label: "Sabun" },
+  { value: "galon_air", label: "Galon Air" },
+  { value: "pulsa", label: "Pulsa" },
+  { value: "gas_kompor", label: "Gas Kompor" },
+  { value: "pasta_gigi", label: "Pasta Gigi" },
+  { value: "sembako", label: "Sembako" },
+]
+
 // Alokasi otomatis dari total uang masuk (pay yourself first)
 const BUDGET_ITEMS: { label: string; persen: number; text: string; dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" }[] = [
   { label: "Kebutuhan", persen: 70, text: "text-emerald-600", dompet: "kebutuhan" },
@@ -73,6 +111,7 @@ interface ArusKasEntry {
   nominal: number
   alasan: string | null
   dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" | "paylater" | null
+  klasifikasi: "beli_makanan" | "cemilan" | "self_reward" | "sedekah" | "laundry" | "bayar_kos" | "ojek" | "jajan" | "pencuci_muka" | "sabun" | "galon_air" | "pulsa" | "gas_kompor" | "pasta_gigi" | "sembako" | null
   created_at: string
 }
 
@@ -83,6 +122,7 @@ interface EditState {
   nominal: number
   alasan: string
   dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" | "paylater" | null
+  klasifikasi: "beli_makanan" | "cemilan" | "self_reward" | "sedekah" | "laundry" | "bayar_kos" | "ojek" | "jajan" | "pencuci_muka" | "sabun" | "galon_air" | "pulsa" | "gas_kompor" | "pasta_gigi" | "sembako" | null
 }
 
 function startOfDaySafe(d: Date): Date {
@@ -199,12 +239,12 @@ export default function ArusKasPage() {
 
   const openAdd = () => {
     setNominalInput("")
-    setEditState({ id: null, tanggal: todayStr, kategori: "uang_masuk", nominal: 0, alasan: "", dompet: null })
+    setEditState({ id: null, tanggal: todayStr, kategori: "uang_masuk", nominal: 0, alasan: "", dompet: null, klasifikasi: null })
   }
 
   const openEdit = (entry: ArusKasEntry) => {
     setNominalInput(entry.nominal > 0 ? formatRupiah(entry.nominal) : "")
-    setEditState({ id: entry.id, tanggal: entry.tanggal, kategori: entry.kategori, nominal: entry.nominal, alasan: entry.alasan ?? "", dompet: entry.dompet ?? null })
+    setEditState({ id: entry.id, tanggal: entry.tanggal, kategori: entry.kategori, nominal: entry.nominal, alasan: entry.alasan ?? "", dompet: entry.dompet ?? null, klasifikasi: entry.klasifikasi ?? null })
   }
 
   const handleSave = async () => {
@@ -217,6 +257,7 @@ export default function ArusKasPage() {
       nominal: editState.nominal,
       alasan: editState.alasan.trim(),
       dompet: editState.kategori === "uang_keluar" ? editState.dompet : null,
+      klasifikasi: editState.kategori === "uang_keluar" ? editState.klasifikasi : null,
     }
     if (editState.id) {
       // Mode edit
@@ -359,6 +400,9 @@ export default function ArusKasPage() {
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[140px] sm:min-w-[160px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><Wallet className="h-3.5 w-3.5 text-indigo-500" /> Dompet</div>
               </th>
+              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[140px] sm:min-w-[170px]", TABLE_BORDER)}>
+                <div className="flex items-center justify-center gap-1"><MessageSquare className="h-3.5 w-3.5 text-indigo-500" /> Klasifikasi</div>
+              </th>
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[160px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><Banknote className="h-3.5 w-3.5 text-indigo-500" /> Nominal</div>
               </th>
@@ -372,11 +416,11 @@ export default function ArusKasPage() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={8} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
+              <tr><td colSpan={9} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
             ) : error ? (
-              <tr><td colSpan={8} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
+              <tr><td colSpan={9} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
             ) : entries.length === 0 ? (
-              <tr><td colSpan={8} className="text-center py-12 text-slate-400 text-sm">Belum ada catatan arus kas pada periode ini.</td></tr>
+              <tr><td colSpan={9} className="text-center py-12 text-slate-400 text-sm">Belum ada catatan arus kas pada periode ini.</td></tr>
             ) : (
               entries.map((entry, rowIdx) => {
                 const date = new Date(entry.tanggal + "T00:00:00")
@@ -392,7 +436,7 @@ export default function ArusKasPage() {
                           {selectedIds.has(entry.id) ? <CheckSquare className="h-4 w-4 text-slate-700" /> : <Square className="h-4 w-4 text-slate-400" />}
                         </button>
                       </td>
-                      <td colSpan={7} className={cn("px-2.5 py-2.5", TABLE_BORDER)}>
+                      <td colSpan={8} className={cn("px-2.5 py-2.5", TABLE_BORDER)}>
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between gap-2">
                             <div className="min-w-0" />
@@ -401,8 +445,12 @@ export default function ArusKasPage() {
                             </span>
                           </div>
                           <p className="text-[13px] text-slate-800 whitespace-normal break-words leading-tight">{entry.alasan || "-"}</p>
-                          {!isMasuk && entry.dompet && (
-                            <p className="text-[11px] text-slate-500">Dompet: {DOMPET_OPTIONS.find(d => d.value === entry.dompet)?.label}</p>
+                          {!isMasuk && (entry.dompet || entry.klasifikasi) && (
+                            <p className="text-[11px] text-slate-500">
+                              {entry.dompet && <>Dompet: {DOMPET_OPTIONS.find(d => d.value === entry.dompet)?.label}</>}
+                              {entry.dompet && entry.klasifikasi && " · "}
+                              {entry.klasifikasi && <>Klasifikasi: {KLASIFIKASI_OPTIONS.find(k => k.value === entry.klasifikasi)?.label}</>}
+                            </p>
                           )}
                           <div className="flex items-center justify-between gap-2 pt-0.5">
                             <div className="flex items-center gap-1.5 flex-wrap">
@@ -456,6 +504,16 @@ export default function ArusKasPage() {
                           <span className={cn("inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border",
                             entry.dompet ? (DOMPET_BADGE[entry.dompet] ?? "bg-slate-100 text-slate-500 border-slate-200") : "bg-slate-100 text-slate-500 border-slate-200")}>
                             {entry.dompet ? DOMPET_OPTIONS.find(d => d.value === entry.dompet)?.label : "-"}
+                          </span>
+                        )}
+                      </td>
+                      <td className={cn("px-2 sm:px-3 py-2 text-center border-r", TABLE_BORDER)}>
+                        {isMasuk ? (
+                          <span className="text-slate-400">-</span>
+                        ) : (
+                          <span className={cn("inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border",
+                            entry.klasifikasi ? (KLASIFIKASI_BADGE[entry.klasifikasi] ?? "bg-slate-100 text-slate-500 border-slate-200") : "bg-slate-100 text-slate-500 border-slate-200")}>
+                            {entry.klasifikasi ? KLASIFIKASI_OPTIONS.find(k => k.value === entry.klasifikasi)?.label : "-"}
                           </span>
                         )}
                       </td>
@@ -529,6 +587,23 @@ export default function ArusKasPage() {
                           editState?.dompet === opt.value
                             ? "bg-indigo-100 text-indigo-700 border-indigo-300"
                             : "border-slate-200 text-slate-500 hover:bg-slate-50")}>
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {editState?.kategori === "uang_keluar" && (
+                <div className="mt-2">
+                  <Label>Klasifikasi (kategori uang keluar)</Label>
+                  <div className="grid grid-cols-2 gap-2 mt-1">
+                    {KLASIFIKASI_OPTIONS.map(opt => (
+                      <button key={opt.value} type="button"
+                        onClick={() => setEditState(prev => prev ? { ...prev, klasifikasi: opt.value as typeof prev.klasifikasi } : prev)}
+                        className={cn("rounded-lg border px-3 py-2 text-sm font-medium text-left",
+                          editState?.klasifikasi === opt.value
+                            ? "bg-slate-800 text-white border-slate-900"
+                            : "border-slate-200 text-slate-600 hover:bg-slate-50")}>
                         {opt.label}
                       </button>
                     ))}
