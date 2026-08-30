@@ -451,7 +451,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                {isWeekly && <XyPie value={sholatCount} target={sholatTarget} color="#10b981" percentLabel />}
+                <XyPie value={sholatCount} target={sholatTarget} color="#10b981" percentLabel />
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -464,10 +464,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                   {isWeekly ? (
                     <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{sholatCount}/{sholatTarget}</span> sholat</p>
                   ) : (
-                    <p className="mt-2 pl-[18px] flex items-baseline gap-1.5 leading-none">
-                      <span className={cn('text-[22px] font-bold tabular-nums', numColor(sholatCount >= sholatTarget))}>{sholatCount}<span className={cn('text-lg', numColorSoft(sholatCount >= sholatTarget))}>/{sholatTarget}</span></span>
-                      <span className="text-sm font-medium text-slate-500">sholat</span>
-                    </p>
+                    <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{sholatCount}/{sholatTarget}</span> sholat</p>
                   )}
                 </div>
               </div>
@@ -514,7 +511,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-4 pt-4 border-t border-slate-100">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                {isWeekly && <XyPie value={sunnahCount} target={sunnahTarget} color="#22c55e" percentLabel />}
+                <XyPie value={sunnahCount} target={sunnahTarget} color="#22c55e" percentLabel />
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -527,10 +524,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                   {isWeekly ? (
                     <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{sunnahCount}/{sunnahTarget}</span> sholat</p>
                   ) : (
-                    <p className="mt-2 pl-[18px] flex items-baseline gap-1.5 leading-none">
-                      <span className={cn('text-[22px] font-bold tabular-nums', numColor(sunnahCount >= sunnahTarget))}>{sunnahCount}<span className={cn('text-lg', numColorSoft(sunnahCount >= sunnahTarget))}>/{sunnahTarget}</span></span>
-                      <span className="text-sm font-medium text-slate-500">sholat</span>
-                    </p>
+                    <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{sunnahCount}/{sunnahTarget}</span> sholat</p>
                   )}
                 </div>
               </div>
@@ -560,7 +554,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-4 pt-4 border-t border-slate-100">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                {isWeekly && <XyPie value={quranCount} target={quranTarget} color="#14b8a6" percentLabel />}
+                <XyPie value={quranCount} target={quranTarget} color="#14b8a6" percentLabel />
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -573,10 +567,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                   {isWeekly ? (
                     <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{quranCount}/{quranTarget}</span> sesi</p>
                   ) : (
-                    <p className="mt-2 pl-[18px] flex items-baseline gap-1.5 leading-none">
-                      <span className={cn('text-[22px] font-bold tabular-nums', numColor(quranCount >= quranTarget))}>{quranCount}<span className={cn('text-lg', numColorSoft(quranCount >= quranTarget))}>/{quranTarget}</span></span>
-                      <span className="text-sm font-medium text-slate-500">sesi</span>
-                    </p>
+                    <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{quranCount}/{quranTarget}</span> sesi</p>
                   )}
                 </div>
               </div>
@@ -629,7 +620,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                {isWeekly && <XyPie value={gelas} target={targetGelasPeriod} color="#0ea5e9" percentLabel />}
+                <XyPie value={gelas} target={targetGelasPeriod} color="#0ea5e9" percentLabel />
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -642,10 +633,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                   {isWeekly ? (
                     <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{gelas}/{targetGelasPeriod}</span> gelas</p>
                   ) : (
-                    <p className="mt-2 pl-[18px] flex items-baseline gap-1.5 leading-none">
-                      <span className={cn('text-[22px] font-bold tabular-nums', numColor(gelas >= targetGelasPeriod))}>{gelas}<span className={cn('text-lg', numColorSoft(gelas >= targetGelasPeriod))}>/{targetGelasPeriod}</span></span>
-                      <span className="text-sm font-medium text-slate-500">gelas</span>
-                    </p>
+                    <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{gelas}/{targetGelasPeriod}</span> gelas</p>
                   )}
                   {isHarian && gelas >= TARGET_GELAS && (
                     <p className="text-xs text-slate-500 mt-1">
