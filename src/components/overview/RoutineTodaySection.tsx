@@ -13,7 +13,7 @@ import { useDoaLogRange } from '@/hooks/useDoaLogs'
 import { useSedekahLogRange } from '@/hooks/useSedekahLogs'
 import { usePmoLogRange, usePmoLogAll } from '@/hooks/usePmoLogs'
 import { useTidurLogRange } from '@/hooks/useTidurLogs'
-import { useArusKasRange } from '@/hooks/useArusKas'
+import { useArusKasAll } from '@/hooks/useArusKas'
 import { useMasalahLogAll } from '@/hooks/useMasalahLogs'
 import { PERIOD_LABEL, type OverviewPeriod, FocusTodayCard } from './FocusTodaySection'
 
@@ -314,10 +314,8 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const sedekahReason = topReasonOf(sedekahEntries as any[], e => e.alasan_tidak ?? null)
 
 
-  // Arus Kas — saldo & sisa alokasi kebutuhan (range di-cap ke today, sama seperti tab Arus Kas)
-  const akTodayStr = format(new Date(), 'yyyy-MM-dd')
-  const akEndStr = endStr > akTodayStr ? akTodayStr : endStr
-  const { data: arusKasEntries = [] } = useArusKasRange(startStr, akEndStr)
+  // Arus Kas — saldo & sisa alokasi kebutuhan (ALL-TIME, TIDAK dipengaruhi filter periode mana pun)
+  const { data: arusKasEntries = [] } = useArusKasAll()
   const arusKas = (arusKasEntries as any[]) || []
   const akMasuk = arusKas.filter(e => e.kategori === 'uang_masuk').reduce((s, e) => s + (e.nominal || 0), 0)
   const akKeluar = arusKas.filter(e => e.kategori === 'uang_keluar').reduce((s, e) => s + (e.nominal || 0), 0)
