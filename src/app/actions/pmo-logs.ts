@@ -88,6 +88,16 @@ export async function getPmoLogRange(startDate: string, endDate: string) {
   return data || []
 }
 
+// Semua entri PMO (tidak dibatasi periode) — untuk rekor all-time
+export async function getPmoLogAll() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+  const { data, error } = await supabase.from("pmo").select("id, user_id, tanggal, hari_ke, status, alasan, created_at, updated_at").eq("user_id", user.id).order("tanggal", { ascending: true })
+  if (error) throw new Error(error.message)
+  return data || []
+}
+
 export async function getPmoStats(startDate: string, endDate: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

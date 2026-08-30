@@ -11,7 +11,7 @@ import { useWaterLogRange } from '@/hooks/useMinumAirLogs'
 import { useSyukurLogRange } from '@/hooks/useSyukurLogs'
 import { useDoaLogRange } from '@/hooks/useDoaLogs'
 import { useSedekahLogRange } from '@/hooks/useSedekahLogs'
-import { usePmoLogRange } from '@/hooks/usePmoLogs'
+import { usePmoLogRange, usePmoLogAll } from '@/hooks/usePmoLogs'
 import { useTidurLogRange } from '@/hooks/useTidurLogs'
 import { useArusKasRange } from '@/hooks/useArusKas'
 import { useMasalahLogAll } from '@/hooks/useMasalahLogs'
@@ -259,6 +259,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const { data: sedekahEntries = [] } = useSedekahLogRange(startStr, endStr)
   const sedekahCount = (sedekahEntries as any[]).filter(e => e.status === 'sudah').length
   const { data: pmoEntries = [] } = usePmoLogRange(startStr, endStr)
+  const { data: pmoAllEntries = [] } = usePmoLogAll()
   const { data: tidurEntries = [] } = useTidurLogRange(startStr, endStr)
   // Minum Air — insight waktu sering terlewat
   const waterMissedIdx = waterPerSesi.indexOf(Math.min(...waterPerSesi))
@@ -319,8 +320,8 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
     { label: 'Bebas PMO', days: countDays(pmoEntries as any[], e => e.status === 'berhasil') },
     { label: 'Tidur tepat waktu', days: countDays(tidurEntries as any[], e => e.status === 'tepat') },
   ]
-  // Rekor PMO — hari_ke terbesar dalam rentang (streak terpanjang tercatat)
-  const pmoRekor = (pmoEntries as any[]).reduce((m, e) => Math.max(m, e.hari_ke || 0), 0)
+  // Rekor PMO — hari_ke terbesar SEPANJANG WAKTU (tidak dipengaruhi filter periode/capture)
+  const pmoRekor = (pmoAllEntries as any[]).reduce((m, e) => Math.max(m, e.hari_ke || 0), 0)
   const label = PERIOD_LABEL[period]
 
   // Refleksi (journal) — 3 poin terbaru dari SELURUH data (sumber: tab Refleksi /masalah, tidak dibatasi periode)

@@ -1,11 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { getPmoLog, getPmoLogRange, upsertPmoLog, deletePmoLog } from "@/app/actions/pmo-logs"
+import { getPmoLog, getPmoLogRange, getPmoLogAll, upsertPmoLog, deletePmoLog } from "@/app/actions/pmo-logs"
 import type { PmoLogFormData } from "@/app/actions/pmo-logs"
 export function usePmoLog(tanggal: string) {
   return useQuery({ queryKey: ["pmo", tanggal], queryFn: () => getPmoLog(tanggal), enabled: !!tanggal })
 }
 export function usePmoLogRange(startDate: string, endDate: string) {
   return useQuery({ queryKey: ["pmo", "range", startDate, endDate], queryFn: () => getPmoLogRange(startDate, endDate), enabled: !!startDate && !!endDate })
+}
+export function usePmoLogAll() {
+  return useQuery({ queryKey: ["pmo", "all"], queryFn: () => getPmoLogAll() })
 }
 export function useUpsertPmoLog() {
   const queryClient = useQueryClient()
