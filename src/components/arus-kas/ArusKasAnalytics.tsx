@@ -113,8 +113,8 @@ export function ArusKasAnalytics({ logs }: ArusKasAnalyticsProps) {
     const map = new Map<string, number>()
     for (const l of logs as ArusKasEntry[]) {
       if (l.kategori !== 'uang_keluar') continue
-      if (!l.dompet) continue
-      map.set(l.dompet, (map.get(l.dompet) || 0) + l.nominal)
+      const key = (l.alasan && l.alasan.trim()) || 'Tanpa tujuan'
+      map.set(key, (map.get(key) || 0) + l.nominal)
     }
     return aggregate([...map.entries()].map(([name, value]) => ({ name, value })))
   }, [logs])

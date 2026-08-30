@@ -322,6 +322,20 @@ export default function ArusKasPage() {
 
       {/* Filter */}
       <div className="flex flex-wrap items-center gap-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <ArrowUpRight className="h-3.5 w-3.5 text-green-600" />
+              {filterKategori === "semua" ? "Semua Kategori" : filterKategori === "uang_masuk" ? "Uang Masuk" : "Uang Keluar"}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => setFilterKategori("semua")}>Semua Kategori</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setFilterKategori("uang_masuk")}>Uang Masuk</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setFilterKategori("uang_keluar")}>Uang Keluar</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         {/* Centang semua + hapus terpilih */}
         <div className="flex items-center gap-2">
           <Button
@@ -347,20 +361,6 @@ export default function ArusKasPage() {
             </Button>
           )}
         </div>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1.5">
-              <ArrowUpRight className="h-3.5 w-3.5 text-green-600" />
-              {filterKategori === "semua" ? "Semua Kategori" : filterKategori === "uang_masuk" ? "Uang Masuk" : "Uang Keluar"}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => setFilterKategori("semua")}>Semua Kategori</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setFilterKategori("uang_masuk")}>Uang Masuk</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setFilterKategori("uang_keluar")}>Uang Keluar</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
