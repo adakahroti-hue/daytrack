@@ -46,9 +46,11 @@ function formatSedang(task: OverviewTask): string {
 function PieSegments({
   segments,
   size = 64,
+  centerLabel,
 }: {
   segments: { value: number; color: string }[]
   size?: number
+  centerLabel?: string
 }) {
   const total = segments.reduce((a, s) => a + s.value, 0)
   const stroke = Math.max(5, Math.round(size * 0.14))
@@ -82,8 +84,8 @@ function PieSegments({
           })}
       </svg>
       <div className="absolute inset-0 flex items-center justify-center leading-none">
-        <span className="font-bold tabular-nums text-slate-900" style={{ fontSize: Math.round(size * 0.24) }}>
-          {total}
+        <span className="font-bold tabular-nums text-slate-900" style={{ fontSize: Math.round(size * 0.22) }}>
+          {centerLabel ?? total}
         </span>
       </div>
     </div>
@@ -175,7 +177,7 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
           <div className="pt-3 sm:pt-0 border-t border-slate-100 sm:border-0 sm:flex-1">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Kategori Prioritas</p>
             <div className="flex items-center gap-3">
-              <PieSegments size={64} segments={priorityCounts.map(p => ({ value: p.value, color: p.color }))} />
+              <PieSegments size={64} segments={priorityCounts.map(p => ({ value: p.value, color: p.color }))} centerLabel={`${displayTotal > 0 ? Math.round((displaySelesai / displayTotal) * 100) : 0}%`} />
               <div className="grid grid-cols-2 gap-x-3 gap-y-1 min-w-0 flex-1">
                 {priorityCounts.map(p => (
                   <div key={p.key} className="flex items-center gap-1.5 min-w-0">
