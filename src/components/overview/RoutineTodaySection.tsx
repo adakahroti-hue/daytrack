@@ -121,7 +121,7 @@ function RoutineCard({
   )
 }
 
-// ─── Donut x/y (pie chart) untuk card Ibadah & Kesehatan di filter mingguan ───
+// ─── Pie chart x/y untuk card Ibadah & Kesehatan (filter mingguan/capture/dst) ───
 function XyDonut({
   value,
   target,
@@ -135,29 +135,36 @@ function XyDonut({
   size?: number
   label?: string
 }) {
-  const pct = target > 0 ? Math.max(0, Math.min(100, Math.round((value / target) * 100))) : 0
-  const stroke = Math.max(5, Math.round(size * 0.11))
-  const r = (size - stroke) / 2
-  const c = 2 * Math.PI * r
-  const offset = c - (pct / 100) * c
+  const cx = size / 2
+  const cy = size / 2
+  const r = size / 2 - 1
+  const frac = target > 0 ? Math.max(0, Math.min(1, value / target)) : 0
+  // Dua irisan: warna (value) + sisa (abu). Jika 0, hanya abu.
+  const segs =
+    frac <= 0
+      ? [{ d: fullCircle(cx, cy, r), color: '#cbd5e1' }]
+      : frac >= 1
+      ? [{ d: fullCircle(cx, cy, r), color }]
+      : (() => {
+          const a0 = -Math.PI / 2
+          const a1 = -Math.PI / 2 + frac * 2 * Math.PI
+          const x0 = cx + r * Math.cos(a0)
+          const y0 = cy + r * Math.sin(a0)
+          const x1 = cx + r * Math.cos(a1)
+          const y1 = cy + r * Math.sin(a1)
+          return [
+            { d: `M ${cx} ${cy} L ${x0} ${y0} A ${r} ${r} 0 0 1 ${x1} ${y1} Z`, color },
+            { d: `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 1 1 ${x0} ${y0} Z`, color: '#cbd5e1' },
+          ]
+        })()
   const fontSize = Math.round(size * 0.24)
   return (
     <div className="flex flex-col items-center gap-1">
       <div className="relative shrink-0" style={{ width: size, height: size }}>
-        <svg width={size} height={size} className="-rotate-90" viewBox={`0 0 ${size} ${size}`}>
-          <circle cx={size / 2} cy={size / 2} r={r} stroke="#e2e8f0" strokeWidth={stroke} fill="none" />
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={r}
-            stroke={color}
-            strokeWidth={stroke}
-            strokeLinecap="round"
-            fill="none"
-            strokeDasharray={c}
-            strokeDashoffset={offset}
-            className="transition-all duration-700 ease-out"
-          />
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          {segs.map((s, i) => (
+            <path key={i} d={s.d} fill={s.color} className="transition-all duration-700 ease-out" />
+          ))}
         </svg>
         <div className="absolute inset-0 flex items-center justify-center leading-none">
           <span className="font-bold tabular-nums text-slate-900" style={{ fontSize }}>
@@ -168,6 +175,10 @@ function XyDonut({
       {label && <span className="text-[10px] sm:text-xs text-slate-700 text-center leading-tight">{label}</span>}
     </div>
   )
+}
+
+function fullCircle(cx: number, cy: number, r: number) {
+  return `M ${cx} ${cy} m -${r} 0 a ${r} ${r} 0 1 0 ${r * 2} 0 a ${r} ${r} 0 1 0 -${r * 2} 0 Z`
 }
 
 export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: { startStr: string; endStr: string; metricEndStr: string; period: OverviewPeriod }) {
