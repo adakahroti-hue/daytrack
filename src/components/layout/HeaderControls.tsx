@@ -59,7 +59,7 @@ function getCategoryFromPath(pathname: string): string {
   if (pathname === '/overview') return 'overview'
   if (pathname.startsWith('/tugas')) return 'tugas'
   if (pathname.startsWith('/sholat') || pathname.startsWith('/quran') || pathname.startsWith('/doa') || pathname.startsWith('/syukur') || pathname.startsWith('/sedekah')) return 'ibadah'
-  if (pathname.startsWith('/tidur') || pathname.startsWith('/minum-air')) return 'kesehatan'
+  if (pathname.startsWith('/tidur') || pathname.startsWith('/minum-air') || pathname.startsWith('/makan')) return 'kesehatan'
   if (pathname.startsWith('/masalah') || pathname.startsWith('/pmo') || pathname.startsWith('/kesenangan') || pathname.startsWith('/mental-block')) return 'mental'
   if (pathname.startsWith('/saran-perbaikan')) return 'perbaikan'
   if (pathname.startsWith('/saran-perbaikan')) return 'perbaikan'
@@ -121,6 +121,7 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
     switch (subPage) {
       case 'tidur': return 'Tidur'
       case 'minum-air': return 'Minum Air'
+      case 'makan': return 'Makan'
     }
   }
   if (category === 'mental' && subPage) {
@@ -194,6 +195,7 @@ function getCategoryDescription(category: string, period: Period, subPage: strin
     switch (subPage) {
       case 'tidur': return 'Pantau pola tidur Anda'
       case 'minum-air': return 'Catat konsumsi air minum harian'
+      case 'makan': return 'Catat jam makan & jeda antar makan'
     }
   }
   if (category === 'mental' && subPage) {
