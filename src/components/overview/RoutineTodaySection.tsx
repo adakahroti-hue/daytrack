@@ -190,7 +190,7 @@ function XyPie({
   const frac = target > 0 ? Math.max(0, Math.min(1, value / target)) : 0
   const segs =
     frac <= 0
-      ? [{ d: fullCircle(cx, cy, r), color: '#cbd5e1' }]
+      ? [{ d: fullCircle(cx, cy, r), color: 'rgba(148,163,184,0.35)' }]
       : frac >= 1
       ? [{ d: fullCircle(cx, cy, r), color }]
       : (() => {
@@ -202,7 +202,7 @@ function XyPie({
           const y1 = cy + r * Math.sin(a1)
           return [
             { d: `M ${cx} ${cy} L ${x0} ${y0} A ${r} ${r} 0 0 1 ${x1} ${y1} Z`, color },
-            { d: `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 1 1 ${x0} ${y0} Z`, color: '#cbd5e1' },
+            { d: `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 1 1 ${x0} ${y0} Z`, color: 'rgba(148,163,184,0.35)' },
           ]
         })()
   const fontSize = Math.round(size * 0.24)
