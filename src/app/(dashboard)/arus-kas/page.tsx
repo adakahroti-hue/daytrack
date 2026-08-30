@@ -75,6 +75,7 @@ const KLASIFIKASI_BADGE: Record<string, string> = {
   pasta_gigi: "bg-purple-50 text-purple-700 border-purple-200",
   sembako: "bg-yellow-50 text-yellow-800 border-yellow-200",
   obat_nyamuk: "bg-stone-50 text-stone-700 border-stone-200",
+  lainnya: "bg-slate-100 text-slate-500 border-slate-200",
 }
 
 // Opsi klasifikasi uang keluar (hanya satu yang dipilih)
@@ -95,6 +96,7 @@ const KLASIFIKASI_OPTIONS: { value: string; label: string }[] = [
   { value: "pasta_gigi", label: "Pasta Gigi" },
   { value: "sembako", label: "Sembako" },
   { value: "obat_nyamuk", label: "Obat Nyamuk" },
+  { value: "lainnya", label: "Lainnya" },
 ]
 
 // Alokasi otomatis dari total uang masuk (pay yourself first)
@@ -402,11 +404,11 @@ export default function ArusKasPage() {
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[140px] sm:min-w-[160px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><Wallet className="h-3.5 w-3.5 text-indigo-500" /> Dompet</div>
               </th>
-              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[140px] sm:min-w-[170px]", TABLE_BORDER)}>
-                <div className="flex items-center justify-center gap-1"><MessageSquare className="h-3.5 w-3.5 text-indigo-500" /> Klasifikasi</div>
-              </th>
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[160px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><Banknote className="h-3.5 w-3.5 text-indigo-500" /> Nominal</div>
+              </th>
+              <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[140px] sm:min-w-[170px]", TABLE_BORDER)}>
+                <div className="flex items-center justify-center gap-1"><MessageSquare className="h-3.5 w-3.5 text-indigo-500" /> Klasifikasi</div>
               </th>
               <th className={cn("px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[160px] sm:min-w-[220px]", TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><MessageSquare className="h-3.5 w-3.5 text-indigo-500" /> Alasan</div>
@@ -509,6 +511,9 @@ export default function ArusKasPage() {
                           </span>
                         )}
                       </td>
+                      <td className={cn("px-2 sm:px-3 py-2 text-center border-r font-semibold tabular-nums", TABLE_BORDER, isMasuk ? "text-green-700" : "text-red-600")}>
+                        {isMasuk ? "+" : "−"}{formatRupiah(entry.nominal).replace("Rp ", "")}
+                      </td>
                       <td className={cn("px-2 sm:px-3 py-2 text-center border-r", TABLE_BORDER)}>
                         {isMasuk ? (
                           <span className="text-slate-400">-</span>
@@ -518,9 +523,6 @@ export default function ArusKasPage() {
                             {entry.klasifikasi ? KLASIFIKASI_OPTIONS.find(k => k.value === entry.klasifikasi)?.label : "-"}
                           </span>
                         )}
-                      </td>
-                      <td className={cn("px-2 sm:px-3 py-2 text-center border-r font-semibold tabular-nums", TABLE_BORDER, isMasuk ? "text-green-700" : "text-red-600")}>
-                        {isMasuk ? "+" : "−"}{formatRupiah(entry.nominal).replace("Rp ", "")}
                       </td>
                       <td className={cn("px-2 sm:px-3 py-2 border-r", TABLE_BORDER)}>
                         <span className="text-sm text-slate-800 whitespace-normal break-words leading-snug">{entry.alasan || "-"}</span>
