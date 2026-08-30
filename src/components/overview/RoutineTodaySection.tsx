@@ -321,8 +321,18 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
     { label: 'Bebas PMO', days: countDays(pmoEntries as any[], e => e.status === 'berhasil') },
     { label: 'Tidur tepat waktu', days: countDays(tidurEntries as any[], e => e.status === 'tepat') },
   ]
-  // Rekor PMO — hari_ke terbesar SEPANJANG WAKTU (tidak dipengaruhi filter periode/capture)
-  const pmoRekor = (pmoAllEntries as any[]).reduce((m, e) => Math.max(m, e.hari_ke || 0), 0)
+  // Rekor PMO — urutan hari berhasil terpanjang SEPANJANG WAKTU (sama persis dengan
+  // "Rekor" di header tab PMO, dihitung dari data all-time, tak terpengaruh filter periode/capture)
+  const pmoRekor = (() => {
+    const sorted = [...(pmoAllEntries as any[])].sort((a: any, b: any) => a.tanggal.localeCompare(b.tanggal))
+    let cur = 0
+    let best = 0
+    for (const e of sorted) {
+      if (e.status === 'berhasil') { cur += 1; if (cur > best) best = cur }
+      else if (e.status === 'relapse') cur = 0
+    }
+    return best
+  })()
   const label = PERIOD_LABEL[period]
 
   // Refleksi (journal) — 3 poin terbaru dari SELURUH data (sumber: tab Refleksi /masalah, tidak dibatasi periode)
