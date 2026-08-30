@@ -354,6 +354,24 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <FocusTodayCard startStr={startStr} endStr={metricEndStr} period={period} />
         </div>
 
+        {/* Refleksi — 5 poin terbaru dari tab Refleksi (baris atas, sebaris dengan Tugas) */}
+        <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-purple-500" title="Refleksi" href="/masalah" linkColor="text-purple-500 hover:text-purple-700" className="col-span-full lg:col-span-1">
+          <div className="mt-3">
+            {refleksiList.length > 0 ? (
+              <ul className="space-y-1.5">
+                {refleksiList.map((r) => (
+                  <li key={r.id} className="flex items-start gap-2 text-sm text-slate-600 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50">
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-purple-400 shrink-0" />
+                    <span className="line-clamp-2 min-w-0">{r.masalah}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-1 text-sm text-slate-500">Belum ada refleksi pada periode ini.</p>
+            )}
+          </div>
+        </RoutineCard>
+
         {/* Ibadah — revisi batch 23: mengikuti mockup (angka kiri, pill kanan) */}
         <RoutineCard tint="bg-white border-slate-200" icon={Mosque} iconColor="text-emerald-500" title="Ibadah">
           <div className="mt-3">
@@ -709,24 +727,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                 <p className="text-[11px] text-rose-500">Alasan: <span className="text-slate-900">{REASON_LABELS[sedekahReason.reason] ?? sedekahReason.reason}</span> <span className="text-slate-400">({sedekahReason.count}×)</span></p>
               )}
             </div>
-          </div>
-        </RoutineCard>
-
-        {/* Refleksi — 5 poin terbaru dari tab Refleksi (baris atas, sebaris dengan Tugas) */}
-        <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-purple-500" title="Refleksi" href="/masalah" linkColor="text-purple-500 hover:text-purple-700" className="col-span-full lg:col-span-1">
-          <div className="mt-3">
-            {refleksiList.length > 0 ? (
-              <ul className="space-y-1.5">
-                {refleksiList.map((r) => (
-                  <li key={r.id} className="flex items-start gap-2 text-sm text-slate-600 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-purple-400 shrink-0" />
-                    <span className="line-clamp-2 min-w-0">{r.masalah}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-1 text-sm text-slate-500">Belum ada refleksi pada periode ini.</p>
-            )}
           </div>
         </RoutineCard>
 
