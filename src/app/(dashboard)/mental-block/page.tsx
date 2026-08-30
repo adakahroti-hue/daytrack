@@ -5,7 +5,7 @@ import {
   format,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Shield, Trash2, Plus, Pencil, Wrench, Hash } from 'lucide-react'
+import { Shield, Trash2, Plus, Pencil, Wrench, Hash, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -77,6 +77,18 @@ export default function MentalBlockPage() {
     await deleteMentalBlock.mutateAsync(id)
   }
 
+  // Salin teks mental block ke clipboard
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+  const handleCopy = async (entry: MentalBlockEntry) => {
+    try {
+      await navigator.clipboard.writeText(entry.masalah)
+      setCopiedId(entry.id)
+      setTimeout(() => setCopiedId(prev => (prev === entry.id ? null : prev)), 1500)
+    } catch {
+      // clipboard tidak tersedia — abaikan
+    }
+  }
+
   const handleDelete = async () => {
     if (!editState?.id) return
     await deleteMentalBlock.mutateAsync(editState.id)
@@ -139,6 +151,10 @@ export default function MentalBlockPage() {
                         <div className="flex items-start justify-between gap-2">
                           <p className="text-sm text-slate-800 whitespace-normal break-words leading-snug flex-1">{entry.masalah}</p>
                           <div className="flex items-center gap-1 shrink-0">
+                            <Button size="icon" aria-label="Salin teks" onClick={() => handleCopy(entry)}
+                              className={cn("h-6 w-6 p-0 text-white", copiedId === entry.id ? "bg-green-600 hover:bg-green-600" : "bg-slate-500 hover:bg-slate-600")}>
+                              <Copy className="h-3 w-3" />
+                            </Button>
                             <Button size="icon" aria-label="Edit mental block" onClick={() => openEdit(entry)}
                               className="h-6 w-6 p-0 bg-slate-600 hover:bg-slate-700 text-white">
                               <Pencil className="h-3 w-3" />
@@ -161,6 +177,10 @@ export default function MentalBlockPage() {
                       </td>
                       <td className={cn('px-2 sm:px-3 py-2', TABLE_BORDER)}>
                         <div className="flex items-center justify-center gap-1 flex-wrap">
+                          <Button size="sm" aria-label="Salin teks" onClick={() => handleCopy(entry)}
+                            className={cn("h-6 gap-1 text-white text-[11px] px-1.5", copiedId === entry.id ? "bg-green-600 hover:bg-green-600" : "bg-slate-500 hover:bg-slate-600")}>
+                            <Copy className="h-3 w-3" /> {copiedId === entry.id ? "Tersalin" : "Salin"}
+                          </Button>
                           <Button size="sm" aria-label="Edit mental block" onClick={() => openEdit(entry)}
                             className="h-6 gap-1 bg-slate-600 hover:bg-slate-700 text-white text-[11px] px-1.5">
                             <Pencil className="h-3 w-3" /> Edit
