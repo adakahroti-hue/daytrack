@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from 'react'
+import { Fragment, useMemo } from 'react'
 import {
   format,
   eachDayOfInterval,
@@ -39,9 +39,18 @@ interface MakanLogEntry {
   makan_pagi: string | null
   makan_siang: string | null
   makan_malam: string | null
+  makan_pagi_isi: string | null
+  makan_siang_isi: string | null
+  makan_malam_isi: string | null
   created_at: string
   updated_at: string
 }
+
+const ISI_KEYS = {
+  makan_pagi: 'makan_pagi_isi',
+  makan_siang: 'makan_siang_isi',
+  makan_malam: 'makan_malam_isi',
+} as const
 
 // Hitung selisih jam antara dua waktu "HH:MM:SS".
 // Jika end <= start, dianggap menyeberang hari (end + 24 jam).
@@ -118,6 +127,19 @@ export default function MakanPage() {
     })
   }
 
+  const handleSetIsi = async (tanggal: string, field: 'makan_pagi_isi' | 'makan_siang_isi' | 'makan_malam_isi', value: string) => {
+    const entry = logMap[tanggal]
+    await upsertMakanLog.mutateAsync({
+      tanggal,
+      makan_pagi: entry?.makan_pagi ?? undefined,
+      makan_siang: entry?.makan_siang ?? undefined,
+      makan_malam: entry?.makan_malam ?? undefined,
+      makan_pagi_isi: field === 'makan_pagi_isi' ? value : (entry?.makan_pagi_isi ?? undefined),
+      makan_siang_isi: field === 'makan_siang_isi' ? value : (entry?.makan_siang_isi ?? undefined),
+      makan_malam_isi: field === 'makan_malam_isi' ? value : (entry?.makan_malam_isi ?? undefined),
+    })
+  }
+
   const handleClear = async (tanggal: string) => {
     const entry = logMap[tanggal]
     if (entry) await deleteMakanLog.mutateAsync(entry.id)
@@ -136,9 +158,14 @@ export default function MakanPage() {
                 <div className="flex items-center justify-center gap-1"><CalendarDays className="h-3.5 w-3.5 text-orange-500" /> Hari</div>
               </th>
               {COLUMNS.map(col => (
-                <th key={col.key} className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[90px] sm:min-w-[110px]', TABLE_BORDER)}>
-                  <div className="flex items-center justify-center gap-1"><col.icon className="h-3.5 w-3.5 text-orange-500" /> {col.label}</div>
-                </th>
+                <Fragment key={col.key}>
+                  <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[90px] sm:min-w-[110px]', TABLE_BORDER)}>
+                    <div className="flex items-center justify-center gap-1"><col.icon className="h-3.5 w-3.5 text-orange-500" /> {col.label}</div>
+                  </th>
+                  <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
+                    <div className="flex items-center justify-center gap-1"><Utensils className="h-3.5 w-3.5 text-orange-500" /> Makanan</div>
+                  </th>
+                </Fragment>
               ))}
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[80px] sm:min-w-[100px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><Utensils className="h-3.5 w-3.5 text-orange-500" /> Jeda Pagi→Siang</div>
@@ -153,9 +180,9 @@ export default function MakanPage() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={9} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
+              <tr><td colSpan={13} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
             ) : error ? (
-              <tr><td colSpan={9} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
+              <tr><td colSpan={13} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
             ) : (
               dates.map((dateStr, rowIdx) => {
                 const date = new Date(dateStr + 'T00:00:00')
@@ -177,32 +204,47 @@ export default function MakanPage() {
                     <td className={cn('px-2 sm:px-3 py-2 text-center border-r dt-col-stick sm:sticky sm:left-[100px] sm:z-10 sm:bg-inherit', TABLE_BORDER)}>
                       <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs border font-medium', DAY_BADGE_COLORS[dayName] || 'bg-slate-100 text-slate-700 border-slate-200')}>{dayName}</span>
                     </td>
-                    {COLUMNS.map(col => (
-                      <td key={col.key} className={cn('px-2 sm:px-3 py-2 text-center border-r', TABLE_BORDER)}>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button type="button" className="font-medium text-slate-700 cursor-pointer hover:text-orange-700 hover:underline">
-                              {entry?.[col.key] ? entry[col.key]!.slice(0, 5) : 'Pilih'}
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="center" className="max-h-64 overflow-y-auto w-32">
-                            {MAKAN_TIME_OPTIONS.map(opt => (
-                              <DropdownMenuItem key={opt.value} onClick={() => handleSetJam(dateStr, col.key, opt.value)} className="flex items-center gap-2">
-                                {opt.label}
-                              </DropdownMenuItem>
-                            ))}
-                            {entry?.[col.key] && (
-                              <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => handleSetJam(dateStr, col.key, '')} className="flex items-center gap-2 text-destructive focus:text-destructive">
-                                  <Trash2 className="h-4 w-4" /> Kosongkan
-                                </DropdownMenuItem>
-                              </>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </td>
-                    ))}
+                    {COLUMNS.map(col => {
+                      const isiKey = ISI_KEYS[col.key]
+                      const isiVal = entry?.[isiKey] ?? ''
+                      return (
+                        <Fragment key={col.key}>
+                          <td className={cn('px-2 sm:px-3 py-2 text-center border-r', TABLE_BORDER)}>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button type="button" className="font-medium text-slate-700 cursor-pointer hover:text-orange-700 hover:underline">
+                                  {entry?.[col.key] ? entry[col.key]!.slice(0, 5) : 'Pilih'}
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="center" className="max-h-64 overflow-y-auto w-32">
+                                {MAKAN_TIME_OPTIONS.map(opt => (
+                                  <DropdownMenuItem key={opt.value} onClick={() => handleSetJam(dateStr, col.key, opt.value)} className="flex items-center gap-2">
+                                    {opt.label}
+                                  </DropdownMenuItem>
+                                ))}
+                                {entry?.[col.key] && (
+                                  <>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => handleSetJam(dateStr, col.key, '')} className="flex items-center gap-2 text-destructive focus:text-destructive">
+                                      <Trash2 className="h-4 w-4" /> Kosongkan
+                                    </DropdownMenuItem>
+                                  </>
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </td>
+                          <td className={cn('px-2 sm:px-3 py-2 border-r', TABLE_BORDER)}>
+                            <input
+                              type="text"
+                              value={isiVal}
+                              placeholder="Apa yang dimakan?"
+                              onChange={(e) => handleSetIsi(dateStr, isiKey, e.target.value)}
+                              className="w-full min-w-0 text-xs sm:text-sm text-slate-700 bg-transparent border-0 border-b border-dashed border-slate-200 focus:border-orange-400 focus:outline-none py-1 px-0.5 placeholder:text-slate-300"
+                            />
+                          </td>
+                        </Fragment>
+                      )
+                    })}
                     <td className={cn('px-2 sm:px-3 py-2 text-center border-r tabular-nums font-medium text-slate-700', TABLE_BORDER)}>
                       {jedaPagiSiang != null ? `${jedaPagiSiang} jam` : '-'}
                     </td>
