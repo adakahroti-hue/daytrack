@@ -12,6 +12,7 @@ const makanLogSchema = z.object({
   makan_pagi_isi: z.string().optional(),
   makan_siang_isi: z.string().optional(),
   makan_malam_isi: z.string().optional(),
+  keterangan: z.string().optional(),
 })
 
 export type MakanLogFormData = z.infer<typeof makanLogSchema>
@@ -26,6 +27,7 @@ export interface MakanLogEntry {
   makan_pagi_isi: string | null
   makan_siang_isi: string | null
   makan_malam_isi: string | null
+  keterangan: string | null
   created_at: string
   updated_at: string
 }
@@ -53,6 +55,7 @@ export async function upsertMakanLog(formData: MakanLogFormData) {
   if (validated.makan_pagi_isi !== undefined) insertData.makan_pagi_isi = validated.makan_pagi_isi || null
   if (validated.makan_siang_isi !== undefined) insertData.makan_siang_isi = validated.makan_siang_isi || null
   if (validated.makan_malam_isi !== undefined) insertData.makan_malam_isi = validated.makan_malam_isi || null
+  if (validated.keterangan !== undefined) insertData.keterangan = validated.keterangan || null
 
   let data, error
   if (existing) {
@@ -84,7 +87,7 @@ export async function getMakanLogRange(startDate: string, endDate: string) {
   if (!user) throw new Error("Unauthorized")
   const { data, error } = await supabase
     .from("makan")
-    .select("id, tanggal, makan_pagi, makan_siang, makan_malam, makan_pagi_isi, makan_siang_isi, makan_malam_isi")
+    .select("id, tanggal, makan_pagi, makan_siang, makan_malam, makan_pagi_isi, makan_siang_isi, makan_malam_isi, keterangan")
     .eq("user_id", user.id)
     .gte("tanggal", startDate)
     .lte("tanggal", endDate)

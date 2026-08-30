@@ -12,7 +12,7 @@ import {
   endOfYear,
 } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Calendar, CalendarDays, Utensils, UtensilsCrossed, Soup, Sun, Trash2 } from 'lucide-react'
+import { Calendar, CalendarDays, Utensils, UtensilsCrossed, Soup, Sun, Trash2, MessageSquare } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { useHeaderControls, getIbadahRange } from '@/components/layout/HeaderControls'
@@ -42,6 +42,7 @@ interface MakanLogEntry {
   makan_pagi_isi: string | null
   makan_siang_isi: string | null
   makan_malam_isi: string | null
+  keterangan: string | null
   created_at: string
   updated_at: string
 }
@@ -140,6 +141,20 @@ export default function MakanPage() {
     })
   }
 
+  const handleSetKeterangan = async (tanggal: string, value: string) => {
+    const entry = logMap[tanggal]
+    await upsertMakanLog.mutateAsync({
+      tanggal,
+      makan_pagi: entry?.makan_pagi ?? undefined,
+      makan_siang: entry?.makan_siang ?? undefined,
+      makan_malam: entry?.makan_malam ?? undefined,
+      makan_pagi_isi: entry?.makan_pagi_isi ?? undefined,
+      makan_siang_isi: entry?.makan_siang_isi ?? undefined,
+      makan_malam_isi: entry?.makan_malam_isi ?? undefined,
+      keterangan: value,
+    })
+  }
+
   const handleClear = async (tanggal: string) => {
     const entry = logMap[tanggal]
     if (entry) await deleteMakanLog.mutateAsync(entry.id)
@@ -176,13 +191,16 @@ export default function MakanPage() {
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[80px] sm:min-w-[100px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1"><Utensils className="h-3.5 w-3.5 text-orange-500" /> Jeda Malam→Pagi</div>
               </th>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[140px] sm:min-w-[200px]', TABLE_BORDER)}>
+                <div className="flex items-center justify-center gap-1"><MessageSquare className="h-3.5 w-3.5 text-orange-500" /> Keterangan</div>
+              </th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={13} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
+              <tr><td colSpan={14} className="text-center py-12 text-slate-400"><div className="flex flex-col items-center gap-2"><div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" /><span className="text-sm">Memuat data...</span></div></td></tr>
             ) : error ? (
-              <tr><td colSpan={13} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
+              <tr><td colSpan={14} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td></tr>
             ) : (
               dates.map((dateStr, rowIdx) => {
                 const date = new Date(dateStr + 'T00:00:00')
@@ -253,6 +271,15 @@ export default function MakanPage() {
                     </td>
                     <td className={cn('px-2 sm:px-3 py-2 text-center border-r tabular-nums font-medium text-slate-700', TABLE_BORDER)}>
                       {jedaMalamPagi != null ? `${jedaMalamPagi} jam` : '-'}
+                    </td>
+                    <td className={cn('px-2 sm:px-3 py-2', TABLE_BORDER)}>
+                      <input
+                        type="text"
+                        value={entry?.keterangan ?? ''}
+                        placeholder="Catatan..."
+                        onChange={(e) => handleSetKeterangan(dateStr, e.target.value)}
+                        className="w-full min-w-0 text-xs sm:text-sm text-slate-700 bg-transparent border-0 border-b border-dashed border-slate-200 focus:border-orange-400 focus:outline-none py-1 px-0.5 placeholder:text-slate-300"
+                      />
                     </td>
                   </tr>
                 )
