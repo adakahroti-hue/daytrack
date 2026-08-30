@@ -74,6 +74,7 @@ const KLASIFIKASI_BADGE: Record<string, string> = {
   gas_kompor: "bg-lime-50 text-lime-700 border-lime-200",
   pasta_gigi: "bg-purple-50 text-purple-700 border-purple-200",
   sembako: "bg-yellow-50 text-yellow-800 border-yellow-200",
+  obat_nyamuk: "bg-stone-50 text-stone-700 border-stone-200",
 }
 
 // Opsi klasifikasi uang keluar (hanya satu yang dipilih)
@@ -93,6 +94,7 @@ const KLASIFIKASI_OPTIONS: { value: string; label: string }[] = [
   { value: "gas_kompor", label: "Gas Kompor" },
   { value: "pasta_gigi", label: "Pasta Gigi" },
   { value: "sembako", label: "Sembako" },
+  { value: "obat_nyamuk", label: "Obat Nyamuk" },
 ]
 
 // Alokasi otomatis dari total uang masuk (pay yourself first)

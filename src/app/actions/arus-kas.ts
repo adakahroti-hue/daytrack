@@ -12,7 +12,7 @@ const arusKasSchema = z.object({
   dompet: z.enum(["kebutuhan", "tabungan", "self_reward", "sedekah", "paylater"]).nullable().optional(),
   klasifikasi: z.enum([
     "beli_makanan", "cemilan", "self_reward", "sedekah", "laundry", "bayar_kos", "ojek",
-    "jajan", "pencuci_muka", "sabun", "galon_air", "pulsa", "gas_kompor", "pasta_gigi", "sembako",
+    "jajan", "pencuci_muka", "sabun", "galon_air", "pulsa", "gas_kompor", "pasta_gigi", "sembako", "obat_nyamuk",
   ]).nullable().optional(),
 })
 
@@ -26,7 +26,7 @@ export interface ArusKasEntry {
   nominal: number
   alasan: string | null
   dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" | "paylater" | null
-  klasifikasi: "beli_makanan" | "cemilan" | "self_reward" | "sedekah" | "laundry" | "bayar_kos" | "ojek" | "jajan" | "pencuci_muka" | "sabun" | "galon_air" | "pulsa" | "gas_kompor" | "pasta_gigi" | "sembako" | null
+  klasifikasi: "beli_makanan" | "cemilan" | "self_reward" | "sedekah" | "laundry" | "bayar_kos" | "ojek" | "jajan" | "pencuci_muka" | "sabun" | "galon_air" | "pulsa" | "gas_kompor" | "pasta_gigi" | "sembako" | "obat_nyamuk" | null
   created_at: string
   updated_at: string
 }
