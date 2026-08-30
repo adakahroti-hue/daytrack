@@ -121,8 +121,57 @@ function RoutineCard({
   )
 }
 
-// ─── Pie chart x/y untuk card Ibadah & Kesehatan (filter mingguan/capture/dst) ───
+// ─── Donut x/y (ring berlubang) untuk SUB-bagian card Ibadah & Kesehatan ───
 function XyDonut({
+  value,
+  target,
+  color,
+  size = 60,
+  label,
+}: {
+  value: number
+  target: number
+  color: string
+  size?: number
+  label?: string
+}) {
+  const pct = target > 0 ? Math.max(0, Math.min(100, Math.round((value / target) * 100))) : 0
+  const stroke = Math.max(5, Math.round(size * 0.11))
+  const r = (size - stroke) / 2
+  const c = 2 * Math.PI * r
+  const offset = c - (pct / 100) * c
+  const fontSize = Math.round(size * 0.24)
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <div className="relative shrink-0" style={{ width: size, height: size }}>
+        <svg width={size} height={size} className="-rotate-90" viewBox={`0 0 ${size} ${size}`}>
+          <circle cx={size / 2} cy={size / 2} r={r} stroke="#e2e8f0" strokeWidth={stroke} fill="none" />
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            stroke={color}
+            strokeWidth={stroke}
+            strokeLinecap="round"
+            fill="none"
+            strokeDasharray={c}
+            strokeDashoffset={offset}
+            className="transition-all duration-700 ease-out"
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center leading-none">
+          <span className="font-bold tabular-nums text-slate-900" style={{ fontSize }}>
+            {value}<span style={{ fontSize: Math.round(fontSize * 0.7) }} className="text-slate-400">/{target}</span>
+          </span>
+        </div>
+      </div>
+      {label && <span className="text-[10px] sm:text-xs text-slate-700 text-center leading-tight">{label}</span>}
+    </div>
+  )
+}
+
+// ─── Pie chart penuh (tanpa lubang) untuk diagram di sebelah kiri judul section ───
+function XyPie({
   value,
   target,
   color,
@@ -139,7 +188,6 @@ function XyDonut({
   const cy = size / 2
   const r = size / 2 - 1
   const frac = target > 0 ? Math.max(0, Math.min(1, value / target)) : 0
-  // Dua irisan: warna (value) + sisa (abu). Jika 0, hanya abu.
   const segs =
     frac <= 0
       ? [{ d: fullCircle(cx, cy, r), color: '#cbd5e1' }]
@@ -386,7 +434,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                {isWeekly && <XyDonut value={sholatCount} target={sholatTarget} color="#10b981" />}
+                {isWeekly && <XyPie value={sholatCount} target={sholatTarget} color="#10b981" />}
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -449,7 +497,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-4 pt-4 border-t border-slate-100">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                {isWeekly && <XyDonut value={sunnahCount} target={sunnahTarget} color="#22c55e" />}
+                {isWeekly && <XyPie value={sunnahCount} target={sunnahTarget} color="#22c55e" />}
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -495,7 +543,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-4 pt-4 border-t border-slate-100">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                {isWeekly && <XyDonut value={quranCount} target={quranTarget} color="#14b8a6" />}
+                {isWeekly && <XyPie value={quranCount} target={quranTarget} color="#14b8a6" />}
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -564,7 +612,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                {isWeekly && <XyDonut value={gelas} target={targetGelasPeriod} color="#0ea5e9" />}
+                {isWeekly && <XyPie value={gelas} target={targetGelasPeriod} color="#0ea5e9" />}
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -634,7 +682,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             <div className="mt-1.5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 flex items-center gap-3">
                 {isWeekly ? (
-                  <XyDonut value={checklist[3].days} target={daysElapsed} color="#0ea5e9" size={52} />
+                  <XyPie value={checklist[3].days} target={daysElapsed} color="#0ea5e9" size={52} />
                 ) : (
                   <div className="flex items-baseline gap-1.5 leading-none pl-[2px]">
                     <span className={cn('text-[22px] font-bold tabular-nums', numColor(checklist[3].days >= daysElapsed))}>{checklist[3].days}<span className={cn('text-lg', numColorSoft(checklist[3].days >= daysElapsed))}>/{daysElapsed}</span></span>
