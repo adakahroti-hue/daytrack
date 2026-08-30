@@ -214,11 +214,6 @@ function XyPie({
             <path key={i} d={s.d} fill={s.color} className="transition-all duration-700 ease-out" />
           ))}
         </svg>
-        <div className="absolute inset-0 flex items-center justify-center leading-none">
-          <span className="font-bold tabular-nums text-slate-900" style={{ fontSize }}>
-            {value}<span style={{ fontSize: Math.round(fontSize * 0.7) }} className="text-slate-400">/{target}</span>
-          </span>
-        </div>
       </div>
       {label && <span className="text-[10px] sm:text-xs text-slate-700 text-center leading-tight">{label}</span>}
     </div>
