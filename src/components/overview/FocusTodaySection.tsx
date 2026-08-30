@@ -47,16 +47,23 @@ function PieSegments({
   segments,
   size = 64,
   centerLabel,
+  centerColor,
 }: {
   segments: { value: number; color: string }[]
   size?: number
   centerLabel?: string
+  centerColor?: string
 }) {
   const total = segments.reduce((a, s) => a + s.value, 0)
   const stroke = Math.max(5, Math.round(size * 0.14))
   const r = (size - stroke) / 2
   const c = 2 * Math.PI * r
   let offset = 0
+  // Lingkaran tengah berwarna (proporsi selesai) agar bagian tengah tak kosong
+  const innerR = Math.max(2, Math.round(r - stroke / 2 - 1))
+  const innerPct = total > 0 && centerColor ? Math.min(100, Math.max(0, parseFloat(centerLabel ?? '0'))) : 0
+  const innerC = 2 * Math.PI * innerR
+  const innerDash = (innerPct / 100) * innerC
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90" viewBox={`0 0 ${size} ${size}`}>
@@ -82,9 +89,25 @@ function PieSegments({
             offset += dash
             return el
           })}
+        {centerColor && (
+          <>
+            <circle cx={size / 2} cy={size / 2} r={innerR} stroke="#ffffff" strokeWidth={2} fill="none" />
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={innerR}
+              stroke={centerColor}
+              strokeWidth={Math.max(3, Math.round(size * 0.1))}
+              fill="none"
+              strokeDasharray={`${innerDash} ${innerC - innerDash}`}
+              strokeLinecap="round"
+              className="transition-all duration-700 ease-out"
+            />
+          </>
+        )}
       </svg>
       <div className="absolute inset-0 flex items-center justify-center leading-none">
-        <span className="font-bold tabular-nums text-slate-900" style={{ fontSize: Math.round(size * 0.22) }}>
+        <span className="font-bold tabular-nums text-slate-900" style={{ fontSize: Math.round(size * 0.2) }}>
           {centerLabel ?? total}
         </span>
       </div>
@@ -177,7 +200,7 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
           <div className="pt-3 sm:pt-0 border-t border-slate-100 sm:border-0 sm:flex-1">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Kategori Prioritas</p>
             <div className="flex items-center gap-3">
-              <PieSegments size={64} segments={priorityCounts.map(p => ({ value: p.value, color: p.color }))} centerLabel={`${displayTotal > 0 ? Math.round((displaySelesai / displayTotal) * 100) : 0}%`} />
+              <PieSegments size={64} segments={priorityCounts.map(p => ({ value: p.value, color: p.color }))} centerLabel={`${displayTotal > 0 ? Math.round((displaySelesai / displayTotal) * 100) : 0}%`} centerColor="#10b981" />
               <div className="grid grid-cols-2 gap-x-3 gap-y-1 min-w-0 flex-1">
                 {priorityCounts.map(p => (
                   <div key={p.key} className="flex items-center gap-1.5 min-w-0">
