@@ -670,22 +670,31 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-emerald-500" title="Hoki">
           <div className="mt-3 px-2 sm:px-3 py-1 grid grid-cols-3 gap-2 sm:gap-3">
             {/* Bersyukur */}
-            <div className="flex items-center gap-2 text-left">
+            <div className="relative flex items-center gap-2 text-left">
               <XyDonut value={checklist[0].days} target={daysElapsed} color="#8b5cf6" size={52} label="Bersyukur" />
+              <Link href="/syukur" aria-label="Buka tab Syukur" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
               {syukurReason && (
                 <p className="text-[11px] text-rose-500 leading-tight">Alasan: <span className="text-slate-900">{REASON_LABELS[syukurReason.reason] ?? syukurReason.reason}</span> <span className="text-slate-400">({syukurReason.count}×)</span></p>
               )}
             </div>
             {/* Doakan */}
-            <div className="flex items-center gap-2 text-left border-l border-slate-100 pl-3 sm:pl-4">
+            <div className="relative flex items-center gap-2 text-left border-l border-slate-100 pl-3 sm:pl-4">
               <XyDonut value={checklist[1].days} target={daysElapsed} color="#8b5cf6" size={52} label="Doakan" />
+              <Link href="/doa" aria-label="Buka tab Doa" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
               {doaReason && (
                 <p className="text-[11px] text-rose-500 leading-tight">Alasan: <span className="text-slate-900">{doaReason.reason}</span> <span className="text-slate-400">({doaReason.count}×)</span></p>
               )}
             </div>
             {/* Sedekah */}
-            <div className="flex items-center gap-2 text-left border-l border-slate-100 pl-3 sm:pl-4">
+            <div className="relative flex items-center gap-2 text-left border-l border-slate-100 pl-3 sm:pl-4">
               <XyDonut value={sedekahCount} target={daysElapsed} color="#8b5cf6" size={52} label="Sedekah" />
+              <Link href="/sedekah" aria-label="Buka tab Sedekah" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
               {sedekahReason && (
                 <p className="text-[11px] text-rose-500">Alasan: <span className="text-slate-900">{REASON_LABELS[sedekahReason.reason] ?? sedekahReason.reason}</span> <span className="text-slate-400">({sedekahReason.count}×)</span></p>
               )}
@@ -694,7 +703,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         </RoutineCard>
 
         {/* Keuangan — Kebutuhan & Saldo dari tab Arus Kas */}
-        <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan">
+        <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700">
           <div className="mt-3 grid grid-cols-2 gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Kebutuhan</p>
