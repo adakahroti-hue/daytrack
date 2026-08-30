@@ -19,11 +19,32 @@ interface ArusKasEntry {
   nominal: number
   alasan: string | null
   dompet: 'kebutuhan' | 'tabungan' | 'self_reward' | 'sedekah' | 'paylater' | null
+  klasifikasi: 'beli_makanan' | 'cemilan' | 'self_reward' | 'sedekah' | 'laundry' | 'bayar_kos' | 'ojek' | 'jajan' | 'pencuci_muka' | 'sabun' | 'galon_air' | 'pulsa' | 'gas_kompor' | 'pasta_gigi' | 'sembako' | 'obat_nyamuk' | 'lainnya' | null
   created_at: string
 }
 
 interface ArusKasAnalyticsProps {
   logs: ArusKasEntry[]
+}
+
+const KLASIFIKASI_LABEL: Record<string, string> = {
+  beli_makanan: 'Beli Makanan',
+  cemilan: 'Cemilan',
+  self_reward: 'Self Reward',
+  sedekah: 'Sedekah',
+  laundry: 'Laundry',
+  bayar_kos: 'Bayar Kos',
+  ojek: 'Ojek',
+  jajan: 'Jajan',
+  pencuci_muka: 'Pencuci Muka',
+  sabun: 'Sabun',
+  galon_air: 'Galon Air',
+  pulsa: 'Pulsa',
+  gas_kompor: 'Gas Kompor',
+  pasta_gigi: 'Pasta Gigi',
+  sembako: 'Sembako',
+  obat_nyamuk: 'Obat Nyamuk',
+  lainnya: 'Lainnya',
 }
 
 const PASTEL_DONUT_COLORS = [
@@ -113,7 +134,7 @@ export function ArusKasAnalytics({ logs }: ArusKasAnalyticsProps) {
     const map = new Map<string, number>()
     for (const l of logs as ArusKasEntry[]) {
       if (l.kategori !== 'uang_keluar') continue
-      const key = (l.alasan && l.alasan.trim()) || 'Tanpa tujuan'
+      const key = l.klasifikasi ? (KLASIFIKASI_LABEL[l.klasifikasi] ?? l.klasifikasi) : 'Belum diklasifikasi'
       map.set(key, (map.get(key) || 0) + l.nominal)
     }
     return aggregate([...map.entries()].map(([name, value]) => ({ name, value })))
