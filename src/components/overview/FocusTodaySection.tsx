@@ -47,10 +47,12 @@ function PieSegments({
   segments,
   size = 64,
   centerLabel,
+  labelSmall,
 }: {
   segments: { value: number; color: string }[]
   size?: number
   centerLabel?: string
+  labelSmall?: boolean
 }) {
   const total = segments.reduce((a, s) => a + s.value, 0)
   const cx = size / 2
@@ -95,18 +97,24 @@ function PieSegments({
             <path key={`sep-${i}`} d={p.d} fill="none" stroke="#ffffff" strokeWidth={1} />
           ))
         )}
-        {/* Label persen di dalam tiap irisan (jika cukup besar) */}
+        {/* Label persen di dalam tiap irisan (jika cukup besar) atau di lepi (jika kecil) */}
         {total > 0 && segments.map((s, i) => {
           const frac = s.value / total
-          if (frac <= 0.06) return null
-          const lx = cx + r * 0.6 * Math.cos(midAngle[i])
-          const ly = cy + r * 0.6 * Math.sin(midAngle[i])
           const pct = Math.round(frac * 100)
+          const inSlice = frac > 0.08
+          const lx = cx + r * (inSlice ? 0.6 : 1.18) * Math.cos(midAngle[i])
+          const ly = cy + r * (inSlice ? 0.6 : 1.18) * Math.sin(midAngle[i])
           return (
-            <text key={`lbl-${i}`} x={lx} y={ly} fill="#ffffff" stroke="#00000055" strokeWidth={0.3}
-              fontSize={Math.max(7, Math.round(size * 0.15))} fontWeight={700} textAnchor="middle" dominantBaseline="central">
-              {pct}%
-            </text>
+            <g key={`lbl-${i}`}>
+              {!inSlice && (
+                <line x1={cx + r * 0.85 * Math.cos(midAngle[i])} y1={cy + r * 0.85 * Math.sin(midAngle[i])}
+                  x2={lx} y2={ly} stroke={s.color} strokeWidth={0.6} />
+              )}
+              <text x={lx} y={ly} fill={inSlice ? '#ffffff' : s.color} stroke={inSlice ? '#00000055' : 'none'} strokeWidth={inSlice ? 0.3 : 0}
+                fontSize={Math.max(7, Math.round(size * (inSlice ? 0.15 : 0.14)))} fontWeight={700} textAnchor="middle" dominantBaseline="central">
+                {pct}%
+              </text>
+            </g>
           )
         })}
       </svg>
@@ -205,9 +213,9 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
           {/* Kanan: Kategori Prioritas */}
           <div className="pt-3 sm:pt-0 border-t border-slate-100 sm:border-0 sm:flex-1">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Kategori Prioritas</p>
-            <div className="flex items-center gap-3">
-              <PieSegments size={64} segments={priorityCounts.map(p => ({ value: p.value, color: p.color }))} />
-              <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 min-w-0 flex-1">
+            <div className="flex items-center gap-4">
+              <PieSegments size={72} segments={priorityCounts.map(p => ({ value: p.value, color: p.color }))} labelSmall />
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 min-w-0 flex-1">
                 {priorityCounts.map(p => (
                   <div key={p.key} className="flex items-center gap-1.5 min-w-0">
                     <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: p.color }} />
