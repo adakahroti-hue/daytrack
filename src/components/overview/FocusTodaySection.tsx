@@ -101,17 +101,17 @@ function PieSegments({
         {total > 0 && segments.map((s, i) => {
           const frac = s.value / total
           const pct = Math.round(frac * 100)
-          const inSlice = frac > 0.08
-          const lx = cx + r * (inSlice ? 0.6 : 1.18) * Math.cos(midAngle[i])
-          const ly = cy + r * (inSlice ? 0.6 : 1.18) * Math.sin(midAngle[i])
+          const inSlice = frac > 0.1
+          const lx = cx + r * (inSlice ? 0.5 : 1.25) * Math.cos(midAngle[i])
+          const ly = cy + r * (inSlice ? 0.5 : 1.25) * Math.sin(midAngle[i])
           return (
             <g key={`lbl-${i}`}>
               {!inSlice && (
-                <line x1={cx + r * 0.85 * Math.cos(midAngle[i])} y1={cy + r * 0.85 * Math.sin(midAngle[i])}
+                <line x1={cx + r * 0.8 * Math.cos(midAngle[i])} y1={cy + r * 0.8 * Math.sin(midAngle[i])}
                   x2={lx} y2={ly} stroke={s.color} strokeWidth={0.6} />
               )}
-              <text x={lx} y={ly} fill={inSlice ? '#ffffff' : s.color} stroke={inSlice ? '#00000055' : 'none'} strokeWidth={inSlice ? 0.3 : 0}
-                fontSize={Math.max(7, Math.round(size * (inSlice ? 0.15 : 0.14)))} fontWeight={700} textAnchor="middle" dominantBaseline="central">
+              <text x={lx} y={ly} fill={inSlice ? '#ffffff' : s.color} stroke={inSlice ? '#00000066' : 'none'} strokeWidth={inSlice ? 0.25 : 0}
+                fontSize={Math.max(6, Math.round(size * (inSlice ? 0.13 : 0.12)))} fontWeight={700} textAnchor="middle" dominantBaseline="central">
                 {pct}%
               </text>
             </g>
@@ -194,7 +194,7 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
               size={64}
               segments={[
                 { value: displaySelesai, color: '#10b981' },
-                { value: displayTotal - displaySelesai, color: '#e2e8f0' },
+                { value: displayTotal - displaySelesai, color: '#cbd5e1' },
               ]}
             />
             <div className="min-w-0">
@@ -214,7 +214,7 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
           <div className="pt-3 sm:pt-0 border-t border-slate-100 sm:border-0 sm:flex-1">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Kategori Prioritas</p>
             <div className="flex items-center gap-4">
-              <PieSegments size={72} segments={priorityCounts.map(p => ({ value: p.value, color: p.color }))} labelSmall />
+              <PieSegments size={64} segments={priorityCounts.map(p => ({ value: p.value, color: p.color }))} labelSmall />
               <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 min-w-0 flex-1">
                 {priorityCounts.map(p => (
                   <div key={p.key} className="flex items-center gap-1.5 min-w-0">
