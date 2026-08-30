@@ -174,7 +174,8 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const isHarian = period === 'harian' || period === 'kemarin'
   const isKemarin = period === 'kemarin'
   // Shot = rentang Minggu–Sabtu (tampilan sama dengan mingguan, termasuk donut x/y)
-  const isWeekly = period === 'mingguan' || period === 'shot'
+  // Bulanan & tahunan juga pakai tampilan donut/angka x/y seperti capture (batch: seragam)
+  const isWeekly = period === 'mingguan' || period === 'shot' || period === 'bulanan' || period === 'tahunan'
 
   const todayStr = format(new Date(), 'yyyy-MM-dd')
   const cappedEnd = endStr < todayStr ? endStr : todayStr
