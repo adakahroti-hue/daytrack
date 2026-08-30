@@ -14,7 +14,7 @@ import { useSedekahLogRange } from '@/hooks/useSedekahLogs'
 import { usePmoLogRange } from '@/hooks/usePmoLogs'
 import { useTidurLogRange } from '@/hooks/useTidurLogs'
 import { useArusKasRange } from '@/hooks/useArusKas'
-import { useMasalahLogRange } from '@/hooks/useMasalahLogs'
+import { useMasalahLogAll } from '@/hooks/useMasalahLogs'
 import { PERIOD_LABEL, type OverviewPeriod, FocusTodayCard } from './FocusTodaySection'
 
 // ─── Revisi batch 18: section "Rutinitas" untuk tab Overview (tema hitam-putih) ───
@@ -323,8 +323,8 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const pmoRekor = (pmoEntries as any[]).reduce((m, e) => Math.max(m, e.hari_ke || 0), 0)
   const label = PERIOD_LABEL[period]
 
-  // Refleksi (journal) — 5 poin terbaru dalam rentang periode (sumber: tab Refleksi /masalah)
-  const { data: refleksiEntries = [] } = useMasalahLogRange(startStr, endStr)
+  // Refleksi (journal) — 3 poin terbaru dari SELURUH data (sumber: tab Refleksi /masalah, tidak dibatasi periode)
+  const { data: refleksiEntries = [] } = useMasalahLogAll()
   const refleksiList = (refleksiEntries as any[])
     .filter(e => e.masalah)
     .sort((a, b) => b.tanggal.localeCompare(a.tanggal) || (b.created_at || '').localeCompare(a.created_at || ''))
@@ -351,9 +351,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
                 {isWeekly && <XyDonut value={sholatCount} target={sholatTarget} color="#10b981" />}
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-                    <Mosque className="h-3.5 w-3.5 text-emerald-500" /> Sholat 5 Waktu
-                  </p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
+                      <Mosque className="h-3.5 w-3.5 text-emerald-500" /> Sholat 5 Waktu
+                    </p>
+                    <Link href="/sholat" aria-label="Buka tab Sholat Wajib" className="p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
                   {isWeekly ? (
                     <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{sholatCount}/{sholatTarget}</span> sholat</p>
                   ) : (
@@ -409,9 +414,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
                 {isWeekly && <XyDonut value={sunnahCount} target={sunnahTarget} color="#22c55e" />}
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-                    <Sun className="h-3.5 w-3.5 text-amber-500" /> Sholat Sunnah
-                  </p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
+                      <Sun className="h-3.5 w-3.5 text-amber-500" /> Sholat Sunnah
+                    </p>
+                    <Link href="/sholat-sunnah" aria-label="Buka tab Sholat Sunnah" className="p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
                   {isWeekly ? (
                     <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{sunnahCount}/{sunnahTarget}</span> sholat</p>
                   ) : (
@@ -450,9 +460,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
                 {isWeekly && <XyDonut value={quranCount} target={quranTarget} color="#14b8a6" />}
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-                    <BookOpen className="h-3.5 w-3.5 text-emerald-500" /> Baca Quran
-                  </p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
+                      <BookOpen className="h-3.5 w-3.5 text-emerald-500" /> Baca Quran
+                    </p>
+                    <Link href="/quran" aria-label="Buka tab Quran" className="p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
                   {isWeekly ? (
                     <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{quranCount}/{quranTarget}</span> sesi</p>
                   ) : (
@@ -514,9 +529,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
                 {isWeekly && <XyDonut value={gelas} target={targetGelasPeriod} color="#0ea5e9" />}
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-                    <GlassWater className="h-3.5 w-3.5 text-sky-500" /> Minum Air
-                  </p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
+                      <GlassWater className="h-3.5 w-3.5 text-sky-500" /> Minum Air
+                    </p>
+                    <Link href="/minum-air" aria-label="Buka tab Minum Air" className="p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
                   {isWeekly ? (
                     <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{gelas}/{targetGelasPeriod}</span> gelas</p>
                   ) : (
@@ -566,9 +586,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             )}
           </div>
           <div className="mt-4 pt-4 border-t border-slate-100">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-              <Moon className="h-3.5 w-3.5 text-sky-500" /> Waktu Tidur
-            </p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
+                <Moon className="h-3.5 w-3.5 text-sky-500" /> Waktu Tidur
+              </p>
+              <Link href="/tidur" aria-label="Buka tab Tidur" className="p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
             <div className="mt-1.5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 flex items-center gap-3">
                 {isWeekly ? (
@@ -604,9 +629,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             </div>
           </div>
           <div className="mt-3 pt-3 border-t border-slate-100">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-              <Shield className="h-3.5 w-3.5 text-sky-500" /> Bebas PMO
-            </p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
+                <Shield className="h-3.5 w-3.5 text-sky-500" /> Bebas PMO
+              </p>
+              <Link href="/pmo" aria-label="Buka tab PMO" className="p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
             <div className="mt-1.5 flex items-end justify-between gap-3">
               <div className="flex items-center gap-3">
                 {isWeekly && <XyDonut value={checklist[2].days} target={daysElapsed} color="#0ea5e9" size={52} />}
