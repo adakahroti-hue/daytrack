@@ -712,24 +712,8 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           </div>
         </RoutineCard>
 
-        {/* Keuangan — Kebutuhan & Saldo dari tab Arus Kas */}
-        <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700">
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Kebutuhan</p>
-              <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">{formatRupiah(akKebutuhanSisa)}</p>
-              <p className="text-[11px] text-slate-400">sisa alokasi</p>
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Saldo</p>
-              <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">{formatRupiah(akSaldo)}</p>
-              <p className="text-[11px] text-slate-400">masuk − keluar</p>
-            </div>
-          </div>
-        </RoutineCard>
-
-        {/* Refleksi — 5 poin terbaru dari tab Refleksi */}
-        <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-purple-500" title="Refleksi" href="/masalah" linkColor="text-purple-500 hover:text-purple-700">
+        {/* Refleksi — 5 poin terbaru dari tab Refleksi (baris atas, sebaris dengan Tugas) */}
+        <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-purple-500" title="Refleksi" href="/masalah" linkColor="text-purple-500 hover:text-purple-700" className="col-span-full">
           <div className="mt-3">
             {refleksiList.length > 0 ? (
               <ul className="space-y-1.5">
@@ -743,6 +727,21 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             ) : (
               <p className="mt-1 text-sm text-slate-500">Belum ada refleksi pada periode ini.</p>
             )}
+          </div>
+        </RoutineCard>
+
+        <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700">
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Kebutuhan</p>
+              <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">{formatRupiah(akKebutuhanSisa)}</p>
+              <p className="text-[11px] text-slate-400">sisa alokasi</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Saldo</p>
+              <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">{formatRupiah(akSaldo)}</p>
+              <p className="text-[11px] text-slate-400">masuk − keluar</p>
+            </div>
           </div>
         </RoutineCard>
 
