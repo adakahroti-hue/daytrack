@@ -350,12 +350,12 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {/* Kartu Tugas — baris atas (sebaris dengan Refleksi saat Capture) */}
-        <div className="col-span-full lg:col-span-1">
+        <div className="col-span-1">
           <FocusTodayCard startStr={startStr} endStr={metricEndStr} period={period} />
         </div>
 
         {/* Refleksi — 5 poin terbaru dari tab Refleksi (baris atas, sebaris dengan Tugas) */}
-        <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-purple-500" title="Refleksi" href="/masalah" linkColor="text-purple-500 hover:text-purple-700" className="col-span-full lg:col-span-1">
+        <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-purple-500" title="Refleksi" href="/masalah" linkColor="text-purple-500 hover:text-purple-700" className="col-span-1">
           <div className="mt-3">
             {refleksiList.length > 0 ? (
               <ul className="space-y-1.5">
