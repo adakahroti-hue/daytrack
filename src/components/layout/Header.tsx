@@ -383,6 +383,19 @@ export function Header({ onMenuClick }: HeaderProps) {
               </Button>
             </div>
             <div className="hidden sm:inline-flex items-center gap-0.5 py-1 px-0.5 bg-muted/50 rounded-lg border border-border">
+              {isArusKas && (
+                <button
+                  onClick={() => setArusKasShowAll(!arusKasShowAll)}
+                  className={cn(
+                    'px-2.5 h-8 rounded-md text-xs font-medium transition-colors whitespace-nowrap',
+                    arusKasShowAll
+                      ? 'bg-[#0F172A] text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                  )}
+                >
+                  Semua
+                </button>
+              )}
               {ibadahPeriodOptions.map(opt => (
                 <button
                   key={opt.value}
@@ -397,19 +410,6 @@ export function Header({ onMenuClick }: HeaderProps) {
                   {opt.label}
                 </button>
               ))}
-              {isArusKas && (
-                <button
-                  onClick={() => setArusKasShowAll(!arusKasShowAll)}
-                  className={cn(
-                    'px-2.5 h-8 rounded-md text-xs font-medium transition-colors whitespace-nowrap',
-                    arusKasShowAll
-                      ? 'bg-[#0F172A] text-white shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                  )}
-                >
-                  Semua
-                </button>
-              )}
             </div>
           </div>
         )}
