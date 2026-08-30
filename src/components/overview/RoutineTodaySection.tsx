@@ -86,6 +86,7 @@ function RoutineCard({
   href,
   linkColor,
   className,
+  hideIcon,
   children,
 }: {
   tint: string
@@ -95,6 +96,7 @@ function RoutineCard({
   href?: string
   linkColor?: string
   className?: string
+  hideIcon?: boolean
   children: React.ReactNode
 }) {
   return (
@@ -111,9 +113,11 @@ function RoutineCard({
               <ArrowRight className="h-4 w-4" />
             </Link>
           )}
-          <div className="p-1.5 rounded-lg bg-slate-100">
-            <Icon className={cn('h-4 w-4', iconColor)} />
-          </div>
+          {!hideIcon && (
+            <div className="p-1.5 rounded-lg bg-slate-100">
+              <Icon className={cn('h-4 w-4', iconColor)} />
+            </div>
+          )}
         </div>
       </div>
       {children}
@@ -407,13 +411,13 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         </div>
 
         {/* Refleksi — 5 poin terbaru dari tab Refleksi (baris atas, sebaris dengan Tugas) */}
-        <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-purple-500" title="Refleksi" href="/masalah" linkColor="text-purple-500 hover:text-purple-700" className="col-span-1">
+        <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-purple-500" title="Refleksi" href="/masalah" linkColor="text-purple-500 hover:text-purple-700" className="col-span-1" hideIcon>
           <div className="mt-3">
             {refleksiList.length > 0 ? (
               <ul className="space-y-1.5 max-h-[7.5rem] overflow-y-auto pr-1">
                 {refleksiList.map((r) => (
                   <li key={r.id} className="flex items-start gap-2 text-sm text-slate-600 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-purple-400 shrink-0" />
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-orange-400 shrink-0" />
                     <span className="line-clamp-2 min-w-0">{r.masalah}</span>
                   </li>
                 ))}
@@ -425,7 +429,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         </RoutineCard>
 
         {/* Ibadah — revisi batch 23: mengikuti mockup (angka kiri, pill kanan) */}
-        <RoutineCard tint="bg-white border-slate-200" icon={Mosque} iconColor="text-emerald-500" title="Ibadah">
+        <RoutineCard tint="bg-white border-slate-200" icon={Mosque} iconColor="text-emerald-500" title="Ibadah" hideIcon>
           <div className="mt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
@@ -603,7 +607,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         </RoutineCard>
 
         {/* Kesehatan — Minum Air + Waktu Tidur + Bebas PMO (mockup batch 23: kolom kanan) */}
-        <RoutineCard tint="bg-white border-slate-200" icon={Shield} iconColor="text-sky-500" title="Kesehatan">
+        <RoutineCard tint="bg-white border-slate-200" icon={Shield} iconColor="text-sky-500" title="Kesehatan" hideIcon>
           <div className="mt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
@@ -747,7 +751,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         </RoutineCard>
 
         {/* Optimasi Hoki — 1 card "Hoki" berisi 3 sub (Bersyukur / Doakan / Sedekah) sejajar horizontal */}
-        <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-purple-500" title="Hoki">
+        <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-purple-500" title="Hoki" hideIcon>
           <div className="mt-3 px-2 sm:px-3 py-1 grid grid-cols-3 gap-2 sm:gap-3">
             {/* Bersyukur */}
             <div className="relative flex items-center gap-2 text-left">
@@ -782,7 +786,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           </div>
         </RoutineCard>
 
-        <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700">
+        <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700" hideIcon>
           <div className="mt-3 grid grid-cols-2 gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Kebutuhan</p>
