@@ -192,10 +192,16 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
           <div className="flex items-center gap-3 sm:flex-1">
             <PieSegments
               size={64}
-              segments={[
-                { value: displaySelesai, color: '#10b981' },
-                { value: displayTotal - displaySelesai, color: '#cbd5e1' },
-              ]}
+              segments={
+                displayTotal === 0
+                  ? [{ value: 1, color: '#e2e8f0' }]
+                  : displaySelesai === 0
+                  ? [{ value: 1, color: '#ef4444' }]
+                  : [
+                      { value: displaySelesai, color: '#10b981' },
+                      { value: displayTotal - displaySelesai, color: '#cbd5e1' },
+                    ]
+              }
             />
             <div className="min-w-0">
               <p className="text-xs text-slate-500">Keseluruhan vs Selesai</p>
