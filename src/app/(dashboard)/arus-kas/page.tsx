@@ -78,6 +78,7 @@ const KLASIFIKASI_BADGE: Record<string, string> = {
   lainnya: "bg-slate-100 text-slate-500 border-slate-200",
   lauk: "bg-lime-50 text-lime-700 border-lime-200",
   hutang: "bg-rose-50 text-rose-700 border-rose-200",
+  cukur: "bg-amber-50 text-amber-700 border-amber-200",
 }
 
 // Opsi klasifikasi uang keluar (hanya satu yang dipilih)
@@ -101,6 +102,7 @@ const KLASIFIKASI_OPTIONS: { value: string; label: string }[] = [
   { value: "lainnya", label: "Lainnya" },
   { value: "lauk", label: "Lauk" },
   { value: "hutang", label: "Hutang" },
+  { value: "cukur", label: "Cukur" },
 ]
 
 // Alokasi otomatis dari total uang masuk (pay yourself first)
