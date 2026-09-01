@@ -61,8 +61,6 @@ function getCategoryFromPath(pathname: string): string {
   if (pathname.startsWith('/sholat') || pathname.startsWith('/quran') || pathname.startsWith('/doa') || pathname.startsWith('/syukur') || pathname.startsWith('/sedekah')) return 'ibadah'
   if (pathname.startsWith('/tidur') || pathname.startsWith('/minum-air') || pathname.startsWith('/makan')) return 'kesehatan'
   if (pathname.startsWith('/masalah') || pathname.startsWith('/pmo') || pathname.startsWith('/kesenangan') || pathname.startsWith('/mental-block') || pathname.startsWith('/maafkan')) return 'mental'
-  if (pathname.startsWith('/saran-perbaikan')) return 'perbaikan'
-  if (pathname.startsWith('/saran-perbaikan')) return 'perbaikan'
   if (pathname.startsWith('/goal')) return 'goal'
   if (pathname.startsWith('/swot')) return 'swot'
   if (pathname.startsWith('/arus-kas') || pathname.startsWith('/keranjang')) return 'keuangan'
@@ -88,7 +86,6 @@ function getSubPageFromPath(pathname: string): string | null {
   if (pathname.startsWith('/maafkan')) return 'maafkan'
   if (pathname.startsWith('/pmo')) return 'pmo'
   if (pathname.startsWith('/kesenangan')) return 'kesenangan'
-  if (pathname.startsWith('/saran-perbaikan')) return 'saran-perbaikan'
   if (pathname.startsWith('/arus-kas')) return 'arus-kas'
   if (pathname.startsWith('/keranjang')) return 'keranjang'
   if (pathname.startsWith('/goal')) return 'goal'
@@ -136,7 +133,6 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
   if (category === 'perbaikan' && subPage) {
     switch (subPage) {
       case 'kesenangan': return 'Kesenangan'
-      case 'saran-perbaikan': return 'Masukan'
     }
   }
   if (category === 'goal') return 'Goal'
@@ -211,7 +207,6 @@ function getCategoryDescription(category: string, period: Period, subPage: strin
   if (category === 'perbaikan' && subPage) {
     switch (subPage) {
       case 'kesenangan': return 'Catat momen bahagia hari ini'
-      case 'saran-perbaikan': return 'Sampaikan masukan untuk Daytrack'
     }
   }
   if (category === 'goal') return 'Target barang belanjaan & kebiasaan harian'

@@ -16,7 +16,6 @@ import { useTidurLogRange } from '@/hooks/useTidurLogs'
 import { useArusKasAll } from '@/hooks/useArusKas'
 import { useMasalahLogAll } from '@/hooks/useMasalahLogs'
 import { PERIOD_LABEL, type OverviewPeriod, FocusTodayCard } from './FocusTodaySection'
-import { MasukanSection } from './MasukanSection'
 import { MentalBlockSection } from './MentalBlockSection'
 import { MaafkanSection } from './MaafkanSection'
 
@@ -428,9 +427,9 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   })()
   // Skor Hoki akumulasi = Bersyukur + Doakan + Sedekah (untuk bar chart di card Hoki)
   const hokiParts = [
-    { label: 'Bersyukur', v: checklist[0].days, c: '#a78bfa' },
-    { label: 'Doakan', v: checklist[1].days, c: '#8b5cf6' },
-    { label: 'Sedekah', v: sedekahCount, c: '#7c3aed' },
+    { label: 'Bersyukur', v: checklist[0].days, c: '#fde047' },
+    { label: 'Doakan', v: checklist[1].days, c: '#facc15' },
+    { label: 'Sedekah', v: sedekahCount, c: '#eab308' },
   ]
   const hokiDone = hokiParts.reduce((a, b) => a + b.v, 0)
   const hokiMax = 3 * daysElapsed
@@ -870,9 +869,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
 
         {/* Mental Block — list semua (tak dipengaruhi filter) */}
         <MentalBlockSection />
-
-        {/* Masukan DayTrack — list semua (tak dipengaruhi filter) */}
-        <MasukanSection />
 
       </div>
     </section>

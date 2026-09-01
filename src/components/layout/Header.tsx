@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, Mosque, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, ScanSearch, MessageSquare } from 'lucide-react'
+import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, Mosque, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, ScanSearch } from 'lucide-react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
@@ -115,7 +115,6 @@ const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   '/mental-block': Brain,
   '/pmo': Shield,
   '/kesenangan': Smile,
-  '/saran-perbaikan': MessageSquare,
   '/goal': Target,
 }
 
@@ -184,7 +183,6 @@ export function Header({ onMenuClick }: HeaderProps) {
   const isPmo = pathname === '/pmo'
   const isMasalah = pathname === '/masalah'
   const isKesenangan = pathname === '/kesenangan'
-  const isSaranPerbaikan = pathname === '/saran-perbaikan'
   // Tab keuangan (Arus Kas & Keranjang) ikut pakai toolbar navigasi tanggal + toggle periode ibadah-style di header
   const isArusKas = pathname === '/arus-kas'
   const isKeranjang = pathname === '/keranjang'
@@ -193,7 +191,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   // Semua tab bergaya tabel Quran memakai toolbar navigasi tanggal + toggle periode di header
   // Mental Block sengaja TIDAK masuk isTableTab: data journal (fetch all), tidak terpengaruh filter waktu.
-  const isTableTab = isSholat || isQuran || isMinumAir || isDoa || isSyukur || isTidur || isPmo || isMasalah || isKesenangan || isSaranPerbaikan || isSedekah || isKeuangan || isGoal || isMakan
+  const isTableTab = isSholat || isQuran || isMinumAir || isDoa || isSyukur || isTidur || isPmo || isMasalah || isKesenangan || isSedekah || isKeuangan || isGoal || isMakan
   // Revisi: tombol show/hide filter tanggal — toggle & navigasi tanggal mobile baru tampil setelah diklik
   const [showMobileControls, setShowMobileControls] = useState(false)
 
@@ -314,9 +312,6 @@ export function Header({ onMenuClick }: HeaderProps) {
             </Link>
             <Link href="/swot" title="SWOT" aria-label="SWOT" className="p-1.5 rounded-md text-slate-500 hover:text-emerald-600 hover:bg-white/60 transition-colors">
               <ScanSearch className="h-4 w-4" />
-            </Link>
-            <Link href="/saran-perbaikan" title="Masukan" aria-label="Masukan" className="p-1.5 rounded-md text-slate-500 hover:text-amber-600 hover:bg-white/60 transition-colors">
-              <MessageSquare className="h-4 w-4" />
             </Link>
           </div>
         )}

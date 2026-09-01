@@ -35,7 +35,6 @@ import {
   GlassWater,
   Shield,
   Lightbulb,
-  MessageSquare,
   Sparkles,
   ChevronDown,
   Menu,
@@ -171,7 +170,6 @@ const navigation: NavSection[] = [
     title: 'Pengaturan',
     icon: Sparkles,
     items: [
-      { title: 'Masukan', href: '/saran-perbaikan', icon: MessageSquare },
     ],
   },
 ]

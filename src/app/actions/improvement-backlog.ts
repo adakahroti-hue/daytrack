@@ -53,7 +53,7 @@ export async function upsertImprovement(formData: ImprovementFormData) {
   }).select().single()
 
   if (error) throw new Error(error.message)
-  revalidatePath("/saran-perbaikan"); revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
+  revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
   return { data, error: null }
 }
 
@@ -69,7 +69,7 @@ export async function updateImprovementStatus(id: string, status: 'ide_baru' | '
 
   const { data, error } = await supabase.from("improvement_backlog").update(updateData).eq("id", id).eq("user_id", user.id).select().single()
   if (error) throw new Error(error.message)
-  revalidatePath("/saran-perbaikan"); revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
+  revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
   return { data, error: null }
 }
 
@@ -79,7 +79,7 @@ export async function deleteImprovement(id: string) {
   if (!user) throw new Error("Unauthorized")
   const { error } = await supabase.from("improvement_backlog").delete().eq("id", id).eq("user_id", user.id)
   if (error) throw new Error(error.message)
-  revalidatePath("/saran-perbaikan"); revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
+  revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
   return { error: null }
 }
 

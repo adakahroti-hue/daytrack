@@ -254,13 +254,6 @@ export function useKesenanganRealtime(queryKeys: string[][] = [['playlist']]) {
   })
 }
 
-export function useSaranPerbaikanRealtime(queryKeys: string[][] = [['saran_perbaikan']]) {
-  return useRealtime({
-    table: 'saran_perbaikan',
-    queryKeys,
-  })
-}
-
 export function usePrayerLogRealtime(dateKey: string) {
   return useRealtime({
     table: 'sholat',
