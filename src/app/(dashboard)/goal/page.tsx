@@ -90,7 +90,7 @@ export default function GoalPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-4 p-4">
+    <div className="mx-auto max-w-none space-y-4 p-4">
       <GoalHeader goalTitle={goal.title} goalProgress={stats.goalProgress} targetDate={goal.target_date} />
       <GoalStats
         completedSteps={stats.completedSteps}
