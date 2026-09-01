@@ -230,20 +230,33 @@ function TaskCardComponent({
         </div>
         )}
 
+        {isIde ? (
+          <Button
+            variant="default"
+            size="sm"
+            className={cn(
+              'absolute bottom-3 right-3 bg-black hover:bg-neutral-800 text-white shadow-sm'
+            )}
+            onClick={handlePrimaryAction}
+            aria-label={primaryButtonText}
+          >
+            <span className="flex items-center gap-1.5">
+              <PrimaryButtonIcon />
+              <span className="hidden sm:inline">{primaryButtonText}</span>
+              <span className="sm:hidden">{isIde ? 'Jadikan' : isPending ? 'Mulai' : 'Selesai'}</span>
+            </span>
+          </Button>
+        ) : (
         <div className="flex items-center justify-between pt-2 border-t border-border/50">
-          {!isIde && (
           <Badge variant="outline" className={statusBadgeClass}>
             {STATUS_SHORT_LABELS[task.status]}
           </Badge>
-          )}
-          {isIde && <span />}
           <Button
             variant={isCompleted ? 'outline' : 'default'}
             size="sm"
             className={cn(
               'w-auto sm:w-auto',
               isCompleted && 'bg-muted text-muted-foreground hover:bg-muted/80 border-border',
-              isIde && 'bg-black hover:bg-neutral-800 text-white shadow-sm',
               isPending && `${BRAND_COLORS.primary} ${BRAND_COLORS.primaryHover} shadow-sm`,
               isInProgress && 'bg-green-600 hover:bg-green-700 text-white shadow-sm'
             )}
@@ -258,6 +271,7 @@ function TaskCardComponent({
             </span>
           </Button>
         </div>
+        )}
       </CardContent>
     </Card>
   )
