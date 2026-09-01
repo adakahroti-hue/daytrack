@@ -81,6 +81,7 @@ export default function CatatanPage() {
   const [isBusy, setIsBusy] = useState(false)
   const [filterKat, setFilterKat] = useState<string>("semua") // 'semua' | 'lainnya' | <nama kategori>
   const [showAll, setShowAll] = useState(false)
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const isiRef = useRef<HTMLTextAreaElement>(null)
   const isDesktop = useIsDesktop()
 
@@ -236,8 +237,12 @@ export default function CatatanPage() {
           {visibleNotes.map((n) => {
             const c = NOTE_COLORS[(n.warna as CatatanWarna) || "yellow"]
             const isiLines = (n.isi || "").split("\n")
-            const isiPreview = isDesktop ? isiLines.slice(0, 6).join("\n") : isiLines.join("\n")
-            const isiTrimmed = isDesktop && isiLines.length > 6
+            const isExpanded = expanded.has(n.id)
+            // Preview maksimal 10 baris; jika lebih, tampilkan tombol Selengkapnya per kartu
+            const MAX_LINES = 10
+            const isLong = isiLines.length > MAX_LINES
+            const shownLines = !isLong || isExpanded ? isiLines : isiLines.slice(0, MAX_LINES)
+            const isiPreview = shownLines.join("\n")
             return (
               <div key={n.id}
                 role="button" tabIndex={0}
@@ -254,7 +259,23 @@ export default function CatatanPage() {
                   )}
                 </div>
                 <NoteLines text={isiPreview} className={cn("mt-1 text-sm leading-snug flex-1", c.text)} />
-                {isiTrimmed && <p className="text-[11px] text-slate-400 mt-1">Klik untuk baca selengkapnya…</p>}
+                {isLong && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setExpanded(prev => {
+                        const next = new Set(prev)
+                        if (next.has(n.id)) next.delete(n.id)
+                        else next.add(n.id)
+                        return next
+                      })
+                    }}
+                    className="text-[11px] text-purple-600 hover:text-purple-700 hover:underline mt-1 text-left"
+                  >
+                    {isExpanded ? "Sembunyikan" : "Selengkapnya"}
+                  </button>
+                )}
                 <div className="flex items-center justify-end gap-1 pt-2 mt-auto">
                   <Button size="icon" aria-label="Edit catatan" onClick={(e) => { e.stopPropagation(); openEdit(n) }}
                     className={cn("h-6 w-6 p-0", isDesktop ? "bg-slate-100 text-slate-600 hover:bg-slate-200" : "text-slate-500 hover:text-slate-700")}>
