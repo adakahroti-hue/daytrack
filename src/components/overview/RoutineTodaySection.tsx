@@ -236,20 +236,23 @@ function XyPie({
           ))}
         </svg>
         {percentLabel && (
-          percentOnSlice && frac > 0 ? (
+          frac >= 1 ? (
+            /* 100% — tampilkan centang di tengah */
+            <div className="absolute inset-0 flex items-center justify-center leading-none pointer-events-none">
+              <Check className="text-slate-900 drop-shadow" style={{ width: Math.round(size * 0.42), height: Math.round(size * 0.42) }} strokeWidth={3} />
+            </div>
+          ) : percentOnSlice && frac > 0 ? (
             /* Persen HANYA di irisan berwarna (centroid); area abu-abu bersih */
             <div className="absolute inset-0 flex items-center justify-center leading-none pointer-events-none">
               <span className="font-bold tabular-nums" style={{
                 fontSize: Math.max(6, Math.round(size * 0.11)),
                 color: '#ffffff',
                 textShadow: '0 1px 2px rgba(0,0,0,0.55)',
-                transform: frac < 1
-                  ? `translate(${(r * 0.55 * Math.cos(midAngle)).toFixed(1)}px, ${(r * 0.55 * Math.sin(midAngle)).toFixed(1)}px)`
-                  : undefined,
+                transform: `translate(${(r * 0.55 * Math.cos(midAngle)).toFixed(1)}px, ${(r * 0.55 * Math.sin(midAngle)).toFixed(1)}px)`,
               }}>{pct}%</span>
             </div>
           ) : (
-            frac > 0 && frac < 1 ? (
+            frac > 0 ? (
               <div className="absolute inset-0 flex items-center justify-center leading-none pointer-events-none">
                 <span className="font-bold tabular-nums" style={{ fontSize: Math.round(size * 0.2), color }}>{pct}%</span>
               </div>
