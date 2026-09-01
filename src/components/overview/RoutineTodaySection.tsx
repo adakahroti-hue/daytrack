@@ -458,7 +458,21 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <FocusTodayCard startStr={startStr} endStr={metricEndStr} period={period} />
         </div>
 
-        {/* (Refleksi dipindah ke bawah, sebelum Keuangan) */}
+        {/* Keuangan — sebaris dengan Tugas */}
+        <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700" hideIcon>
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Kebutuhan</p>
+              <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">{formatRupiah(akKebutuhanSisa)}</p>
+              <p className="text-[11px] text-slate-400">sisa alokasi</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Saldo</p>
+              <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">{formatRupiah(akSaldo)}</p>
+              <p className="text-[11px] text-slate-400">masuk − keluar</p>
+            </div>
+          </div>
+        </RoutineCard>
 
         {/* Ibadah — revisi batch 23: mengikuti mockup (angka kiri, pill kanan) */}
         <RoutineCard tint="bg-white border-slate-200" icon={Mosque} iconColor="text-emerald-500" title="Ibadah" hideIcon>
@@ -851,26 +865,11 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           </div>
         </RoutineCard>
 
-        <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700" hideIcon>
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Kebutuhan</p>
-              <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">{formatRupiah(akKebutuhanSisa)}</p>
-              <p className="text-[11px] text-slate-400">sisa alokasi</p>
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Saldo</p>
-              <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">{formatRupiah(akSaldo)}</p>
-              <p className="text-[11px] text-slate-400">masuk − keluar</p>
-            </div>
-          </div>
-        </RoutineCard>
+        {/* Maafkan — list semua (tak dipengaruhi filter), sebaris dengan Refleksi */}
+        <MaafkanSection />
 
         {/* Mental Block — list semua (tak dipengaruhi filter) */}
         <MentalBlockSection />
-
-        {/* Maafkan — list semua (tak dipengaruhi filter) */}
-        <MaafkanSection />
 
         {/* Masukan DayTrack — list semua (tak dipengaruhi filter) */}
         <MasukanSection />
