@@ -133,6 +133,7 @@ function TaskCardComponent({
             )}
             <h3 className={cn("font-medium text-base leading-tight capitalize flex-1", task.group_id && "pl-7")}>{task.nama}</h3>
           </div>
+          {!isIde && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -171,6 +172,7 @@ function TaskCardComponent({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          )}
         </div>
 
         {task.terlewat_tanggal && task.status !== 'selesai' && (
@@ -233,21 +235,39 @@ function TaskCardComponent({
         )}
 
         {isIde ? (
-          <Button
-            variant="default"
-            size="sm"
-            className={cn(
-              'absolute bottom-3 right-3 bg-black hover:bg-neutral-800 text-white shadow-sm'
-            )}
-            onClick={handlePrimaryAction}
-            aria-label={primaryButtonText}
-          >
-            <span className="flex items-center gap-1.5">
-              <PrimaryButtonIcon />
-              <span className="hidden sm:inline">{primaryButtonText}</span>
-              <span className="sm:hidden">{isIde ? 'Jadikan' : isPending ? 'Mulai' : 'Selesai'}</span>
-            </span>
-          </Button>
+          <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/50">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onEdit(task)}
+                className="h-7"
+              >
+                <Edit className="h-3.5 w-3.5" />Edit
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onDelete(task.id)}
+                className="h-7 text-destructive hover:text-destructive border-destructive/30"
+              >
+                <Trash2 className="h-3.5 w-3.5" />Hapus
+              </Button>
+            </div>
+            <Button
+              variant="default"
+              size="sm"
+              className="bg-black hover:bg-neutral-800 text-white shadow-sm"
+              onClick={handlePrimaryAction}
+              aria-label={primaryButtonText}
+            >
+              <span className="flex items-center gap-1.5">
+                <PrimaryButtonIcon />
+                <span className="hidden sm:inline">{primaryButtonText}</span>
+                <span className="sm:hidden">{isIde ? 'Jadikan' : isPending ? 'Mulai' : 'Selesai'}</span>
+              </span>
+            </Button>
+          </div>
         ) : (
         <div className="flex items-center justify-between pt-2 border-t border-border/50">
           <Badge variant="outline" className={statusBadgeClass}>
