@@ -1,12 +1,14 @@
 'use client'
 
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Trash2 } from 'lucide-react'
 import Link from 'next/link'
-import { useMaafkanAll } from '@/hooks/useMaafkan'
+import { useMaafkanAll, useDeleteMaafkan } from '@/hooks/useMaafkan'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 export function MaafkanSection() {
   const { data: entries = [], isLoading } = useMaafkanAll()
+  const deleteMaafkan = useDeleteMaafkan()
 
   const list = (entries as any[])
     .filter((e: any) => e.kejadian)
@@ -25,7 +27,15 @@ export function MaafkanSection() {
             {list.map((r) => (
               <li key={r.id} className="flex items-start gap-2 text-sm text-slate-600 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50">
                 <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-slate-800 shrink-0" />
-                <span className="line-clamp-2 min-w-0">{r.kejadian}</span>
+                <span className="line-clamp-2 min-w-0 flex-1">{r.kejadian}</span>
+                <button
+                  type="button"
+                  onClick={() => deleteMaafkan.mutate(r.id)}
+                  aria-label="Hapus"
+                  className="shrink-0 text-slate-400 hover:text-rose-500 transition-colors"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
               </li>
             ))}
           </ul>

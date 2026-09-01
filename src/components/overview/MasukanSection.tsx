@@ -1,12 +1,13 @@
 'use client'
 
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Trash2 } from 'lucide-react'
 import Link from 'next/link'
-import { useAllSaranPerbaikan } from '@/hooks/useSaranPerbaikan'
+import { useAllSaranPerbaikan, useDeleteSaranPerbaikan } from '@/hooks/useSaranPerbaikan'
 import { cn } from '@/lib/utils'
 
 export function MasukanSection() {
   const { data: entries = [], isLoading } = useAllSaranPerbaikan()
+  const deleteSaran = useDeleteSaranPerbaikan()
 
   const allSarans = (entries as any[]).filter((e: any) => e.saran)
 
@@ -50,6 +51,14 @@ export function MasukanSection() {
                   {entry.saran}
                 </p>
               </div>
+              <button
+                type="button"
+                onClick={() => deleteSaran.mutate(entry.id)}
+                aria-label="Hapus"
+                className="shrink-0 text-slate-400 hover:text-rose-500 transition-colors"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
             </div>
           ))}
         </div>
