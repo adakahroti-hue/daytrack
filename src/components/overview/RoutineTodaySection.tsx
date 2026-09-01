@@ -838,7 +838,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             </div>
             <div className="h-3 w-full overflow-hidden rounded-sm bg-slate-100">
               <div
-                className="h-full rounded-sm bg-yellow-400 transition-all duration-700 ease-out"
+                className="h-full rounded-sm bg-slate-900 transition-all duration-700 ease-out"
                 style={{ width: `${hokiPct}%` }}
                 title={`Skor Hoki: ${hokiDone}/${hokiMax} (${hokiPct}%)`}
               />
