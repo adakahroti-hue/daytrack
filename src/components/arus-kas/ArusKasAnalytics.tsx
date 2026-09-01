@@ -130,7 +130,7 @@ function aggregate(values: { name: string; value: number }[], maxSlices = 6) {
 }
 
 export function ArusKasAnalytics({ logs }: ArusKasAnalyticsProps) {
-  const keluarByDompet = useMemo(() => {
+  const keluarByKlasifikasi = useMemo(() => {
     const map = new Map<string, number>()
     for (const l of logs as ArusKasEntry[]) {
       if (l.kategori !== 'uang_keluar') continue
@@ -150,7 +150,7 @@ export function ArusKasAnalytics({ logs }: ArusKasAnalyticsProps) {
     return aggregate([...map.entries()].map(([name, value]) => ({ name, value })))
   }, [logs])
 
-  const totalKeluar = keluarByDompet.reduce((s, v) => s + v.value, 0)
+  const totalKeluar = keluarByKlasifikasi.reduce((s, v) => s + v.value, 0)
   const totalMasuk = masukBySumber.reduce((s, v) => s + v.value, 0)
 
   const chartData = (arr: { name: string; value: number }[], total: number) =>
@@ -160,7 +160,7 @@ export function ArusKasAnalytics({ logs }: ArusKasAnalyticsProps) {
       labelValue: total > 0 ? `${Math.round((a.value / total) * 100)}%` : '',
     }))
 
-  const keluarData = chartData(keluarByDompet, totalKeluar)
+  const keluarData = chartData(keluarByKlasifikasi, totalKeluar)
   const masukData = chartData(masukBySumber, totalMasuk)
 
   const hasKeluar = keluarData.length > 0
@@ -168,7 +168,7 @@ export function ArusKasAnalytics({ logs }: ArusKasAnalyticsProps) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-      {/* Uang keluar per dompet */}
+      {/* Uang keluar per klasifikasi */}
       <AnalyticsCard title="Uang Keluar ke Mana Saja">
         {hasKeluar ? (
           <div className="flex flex-col sm:flex-row items-center gap-4">
