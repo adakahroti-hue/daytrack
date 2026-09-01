@@ -839,18 +839,20 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               <span className="text-xs font-bold tabular-nums text-purple-600">{hokiDone}/{hokiMax} <span className="text-slate-400 font-medium">({hokiPct}%)</span></span>
             </div>
             <div className="flex h-3 w-full gap-px overflow-hidden rounded-sm bg-slate-100">
-              {Array.from({ length: hokiMax }).map((_, idx) => {
-                const sub = hokiParts[Math.floor(idx / daysElapsed)]
-                const val = hokiParts[Math.floor(idx / daysElapsed)].v
-                const reached = idx < val
-                return (
-                  <div
-                    key={idx}
-                    className="h-full flex-1 transition-all duration-700 ease-out"
-                    style={{ backgroundColor: reached ? sub.c : '#e2e8f0', opacity: reached ? 1 : 0.5 }}
-                    title={`${sub.label}: ${val}/${daysElapsed}`}
-                  />
-                )
+              {hokiParts.map((sub, si) => {
+                const start = si * daysElapsed
+                return Array.from({ length: daysElapsed }).map((_, k) => {
+                  const idx = start + k
+                  const reached = k < sub.v
+                  return (
+                    <div
+                      key={idx}
+                      className="h-full flex-1 transition-all duration-700 ease-out"
+                      style={{ backgroundColor: reached ? sub.c : '#e2e8f0', opacity: reached ? 1 : 0.5 }}
+                      title={`${sub.label}: ${sub.v}/${daysElapsed}`}
+                    />
+                  )
+                })
               })}
             </div>
           </div>

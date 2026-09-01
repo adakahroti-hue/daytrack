@@ -1,6 +1,6 @@
 'use client'
 
-import { Brain, ArrowRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { useMentalBlockAll } from '@/hooks/useMentalBlock'
 import { cn } from '@/lib/utils'
@@ -13,18 +13,16 @@ export function MentalBlockSection() {
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
       <div className="flex items-center gap-2 mb-3">
-        <Brain className="h-4 w-4 text-rose-500" />
         <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
           Mental Block
         </h3>
         {blocks.length > 0 && (
           <Link
             href="/mental-block"
-            className="ml-auto group flex items-center gap-1 text-xs text-slate-400 hover:text-rose-600 transition-colors"
+            className="ml-auto group flex items-center text-slate-400 hover:text-slate-700 transition-colors"
             title="Selengkapnya"
           >
-            <span className="hidden sm:inline">Selengkapnya</span>
-            <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+            <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
           </Link>
         )}
       </div>
@@ -38,16 +36,16 @@ export function MentalBlockSection() {
           Belum ada mental block.
         </p>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-2 max-h-[7.5rem] overflow-y-auto pr-1">
           {blocks.map((entry: any) => (
             <div
               key={entry.id}
               className={cn(
                 'flex items-start gap-2 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50',
-                'hover:bg-rose-50/50 hover:border-rose-100 transition-colors'
+                'hover:bg-slate-100/70 transition-colors'
               )}
             >
-              <span className="text-rose-400 mt-0.5 shrink-0">•</span>
+              <span className="text-slate-400 mt-0.5 shrink-0">•</span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm text-slate-700 leading-snug break-words">
                   {entry.masalah}
