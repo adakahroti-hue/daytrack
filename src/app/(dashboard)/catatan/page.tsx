@@ -79,8 +79,26 @@ export default function CatatanPage() {
   const [editState, setEditState] = useState<EditState | null>(null)
   const [viewState, setViewState] = useState<ViewState | null>(null)
   const [isBusy, setIsBusy] = useState(false)
+  const [filterKat, setFilterKat] = useState<string>("semua") // 'semua' | 'lainnya' | <nama kategori>
+  const [showAll, setShowAll] = useState(false)
   const isiRef = useRef<HTMLTextAreaElement>(null)
   const isDesktop = useIsDesktop()
+
+  // Kategori unik (label) dari seluruh catatan
+  const categories = Array.from(
+    new Set((notes as any[]).map((n) => (n.label || "").trim()).filter(Boolean))
+  ).sort((a, b) => a.localeCompare(b))
+
+  // Filter catatan berdasarkan kategori
+  const filteredNotes = (notes as any[]).filter((n) => {
+    const lab = (n.label || "").trim()
+    if (filterKat === "semua") return true
+    if (filterKat === "lainnya") return lab === ""
+    return lab === filterKat
+  })
+
+  // Batasi maksimal 10 baris (kartu) kecuali showAll aktif
+  const visibleNotes = showAll ? filteredNotes : filteredNotes.slice(0, 10)
 
   // Sisipkan awalan di baris kursor: bullet ("• ") atau number ("N. ")
   const insertPrefix = (mode: "bullet" | "number") => {
@@ -161,13 +179,61 @@ export default function CatatanPage() {
         </Button>
       </div>
 
+      {/* Filter kategori */}
+      {notes.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => { setFilterKat("semua"); setShowAll(false) }}
+            className={cn(
+              "rounded-full px-3 py-1 text-xs font-medium border transition-colors",
+              filterKat === "semua"
+                ? "bg-purple-600 text-white border-purple-600"
+                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+            )}
+          >
+            Semua
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => { setFilterKat(cat); setShowAll(false) }}
+              className={cn(
+                "rounded-full px-3 py-1 text-xs font-medium border transition-colors",
+                filterKat === cat
+                  ? "bg-purple-600 text-white border-purple-600"
+                  : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+              )}
+            >
+              {cat}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => { setFilterKat("lainnya"); setShowAll(false) }}
+            className={cn(
+              "rounded-full px-3 py-1 text-xs font-medium border transition-colors",
+              filterKat === "lainnya"
+                ? "bg-purple-600 text-white border-purple-600"
+                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+            )}
+          >
+            Lainnya
+          </button>
+        </div>
+      )}
+
       {isLoading ? (
         <p className="text-sm text-slate-400 py-8 text-center">Memuat...</p>
-      ) : notes.length === 0 ? (
-        <p className="text-sm text-slate-400 py-8 text-center">Belum ada catatan. Klik “Tambah Catatan”.</p>
+      ) : filteredNotes.length === 0 ? (
+        <p className="text-sm text-slate-400 py-8 text-center">
+          {notes.length === 0 ? "Belum ada catatan. Klik “Tambah Catatan”." : "Tidak ada catatan pada kategori ini."}
+        </p>
       ) : (
+        <>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {notes.map((n) => {
+          {visibleNotes.map((n) => {
             const c = NOTE_COLORS[(n.warna as CatatanWarna) || "yellow"]
             const isiLines = (n.isi || "").split("\n")
             const isiPreview = isDesktop ? isiLines.slice(0, 6).join("\n") : isiLines.join("\n")
@@ -203,6 +269,14 @@ export default function CatatanPage() {
             )
           })}
         </div>
+        {filteredNotes.length > 10 && (
+          <div className="flex justify-center pt-1">
+            <Button variant="outline" size="sm" onClick={() => setShowAll(v => !v)} className="text-xs">
+              {showAll ? "Sembunyikan" : `Selengkapnya (${filteredNotes.length - 10})`}
+            </Button>
+          </div>
+        )}
+        </>
       )}
 
       <Dialog open={!!viewState} onOpenChange={(open) => !open && setViewState(null)}>
