@@ -638,7 +638,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                <XyPie value={gelas} target={targetGelasPeriod} color="#0ea5e9" percentLabel />
+                <XyPie value={gelas} target={targetGelasPeriod} color="#0ea5e9" percentLabel percentOnSlice />
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -694,14 +694,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             )}
           </div>
           <div className="mt-4 pt-4 border-t border-slate-100">
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-                <Moon className="h-3.5 w-3.5 text-sky-500" /> Waktu Tidur
-              </p>
-              <Link href="/tidur" aria-label="Buka tab Tidur" className="p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
             <div className="mt-1.5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 flex items-center gap-3">
                 {isWeekly ? (
@@ -711,7 +703,17 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                     <span className={cn('text-[22px] font-bold tabular-nums', numColor(checklist[3].days >= daysElapsed))}>{checklist[3].days}<span className={cn('text-lg', numColorSoft(checklist[3].days >= daysElapsed))}>/{daysElapsed}</span></span>
                   </div>
                 )}
-                <span className="text-sm font-medium text-slate-500">hari tepat</span>
+                <div className="min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
+                      <Moon className="h-3.5 w-3.5 text-sky-500" /> Waktu Tidur
+                    </p>
+                    <Link href="/tidur" aria-label="Buka tab Tidur" className="p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+                  <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{checklist[3].days}/{daysElapsed}</span> hari tepat</p>
+                </div>
               </div>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm lg:justify-end">
                 <div className="flex items-center gap-1.5">
@@ -737,25 +739,27 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             </div>
           </div>
           <div className="mt-3 pt-3 border-t border-slate-100">
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-                <Shield className="h-3.5 w-3.5 text-sky-500" /> Bebas PMO
-              </p>
-              <Link href="/pmo" aria-label="Buka tab PMO" className="p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
             <div className="mt-1.5 flex items-end justify-between gap-3">
               <div className="flex items-center gap-3">
                 {isWeekly && <XyPie value={checklist[2].days} target={daysElapsed} color="#0ea5e9" size={52} percentLabel percentOnSlice />}
-                {isWeekly ? (
-                  <p className="text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{checklist[2].days}/{daysElapsed}</span> berhasil</p>
-                ) : (
-                  <p className="pl-[18px] flex items-baseline gap-1.5 leading-none">
-                    <span className={cn('text-[22px] font-bold tabular-nums', numColor(checklist[2].days >= daysElapsed))}>{checklist[2].days}<span className={cn('text-lg', numColorSoft(checklist[2].days >= daysElapsed))}>/{daysElapsed}</span></span>
-                    <span className="text-sm font-medium text-slate-500">berhasil</span>
-                  </p>
-                )}
+                <div className="min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
+                      <Shield className="h-3.5 w-3.5 text-sky-500" /> Bebas PMO
+                    </p>
+                    <Link href="/pmo" aria-label="Buka tab PMO" className="p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+                  {isWeekly ? (
+                    <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{checklist[2].days}/{daysElapsed}</span> berhasil</p>
+                  ) : (
+                    <p className="mt-1 flex items-baseline gap-1.5 leading-none">
+                      <span className={cn('text-[22px] font-bold tabular-nums', numColor(checklist[2].days >= daysElapsed))}>{checklist[2].days}<span className={cn('text-lg', numColorSoft(checklist[2].days >= daysElapsed))}>/{daysElapsed}</span></span>
+                      <span className="text-sm font-medium text-slate-500">berhasil</span>
+                    </p>
+                  )}
+                </div>
               </div>
               <div className="text-right">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Posisi Saat Ini</p>
