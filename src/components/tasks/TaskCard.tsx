@@ -12,6 +12,25 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, BRAND_COLORS, getActualDurationText, compareEstimasiVsActual, getLiveDurationText, PRIORITY_CARD_COLORS, STATUS_SHORT_LABELS, CARD_BASE, CARD_HOVER } from '@/lib/utils'
 import { TaskGroupRibbon } from '@/components/tasks/task-group'
 
+const IDE_ACCENTS = [
+  'border-l-rose-400',
+  'border-l-orange-400',
+  'border-l-amber-400',
+  'border-l-lime-400',
+  'border-l-emerald-400',
+  'border-l-teal-400',
+  'border-l-sky-400',
+  'border-l-indigo-400',
+  'border-l-fuchsia-400',
+  'border-l-pink-400',
+]
+
+function ideAccent(id: string): string {
+  let h = 0
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
+  return IDE_ACCENTS[h % IDE_ACCENTS.length]
+}
+
 export type TaskCardStatus = 'belum' | 'proses' | 'selesai' | 'ide'
 
 export type TaskCardTask = {
@@ -108,7 +127,7 @@ function TaskCardComponent({
               isInProgress
                 ? 'bg-blue-50 border-blue-300 hover:border-blue-400 dark:bg-blue-950/40 dark:border-blue-800'
                 : isIde
-                  ? 'bg-white border-slate-200 hover:border-slate-300 dark:bg-white dark:border-slate-200'
+                  ? cn('bg-white border-slate-200 hover:border-slate-300 dark:bg-white dark:border-slate-200 min-h-[150px] border-l-4', ideAccent(task.id))
                   : PRIORITY_CARD_COLORS[task.prioritas]
             ),
         CARD_HOVER,
@@ -120,7 +139,7 @@ function TaskCardComponent({
       {task.group_id && task.group_order != null && (
         <TaskGroupRibbon groupId={task.group_id} order={task.group_order} />
       )}
-      <CardContent className="pt-4 pb-3 px-4 space-y-2.5">
+      <CardContent className={cn("px-4 space-y-2.5", isIde ? "pt-6 pb-6" : "pt-4 pb-3")}>
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 flex-1 min-w-0 relative z-20">
             {selectionMode && (
