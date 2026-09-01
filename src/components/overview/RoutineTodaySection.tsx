@@ -467,7 +467,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700" hideIcon>
           <div className="mt-3 flex items-start gap-4">
             {/* Saldo — kiri, besar */}
-            <div className="shrink-0 pr-4 border-r border-slate-100">
+            <div className="shrink-0 pr-6 border-r border-slate-100">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Saldo</p>
               <p className="mt-1 text-xl font-bold text-slate-900 tabular-nums leading-none">{formatRupiah(akSaldo)}</p>
               <p className="text-[11px] text-slate-400 mt-1">masuk − keluar</p>
