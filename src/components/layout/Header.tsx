@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, Mosque, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, History, Brain, Flame, ListMusic, StickyNote, ScanSearch } from 'lucide-react'
+import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, Mosque, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, ScanSearch } from 'lucide-react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
@@ -115,6 +115,7 @@ const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   '/mental-block': Brain,
   '/pmo': Shield,
   '/kesenangan': Smile,
+  '/goal': Target,
 }
 
 // Revisi batch 19: rekor terbaik PMO — dipindah dari halaman ke header, di kiri navigasi tanggal
@@ -185,11 +186,12 @@ export function Header({ onMenuClick }: HeaderProps) {
   // Tab keuangan (Arus Kas & Keranjang) ikut pakai toolbar navigasi tanggal + toggle periode ibadah-style di header
   const isArusKas = pathname === '/arus-kas'
   const isKeranjang = pathname === '/keranjang'
+  const isGoal = pathname === '/goal'
   const isKeuangan = isArusKas || isKeranjang
 
   // Semua tab bergaya tabel Quran memakai toolbar navigasi tanggal + toggle periode di header
   // Mental Block sengaja TIDAK masuk isTableTab: data journal (fetch all), tidak terpengaruh filter waktu.
-  const isTableTab = isSholat || isQuran || isMinumAir || isDoa || isSyukur || isTidur || isPmo || isMasalah || isKesenangan || isSedekah || isKeuangan || isMakan
+  const isTableTab = isSholat || isQuran || isMinumAir || isDoa || isSyukur || isTidur || isPmo || isMasalah || isKesenangan || isSedekah || isKeuangan || isGoal || isMakan
   // Revisi: tombol show/hide filter tanggal — toggle & navigasi tanggal mobile baru tampil setelah diklik
   const [showMobileControls, setShowMobileControls] = useState(false)
 
