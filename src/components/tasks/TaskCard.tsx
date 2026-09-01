@@ -239,33 +239,31 @@ function TaskCardComponent({
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
-                size="sm"
+                size="icon"
                 onClick={() => onEdit(task)}
-                className="h-7"
+                className="h-7 w-7"
+                aria-label="Edit"
               >
-                <Edit className="h-3.5 w-3.5" />Edit
+                <Edit className="h-3.5 w-3.5" />
               </Button>
               <Button
                 variant="outline"
-                size="sm"
+                size="icon"
                 onClick={() => onDelete(task.id)}
-                className="h-7 text-destructive hover:text-destructive border-destructive/30"
+                className="h-7 w-7 text-destructive hover:text-destructive border-destructive/30"
+                aria-label="Hapus"
               >
-                <Trash2 className="h-3.5 w-3.5" />Hapus
+                <Trash2 className="h-3.5 w-3.5" />
               </Button>
             </div>
             <Button
               variant="default"
-              size="sm"
-              className="bg-black hover:bg-neutral-800 text-white shadow-sm"
+              size="icon"
+              className="bg-black hover:bg-neutral-800 text-white shadow-sm h-7 w-7"
               onClick={handlePrimaryAction}
               aria-label={primaryButtonText}
             >
-              <span className="flex items-center gap-1.5">
-                <PrimaryButtonIcon />
-                <span className="hidden sm:inline">{primaryButtonText}</span>
-                <span className="sm:hidden">{isIde ? 'Jadikan' : isPending ? 'Mulai' : 'Selesai'}</span>
-              </span>
+              <PrimaryButtonIcon />
             </Button>
           </div>
         ) : (
