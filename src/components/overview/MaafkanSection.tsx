@@ -13,6 +13,8 @@ export function MaafkanSection() {
     .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''))
     .map((e: any) => ({ id: e.id, kejadian: e.kejadian as string }))
 
+  const visible = list.slice(0, 2)
+
   return (
     <RoutineCardShell title="Maafkan" href="/maafkan" linkColor="text-purple-500 hover:text-purple-700" hideIcon>
       <div className="mt-3">
@@ -21,8 +23,8 @@ export function MaafkanSection() {
             <div className="animate-spin rounded-full h-5 w-5 border-2 border-slate-300 border-t-slate-600" />
           </div>
         ) : list.length > 0 ? (
-          <ul className="space-y-1.5 max-h-[7.5rem] overflow-y-auto pr-1">
-            {list.map((r) => (
+          <ul className="space-y-1.5 max-h-[3.25rem] overflow-y-auto pr-1">
+            {visible.map((r) => (
               <li key={r.id} className="flex items-start gap-2 text-sm text-slate-600 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50">
                 <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-purple-400 shrink-0" />
                 <span className="line-clamp-2 min-w-0">{r.kejadian}</span>

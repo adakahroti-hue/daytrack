@@ -435,6 +435,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const hokiDone = hokiParts.reduce((a, b) => a + b.v, 0)
   const hokiMax = 3 * daysElapsed
   const hokiPct = hokiMax > 0 ? Math.round((hokiDone / hokiMax) * 100) : 0
+  // Bar akumulasi UTUH: satu deretan hokiMax slot, diisi berurutan Bersyukur→Doakan→Sedekah
+  // (bukan 3 grup terpisah). Tiap slot punya warna kategori & status terisi/tidak.
+  const hokiBars: { c: string; reached: boolean; label: string; v: number }[] = []
+  hokiParts.forEach((sub) => {
+    for (let k = 0; k < daysElapsed; k++) {
+      hokiBars.push({ c: sub.c, reached: k < sub.v, label: sub.label, v: sub.v })
+    }
+  })
 
   const label = PERIOD_LABEL[period]
 
@@ -840,21 +848,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               <span className="text-xs font-bold tabular-nums bg-yellow-200 text-yellow-900 rounded px-1.5 py-0.5">{hokiPct}%</span>
             </div>
             <div className="flex h-3 w-full overflow-hidden rounded-sm bg-slate-100">
-              {hokiParts.map((sub, si) => {
-                const start = si * daysElapsed
-                return Array.from({ length: daysElapsed }).map((_, k) => {
-                  const idx = start + k
-                  const reached = k < sub.v
-                  return (
-                    <div
-                      key={idx}
-                      className="h-full flex-1 transition-all duration-700 ease-out"
-                      style={{ backgroundColor: reached ? sub.c : '#e2e8f0', opacity: reached ? 1 : 0.5 }}
-                      title={`${sub.label}: ${sub.v}/${daysElapsed}`}
-                    />
-                  )
-                })
-              })}
+              {hokiBars.map((b, idx) => (
+                <div
+                  key={idx}
+                  className="h-full flex-1 transition-all duration-700 ease-out"
+                  style={{ backgroundColor: b.reached ? b.c : '#e2e8f0', opacity: b.reached ? 1 : 0.5 }}
+                  title={`${b.label}: ${b.v}/${daysElapsed}`}
+                />
+              ))}
             </div>
           </div>
         </RoutineCard>
@@ -877,11 +878,11 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         {/* Mental Block — list semua (tak dipengaruhi filter) */}
         <MentalBlockSection />
 
-        {/* Masukan DayTrack — list semua (tak dipengaruhi filter) */}
-        <MasukanSection />
-
         {/* Maafkan — list semua (tak dipengaruhi filter) */}
         <MaafkanSection />
+
+        {/* Masukan DayTrack — list semua (tak dipengaruhi filter) */}
+        <MasukanSection />
 
       </div>
     </section>
