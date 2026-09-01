@@ -1,9 +1,6 @@
 "use client"
 
 import { Fragment, useMemo, useState } from 'react'
-import {
-  format,
-} from 'date-fns'
 import { id } from 'date-fns/locale'
 import { Shield, Trash2, Plus, Pencil, Wrench, CheckCircle2, Hash } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -57,8 +54,6 @@ interface EditState {
 // ─── Main Component ────────────────────────────────
 
 export default function MasalahPage() {
-  const todayStr = format(new Date(), 'yyyy-MM-dd')
-
   // Refleksi = journal: tampilkan SELURUH entri, tidak dibatasi periode tanggal.
   const { data: logs = [], isLoading, error } = useMasalahLogAll()
   useRealtime({ table: 'refleksi', queryKeys: [['refleksi', 'all']] })

@@ -41,8 +41,7 @@ export function MasukanSection() {
             <div
               key={entry.id}
               className={cn(
-                'flex items-start gap-2 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50',
-                'hover:bg-amber-50/50 hover:border-amber-100 transition-colors'
+                'flex items-start gap-2 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50'
               )}
             >
               <span className="text-amber-400 mt-0.5 shrink-0">•</span>

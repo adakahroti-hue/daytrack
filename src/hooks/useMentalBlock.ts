@@ -17,7 +17,7 @@ export function useUpsertMentalBlock() {
 }
 export function useUpdateMentalBlock() {
   const queryClient = useQueryClient()
-  return useMutation({ mutationFn: ({ id, data }: { id: string; data: { masalah?: string; tanggal?: string } }) => updateMentalBlock(id, data), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["mental_block"] }) })
+  return useMutation({ mutationFn: ({ id, data }: { id: string; data: { masalah?: string } }) => updateMentalBlock(id, data), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["mental_block"] }) })
 }
 export function useDeleteMentalBlock() {
   const queryClient = useQueryClient()

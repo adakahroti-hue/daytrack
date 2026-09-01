@@ -41,8 +41,7 @@ export function MentalBlockSection() {
             <div
               key={entry.id}
               className={cn(
-                'flex items-start gap-2 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50',
-                'hover:bg-slate-100/70 transition-colors'
+                'flex items-start gap-2 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50'
               )}
             >
               <span className="text-slate-400 mt-0.5 shrink-0">•</span>
@@ -50,9 +49,6 @@ export function MentalBlockSection() {
                 <p className="text-sm text-slate-700 leading-snug break-words">
                   {entry.masalah}
                 </p>
-                {entry.tanggal && (
-                  <p className="text-[11px] text-slate-400 mt-0.5 tabular-nums">{entry.tanggal}</p>
-                )}
               </div>
             </div>
           ))}

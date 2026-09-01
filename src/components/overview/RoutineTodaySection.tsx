@@ -833,13 +833,13 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               </Link>
             </div>
           </div>
-          {/* Bar skor Hoki akumulasi (Bersyukur + Doakan + Sedekah) — balok terpisah per hari */}
+          {/* Bar skor Hoki akumulasi (Bersyukur + Doakan + Sedekah) — balok nyambung tanpa jeda */}
           <div className="mt-3 pt-3 border-t border-slate-100">
             <div className="flex items-center justify-between mb-1.5">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Skor Hoki</p>
-              <span className="text-xs font-bold tabular-nums text-purple-600">{hokiDone}/{hokiMax} <span className="text-slate-400 font-medium">({hokiPct}%)</span></span>
+              <span className="text-xs font-bold tabular-nums bg-yellow-200 text-yellow-900 rounded px-1.5 py-0.5">{hokiPct}%</span>
             </div>
-            <div className="flex h-3 w-full gap-px overflow-hidden rounded-sm bg-slate-100">
+            <div className="flex h-3 w-full overflow-hidden rounded-sm bg-slate-100">
               {hokiParts.map((sub, si) => {
                 const start = si * daysElapsed
                 return Array.from({ length: daysElapsed }).map((_, k) => {

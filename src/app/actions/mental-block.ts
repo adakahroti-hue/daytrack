@@ -4,7 +4,6 @@ import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 const mentalBlockSchema = z.object({
-  tanggal: z.string().min(1, "Tanggal wajib diisi"),
   masalah: z.string().min(1, "Mental block wajib diisi"),
 })
 
@@ -13,7 +12,6 @@ export type MentalBlockFormData = z.infer<typeof mentalBlockSchema>
 export interface MentalBlockEntry {
   id: string
   user_id: string
-  tanggal: string
   masalah: string
   created_at: string
   updated_at: string
@@ -30,13 +28,11 @@ export async function upsertMentalBlock(formData: MentalBlockFormData) {
     .from("mental_block")
     .select("id")
     .eq("user_id", user.id)
-    .eq("tanggal", validated.tanggal)
     .eq("masalah", validated.masalah)
     .single()
 
   const insertData = {
     user_id: user.id,
-    tanggal: validated.tanggal,
     masalah: validated.masalah,
   }
 
@@ -54,14 +50,13 @@ export async function upsertMentalBlock(formData: MentalBlockFormData) {
   return { data, error: null }
 }
 
-export async function updateMentalBlock(id: string, formData: { masalah?: string; tanggal?: string }) {
+export async function updateMentalBlock(id: string, formData: { masalah?: string }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
 
   const updateData: Record<string, string> = {}
   if (formData.masalah !== undefined) updateData.masalah = formData.masalah
-  if (formData.tanggal !== undefined) updateData.tanggal = formData.tanggal
 
   const { data, error } = await supabase
     .from("mental_block")
@@ -92,9 +87,9 @@ export async function getMentalBlockAll() {
   if (!user) throw new Error("Unauthorized")
   const { data, error } = await supabase
     .from("mental_block")
-    .select("id, user_id, tanggal, masalah, created_at, updated_at")
+    .select("id, user_id, masalah, created_at, updated_at")
     .eq("user_id", user.id)
-    .order("tanggal", { ascending: false })
+    .order("created_at", { ascending: false })
   if (error) throw new Error(error.message)
   return data || []
 }
@@ -105,11 +100,11 @@ export async function getMentalBlockRange(startDate: string, endDate: string) {
   if (!user) throw new Error("Unauthorized")
   const { data, error } = await supabase
     .from("mental_block")
-    .select("id, user_id, tanggal, masalah, created_at, updated_at")
+    .select("id, user_id, masalah, created_at, updated_at")
     .eq("user_id", user.id)
-    .gte("tanggal", startDate)
-    .lte("tanggal", endDate)
-    .order("tanggal", { ascending: false })
+    .gte("created_at", startDate)
+    .lte("created_at", endDate + "T23:59:59")
+    .order("created_at", { ascending: false })
   if (error) throw new Error(error.message)
   return data || []
 }
