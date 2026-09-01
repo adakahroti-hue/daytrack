@@ -23,7 +23,7 @@ export function MaafkanSection() {
             <div className="animate-spin rounded-full h-5 w-5 border-2 border-slate-300 border-t-slate-600" />
           </div>
         ) : list.length > 0 ? (
-          <ul className="space-y-1.5 max-h-[3.25rem] overflow-y-auto pr-1">
+          <ul className="space-y-1.5 max-h-[7.5rem] overflow-y-auto pr-1">
             {visible.map((r) => (
               <li key={r.id} className="flex items-start gap-2 text-sm text-slate-600 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50">
                 <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-purple-400 shrink-0" />
