@@ -42,6 +42,19 @@ function formatSedang(task: OverviewTask): string {
   return 'baru mulai'
 }
 
+// Mendeteksi warna abu-abu/slate (R≈G≈B, saturasi rendah) agar label persen tidak ditampilkan di irisan abu-abu
+function isGrayish(hex: string): boolean {
+  const m = /^#?([0-9a-fA-F]{6})$/.exec(hex.trim())
+  if (!m) return false
+  const n = parseInt(m[1], 16)
+  const r = (n >> 16) & 255
+  const g = (n >> 8) & 255
+  const b = n & 255
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  return max - min <= 30
+}
+
 // Pie chart multi-segmen (full circle) untuk breakdown prioritas di filter shot
 function PieSegments({
   segments,
@@ -97,24 +110,20 @@ function PieSegments({
             <path key={`sep-${i}`} d={p.d} fill="none" stroke="#ffffff" strokeWidth={1} />
           ))
         )}
-        {/* Label persen di dalam tiap irisan (jika cukup besar) atau di lepi (jika kecil) */}
+        {/* Label persen: HANYA pada irisan BERWARNA, ditaruh di tengah irisan (centroid), tak di tepi/luar */}
         {total > 0 && segments.map((s, i) => {
+          if (isGrayish(s.color)) return null
           const frac = s.value / total
+          if (frac <= 0) return null
           const pct = Math.round(frac * 100)
-          const inSlice = frac > 0.1
-          const lx = cx + r * (inSlice ? 0.5 : 1.25) * Math.cos(midAngle[i])
-          const ly = cy + r * (inSlice ? 0.5 : 1.25) * Math.sin(midAngle[i])
+          // centroid irisan berwarna; radius 0.6·r agar tak bersentuhan dengan garis tepi
+          const lx = cx + r * 0.6 * Math.cos(midAngle[i])
+          const ly = cy + r * 0.6 * Math.sin(midAngle[i])
           return (
-            <g key={`lbl-${i}`}>
-              {!inSlice && (
-                <line x1={cx + r * 0.8 * Math.cos(midAngle[i])} y1={cy + r * 0.8 * Math.sin(midAngle[i])}
-                  x2={lx} y2={ly} stroke={s.color} strokeWidth={0.6} />
-              )}
-              <text x={lx} y={ly} fill={inSlice ? '#ffffff' : s.color} stroke={inSlice ? '#00000066' : 'none'} strokeWidth={inSlice ? 0.25 : 0}
-                fontSize={Math.max(6, Math.round(size * (inSlice ? 0.13 : 0.12)))} fontWeight={700} textAnchor="middle" dominantBaseline="central">
-                {pct}%
-              </text>
-            </g>
+            <text key={`lbl-${i}`} x={lx} y={ly} fill="#ffffff" stroke="#00000066" strokeWidth={0.3}
+              fontSize={Math.max(6, Math.round(size * 0.11))} fontWeight={700} textAnchor="middle" dominantBaseline="central">
+              {pct}%
+            </text>
           )
         })}
       </svg>

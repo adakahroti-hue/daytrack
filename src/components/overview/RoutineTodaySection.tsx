@@ -187,6 +187,7 @@ function XyPie({
   size = 60,
   label,
   percentLabel,
+  percentOnSlice,
 }: {
   value: number
   target: number
@@ -194,6 +195,7 @@ function XyPie({
   size?: number
   label?: string
   percentLabel?: boolean
+  percentOnSlice?: boolean
 }) {
   const cx = size / 2
   const cy = size / 2
@@ -231,10 +233,26 @@ function XyPie({
             <path key={i} d={s.d} fill={s.color} className="transition-all duration-700 ease-out" />
           ))}
         </svg>
-        {percentLabel && frac > 0 && frac < 1 && (
-          <div className="absolute inset-0 flex items-center justify-center leading-none pointer-events-none">
-            <span className="font-bold tabular-nums" style={{ fontSize: Math.round(size * 0.2), color }}>{pct}%</span>
-          </div>
+        {percentLabel && (
+          percentOnSlice && frac > 0 ? (
+            /* Persen HANYA di irisan berwarna (centroid); area abu-abu bersih */
+            <div className="absolute inset-0 flex items-center justify-center leading-none pointer-events-none">
+              <span className="font-bold tabular-nums" style={{
+                fontSize: Math.round(size * 0.18),
+                color: '#ffffff',
+                textShadow: '0 1px 2px rgba(0,0,0,0.55)',
+                transform: frac < 1
+                  ? `translate(${(r * 0.55 * Math.cos(midAngle)).toFixed(1)}px, ${(r * 0.55 * Math.sin(midAngle)).toFixed(1)}px)`
+                  : undefined,
+              }}>{pct}%</span>
+            </div>
+          ) : (
+            frac > 0 && frac < 1 ? (
+              <div className="absolute inset-0 flex items-center justify-center leading-none pointer-events-none">
+                <span className="font-bold tabular-nums" style={{ fontSize: Math.round(size * 0.2), color }}>{pct}%</span>
+              </div>
+            ) : null
+          )
         )}
       </div>
       {label && <span className="text-[10px] sm:text-xs text-slate-700 text-center leading-tight">{label}</span>}
@@ -451,7 +469,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                <XyPie value={sholatCount} target={sholatTarget} color="#10b981" percentLabel />
+                <XyPie value={sholatCount} target={sholatTarget} color="#10b981" percentLabel percentOnSlice />
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -511,7 +529,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-4 pt-4 border-t border-slate-100">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                <XyPie value={sunnahCount} target={sunnahTarget} color="#22c55e" percentLabel />
+                <XyPie value={sunnahCount} target={sunnahTarget} color="#22c55e" percentLabel percentOnSlice />
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -554,7 +572,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-4 pt-4 border-t border-slate-100">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                <XyPie value={quranCount} target={quranTarget} color="#14b8a6" percentLabel />
+                <XyPie value={quranCount} target={quranTarget} color="#14b8a6" percentLabel percentOnSlice />
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
