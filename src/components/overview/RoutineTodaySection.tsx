@@ -459,11 +459,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {/* Kartu Tugas — baris atas (sebaris dengan Refleksi saat Capture) */}
-        <div className="col-span-1">
-          <FocusTodayCard startStr={startStr} endStr={metricEndStr} period={period} />
-        </div>
-
-        {/* Keuangan — sebaris dengan Tugas */}
+        {/* Keuangan — sebaris dengan Tugas (posisi kiri) */}
         <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700" hideIcon>
           <div className="mt-3 flex items-start gap-4">
             {/* Saldo — kiri, besar */}
@@ -494,7 +490,93 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           </div>
         </RoutineCard>
 
-        {/* Ibadah — revisi batch 23: mengikuti mockup (angka kiri, pill kanan) */}
+        {/* Kartu Tugas — baris atas (sebaris dengan Keuangan, posisi kanan) */}
+        <div className="col-span-1">
+          <FocusTodayCard startStr={startStr} endStr={metricEndStr} period={period} />
+        </div>
+
+        {/* Optimasi Hoki — 1 card "Hoki" berisi 3 sub (Bersyukur / Doakan / Sedekah) sejajar horizontal */}
+        {/* Refleksi — list semua (tak dipengaruhi filter) — dipindah ke posisi Hoki */}
+        <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-slate-700" title="Refleksi" href="/masalah" linkColor="text-slate-700 hover:text-slate-900" className="col-span-1" hideIcon>
+          <div className="mt-3">
+            {refleksiList.length > 0 ? (
+              <ul className="space-y-1.5 max-h-[7.5rem] overflow-y-auto pr-1">
+                {refleksiList.map((r) => (
+                  <li key={r.id} className="flex items-start gap-2 text-sm text-slate-600 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50">
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-slate-800 shrink-0" />
+                    <span className="line-clamp-2 min-w-0">{r.masalah}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-1 text-sm text-slate-500">Belum ada refleksi pada periode ini.</p>
+            )}
+          </div>
+        </RoutineCard>
+
+        {/* Optimasi Hoki — 1 card "Hoki" berisi 3 sub (Bersyukur / Doakan / Sedekah) sejajar horizontal — dipindah ke posisi Refleksi */}
+        <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-purple-500" title="Hoki" hideIcon>
+          <div className="mt-3 px-2 sm:px-3 py-1 grid grid-cols-3 gap-2 sm:gap-3">
+            {/* Bersyukur */}
+            <div className="relative flex items-center gap-2 text-left">
+              <XyPie value={checklist[0].days} target={daysElapsed} color="#111827" size={52} percentLabel percentOnSlice />
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-slate-700">Bersyukur <span className="text-slate-900 tabular-nums">{checklist[0].days}/{daysElapsed}</span></p>
+                {syukurReason && (
+                  <p className="text-[11px] text-slate-900 leading-tight">Alasan: <span className="text-slate-900">{REASON_LABELS[syukurReason.reason] ?? syukurReason.reason}</span> <span className="text-slate-400">({syukurReason.count}×)</span></p>
+                )}
+              </div>
+              <Link href="/syukur" aria-label="Buka tab Syukur" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+            {/* Doakan */}
+            <div className="relative flex items-center gap-2 text-left border-l border-slate-100 pl-3 sm:pl-4">
+              <XyPie value={checklist[1].days} target={daysElapsed} color="#111827" size={52} percentLabel percentOnSlice />
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-slate-700">Doakan <span className="text-slate-900 tabular-nums">{checklist[1].days}/{daysElapsed}</span></p>
+                {doaReason && (
+                  <p className="text-[11px] text-slate-900 leading-tight">Alasan: <span className="text-slate-900">{doaReason.reason}</span> <span className="text-slate-400">({doaReason.count}×)</span></p>
+                )}
+              </div>
+              <Link href="/doa" aria-label="Buka tab Doa" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+            {/* Sedekah */}
+            <div className="relative flex items-center gap-2 text-left border-l border-slate-100 pl-3 sm:pl-4">
+              <XyPie value={sedekahCount} target={daysElapsed} color="#111827" size={52} percentLabel percentOnSlice />
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-slate-700">Sedekah <span className="text-slate-900 tabular-nums">{sedekahCount}/{daysElapsed}</span></p>
+                {sedekahReason && (
+                  <p className="text-[11px] text-slate-900 leading-tight">Alasan: <span className="text-slate-900">{REASON_LABELS[sedekahReason.reason] ?? sedekahReason.reason}</span> <span className="text-slate-400">({sedekahReason.count}×)</span></p>
+                )}
+              </div>
+              <Link href="/sedekah" aria-label="Buka tab Sedekah" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          </div>
+          {/* Bar skor Hoki akumulasi (Bersyukur + Doakan + Sedekah) — balok nyambung tanpa jeda */}
+          <div className="mt-3 pt-3 border-t border-slate-100">
+            <div className="flex items-center justify-between mb-1.5">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Skor Hoki</p>
+              <span className="text-xs font-bold tabular-nums bg-yellow-200 text-yellow-900 rounded px-1.5 py-0.5">{hokiPct}%</span>
+            </div>
+            <div className="h-3 w-full overflow-hidden rounded-sm bg-slate-100">
+              <div
+                className="h-full rounded-sm bg-slate-900 transition-all duration-700 ease-out"
+                style={{ width: `${hokiPct}%` }}
+                title={`Skor Hoki: ${hokiDone}/${hokiMax} (${hokiPct}%)`}
+              />
+            </div>
+          </div>
+        </RoutineCard>
+
+        {/* Maafkan — list semua (tak dipengaruhi filter), sebaris dengan Refleksi */}
+        <MaafkanSection />
+
+        {/* Ibadah — dipindah ke paling bawah */}
         <RoutineCard tint="bg-white border-slate-200" icon={Mosque} iconColor="text-emerald-500" title="Ibadah" hideIcon>
           <div className="mt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -659,11 +741,9 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               )}
             </div>
           )}
-          {/* #3: Optimasi Hoki dipindah jadi card tersendiri di bawah */}
-
         </RoutineCard>
 
-        {/* Kesehatan — Minum Air + Waktu Tidur + Bebas PMO (mockup batch 23: kolom kanan) */}
+        {/* Kesehatan — dipindah ke paling bawah */}
         <RoutineCard tint="bg-white border-slate-200" icon={Shield} iconColor="text-sky-500" title="Kesehatan" hideIcon>
           <div className="mt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -807,87 +887,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             )}
           </div>
         </RoutineCard>
-
-        {/* Optimasi Hoki — 1 card "Hoki" berisi 3 sub (Bersyukur / Doakan / Sedekah) sejajar horizontal */}
-        {/* Refleksi — list semua (tak dipengaruhi filter) — dipindah ke posisi Hoki */}
-        <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-slate-700" title="Refleksi" href="/masalah" linkColor="text-slate-700 hover:text-slate-900" className="col-span-1" hideIcon>
-          <div className="mt-3">
-            {refleksiList.length > 0 ? (
-              <ul className="space-y-1.5 max-h-[7.5rem] overflow-y-auto pr-1">
-                {refleksiList.map((r) => (
-                  <li key={r.id} className="flex items-start gap-2 text-sm text-slate-600 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-slate-800 shrink-0" />
-                    <span className="line-clamp-2 min-w-0">{r.masalah}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-1 text-sm text-slate-500">Belum ada refleksi pada periode ini.</p>
-            )}
-          </div>
-        </RoutineCard>
-
-        {/* Optimasi Hoki — 1 card "Hoki" berisi 3 sub (Bersyukur / Doakan / Sedekah) sejajar horizontal — dipindah ke posisi Refleksi */}
-        <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-purple-500" title="Hoki" hideIcon>
-          <div className="mt-3 px-2 sm:px-3 py-1 grid grid-cols-3 gap-2 sm:gap-3">
-            {/* Bersyukur */}
-            <div className="relative flex items-center gap-2 text-left">
-              <XyPie value={checklist[0].days} target={daysElapsed} color="#111827" size={52} percentLabel percentOnSlice />
-              <div className="min-w-0">
-                <p className="text-xs font-medium text-slate-700">Bersyukur <span className="text-slate-900 tabular-nums">{checklist[0].days}/{daysElapsed}</span></p>
-                {syukurReason && (
-                  <p className="text-[11px] text-slate-900 leading-tight">Alasan: <span className="text-slate-900">{REASON_LABELS[syukurReason.reason] ?? syukurReason.reason}</span> <span className="text-slate-400">({syukurReason.count}×)</span></p>
-                )}
-              </div>
-              <Link href="/syukur" aria-label="Buka tab Syukur" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-            {/* Doakan */}
-            <div className="relative flex items-center gap-2 text-left border-l border-slate-100 pl-3 sm:pl-4">
-              <XyPie value={checklist[1].days} target={daysElapsed} color="#111827" size={52} percentLabel percentOnSlice />
-              <div className="min-w-0">
-                <p className="text-xs font-medium text-slate-700">Doakan <span className="text-slate-900 tabular-nums">{checklist[1].days}/{daysElapsed}</span></p>
-                {doaReason && (
-                  <p className="text-[11px] text-slate-900 leading-tight">Alasan: <span className="text-slate-900">{doaReason.reason}</span> <span className="text-slate-400">({doaReason.count}×)</span></p>
-                )}
-              </div>
-              <Link href="/doa" aria-label="Buka tab Doa" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-            {/* Sedekah */}
-            <div className="relative flex items-center gap-2 text-left border-l border-slate-100 pl-3 sm:pl-4">
-              <XyPie value={sedekahCount} target={daysElapsed} color="#111827" size={52} percentLabel percentOnSlice />
-              <div className="min-w-0">
-                <p className="text-xs font-medium text-slate-700">Sedekah <span className="text-slate-900 tabular-nums">{sedekahCount}/{daysElapsed}</span></p>
-                {sedekahReason && (
-                  <p className="text-[11px] text-slate-900 leading-tight">Alasan: <span className="text-slate-900">{REASON_LABELS[sedekahReason.reason] ?? sedekahReason.reason}</span> <span className="text-slate-400">({sedekahReason.count}×)</span></p>
-                )}
-              </div>
-              <Link href="/sedekah" aria-label="Buka tab Sedekah" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-          </div>
-          {/* Bar skor Hoki akumulasi (Bersyukur + Doakan + Sedekah) — balok nyambung tanpa jeda */}
-          <div className="mt-3 pt-3 border-t border-slate-100">
-            <div className="flex items-center justify-between mb-1.5">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Skor Hoki</p>
-              <span className="text-xs font-bold tabular-nums bg-yellow-200 text-yellow-900 rounded px-1.5 py-0.5">{hokiPct}%</span>
-            </div>
-            <div className="h-3 w-full overflow-hidden rounded-sm bg-slate-100">
-              <div
-                className="h-full rounded-sm bg-slate-900 transition-all duration-700 ease-out"
-                style={{ width: `${hokiPct}%` }}
-                title={`Skor Hoki: ${hokiDone}/${hokiMax} (${hokiPct}%)`}
-              />
-            </div>
-          </div>
-        </RoutineCard>
-
-        {/* Maafkan — list semua (tak dipengaruhi filter), sebaris dengan Refleksi */}
-        <MaafkanSection />
 
         {/* Mental Block — list semua (tak dipengaruhi filter) */}
         <MentalBlockSection />
