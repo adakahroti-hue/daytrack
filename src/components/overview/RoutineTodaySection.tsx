@@ -477,19 +477,19 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 flex-1 min-w-0">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Pokok</p>
-                <p className="text-sm font-bold text-slate-900 tabular-nums">{formatRupiah(akKebutuhanSisa)}</p>
+                <p className="text-sm font-bold text-emerald-600 tabular-nums">{formatRupiah(akKebutuhanSisa)}</p>
               </div>
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Self Reward</p>
-                <p className="text-sm font-bold text-slate-900 tabular-nums">{formatRupiah(akSelfRewardSisa)}</p>
+                <p className="text-sm font-bold text-orange-500 tabular-nums">{formatRupiah(akSelfRewardSisa)}</p>
               </div>
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Tabung</p>
-                <p className="text-sm font-bold text-slate-900 tabular-nums">{formatRupiah(akTabungSisa)}</p>
+                <p className="text-sm font-bold text-blue-600 tabular-nums">{formatRupiah(akTabungSisa)}</p>
               </div>
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Sedekah</p>
-                <p className="text-sm font-bold text-slate-900 tabular-nums">{formatRupiah(akSedekahSisa)}</p>
+                <p className="text-sm font-bold text-purple-600 tabular-nums">{formatRupiah(akSedekahSisa)}</p>
               </div>
             </div>
           </div>
