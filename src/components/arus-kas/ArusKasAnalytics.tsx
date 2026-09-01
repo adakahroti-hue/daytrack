@@ -120,8 +120,9 @@ function PieTooltip({ active, payload }: any) {
   )
 }
 
-// Gabungkan kategori langka (mis. "Lainnya") bila slice terlalu banyak
-function aggregate(values: { name: string; value: number }[], maxSlices = 6) {
+// Gabungkan kategori langka (mis. "Lainnya") hanya bila slice sudah sangat banyak,
+// agar kategori bernilai kecil tetap muncul di legend而不是 semua dimasukkan ke Lainnya
+function aggregate(values: { name: string; value: number }[], maxSlices = 12) {
   const sorted = [...values].sort((a, b) => b.value - a.value)
   if (sorted.length <= maxSlices) return sorted
   const top = sorted.slice(0, maxSlices - 1)
