@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, Mosque, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, ScanSearch } from 'lucide-react'
+import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, Mosque, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, ScanSearch, MessageSquare } from 'lucide-react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
@@ -115,7 +115,7 @@ const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   '/mental-block': Brain,
   '/pmo': Shield,
   '/kesenangan': Smile,
-  '/saran-perbaikan': Lightbulb,
+  '/saran-perbaikan': MessageSquare,
   '/goal': Target,
 }
 
@@ -316,7 +316,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               <ScanSearch className="h-4 w-4" />
             </Link>
             <Link href="/saran-perbaikan" title="Masukan" aria-label="Masukan" className="p-1.5 rounded-md text-slate-500 hover:text-amber-600 hover:bg-white/60 transition-colors">
-              <Lightbulb className="h-4 w-4" />
+              <MessageSquare className="h-4 w-4" />
             </Link>
           </div>
         )}
