@@ -166,12 +166,6 @@ const navigation: NavSection[] = [
       { title: 'Playlist', href: '/kesenangan', icon: ListMusic },
     ],
   },
-  {
-    title: 'Pengaturan',
-    icon: Sparkles,
-    items: [
-    ],
-  },
 ]
 
 function matchesPath(pathname: string, href: string): boolean {
