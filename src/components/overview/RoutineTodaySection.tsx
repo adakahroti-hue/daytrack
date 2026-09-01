@@ -792,7 +792,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-3 px-2 sm:px-3 py-1 grid grid-cols-3 gap-2 sm:gap-3">
             {/* Bersyukur */}
             <div className="relative flex items-center gap-2 text-left">
-              <XyPie value={checklist[0].days} target={daysElapsed} color="#fde047" size={52} percentLabel percentOnSlice />
+              <XyPie value={checklist[0].days} target={daysElapsed} color="#111827" size={52} percentLabel percentOnSlice />
               <div className="min-w-0">
                 <p className="text-xs font-medium text-slate-700">Bersyukur <span className="text-slate-900 tabular-nums">{checklist[0].days}/{daysElapsed}</span></p>
                 {syukurReason && (
@@ -805,7 +805,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             </div>
             {/* Doakan */}
             <div className="relative flex items-center gap-2 text-left border-l border-slate-100 pl-3 sm:pl-4">
-              <XyPie value={checklist[1].days} target={daysElapsed} color="#facc15" size={52} percentLabel percentOnSlice />
+              <XyPie value={checklist[1].days} target={daysElapsed} color="#111827" size={52} percentLabel percentOnSlice />
               <div className="min-w-0">
                 <p className="text-xs font-medium text-slate-700">Doakan <span className="text-slate-900 tabular-nums">{checklist[1].days}/{daysElapsed}</span></p>
                 {doaReason && (
@@ -818,7 +818,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             </div>
             {/* Sedekah */}
             <div className="relative flex items-center gap-2 text-left border-l border-slate-100 pl-3 sm:pl-4">
-              <XyPie value={sedekahCount} target={daysElapsed} color="#eab308" size={52} percentLabel percentOnSlice />
+              <XyPie value={sedekahCount} target={daysElapsed} color="#111827" size={52} percentLabel percentOnSlice />
               <div className="min-w-0">
                 <p className="text-xs font-medium text-slate-700">Sedekah <span className="text-slate-900 tabular-nums">{sedekahCount}/{daysElapsed}</span></p>
                 {sedekahReason && (
