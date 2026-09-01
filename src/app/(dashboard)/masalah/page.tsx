@@ -42,7 +42,6 @@ const TABLE_BORDER = 'border-slate-900'
 interface MasalahLogEntry {
   id: string
   user_id: string
-  tanggal: string
   masalah: string
   status: 'belum' | 'sudah'
   created_at: string
@@ -51,7 +50,6 @@ interface MasalahLogEntry {
 
 interface EditState {
   id: string | null // null = tambah baru
-  tanggal: string
   masalah: string
   status: 'belum' | 'sudah'
 }
@@ -71,14 +69,14 @@ export default function MasalahPage() {
 
   const [editState, setEditState] = useState<EditState | null>(null)
 
-  // Urutkan entri: terbaru (tanggal besar) di atas
+  // Urutkan entri: terbaru (created_at) di atas
   const entries = useMemo(() => {
     return [...(logs as MasalahLogEntry[])].sort((a, b) =>
-      b.tanggal.localeCompare(a.tanggal) || (b.created_at || '').localeCompare(a.created_at || ''))
+      (b.created_at || '').localeCompare(a.created_at || ''))
   }, [logs])
 
-  const openAdd = () => setEditState({ id: null, tanggal: todayStr, masalah: '', status: 'belum' })
-  const openEdit = (e: MasalahLogEntry) => setEditState({ id: e.id, tanggal: e.tanggal, masalah: e.masalah, status: e.status })
+  const openAdd = () => setEditState({ id: null, masalah: '', status: 'belum' })
+  const openEdit = (e: MasalahLogEntry) => setEditState({ id: e.id, masalah: e.masalah, status: e.status })
 
   const handleSave = async () => {
     if (!editState) return
@@ -86,11 +84,10 @@ export default function MasalahPage() {
     if (editState.id) {
       await updateMasalahLog.mutateAsync({
         id: editState.id,
-        data: { tanggal: editState.tanggal, masalah: editState.masalah.trim(), status: editState.status },
+        data: { masalah: editState.masalah.trim(), status: editState.status },
       })
     } else {
       await upsertMasalahLog.mutateAsync({
-        tanggal: editState.tanggal,
         masalah: editState.masalah.trim(),
         status: editState.status,
       })
@@ -162,9 +159,6 @@ export default function MasalahPage() {
               </tr>
             ) : (
               entries.map((entry, rowIdx) => {
-                const date = new Date(entry.tanggal + 'T00:00:00')
-                const dayName = format(date, 'EEEE', { locale: id })
-                const dateDisplay = format(date, 'd MMMM', { locale: id })
                 return (
                   <Fragment key={entry.id}>
                     {/* ── Mobile: kartu ringkas (sm:hidden) ── */}

@@ -5,7 +5,6 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
 const maafkanSchema = z.object({
-  tanggal: z.string().min(1, "Tanggal wajib diisi"),
   kejadian: z.string().min(1, "Kejadian wajib diisi"),
   status: z.string().optional(),
 })
@@ -15,7 +14,6 @@ export type MaafkanFormData = z.infer<typeof maafkanSchema>
 export interface MaafkanEntry {
   id: string
   user_id: string
-  tanggal: string
   kejadian: string
   status: string
   created_at: string
@@ -33,13 +31,11 @@ export async function upsertMaafkan(formData: MaafkanFormData) {
     .from("maafkan")
     .select("id")
     .eq("user_id", user.id)
-    .eq("tanggal", validated.tanggal)
     .eq("kejadian", validated.kejadian)
     .single()
 
   const insertData = {
     user_id: user.id,
-    tanggal: validated.tanggal,
     kejadian: validated.kejadian,
     status: validated.status ?? "belum",
   }
@@ -58,13 +54,12 @@ export async function upsertMaafkan(formData: MaafkanFormData) {
   return { data, error: null }
 }
 
-export async function updateMaafkan(id: string, formData: { tanggal?: string; kejadian?: string; status?: string }) {
+export async function updateMaafkan(id: string, formData: { kejadian?: string; status?: string }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
 
   const updateData: Record<string, string> = {}
-  if (formData.tanggal !== undefined) updateData.tanggal = formData.tanggal
   if (formData.kejadian !== undefined) updateData.kejadian = formData.kejadian
   if (formData.status !== undefined) updateData.status = formData.status
 
@@ -97,9 +92,9 @@ export async function getMaafkanAll() {
   if (!user) throw new Error("Unauthorized")
   const { data, error } = await supabase
     .from("maafkan")
-    .select("id, user_id, tanggal, kejadian, status, created_at, updated_at")
+    .select("id, user_id, kejadian, status, created_at, updated_at")
     .eq("user_id", user.id)
-    .order("tanggal", { ascending: false })
+    .order("created_at", { ascending: false })
   if (error) throw new Error(error.message)
   return data || []
 }

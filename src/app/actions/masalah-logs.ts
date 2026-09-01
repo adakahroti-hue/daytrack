@@ -4,7 +4,6 @@ import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 const masalahLogSchema = z.object({
-  tanggal: z.string().min(1, "Tanggal wajib diisi"),
   masalah: z.string().min(1, "Masalah wajib diisi"),
   status: z.enum(['belum', 'sudah']).default('belum'),
 })
@@ -14,7 +13,6 @@ export type MasalahLogFormData = z.infer<typeof masalahLogSchema>
 export interface MasalahLogEntry {
   id: string
   user_id: string
-  tanggal: string
   masalah: string
   status: 'belum' | 'sudah'
   created_at: string
@@ -32,13 +30,11 @@ export async function upsertMasalahLog(formData: MasalahLogFormData) {
     .from("refleksi")
     .select("id")
     .eq("user_id", user.id)
-    .eq("tanggal", validated.tanggal)
     .eq("masalah", validated.masalah)
     .single()
 
   const insertData = {
     user_id: user.id,
-    tanggal: validated.tanggal,
     masalah: validated.masalah,
     status: validated.status,
   }
@@ -57,7 +53,7 @@ export async function upsertMasalahLog(formData: MasalahLogFormData) {
   return { data, error: null }
 }
 
-export async function updateMasalahLog(id: string, formData: { masalah?: string; status?: 'belum' | 'sudah'; tanggal?: string }) {
+export async function updateMasalahLog(id: string, formData: { masalah?: string; status?: 'belum' | 'sudah' }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
@@ -65,7 +61,6 @@ export async function updateMasalahLog(id: string, formData: { masalah?: string;
   const updateData: Record<string, string> = {}
   if (formData.masalah !== undefined) updateData.masalah = formData.masalah
   if (formData.status !== undefined) updateData.status = formData.status
-  if (formData.tanggal !== undefined) updateData.tanggal = formData.tanggal
 
   const { data, error } = await supabase
     .from("refleksi")
@@ -115,9 +110,9 @@ export async function getMasalahLogAll() {
   if (!user) throw new Error("Unauthorized")
   const { data, error } = await supabase
     .from("refleksi")
-    .select("id, user_id, tanggal, masalah, status, created_at, updated_at")
+    .select("id, user_id, masalah, status, created_at, updated_at")
     .eq("user_id", user.id)
-    .order("tanggal", { ascending: false })
+    .order("created_at", { ascending: false })
   if (error) throw new Error(error.message)
   return data || []
 }

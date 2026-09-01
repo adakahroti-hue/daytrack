@@ -17,7 +17,7 @@ export function useUpsertMaafkan() {
 export function useUpdateMaafkan() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { tanggal?: string; kejadian?: string; status?: string } }) =>
+    mutationFn: ({ id, data }: { id: string; data: { kejadian?: string; status?: string } }) =>
       updateMaafkan(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["maafkan"] }),
   })

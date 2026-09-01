@@ -17,7 +17,6 @@ const TABLE_BORDER = "border-slate-900"
 interface MaafkanEntry {
   id: string
   user_id: string
-  tanggal: string
   kejadian: string
   status: string
   created_at: string
@@ -26,14 +25,11 @@ interface MaafkanEntry {
 
 interface EditState {
   id: string | null // null = tambah baru
-  tanggal: string
   kejadian: string
   status: string
 }
 
 export default function MaafkanPage() {
-  const todayStr = format(new Date(), "yyyy-MM-dd")
-
   const { data: logs = [], isLoading, error } = useMaafkanAll()
   useRealtime({ table: "maafkan", queryKeys: [["maafkan", "all"]] })
 
@@ -45,11 +41,11 @@ export default function MaafkanPage() {
 
   const entries = useMemo(() => {
     return [...(logs as MaafkanEntry[])].sort((a, b) =>
-      b.tanggal.localeCompare(a.tanggal) || (b.created_at || "").localeCompare(a.created_at || ""))
+      (b.created_at || "").localeCompare(a.created_at || ""))
   }, [logs])
 
-  const openAdd = () => setEditState({ id: null, tanggal: todayStr, kejadian: "", status: "belum" })
-  const openEdit = (e: MaafkanEntry) => setEditState({ id: e.id, tanggal: e.tanggal, kejadian: e.kejadian, status: e.status })
+  const openAdd = () => setEditState({ id: null, kejadian: "", status: "belum" })
+  const openEdit = (e: MaafkanEntry) => setEditState({ id: e.id, kejadian: e.kejadian, status: e.status })
 
   const handleSave = async () => {
     if (!editState) return
@@ -57,11 +53,10 @@ export default function MaafkanPage() {
     if (editState.id) {
       await updateMaafkan.mutateAsync({
         id: editState.id,
-        data: { tanggal: editState.tanggal, kejadian: editState.kejadian.trim(), status: editState.status },
+        data: { kejadian: editState.kejadian.trim(), status: editState.status },
       })
     } else {
       await upsertMaafkan.mutateAsync({
-        tanggal: editState.tanggal,
         kejadian: editState.kejadian.trim(),
         status: editState.status,
       })
@@ -220,15 +215,6 @@ export default function MaafkanPage() {
             <DialogTitle>{editState?.id ? "Edit Kejadian" : "Tambah Kejadian Maafkan"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="maafkan-tanggal">Tanggal</Label>
-              <Input
-                id="maafkan-tanggal"
-                type="date"
-                value={editState?.tanggal ?? todayStr}
-                onChange={(e) => setEditState(prev => prev ? { ...prev, tanggal: e.target.value } : prev)}
-              />
-            </div>
             <div className="space-y-1.5">
               <Label htmlFor="maafkan-kejadian">Kejadian (event trigger)</Label>
               <Textarea

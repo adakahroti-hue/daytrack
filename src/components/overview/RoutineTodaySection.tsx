@@ -18,6 +18,7 @@ import { useMasalahLogAll } from '@/hooks/useMasalahLogs'
 import { PERIOD_LABEL, type OverviewPeriod, FocusTodayCard } from './FocusTodaySection'
 import { MasukanSection } from './MasukanSection'
 import { MentalBlockSection } from './MentalBlockSection'
+import { MaafkanSection } from './MaafkanSection'
 
 // ─── Revisi batch 18: section "Rutinitas" untuk tab Overview (tema hitam-putih) ───
 
@@ -878,6 +879,9 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
 
         {/* Masukan DayTrack — list semua (tak dipengaruhi filter) */}
         <MasukanSection />
+
+        {/* Maafkan — list semua (tak dipengaruhi filter) */}
+        <MaafkanSection />
 
       </div>
     </section>
