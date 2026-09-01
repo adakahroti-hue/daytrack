@@ -423,6 +423,16 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
     }
     return cur
   })()
+  // Skor Hoki akumulasi = Bersyukur + Doakan + Sedekah (untuk bar chart di card Hoki)
+  const hokiParts = [
+    { label: 'Bersyukur', v: checklist[0].days, c: '#a78bfa' },
+    { label: 'Doakan', v: checklist[1].days, c: '#8b5cf6' },
+    { label: 'Sedekah', v: sedekahCount, c: '#7c3aed' },
+  ]
+  const hokiDone = hokiParts.reduce((a, b) => a + b.v, 0)
+  const hokiMax = 3 * daysElapsed
+  const hokiPct = hokiMax > 0 ? Math.round((hokiDone / hokiMax) * 100) : 0
+
   const label = PERIOD_LABEL[period]
 
   // Refleksi (journal) — 3 poin terbaru dari SELURUH data (sumber: tab Refleksi /masalah, tidak dibatasi periode)
@@ -818,6 +828,31 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               <Link href="/sedekah" aria-label="Buka tab Sedekah" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
+            </div>
+          </div>
+          {/* Bar skor Hoki akumulasi (Bersyukur + Doakan + Sedekah) — balok horizontal */}
+          <div className="mt-3 pt-3 border-t border-slate-100">
+            <div className="flex items-center justify-between mb-1.5">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Skor Hoki</p>
+              <span className="text-xs font-bold tabular-nums text-purple-600">{hokiDone}/{hokiMax} <span className="text-slate-400 font-medium">({hokiPct}%)</span></span>
+            </div>
+            <div className="flex h-2.5 w-full rounded-full overflow-hidden bg-slate-100">
+              {hokiMax > 0 && hokiParts.map(p => (
+                <div
+                  key={p.label}
+                  className="h-full transition-all duration-700 ease-out"
+                  style={{ width: `${(p.v / hokiMax) * 100}%`, backgroundColor: p.v > 0 ? p.c : 'transparent' }}
+                  title={`${p.label}: ${p.v}/${daysElapsed}`}
+                />
+              ))}
+            </div>
+            <div className="mt-1.5 flex items-center gap-3 text-[10px] text-slate-500">
+              {hokiParts.map(p => (
+                <span key={p.label} className="flex items-center gap-1">
+                  <span className="h-2 w-2 rounded-sm" style={{ backgroundColor: p.c }} />
+                  {p.label} <span className="font-semibold text-slate-700 tabular-nums">{p.v}</span>
+                </span>
+              ))}
             </div>
           </div>
         </RoutineCard>
