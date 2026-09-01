@@ -152,6 +152,7 @@ function TaskCardComponent({
               >
                 <Edit className="h-4 w-4" />Edit Tugas
               </DropdownMenuItem>
+              {!isIde && (
               <DropdownMenuItem
                 onClick={() => onSetGroup?.(task as any)}
                 className="flex items-center gap-2"
@@ -159,6 +160,7 @@ function TaskCardComponent({
               >
                 <Layers className="h-4 w-4" />Penanda Paket
               </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => onDelete(task.id)}
