@@ -407,6 +407,12 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const akSaldo = akMasuk - akKeluar
   const akPakaiKebutuhan = arusKas.filter(e => e.kategori === 'uang_keluar' && e.dompet === 'kebutuhan').reduce((s, e) => s + (e.nominal || 0), 0)
   const akKebutuhanSisa = Math.max(0, Math.round((akMasuk * 70) / 100) - akPakaiKebutuhan)
+  const akPakaiSelfReward = arusKas.filter(e => e.kategori === 'uang_keluar' && e.dompet === 'self_reward').reduce((s, e) => s + (e.nominal || 0), 0)
+  const akSelfRewardSisa = Math.max(0, Math.round((akMasuk * 10) / 100) - akPakaiSelfReward)
+  const akPakaiTabung = arusKas.filter(e => e.kategori === 'uang_keluar' && e.dompet === 'tabung').reduce((s, e) => s + (e.nominal || 0), 0)
+  const akTabungSisa = Math.max(0, Math.round((akMasuk * 10) / 100) - akPakaiTabung)
+  const akPakaiSedekah = arusKas.filter(e => e.kategori === 'uang_keluar' && e.dompet === 'sedekah').reduce((s, e) => s + (e.nominal || 0), 0)
+  const akSedekahSisa = Math.max(0, Math.round((akMasuk * 10) / 100) - akPakaiSedekah)
   const countDays = (entries: any[], match: (e: any) => boolean) =>
     new Set(entries.filter(match).map(e => e.tanggal)).size
   const checklist = [
@@ -459,16 +465,31 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
 
         {/* Keuangan — sebaris dengan Tugas */}
         <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700" hideIcon>
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Pokok</p>
-              <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">{formatRupiah(akKebutuhanSisa)}</p>
-              <p className="text-[11px] text-slate-400">sisa alokasi Pokok</p>
-            </div>
-            <div>
+          <div className="mt-3 flex items-start gap-4">
+            {/* Saldo — kiri, besar */}
+            <div className="shrink-0 pr-4 border-r border-slate-100">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Saldo</p>
-              <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">{formatRupiah(akSaldo)}</p>
-              <p className="text-[11px] text-slate-400">masuk − keluar</p>
+              <p className="mt-1 text-xl font-bold text-slate-900 tabular-nums leading-none">{formatRupiah(akSaldo)}</p>
+              <p className="text-[11px] text-slate-400 mt-1">masuk − keluar</p>
+            </div>
+            {/* 4 nilai compact di kanan */}
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 flex-1 min-w-0">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Pokok</p>
+                <p className="text-sm font-bold text-slate-900 tabular-nums">{formatRupiah(akKebutuhanSisa)}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Self Reward</p>
+                <p className="text-sm font-bold text-slate-900 tabular-nums">{formatRupiah(akSelfRewardSisa)}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Tabung</p>
+                <p className="text-sm font-bold text-slate-900 tabular-nums">{formatRupiah(akTabungSisa)}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Sedekah</p>
+                <p className="text-sm font-bold text-slate-900 tabular-nums">{formatRupiah(akSedekahSisa)}</p>
+              </div>
             </div>
           </div>
         </RoutineCard>
@@ -788,6 +809,25 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         </RoutineCard>
 
         {/* Optimasi Hoki — 1 card "Hoki" berisi 3 sub (Bersyukur / Doakan / Sedekah) sejajar horizontal */}
+        {/* Refleksi — list semua (tak dipengaruhi filter) — dipindah ke posisi Hoki */}
+        <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-slate-700" title="Refleksi" href="/masalah" linkColor="text-slate-700 hover:text-slate-900" className="col-span-1" hideIcon>
+          <div className="mt-3">
+            {refleksiList.length > 0 ? (
+              <ul className="space-y-1.5 max-h-[7.5rem] overflow-y-auto pr-1">
+                {refleksiList.map((r) => (
+                  <li key={r.id} className="flex items-start gap-2 text-sm text-slate-600 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50">
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-slate-800 shrink-0" />
+                    <span className="line-clamp-2 min-w-0">{r.masalah}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-1 text-sm text-slate-500">Belum ada refleksi pada periode ini.</p>
+            )}
+          </div>
+        </RoutineCard>
+
+        {/* Optimasi Hoki — 1 card "Hoki" berisi 3 sub (Bersyukur / Doakan / Sedekah) sejajar horizontal — dipindah ke posisi Refleksi */}
         <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-purple-500" title="Hoki" hideIcon>
           <div className="mt-3 px-2 sm:px-3 py-1 grid grid-cols-3 gap-2 sm:gap-3">
             {/* Bersyukur */}
@@ -843,24 +883,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                 title={`Skor Hoki: ${hokiDone}/${hokiMax} (${hokiPct}%)`}
               />
             </div>
-          </div>
-        </RoutineCard>
-
-        {/* Refleksi — list semua (tak dipengaruhi filter) — dipindah di atas Keuangan */}
-        <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-slate-700" title="Refleksi" href="/masalah" linkColor="text-slate-700 hover:text-slate-900" className="col-span-1" hideIcon>
-          <div className="mt-3">
-            {refleksiList.length > 0 ? (
-              <ul className="space-y-1.5 max-h-[7.5rem] overflow-y-auto pr-1">
-                {refleksiList.map((r) => (
-                  <li key={r.id} className="flex items-start gap-2 text-sm text-slate-600 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-slate-800 shrink-0" />
-                    <span className="line-clamp-2 min-w-0">{r.masalah}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-1 text-sm text-slate-500">Belum ada refleksi pada periode ini.</p>
-            )}
           </div>
         </RoutineCard>
 
