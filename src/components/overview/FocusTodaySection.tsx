@@ -42,19 +42,6 @@ function formatSedang(task: OverviewTask): string {
   return 'baru mulai'
 }
 
-// Mendeteksi warna abu-abu/slate (R≈G≈B, saturasi rendah) agar label persen tidak ditampilkan di irisan abu-abu
-function isGrayish(hex: string): boolean {
-  const m = /^#?([0-9a-fA-F]{6})$/.exec(hex.trim())
-  if (!m) return false
-  const n = parseInt(m[1], 16)
-  const r = (n >> 16) & 255
-  const g = (n >> 8) & 255
-  const b = n & 255
-  const max = Math.max(r, g, b)
-  const min = Math.min(r, g, b)
-  return max - min <= 30
-}
-
 // Pie chart multi-segmen (full circle) untuk breakdown prioritas di filter shot
 function PieSegments({
   segments,
@@ -110,13 +97,21 @@ function PieSegments({
             <path key={`sep-${i}`} d={p.d} fill="none" stroke="#ffffff" strokeWidth={1} />
           ))
         )}
-        {/* Label persen: HANYA pada irisan BERWARNA, di titik berat irisan (centroid) agar di tengah & tak bersentuhan garis tepi */}
+        {/* Label persen: pada irisan BERWARNA (frac>0), di centroid; warna teks disesuaikan kecerahan irisan */}
         {total > 0 && segments.map((s, i) => {
-          if (isGrayish(s.color)) return null
           const frac = s.value / total
           if (frac <= 0) return null
+          const m = /^#?([0-9a-fA-F]{6})$/.exec(s.color.trim())
+          let textColor = '#ffffff'
+          if (m) {
+            const n = parseInt(m[1], 16)
+            const r = (n >> 16) & 255
+            const g = (n >> 8) & 255
+            const b = n & 255
+            const lum = r * 0.299 + g * 0.587 + b * 0.114
+            textColor = lum > 150 ? '#111827' : '#ffffff'
+          }
           const pct = Math.round(frac * 100)
-          // centroid sektor lingkaran: (2/3)·r·(sin β)/β  dengan β = setengah sudut irisan
           const alpha = frac * 2 * Math.PI
           const beta = alpha / 2
           const centroidR = alpha > 1e-6 ? (2 / 3) * r * (Math.sin(beta) / beta) : 0
@@ -124,7 +119,7 @@ function PieSegments({
           const lx = cx + rr * Math.cos(midAngle[i])
           const ly = cy + rr * Math.sin(midAngle[i])
           return (
-            <text key={`lbl-${i}`} x={lx} y={ly} fill="#ffffff" stroke="#00000066" strokeWidth={0.3}
+            <text key={`lbl-${i}`} x={lx} y={ly} fill={textColor} stroke={textColor === '#ffffff' ? '#00000066' : '#ffffff99'} strokeWidth={0.3}
               fontSize={Math.max(6, Math.round(size * 0.11))} fontWeight={700} textAnchor="middle" dominantBaseline="central">
               {pct}%
             </text>
