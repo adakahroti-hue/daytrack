@@ -133,7 +133,6 @@ function TaskCardComponent({
             )}
             <h3 className={cn("font-medium text-base leading-tight capitalize flex-1", task.group_id && "pl-7", isIde && "pb-1")}>{task.nama}</h3>
           </div>
-          {!isIde && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -153,6 +152,15 @@ function TaskCardComponent({
               >
                 <Edit className="h-4 w-4" />Edit Tugas
               </DropdownMenuItem>
+              {isIde && (
+              <DropdownMenuItem
+                onClick={handlePrimaryAction}
+                className="flex items-center gap-2"
+                inset={false}
+              >
+                <PrimaryButtonIcon />{primaryButtonText}
+              </DropdownMenuItem>
+              )}
               {!isIde && (
               <DropdownMenuItem
                 onClick={() => onSetGroup?.(task as any)}
@@ -172,7 +180,6 @@ function TaskCardComponent({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          )}
         </div>
 
         {task.terlewat_tanggal && task.status !== 'selesai' && (
@@ -234,39 +241,7 @@ function TaskCardComponent({
         </div>
         )}
 
-        {isIde ? (
-          <div className="flex items-center justify-between gap-2 pt-8 border-t border-border/50">
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => onEdit(task)}
-                className="h-7 w-7"
-                aria-label="Edit"
-              >
-                <Edit className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => onDelete(task.id)}
-                className="h-7 w-7 text-destructive hover:text-destructive border-destructive/30"
-                aria-label="Hapus"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-            <Button
-              variant="default"
-              size="icon"
-              className="bg-black hover:bg-neutral-800 text-white shadow-sm h-7 w-7"
-              onClick={handlePrimaryAction}
-              aria-label={primaryButtonText}
-            >
-              <PrimaryButtonIcon />
-            </Button>
-          </div>
-        ) : (
+        {isIde ? null : (
         <div className="flex items-center justify-between pt-2 border-t border-border/50">
           <Badge variant="outline" className={statusBadgeClass}>
             {STATUS_SHORT_LABELS[task.status]}
