@@ -168,7 +168,7 @@ function XyDonut({
         </svg>
         <div className="absolute inset-0 flex items-center justify-center leading-none">
           {reached ? (
-            <Check className="text-emerald-600 drop-shadow" style={{ width: Math.round(size * 0.42), height: Math.round(size * 0.42) }} strokeWidth={3} />
+            <Check className="text-slate-900 drop-shadow" style={{ width: Math.round(size * 0.42), height: Math.round(size * 0.42) }} strokeWidth={3} />
           ) : (
             <span className="font-bold tabular-nums text-slate-900" style={{ fontSize }}>
               {value}<span style={{ fontSize: Math.round(fontSize * 0.7) }} className="text-slate-400">/{target}</span>
@@ -282,9 +282,9 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
 
   // Revisi batch 35: angka di bawah subjudul — hijau saat target tercapai, merah khusus filter Kemarin
   const numColor = (reached: boolean) =>
-    reached ? 'text-emerald-600' : isKemarin ? 'text-red-500' : 'text-slate-900'
+    reached ? 'text-emerald-600' : isKemarin ? 'text-slate-900' : 'text-slate-900'
   const numColorSoft = (reached: boolean) =>
-    reached ? 'text-emerald-600/70' : isKemarin ? 'text-red-500/70' : 'text-slate-500'
+    reached ? 'text-emerald-600/70' : isKemarin ? 'text-slate-900/70' : 'text-slate-500'
 
   // Sholat 5 waktu
   const { data: prayerRows = [] } = usePrayerLogRange(startStr, endStr)
@@ -503,7 +503,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-                      <Mosque className="h-3.5 w-3.5 text-emerald-500" /> Sholat 5 Waktu
+                      Sholat 5 Waktu
                     </p>
                     <Link href="/sholat" aria-label="Buka tab Sholat Wajib" className="p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
                       <ArrowRight className="h-3.5 w-3.5" />
@@ -544,7 +544,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             <div className="mt-3 flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-xs text-slate-500">
               <span className="flex items-center gap-1 ml-auto">
                 <span className="font-medium text-slate-700">Sering terlewat:</span>
-                <span className="font-semibold text-rose-600">{SHOLAT_5[sholatMissedIdx].label}</span>
+                <span className="font-semibold text-slate-900">{SHOLAT_5[sholatMissedIdx].label}</span>
                 <span className="text-slate-400">({sholatMostMissed}×)</span>
               </span>
               {sholatTopReason && (
@@ -563,7 +563,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-                      <Sun className="h-3.5 w-3.5 text-amber-500" /> Sholat Sunnah
+                      Sholat Sunnah
                     </p>
                     <Link href="/sholat-sunnah" aria-label="Buka tab Sholat Sunnah" className="p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
                       <ArrowRight className="h-3.5 w-3.5" />
@@ -606,7 +606,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-                      <BookOpen className="h-3.5 w-3.5 text-emerald-500" /> Baca Quran
+                      Baca Quran
                     </p>
                     <Link href="/quran" aria-label="Buka tab Quran" className="p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
                       <ArrowRight className="h-3.5 w-3.5" />
@@ -647,7 +647,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             <div className="mt-3 flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-xs text-slate-500">
               <span className="flex items-center gap-1 ml-auto">
                 <span className="font-medium text-slate-700">Sering terlewat:</span>
-                <span className="font-semibold text-rose-600">{QURAN_SESSIONS[quranMissedIdx].label}</span>
+                <span className="font-semibold text-slate-900">{QURAN_SESSIONS[quranMissedIdx].label}</span>
                 <span className="text-slate-400">({quranMostMissed}×)</span>
               </span>
               {quranTopReason && (
@@ -672,7 +672,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-                      <GlassWater className="h-3.5 w-3.5 text-sky-500" /> Minum Air
+                      Minum Air
                     </p>
                     <Link href="/minum-air" aria-label="Buka tab Minum Air" className="p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
                       <ArrowRight className="h-3.5 w-3.5" />
@@ -717,7 +717,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               <div className="mt-3 flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-xs text-slate-500">
                 <span className="flex items-center gap-1 ml-auto">
                   <span className="font-medium text-slate-700">Sering terlewat:</span>
-                  <span className="font-semibold text-rose-600">{WATER_PILL_LABELS[WATER_SESSIONS[waterMissedIdx].key] ?? WATER_SESSIONS[waterMissedIdx].label}</span>
+                  <span className="font-semibold text-slate-900">{WATER_PILL_LABELS[WATER_SESSIONS[waterMissedIdx].key] ?? WATER_SESSIONS[waterMissedIdx].label}</span>
                   <span className="text-slate-400">({waterMostMissed}×)</span>
                 </span>
               </div>
@@ -736,7 +736,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-                      <Moon className="h-3.5 w-3.5 text-sky-500" /> Waktu Tidur
+                      Waktu Tidur
                     </p>
                     <Link href="/tidur" aria-label="Buka tab Tidur" className="p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
                       <ArrowRight className="h-3.5 w-3.5" />
@@ -761,7 +761,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                 {tidurTopAlasan && (
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs text-slate-500">Alasan</span>
-                    <span className="font-semibold text-rose-600">{REASON_LABELS[tidurTopAlasan] ?? tidurTopAlasan}</span>
+                    <span className="font-semibold text-slate-900">{REASON_LABELS[tidurTopAlasan] ?? tidurTopAlasan}</span>
                     <span className="text-xs text-slate-400">({tidurTopAlasanCount}×)</span>
                   </div>
                 )}
@@ -775,7 +775,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-                      <Shield className="h-3.5 w-3.5 text-sky-500" /> Bebas PMO
+                      Bebas PMO
                     </p>
                     <Link href="/pmo" aria-label="Buka tab PMO" className="p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
                       <ArrowRight className="h-3.5 w-3.5" />
@@ -836,7 +836,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               <div className="min-w-0">
                 <p className="text-xs font-medium text-slate-700">Bersyukur <span className="text-slate-900 tabular-nums">{checklist[0].days}/{daysElapsed}</span></p>
                 {syukurReason && (
-                  <p className="text-[11px] text-rose-500 leading-tight">Alasan: <span className="text-slate-900">{REASON_LABELS[syukurReason.reason] ?? syukurReason.reason}</span> <span className="text-slate-400">({syukurReason.count}×)</span></p>
+                  <p className="text-[11px] text-slate-900 leading-tight">Alasan: <span className="text-slate-900">{REASON_LABELS[syukurReason.reason] ?? syukurReason.reason}</span> <span className="text-slate-400">({syukurReason.count}×)</span></p>
                 )}
               </div>
               <Link href="/syukur" aria-label="Buka tab Syukur" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
@@ -849,7 +849,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               <div className="min-w-0">
                 <p className="text-xs font-medium text-slate-700">Doakan <span className="text-slate-900 tabular-nums">{checklist[1].days}/{daysElapsed}</span></p>
                 {doaReason && (
-                  <p className="text-[11px] text-rose-500 leading-tight">Alasan: <span className="text-slate-900">{doaReason.reason}</span> <span className="text-slate-400">({doaReason.count}×)</span></p>
+                  <p className="text-[11px] text-slate-900 leading-tight">Alasan: <span className="text-slate-900">{doaReason.reason}</span> <span className="text-slate-400">({doaReason.count}×)</span></p>
                 )}
               </div>
               <Link href="/doa" aria-label="Buka tab Doa" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
@@ -862,7 +862,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               <div className="min-w-0">
                 <p className="text-xs font-medium text-slate-700">Sedekah <span className="text-slate-900 tabular-nums">{sedekahCount}/{daysElapsed}</span></p>
                 {sedekahReason && (
-                  <p className="text-[11px] text-rose-500 leading-tight">Alasan: <span className="text-slate-900">{REASON_LABELS[sedekahReason.reason] ?? sedekahReason.reason}</span> <span className="text-slate-400">({sedekahReason.count}×)</span></p>
+                  <p className="text-[11px] text-slate-900 leading-tight">Alasan: <span className="text-slate-900">{REASON_LABELS[sedekahReason.reason] ?? sedekahReason.reason}</span> <span className="text-slate-400">({sedekahReason.count}×)</span></p>
                 )}
               </div>
               <Link href="/sedekah" aria-label="Buka tab Sedekah" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
