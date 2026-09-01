@@ -19,7 +19,7 @@ export function MasukanSection() {
         {allSarans.length > 0 && (
           <Link
             href="/saran-perbaikan"
-            className="ml-auto group flex items-center text-slate-400 hover:text-amber-600 transition-colors"
+            className="ml-auto group flex items-center text-slate-400 hover:text-slate-700 transition-colors"
             title="Selengkapnya"
           >
             <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
@@ -44,7 +44,7 @@ export function MasukanSection() {
                 'flex items-start gap-2 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50'
               )}
             >
-              <span className="text-amber-400 mt-0.5 shrink-0">•</span>
+              <span className="text-slate-700 mt-0.5 shrink-0">•</span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm text-slate-700 leading-snug break-words">
                   {entry.saran}
