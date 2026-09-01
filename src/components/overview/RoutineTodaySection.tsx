@@ -705,7 +705,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             <div className="mt-1.5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 flex items-center gap-3">
                 {isWeekly ? (
-                  <XyPie value={checklist[3].days} target={daysElapsed} color="#0ea5e9" size={52} percentLabel />
+                  <XyPie value={checklist[3].days} target={daysElapsed} color="#0ea5e9" size={52} percentLabel percentOnSlice />
                 ) : (
                   <div className="flex items-baseline gap-1.5 leading-none pl-[2px]">
                     <span className={cn('text-[22px] font-bold tabular-nums', numColor(checklist[3].days >= daysElapsed))}>{checklist[3].days}<span className={cn('text-lg', numColorSoft(checklist[3].days >= daysElapsed))}>/{daysElapsed}</span></span>
@@ -747,7 +747,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             </div>
             <div className="mt-1.5 flex items-end justify-between gap-3">
               <div className="flex items-center gap-3">
-                {isWeekly && <XyPie value={checklist[2].days} target={daysElapsed} color="#0ea5e9" size={52} percentLabel />}
+                {isWeekly && <XyPie value={checklist[2].days} target={daysElapsed} color="#0ea5e9" size={52} percentLabel percentOnSlice />}
                 {isWeekly ? (
                   <p className="text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{checklist[2].days}/{daysElapsed}</span> berhasil</p>
                 ) : (
@@ -759,7 +759,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               </div>
               <div className="text-right">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Posisi Saat Ini</p>
-                <p className="text-sm font-bold text-slate-900 tabular-nums">{pmoCurrentStreak} <span className="text-xs font-medium text-slate-500">hari</span></p>
+                <p className="text-sm font-bold text-slate-900 tabular-nums"><span className="bg-yellow-200 rounded px-1.5 py-0.5">{pmoCurrentStreak}</span> <span className="text-xs font-medium text-slate-500">hari</span></p>
               </div>
             </div>
             {pmoTopAlasan && (
@@ -779,7 +779,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-3 px-2 sm:px-3 py-1 grid grid-cols-3 gap-2 sm:gap-3">
             {/* Bersyukur */}
             <div className="relative flex items-center gap-2 text-left">
-              <XyDonut value={checklist[0].days} target={daysElapsed} color="#8b5cf6" size={52} />
+              <XyPie value={checklist[0].days} target={daysElapsed} color="#8b5cf6" size={52} percentLabel percentOnSlice />
               <div className="min-w-0">
                 <p className="text-xs font-medium text-slate-700">Bersyukur <span className="text-slate-900 tabular-nums">{checklist[0].days}/{daysElapsed}</span></p>
                 {syukurReason && (
@@ -792,7 +792,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             </div>
             {/* Doakan */}
             <div className="relative flex items-center gap-2 text-left border-l border-slate-100 pl-3 sm:pl-4">
-              <XyDonut value={checklist[1].days} target={daysElapsed} color="#8b5cf6" size={52} />
+              <XyPie value={checklist[1].days} target={daysElapsed} color="#8b5cf6" size={52} percentLabel percentOnSlice />
               <div className="min-w-0">
                 <p className="text-xs font-medium text-slate-700">Doakan <span className="text-slate-900 tabular-nums">{checklist[1].days}/{daysElapsed}</span></p>
                 {doaReason && (
@@ -805,7 +805,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             </div>
             {/* Sedekah */}
             <div className="relative flex items-center gap-2 text-left border-l border-slate-100 pl-3 sm:pl-4">
-              <XyDonut value={sedekahCount} target={daysElapsed} color="#8b5cf6" size={52} />
+              <XyPie value={sedekahCount} target={daysElapsed} color="#8b5cf6" size={52} percentLabel percentOnSlice />
               <div className="min-w-0">
                 <p className="text-xs font-medium text-slate-700">Sedekah <span className="text-slate-900 tabular-nums">{sedekahCount}/{daysElapsed}</span></p>
                 {sedekahReason && (
