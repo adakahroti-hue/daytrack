@@ -61,7 +61,6 @@ function getCategoryFromPath(pathname: string): string {
   if (pathname.startsWith('/sholat') || pathname.startsWith('/quran') || pathname.startsWith('/doa') || pathname.startsWith('/syukur') || pathname.startsWith('/sedekah')) return 'ibadah'
   if (pathname.startsWith('/tidur') || pathname.startsWith('/minum-air') || pathname.startsWith('/makan')) return 'kesehatan'
   if (pathname.startsWith('/masalah') || pathname.startsWith('/pmo') || pathname.startsWith('/kesenangan') || pathname.startsWith('/mental-block') || pathname.startsWith('/maafkan')) return 'mental'
-  if (pathname.startsWith('/goal')) return 'goal'
   if (pathname.startsWith('/swot')) return 'swot'
   if (pathname.startsWith('/arus-kas') || pathname.startsWith('/keranjang')) return 'keuangan'
   return 'overview'
@@ -88,7 +87,6 @@ function getSubPageFromPath(pathname: string): string | null {
   if (pathname.startsWith('/kesenangan')) return 'kesenangan'
   if (pathname.startsWith('/arus-kas')) return 'arus-kas'
   if (pathname.startsWith('/keranjang')) return 'keranjang'
-  if (pathname.startsWith('/goal')) return 'goal'
   if (pathname.startsWith('/swot')) return 'swot'
   return null
 }

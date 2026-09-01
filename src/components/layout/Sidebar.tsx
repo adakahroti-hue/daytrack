@@ -52,7 +52,6 @@ import {
   Wallet,
   DollarSign,
   ShoppingCart,
-  Target,
   ScanSearch,
   Wrench,
   StickyNote,
@@ -96,11 +95,6 @@ const navigation: NavSection[] = [
     title: 'Overview',
     icon: LayoutDashboard,
     href: '/overview',
-  },
-  {
-    title: 'Goal',
-    icon: Target,
-    href: '/goal',
   },
   {
     title: 'Bank Ide',
