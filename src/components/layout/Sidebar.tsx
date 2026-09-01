@@ -162,7 +162,7 @@ const navigation: NavSection[] = [
     ],
   },
   {
-    title: 'Tools',
+    title: 'Alat',
     icon: Wrench,
     items: [
       { title: 'Catatan', href: '/catatan', icon: StickyNote },
