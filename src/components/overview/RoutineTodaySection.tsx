@@ -238,7 +238,7 @@ function XyPie({
             /* Persen HANYA di irisan berwarna (centroid); area abu-abu bersih */
             <div className="absolute inset-0 flex items-center justify-center leading-none pointer-events-none">
               <span className="font-bold tabular-nums" style={{
-                fontSize: Math.round(size * 0.18),
+                fontSize: Math.max(6, Math.round(size * 0.11)),
                 color: '#ffffff',
                 textShadow: '0 1px 2px rgba(0,0,0,0.55)',
                 transform: frac < 1
