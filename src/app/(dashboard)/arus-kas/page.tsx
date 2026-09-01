@@ -50,7 +50,7 @@ const DOMPET_BADGE: Record<string, string> = {
 
 // Pilihan dompet sumber dana (hanya untuk uang keluar)
 const DOMPET_OPTIONS: { value: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" | "paylater"; label: string }[] = [
-  { value: "kebutuhan", label: "Kebutuhan" },
+  { value: "kebutuhan", label: "Pokok" },
   { value: "tabungan", label: "Tabungan" },
   { value: "self_reward", label: "Self Reward" },
   { value: "sedekah", label: "Sedekah" },
@@ -107,7 +107,7 @@ const KLASIFIKASI_OPTIONS: { value: string; label: string }[] = [
 
 // Alokasi otomatis dari total uang masuk (pay yourself first)
 const BUDGET_ITEMS: { label: string; persen: number; text: string; dompet: "kebutuhan" | "tabungan" | "self_reward" | "sedekah" }[] = [
-  { label: "Kebutuhan", persen: 70, text: "text-emerald-600", dompet: "kebutuhan" },
+  { label: "Pokok", persen: 70, text: "text-emerald-600", dompet: "kebutuhan" },
   { label: "Self Reward", persen: 10, text: "text-amber-600", dompet: "self_reward" },
   { label: "Tabung", persen: 10, text: "text-sky-600", dompet: "tabungan" },
   { label: "Sedekah", persen: 10, text: "text-violet-600", dompet: "sedekah" },
