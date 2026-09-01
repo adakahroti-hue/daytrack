@@ -5,6 +5,8 @@ import { Plus, Lightbulb, Target, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { TaskForm } from '@/components/tasks/TaskForm'
 import { TaskCard, type TaskCardTask, type TaskCardStatus } from '@/components/tasks/TaskCard'
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus } from '@/hooks/useTasks'
@@ -22,8 +24,9 @@ type TaskFormData = {
 type EditingTask = TaskFormData & { id: string }
 
 function BankIdePageClient() {
-  const [isFormOpen, setIsFormOpen] = useState(false)
-  const [editingTask, setEditingTask] = useState<EditingTask | null>(null)
+  const [isIdeFormOpen, setIsIdeFormOpen] = useState(false)
+  const [editingIde, setEditingIde] = useState<{ id: string; nama: string } | null>(null)
+  const [promoteId, setPromoteId] = useState<string | null>(null)
   const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => { setIsMounted(true) }, [])
@@ -38,35 +41,39 @@ function BankIdePageClient() {
   const toggleTaskStatus = useToggleTaskStatus()
 
   const handleEdit = (task: Task) => {
-    setEditingTask({
-      id: task.id,
-      nama: task.nama,
-      tanggal: task.tanggal ?? undefined,
-      estimasi_menit: task.estimasi_menit,
-      prioritas: task.prioritas,
-      status: task.status,
-    })
-    setIsFormOpen(true)
+    setEditingIde({ id: task.id, nama: task.nama })
+    setIsIdeFormOpen(true)
   }
 
   const handleDelete = (id: string) => {
     if (confirm('Yakin ingin menghapus ide ini?')) deleteTask.mutate(id)
   }
 
-  // "Jadikan Tugas": ubah status ide -> belum (siap di-action)
+  // "Jadikan Tugas": buka form lengkap (field lain) untuk ide ini
   const handlePromoteIde = (id: string) => {
-    toggleTaskStatus.mutate({ id, status: 'belum' })
+    setPromoteId(id)
   }
 
-  const handleSubmit = (data: TaskFormData) => {
-    const taskData = { ...data, tanggal: data.tanggal && data.tanggal.length > 0 ? data.tanggal : undefined }
-    if (editingTask) {
-      updateTask.mutate({ id: editingTask.id, data: taskData })
+  const handleIdeSubmit = (nama: string) => {
+    if (editingIde) {
+      updateTask.mutate({ id: editingIde.id, data: { nama } })
     } else {
-      createTask.mutate(taskData)
+      createTask.mutate({ nama, status: 'ide', estimasi_menit: 0, prioritas: 'p3' })
     }
-    setIsFormOpen(false)
-    setEditingTask(null)
+    setIsIdeFormOpen(false)
+    setEditingIde(null)
+  }
+
+  // Submit dari form "Jadikan Tugas" — isi field lain lalu status -> belum
+  const handlePromoteSubmit = (data: TaskFormData) => {
+    if (!promoteId) return
+    const taskData = {
+      ...data,
+      tanggal: data.tanggal && data.tanggal.length > 0 ? data.tanggal : undefined,
+      status: 'belum' as const,
+    }
+    updateTask.mutate({ id: promoteId, data: taskData })
+    setPromoteId(null)
   }
 
   const ideTasks = useMemo(
@@ -147,7 +154,7 @@ function BankIdePageClient() {
       )}
 
       <Button
-        onClick={() => { setEditingTask(null); setIsFormOpen(true) }}
+        onClick={() => { setEditingIde(null); setIsIdeFormOpen(true) }}
         className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 bg-black hover:bg-neutral-800 text-white"
         aria-label="Tambah ide baru"
         size="icon"
@@ -155,16 +162,54 @@ function BankIdePageClient() {
         <Plus className="h-6 w-6" />
       </Button>
 
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+      {/* Dialog catatan ide (hanya judul/catatan) */}
+      <Dialog open={isIdeFormOpen} onOpenChange={setIsIdeFormOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{editingIde ? 'Edit Ide' : 'Tambah Ide Baru'}</DialogTitle>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              const fd = new FormData(e.currentTarget)
+              const nama = (fd.get('nama') as string)?.trim()
+              if (nama) handleIdeSubmit(nama)
+            }}
+            className="space-y-4 p-4"
+          >
+            <div className="space-y-2">
+              <Label htmlFor="ide-nama">Catatan Ide *</Label>
+              <Input
+                id="ide-nama"
+                name="nama"
+                defaultValue={editingIde?.nama ?? ''}
+                placeholder="Tulis ide mentahmu di sini..."
+                autoFocus
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2 border-t">
+              <Button type="button" variant="outline" onClick={() => { setIsIdeFormOpen(false); setEditingIde(null) }}>
+                Batal
+              </Button>
+              <Button type="submit">Simpan</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog "Jadikan Tugas": isi field lain (tanggal, durasi, prioritas) */}
+      <Dialog open={!!promoteId} onOpenChange={(o) => { if (!o) setPromoteId(null) }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{editingTask ? 'Edit Ide' : 'Tambah Ide Baru'}</DialogTitle>
+            <DialogTitle>Jadikan Tugas</DialogTitle>
           </DialogHeader>
-          <TaskForm
-            initialData={editingTask ? { ...editingTask, status: 'ide' } : { status: 'ide' } as any}
-            onSubmit={handleSubmit}
-            onCancel={() => { setIsFormOpen(false); setEditingTask(null) }}
-          />
+          {promoteId && (
+            <TaskForm
+              initialData={{ status: 'belum' } as any}
+              onSubmit={handlePromoteSubmit}
+              onCancel={() => setPromoteId(null)}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>

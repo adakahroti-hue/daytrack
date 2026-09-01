@@ -178,6 +178,7 @@ function TaskCardComponent({
           </div>
         )}
 
+        {!isIde && (
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
             <div className="flex items-center gap-1.5">
@@ -227,11 +228,15 @@ function TaskCardComponent({
             </div>
           )}
         </div>
+        )}
 
         <div className="flex items-center justify-between pt-2 border-t border-border/50">
+          {!isIde && (
           <Badge variant="outline" className={statusBadgeClass}>
             {STATUS_SHORT_LABELS[task.status]}
           </Badge>
+          )}
+          {isIde && <span />}
           <Button
             variant={isCompleted ? 'outline' : 'default'}
             size="sm"
