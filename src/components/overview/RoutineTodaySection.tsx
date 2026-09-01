@@ -832,29 +832,26 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               </Link>
             </div>
           </div>
-          {/* Bar skor Hoki akumulasi (Bersyukur + Doakan + Sedekah) — balok horizontal */}
+          {/* Bar skor Hoki akumulasi (Bersyukur + Doakan + Sedekah) — balok terpisah per hari */}
           <div className="mt-3 pt-3 border-t border-slate-100">
             <div className="flex items-center justify-between mb-1.5">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Skor Hoki</p>
               <span className="text-xs font-bold tabular-nums text-purple-600">{hokiDone}/{hokiMax} <span className="text-slate-400 font-medium">({hokiPct}%)</span></span>
             </div>
-            <div className="flex h-2.5 w-full rounded-full overflow-hidden bg-slate-100">
-              {hokiMax > 0 && hokiParts.map(p => (
-                <div
-                  key={p.label}
-                  className="h-full transition-all duration-700 ease-out"
-                  style={{ width: `${(p.v / hokiMax) * 100}%`, backgroundColor: p.v > 0 ? p.c : 'transparent' }}
-                  title={`${p.label}: ${p.v}/${daysElapsed}`}
-                />
-              ))}
-            </div>
-            <div className="mt-1.5 flex items-center gap-3 text-[10px] text-slate-500">
-              {hokiParts.map(p => (
-                <span key={p.label} className="flex items-center gap-1">
-                  <span className="h-2 w-2 rounded-sm" style={{ backgroundColor: p.c }} />
-                  {p.label} <span className="font-semibold text-slate-700 tabular-nums">{p.v}</span>
-                </span>
-              ))}
+            <div className="flex h-3 w-full gap-px overflow-hidden rounded-sm bg-slate-100">
+              {Array.from({ length: hokiMax }).map((_, idx) => {
+                const sub = hokiParts[Math.floor(idx / daysElapsed)]
+                const val = hokiParts[Math.floor(idx / daysElapsed)].v
+                const reached = idx < val
+                return (
+                  <div
+                    key={idx}
+                    className="h-full flex-1 transition-all duration-700 ease-out"
+                    style={{ backgroundColor: reached ? sub.c : '#e2e8f0', opacity: reached ? 1 : 0.5 }}
+                    title={`${sub.label}: ${val}/${daysElapsed}`}
+                  />
+                )
+              })}
             </div>
           </div>
         </RoutineCard>
