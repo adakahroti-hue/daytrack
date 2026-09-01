@@ -1,8 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { getMentalBlockAll, upsertMentalBlock, updateMentalBlock, deleteMentalBlock } from "@/app/actions/mental-block"
+import { getMentalBlockAll, getMentalBlockRange, upsertMentalBlock, updateMentalBlock, deleteMentalBlock } from "@/app/actions/mental-block"
 import type { MentalBlockFormData } from "@/app/actions/mental-block"
 export function useMentalBlockAll() {
   return useQuery({ queryKey: ["mental_block", "all"], queryFn: () => getMentalBlockAll() })
+}
+export function useMentalBlockRange(startDate: string, endDate: string) {
+  return useQuery({
+    queryKey: ["mental_block", "range", startDate, endDate],
+    queryFn: () => getMentalBlockRange(startDate, endDate),
+    enabled: !!startDate && !!endDate,
+  })
 }
 export function useUpsertMentalBlock() {
   const queryClient = useQueryClient()

@@ -98,3 +98,18 @@ export async function getMentalBlockAll() {
   if (error) throw new Error(error.message)
   return data || []
 }
+
+export async function getMentalBlockRange(startDate: string, endDate: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+  const { data, error } = await supabase
+    .from("mental_block")
+    .select("id, user_id, tanggal, masalah, created_at, updated_at")
+    .eq("user_id", user.id)
+    .gte("tanggal", startDate)
+    .lte("tanggal", endDate)
+    .order("tanggal", { ascending: false })
+  if (error) throw new Error(error.message)
+  return data || []
+}

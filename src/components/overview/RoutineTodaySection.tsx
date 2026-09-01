@@ -16,6 +16,8 @@ import { useTidurLogRange } from '@/hooks/useTidurLogs'
 import { useArusKasAll } from '@/hooks/useArusKas'
 import { useMasalahLogAll } from '@/hooks/useMasalahLogs'
 import { PERIOD_LABEL, type OverviewPeriod, FocusTodayCard } from './FocusTodaySection'
+import { MasukanSection } from './MasukanSection'
+import { MentalBlockSection } from './MentalBlockSection'
 
 // ─── Revisi batch 18: section "Rutinitas" untuk tab Overview (tema hitam-putih) ───
 
@@ -871,6 +873,12 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             </div>
           </div>
         </RoutineCard>
+
+        {/* Masukan DayTrack — list saran perbaikan periode ini */}
+        <MasukanSection startStr={startStr} endStr={endStr} />
+
+        {/* Mental Block — list mental block periode ini */}
+        <MentalBlockSection startStr={startStr} endStr={endStr} />
 
       </div>
     </section>
