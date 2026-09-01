@@ -435,14 +435,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const hokiDone = hokiParts.reduce((a, b) => a + b.v, 0)
   const hokiMax = 3 * daysElapsed
   const hokiPct = hokiMax > 0 ? Math.round((hokiDone / hokiMax) * 100) : 0
-  // Bar akumulasi UTUH: satu deretan hokiMax slot, diisi berurutan Bersyukur→Doakan→Sedekah
-  // Bagian BERWARNA disatukan jadi satu warna solid, bagian ABU-ABU disatukan jadi satu warna.
-  const hokiBars: boolean[] = []
-  hokiParts.forEach((sub) => {
-    for (let k = 0; k < daysElapsed; k++) {
-      hokiBars.push(k < sub.v)
-    }
-  })
 
   const label = PERIOD_LABEL[period]
 
@@ -847,15 +839,12 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Skor Hoki</p>
               <span className="text-xs font-bold tabular-nums bg-yellow-200 text-yellow-900 rounded px-1.5 py-0.5">{hokiPct}%</span>
             </div>
-            <div className="flex h-3 w-full overflow-hidden rounded-sm bg-slate-100">
-              {hokiBars.map((reached, idx) => (
-                <div
-                  key={idx}
-                  className="h-full flex-1 transition-all duration-700 ease-out"
-                  style={{ backgroundColor: reached ? '#7c3aed' : '#e2e8f0' }}
-                  title={`Skor Hoki: ${hokiDone}/${hokiMax}`}
-                />
-              ))}
+            <div className="h-3 w-full overflow-hidden rounded-sm bg-slate-100">
+              <div
+                className="h-full rounded-sm bg-purple-600 transition-all duration-700 ease-out"
+                style={{ width: `${hokiPct}%` }}
+                title={`Skor Hoki: ${hokiDone}/${hokiMax} (${hokiPct}%)`}
+              />
             </div>
           </div>
         </RoutineCard>
