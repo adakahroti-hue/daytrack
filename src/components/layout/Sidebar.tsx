@@ -125,8 +125,8 @@ const navigation: NavSection[] = [
     icon: Shield,
     items: [
       { title: 'Refleksi', href: '/masalah', icon: PersonStanding },
-      { title: 'Mental Block', href: '/mental-block', icon: Brain },
       { title: 'Maafkan', href: '/maafkan', icon: HeartHandshake },
+      { title: 'Mental Block', href: '/mental-block', icon: Brain },
     ],
   },
   {

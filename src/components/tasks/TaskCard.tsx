@@ -127,7 +127,7 @@ function TaskCardComponent({
               isInProgress
                 ? 'bg-blue-50 border-blue-300 hover:border-blue-400 dark:bg-blue-950/40 dark:border-blue-800'
                 : isIde
-                  ? cn('bg-white border-slate-200 hover:border-slate-300 dark:bg-white dark:border-slate-200 min-h-[120px] border-l-4', ideAccent(task.id))
+                  ? cn('bg-white border-slate-200 hover:border-slate-300 dark:bg-white dark:border-slate-200 min-h-[120px] border-t-4', ideAccent(task.id))
                   : PRIORITY_CARD_COLORS[task.prioritas]
             ),
         CARD_HOVER,
