@@ -418,7 +418,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   ]
   // Posisi saat ini = streak berjalan (hari berhasil beruntun terakhir)
   const pmoCurrentStreak = (() => {
-    const sorted = [...(pmoAllEntries as any[])].sort((a: any, b: any) => a.tanggal.localeCompare(b.tanggal))
+    const sorted = [...(pmoAllEntries as any[])].sort((a: any, b: any) => (a.tanggal || '').localeCompare(b.tanggal || ''))
     let cur = 0
     for (let i = sorted.length - 1; i >= 0; i--) {
       if (sorted[i].status === 'berhasil') cur += 1
@@ -442,7 +442,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const { data: refleksiEntries = [] } = useMasalahLogAll()
   const refleksiList = (refleksiEntries as any[])
     .filter(e => e.masalah)
-    .sort((a, b) => b.tanggal.localeCompare(a.tanggal) || (b.created_at || '').localeCompare(a.created_at || ''))
+    .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''))
     .map(e => ({ id: e.id, masalah: e.masalah as string }))
 
   return (
