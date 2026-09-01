@@ -490,31 +490,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           </div>
         </RoutineCard>
 
-        {/* Kartu Tugas — baris atas (sebaris dengan Keuangan, posisi kanan) */}
-        <div className="col-span-1">
-          <FocusTodayCard startStr={startStr} endStr={metricEndStr} period={period} />
-        </div>
-
-        {/* Optimasi Hoki — 1 card "Hoki" berisi 3 sub (Bersyukur / Doakan / Sedekah) sejajar horizontal */}
-        {/* Refleksi — list semua (tak dipengaruhi filter) — dipindah ke posisi Hoki */}
-        <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-slate-700" title="Refleksi" href="/masalah" linkColor="text-slate-700 hover:text-slate-900" className="col-span-1" hideIcon>
-          <div className="mt-3">
-            {refleksiList.length > 0 ? (
-              <ul className="space-y-1.5 max-h-[7.5rem] overflow-y-auto pr-1">
-                {refleksiList.map((r) => (
-                  <li key={r.id} className="flex items-start gap-2 text-sm text-slate-600 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-slate-800 shrink-0" />
-                    <span className="line-clamp-2 min-w-0">{r.masalah}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-1 text-sm text-slate-500">Belum ada refleksi pada periode ini.</p>
-            )}
-          </div>
-        </RoutineCard>
-
-        {/* Optimasi Hoki — 1 card "Hoki" berisi 3 sub (Bersyukur / Doakan / Sedekah) sejajar horizontal — dipindah ke posisi Refleksi */}
+        {/* Optimasi Hoki — dipindah ke sebaris Keuangan (posisi kanan baris 1) */}
         <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-purple-500" title="Hoki" hideIcon>
           <div className="mt-3 px-2 sm:px-3 py-1 grid grid-cols-3 gap-2 sm:gap-3">
             {/* Bersyukur */}
@@ -572,6 +548,31 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             </div>
           </div>
         </RoutineCard>
+
+        {/* Kartu Tugas — sebaris dengan Refleksi (posisi kiri baris 2) */}
+        <div className="col-span-1">
+          <FocusTodayCard startStr={startStr} endStr={metricEndStr} period={period} />
+        </div>
+
+        {/* Optimasi Hoki — 1 card "Hoki" berisi 3 sub (Bersyukur / Doakan / Sedekah) sejajar horizontal */}
+        {/* Refleksi — list semua (tak dipengaruhi filter) — dipindah ke posisi Hoki */}
+        <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-slate-700" title="Refleksi" href="/masalah" linkColor="text-slate-700 hover:text-slate-900" className="col-span-1" hideIcon>
+          <div className="mt-3">
+            {refleksiList.length > 0 ? (
+              <ul className="space-y-1.5 max-h-[7.5rem] overflow-y-auto pr-1">
+                {refleksiList.map((r) => (
+                  <li key={r.id} className="flex items-start gap-2 text-sm text-slate-600 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50">
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-slate-800 shrink-0" />
+                    <span className="line-clamp-2 min-w-0">{r.masalah}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-1 text-sm text-slate-500">Belum ada refleksi pada periode ini.</p>
+            )}
+          </div>
+        </RoutineCard>
+
 
         {/* Maafkan — list semua (tak dipengaruhi filter), sebaris dengan Refleksi */}
         <MaafkanSection />
