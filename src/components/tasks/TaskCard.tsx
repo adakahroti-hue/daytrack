@@ -127,7 +127,7 @@ function TaskCardComponent({
               isInProgress
                 ? 'bg-blue-50 border-blue-300 hover:border-blue-400 dark:bg-blue-950/40 dark:border-blue-800'
                 : isIde
-                  ? cn('bg-white border-slate-200 hover:border-slate-300 dark:bg-white dark:border-slate-200 min-h-[150px] border-l-4', ideAccent(task.id))
+                  ? cn('bg-white border-slate-200 hover:border-slate-300 dark:bg-white dark:border-slate-200 min-h-[120px] border-l-4', ideAccent(task.id))
                   : PRIORITY_CARD_COLORS[task.prioritas]
             ),
         CARD_HOVER,
@@ -139,7 +139,7 @@ function TaskCardComponent({
       {task.group_id && task.group_order != null && (
         <TaskGroupRibbon groupId={task.group_id} order={task.group_order} />
       )}
-      <CardContent className={cn("px-4 space-y-2.5", isIde ? "pt-6 pb-6" : "pt-4 pb-3")}>
+      <CardContent className={cn("px-4 space-y-2.5", isIde ? "pt-5 pb-3" : "pt-4 pb-3")}>
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 flex-1 min-w-0 relative z-20">
             {selectionMode && (
