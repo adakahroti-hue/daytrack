@@ -576,6 +576,8 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         {/* Maafkan — list semua (tak dipengaruhi filter), sebaris dengan Refleksi */}
         <MaafkanSection />
 
+        <MentalBlockSection />
+
         {/* Ibadah — dipindah ke paling bawah */}
         <RoutineCard tint="bg-white border-slate-200" icon={Mosque} iconColor="text-emerald-500" title="Ibadah" hideIcon>
           <div className="mt-3">
@@ -887,9 +889,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             )}
           </div>
         </RoutineCard>
-
-        {/* Mental Block — list semua (tak dipengaruhi filter) */}
-        <MentalBlockSection />
 
       </div>
     </section>
