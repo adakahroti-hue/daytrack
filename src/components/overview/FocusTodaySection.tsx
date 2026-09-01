@@ -110,15 +110,19 @@ function PieSegments({
             <path key={`sep-${i}`} d={p.d} fill="none" stroke="#ffffff" strokeWidth={1} />
           ))
         )}
-        {/* Label persen: HANYA pada irisan BERWARNA, ditaruh di tengah irisan (centroid), tak di tepi/luar */}
+        {/* Label persen: HANYA pada irisan BERWARNA, di titik berat irisan (centroid) agar di tengah & tak bersentuhan garis tepi */}
         {total > 0 && segments.map((s, i) => {
           if (isGrayish(s.color)) return null
           const frac = s.value / total
           if (frac <= 0) return null
           const pct = Math.round(frac * 100)
-          // centroid irisan berwarna; radius 0.6·r agar tak bersentuhan dengan garis tepi
-          const lx = cx + r * 0.6 * Math.cos(midAngle[i])
-          const ly = cy + r * 0.6 * Math.sin(midAngle[i])
+          // centroid sektor lingkaran: (2/3)·r·(sin β)/β  dengan β = setengah sudut irisan
+          const alpha = frac * 2 * Math.PI
+          const beta = alpha / 2
+          const centroidR = alpha > 1e-6 ? (2 / 3) * r * (Math.sin(beta) / beta) : 0
+          const rr = Math.min(centroidR, r * 0.6)
+          const lx = cx + rr * Math.cos(midAngle[i])
+          const ly = cy + rr * Math.sin(midAngle[i])
           return (
             <text key={`lbl-${i}`} x={lx} y={ly} fill="#ffffff" stroke="#00000066" strokeWidth={0.3}
               fontSize={Math.max(6, Math.round(size * 0.11))} fontWeight={700} textAnchor="middle" dominantBaseline="central">
