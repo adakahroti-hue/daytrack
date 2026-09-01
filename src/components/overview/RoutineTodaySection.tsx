@@ -871,11 +871,11 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           </div>
         </RoutineCard>
 
-        {/* Masukan DayTrack — list saran perbaikan periode ini */}
-        <MasukanSection startStr={startStr} endStr={endStr} />
+        {/* Mental Block — list semua (tak dipengaruhi filter) */}
+        <MentalBlockSection />
 
-        {/* Mental Block — list mental block periode ini */}
-        <MentalBlockSection startStr={startStr} endStr={endStr} />
+        {/* Masukan DayTrack — list semua (tak dipengaruhi filter) */}
+        <MasukanSection />
 
       </div>
     </section>

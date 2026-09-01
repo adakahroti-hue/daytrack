@@ -2,16 +2,11 @@
 
 import { Brain, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
-import { useMentalBlockRange } from '@/hooks/useMentalBlock'
+import { useMentalBlockAll } from '@/hooks/useMentalBlock'
 import { cn } from '@/lib/utils'
 
-interface MentalBlockSectionProps {
-  startStr: string
-  endStr: string
-}
-
-export function MentalBlockSection({ startStr, endStr }: MentalBlockSectionProps) {
-  const { data: entries = [], isLoading } = useMentalBlockRange(startStr, endStr)
+export function MentalBlockSection() {
+  const { data: entries = [], isLoading } = useMentalBlockAll()
 
   const blocks = (entries as any[]).filter((e: any) => e.masalah)
 
@@ -40,7 +35,7 @@ export function MentalBlockSection({ startStr, endStr }: MentalBlockSectionProps
         </div>
       ) : blocks.length === 0 ? (
         <p className="text-sm text-slate-400 text-center py-6">
-          Belum ada mental block untuk periode ini.
+          Belum ada mental block.
         </p>
       ) : (
         <div className="space-y-2">

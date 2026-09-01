@@ -2,16 +2,11 @@
 
 import { Lightbulb, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
-import { useSaranPerbaikanRange } from '@/hooks/useSaranPerbaikan'
+import { useAllSaranPerbaikan } from '@/hooks/useSaranPerbaikan'
 import { cn } from '@/lib/utils'
 
-interface MasukanSectionProps {
-  startStr: string
-  endStr: string
-}
-
-export function MasukanSection({ startStr, endStr }: MasukanSectionProps) {
-  const { data: entries = [], isLoading } = useSaranPerbaikanRange(startStr, endStr)
+export function MasukanSection() {
+  const { data: entries = [], isLoading } = useAllSaranPerbaikan()
 
   const allSarans = (entries as any[]).filter((e: any) => e.saran)
   const sarans = allSarans.slice(0, 3)
@@ -41,7 +36,7 @@ export function MasukanSection({ startStr, endStr }: MasukanSectionProps) {
         </div>
       ) : sarans.length === 0 ? (
         <p className="text-sm text-slate-400 text-center py-6">
-          Belum ada masukan untuk periode ini.
+          Belum ada masukan.
         </p>
       ) : (
         <div className="space-y-2">
