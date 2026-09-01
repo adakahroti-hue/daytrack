@@ -131,7 +131,7 @@ function TaskCardComponent({
                 aria-label="Pilih tugas"
               />
             )}
-            <h3 className={cn("font-medium text-base leading-tight capitalize flex-1", task.group_id && "pl-7")}>{task.nama}</h3>
+            <h3 className={cn("font-medium text-base leading-tight capitalize flex-1", task.group_id && "pl-7", isIde && "pb-1")}>{task.nama}</h3>
           </div>
           {!isIde && (
           <DropdownMenu>
