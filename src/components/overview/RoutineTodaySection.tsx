@@ -461,9 +461,9 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700" hideIcon>
           <div className="mt-3 grid grid-cols-2 gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Kebutuhan</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Pokok</p>
               <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">{formatRupiah(akKebutuhanSisa)}</p>
-              <p className="text-[11px] text-slate-400">sisa alokasi</p>
+              <p className="text-[11px] text-slate-400">sisa alokasi Pokok</p>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Saldo</p>
@@ -478,7 +478,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                <XyPie value={sholatCount} target={sholatTarget} color="#10b981" percentLabel percentOnSlice />
+                <XyPie value={sholatCount} target={sholatTarget} color="#111827" percentLabel percentOnSlice />
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -502,7 +502,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                     <div key={s.key} className="flex flex-col items-center gap-0.5 min-w-0">
                       <span className="text-xs leading-tight text-slate-500">{s.label}</span>
                       {isWeekly ? (
-                        <XyDonut value={sholatPerWaktu[i]} target={daysElapsed} color="#10b981" size={40} />
+                        <XyDonut value={sholatPerWaktu[i]} target={daysElapsed} color="#111827" size={40} />
                       ) : isHarian ? (
                         done
                           ? <Check className="h-3 w-3 text-emerald-600" />
@@ -538,7 +538,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-4 pt-4 border-t border-slate-100">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                <XyPie value={sunnahCount} target={sunnahTarget} color="#22c55e" percentLabel percentOnSlice />
+                <XyPie value={sunnahCount} target={sunnahTarget} color="#111827" percentLabel percentOnSlice />
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -562,7 +562,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                     <div key={s.key} className="flex flex-col items-center gap-0.5 min-w-0">
                       <span className="text-xs leading-tight text-slate-500">{s.label}</span>
                       {isWeekly ? (
-                        <XyDonut value={sunnahPerWaktu[i]} target={daysElapsed} color="#22c55e" size={40} />
+                        <XyDonut value={sunnahPerWaktu[i]} target={daysElapsed} color="#111827" size={40} />
                       ) : isHarian ? (
                         done
                           ? <Check className="h-3 w-3 text-amber-600" />
@@ -581,7 +581,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-4 pt-4 border-t border-slate-100">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                <XyPie value={quranCount} target={quranTarget} color="#14b8a6" percentLabel percentOnSlice />
+                <XyPie value={quranCount} target={quranTarget} color="#111827" percentLabel percentOnSlice />
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -605,7 +605,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                     <div key={s.key} className="flex flex-col items-center gap-0.5 min-w-0">
                       <span className="text-xs leading-tight text-slate-500">{QURAN_PILL_LABELS[s.key] ?? s.label}</span>
                       {isWeekly ? (
-                        <XyDonut value={quranPerSesi[i]} target={daysElapsed} color="#14b8a6" size={40} />
+                        <XyDonut value={quranPerSesi[i]} target={daysElapsed} color="#111827" size={40} />
                       ) : isHarian ? (
                         done
                           ? <Check className="h-3 w-3 text-teal-600" />
@@ -647,7 +647,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                <XyPie value={gelas} target={targetGelasPeriod} color="#0ea5e9" percentLabel percentOnSlice />
+                <XyPie value={gelas} target={targetGelasPeriod} color="#111827" percentLabel percentOnSlice />
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -676,7 +676,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                     <div key={s.key} className="flex flex-col items-center gap-0.5 min-w-0">
                       <span className="text-xs leading-tight text-slate-500">{WATER_PILL_LABELS[s.key] ?? s.label}</span>
                       {isWeekly ? (
-                        <XyDonut value={waterPerSesi[i]} target={daysElapsed} color="#0ea5e9" size={40} />
+                        <XyDonut value={waterPerSesi[i]} target={daysElapsed} color="#111827" size={40} />
                       ) : isHarian ? (
                         done
                           ? <Check className="h-3 w-3 text-sky-600" />
@@ -706,7 +706,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             <div className="mt-1.5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 flex items-center gap-3">
                 {isWeekly ? (
-                  <XyPie value={checklist[3].days} target={daysElapsed} color="#0ea5e9" size={52} percentLabel percentOnSlice />
+                  <XyPie value={checklist[3].days} target={daysElapsed} color="#111827" size={52} percentLabel percentOnSlice />
                 ) : (
                   <div className="flex items-baseline gap-1.5 leading-none pl-[2px]">
                     <span className={cn('text-[22px] font-bold tabular-nums', numColor(checklist[3].days >= daysElapsed))}>{checklist[3].days}<span className={cn('text-lg', numColorSoft(checklist[3].days >= daysElapsed))}>/{daysElapsed}</span></span>
@@ -750,7 +750,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-3 pt-3 border-t border-slate-100">
             <div className="mt-1.5 flex items-end justify-between gap-3">
               <div className="flex items-center gap-3">
-                {isWeekly && <XyPie value={checklist[2].days} target={daysElapsed} color="#0ea5e9" size={52} percentLabel percentOnSlice />}
+                {isWeekly && <XyPie value={checklist[2].days} target={daysElapsed} color="#111827" size={52} percentLabel percentOnSlice />}
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">

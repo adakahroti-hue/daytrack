@@ -211,7 +211,7 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
                   : displaySelesai === 0
                   ? [{ value: 1, color: '#ef4444' }]
                   : [
-                      { value: displaySelesai, color: '#10b981' },
+                      { value: displaySelesai, color: '#111827' },
                       { value: displayTotal - displaySelesai, color: '#cbd5e1' },
                     ]
               }
