@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Plus, Target } from "lucide-react"
+import { Plus, Target, Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,11 +13,13 @@ import { RoadmapList } from "@/components/goal/RoadmapList"
 import { AddMilestoneModal } from "@/components/goal/AddMilestoneModal"
 import { AddStepModal } from "@/components/goal/AddStepModal"
 import { ProgressLogList } from "@/components/goal/ProgressLogList"
-import { useActiveGoal, useCreateGoal, useCreateMilestone, useUpdateMilestone, useDeleteMilestone, useCreateStep, useUpdateStep, useToggleStepCompleted, useDeleteStep } from "@/hooks/useGoal"
+import { useActiveGoal, useCreateGoal, useUpdateGoal, useDeleteGoal, useCreateMilestone, useUpdateMilestone, useDeleteMilestone, useCreateStep, useUpdateStep, useToggleStepCompleted, useDeleteStep } from "@/hooks/useGoal"
 
 export default function GoalPage() {
   const { data: goal, isLoading } = useActiveGoal()
   const createGoal = useCreateGoal()
+  const updateGoal = useUpdateGoal()
+  const deleteGoal = useDeleteGoal()
   const createMilestone = useCreateMilestone()
   const updateMilestone = useUpdateMilestone()
   const deleteMilestone = useDeleteMilestone()
@@ -27,6 +29,9 @@ export default function GoalPage() {
   const deleteStep = useDeleteStep()
 
   const [tab, setTab] = useState<GoalTab>("roadmap")
+  const [editGoalOpen, setEditGoalOpen] = useState(false)
+  const [deleteGoalOpen, setDeleteGoalOpen] = useState(false)
+  const [goalName, setGoalName] = useState("")
   const [milestoneModal, setMilestoneModal] = useState<{ open: boolean; edit: any }>({ open: false, edit: null })
   const [stepModal, setStepModal] = useState<{ open: boolean; milestoneId: string | null; edit: any }>({
     open: false,
@@ -91,6 +96,14 @@ export default function GoalPage() {
 
   return (
     <div className="mx-auto max-w-none space-y-4 p-4">
+      <div className="flex items-center justify-end gap-2">
+        <Button variant="outline" size="sm" onClick={() => { setGoalName(goal.title); setEditGoalOpen(true) }}>
+          <Pencil className="h-4 w-4" /> Edit Nama
+        </Button>
+        <Button variant="outline" size="sm" className="text-rose-600 border-rose-200 hover:bg-rose-50" onClick={() => setDeleteGoalOpen(true)}>
+          <Trash2 className="h-4 w-4" /> Hapus Goal
+        </Button>
+      </div>
       <GoalHeader goalTitle={goal.title} goalProgress={stats.goalProgress} targetDate={goal.target_date} />
       <GoalStats
         completedSteps={stats.completedSteps}
@@ -171,6 +184,58 @@ export default function GoalPage() {
           }
         }}
       />
+
+      {/* Modal edit nama goal */}
+      <Dialog open={editGoalOpen} onOpenChange={(o) => !o && setEditGoalOpen(false)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Nama Goal</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label>Nama Goal</Label>
+              <Input value={goalName} onChange={(e) => setGoalName(e.target.value)} placeholder="Nama goal" />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setEditGoalOpen(false)}>Batal</Button>
+              <Button
+                disabled={!goalName.trim() || updateGoal.isPending}
+                onClick={() => {
+                  updateGoal.mutate({ id: goal.id, data: { title: goalName.trim() } }, { onSuccess: () => setEditGoalOpen(false) })
+                }}
+              >
+                Simpan
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog konfirmasi hapus goal */}
+      <Dialog open={deleteGoalOpen} onOpenChange={(o) => !o && setDeleteGoalOpen(false)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Hapus Goal</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-slate-600">
+            Yakin ingin menghapus goal <span className="font-semibold text-slate-900">{goal.title}</span> beserta seluruh milestone, step, dan log progresnya? Tindakan ini tidak bisa dibatalkan.
+          </p>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDeleteGoalOpen(false)}>Batal</Button>
+            <Button
+              className="bg-rose-600 hover:bg-rose-700 text-white"
+              disabled={deleteGoal.isPending}
+              onClick={() => {
+                deleteGoal.mutate(goal.id, {
+                  onSuccess: () => { setDeleteGoalOpen(false) },
+                })
+              }}
+            >
+              Hapus
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
