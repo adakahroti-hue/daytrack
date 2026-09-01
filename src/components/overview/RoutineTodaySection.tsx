@@ -146,7 +146,7 @@ function XyDonut({
   const r = (size - stroke) / 2
   const c = 2 * Math.PI * r
   const offset = c - (pct / 100) * c
-  const fontSize = Math.round(size * 0.24)
+  const fontSize = Math.round(size * 0.28)
   const reached = value >= target && target > 0
   return (
     <div className="flex flex-col items-center gap-1">
@@ -221,7 +221,7 @@ function XyPie({
             { d: `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc === 0 ? 1 : 0} 1 ${x0} ${y0} Z`, color: 'rgba(148,163,184,0.35)' },
           ]
         })()
-  const fontSize = Math.round(size * 0.24)
+  const fontSize = Math.round(size * 0.28)
   const pct = Math.round(frac * 100)
   // posisi label persen di centroid irisan warna (jika ada irisan warna)
   const midAngle = -Math.PI / 2 + (frac / 2) * 2 * Math.PI
@@ -526,10 +526,10 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                         <XyDonut value={sholatPerWaktu[i]} target={daysElapsed} color="#111827" size={40} />
                       ) : isHarian ? (
                         done
-                          ? <Check className="h-3 w-3 text-emerald-600" />
+                          ? <Check className="h-3 w-3 text-slate-900" />
                           : <Minus className="h-3 w-3 text-slate-300" />
                       ) : (
-                        <span className={cn('text-[11px] font-semibold tabular-nums', done ? 'text-emerald-600' : 'text-slate-500')}>
+                        <span className={cn('text-[11px] font-semibold tabular-nums', done ? 'text-slate-900' : 'text-slate-500')}>
                           {sholatPerWaktu[i]}/{daysElapsed}
                         </span>
                       )}
@@ -586,10 +586,10 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                         <XyDonut value={sunnahPerWaktu[i]} target={daysElapsed} color="#111827" size={40} />
                       ) : isHarian ? (
                         done
-                          ? <Check className="h-3 w-3 text-amber-600" />
+                          ? <Check className="h-3 w-3 text-slate-900" />
                           : <Minus className="h-3 w-3 text-slate-300" />
                       ) : (
-                        <span className={cn('text-[11px] font-semibold tabular-nums', done ? 'text-amber-600' : 'text-slate-500')}>
+                        <span className={cn('text-[11px] font-semibold tabular-nums', done ? 'text-slate-900' : 'text-slate-500')}>
                           {sunnahPerWaktu[i]}/{daysElapsed}
                         </span>
                       )}
@@ -629,10 +629,10 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                         <XyDonut value={quranPerSesi[i]} target={daysElapsed} color="#111827" size={40} />
                       ) : isHarian ? (
                         done
-                          ? <Check className="h-3 w-3 text-teal-600" />
+                          ? <Check className="h-3 w-3 text-slate-900" />
                           : <Minus className="h-3 w-3 text-slate-300" />
                       ) : (
-                        <span className={cn('text-[11px] font-semibold tabular-nums', done ? 'text-teal-600' : 'text-slate-500')}>
+                        <span className={cn('text-[11px] font-semibold tabular-nums', done ? 'text-slate-900' : 'text-slate-500')}>
                           {quranPerSesi[i]}/{daysElapsed}
                         </span>
                       )}
@@ -700,10 +700,10 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                         <XyDonut value={waterPerSesi[i]} target={daysElapsed} color="#111827" size={40} />
                       ) : isHarian ? (
                         done
-                          ? <Check className="h-3 w-3 text-sky-600" />
+                          ? <Check className="h-3 w-3 text-slate-900" />
                           : <Minus className="h-3 w-3 text-slate-300" />
                       ) : (
-                        <span className={cn('text-[11px] font-semibold tabular-nums', done ? 'text-sky-600' : 'text-slate-500')}>
+                        <span className={cn('text-[11px] font-semibold tabular-nums', done ? 'text-slate-900' : 'text-slate-500')}>
                           {waterPerSesi[i]}/{daysElapsed}
                         </span>
                       )}
