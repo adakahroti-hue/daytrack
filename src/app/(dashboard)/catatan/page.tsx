@@ -171,59 +171,59 @@ export default function CatatanPage() {
 
   return (
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5 text-sm font-bold text-slate-800">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <div className="flex items-center gap-1.5 text-sm font-bold text-slate-800 shrink-0">
           <StickyNote className="h-4 w-4 text-purple-600" /> Catatan
         </div>
-        <Button size="sm" variant="outline" onClick={openAdd} className="h-7 gap-1 text-[11px] px-2">
-          <Plus className="h-3 w-3" /> Tambah Catatan
-        </Button>
-      </div>
 
-      {/* Filter kategori */}
-      {notes.length > 0 && (
-        <div className="flex flex-wrap items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => { setFilterKat("semua"); setShowAll(false) }}
-            className={cn(
-              "rounded-full px-3 py-1 text-xs font-medium border transition-colors",
-              filterKat === "semua"
-                ? "bg-purple-600 text-white border-purple-600"
-                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-            )}
-          >
-            Semua
-          </button>
-          {categories.map((cat) => (
+        {notes.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5 flex-1 min-w-0">
             <button
-              key={cat}
               type="button"
-              onClick={() => { setFilterKat(cat); setShowAll(false) }}
+              onClick={() => { setFilterKat("semua"); setShowAll(false) }}
               className={cn(
                 "rounded-full px-3 py-1 text-xs font-medium border transition-colors",
-                filterKat === cat
+                filterKat === "semua"
                   ? "bg-purple-600 text-white border-purple-600"
                   : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
               )}
             >
-              {cat}
+              Semua
             </button>
-          ))}
-          <button
-            type="button"
-            onClick={() => { setFilterKat("lainnya"); setShowAll(false) }}
-            className={cn(
-              "rounded-full px-3 py-1 text-xs font-medium border transition-colors",
-              filterKat === "lainnya"
-                ? "bg-purple-600 text-white border-purple-600"
-                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-            )}
-          >
-            Lainnya
-          </button>
-        </div>
-      )}
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => { setFilterKat(cat); setShowAll(false) }}
+                className={cn(
+                  "rounded-full px-3 py-1 text-xs font-medium border transition-colors",
+                  filterKat === cat
+                    ? "bg-purple-600 text-white border-purple-600"
+                    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                )}
+              >
+                {cat}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => { setFilterKat("lainnya"); setShowAll(false) }}
+              className={cn(
+                "rounded-full px-3 py-1 text-xs font-medium border transition-colors",
+                filterKat === "lainnya"
+                  ? "bg-purple-600 text-white border-purple-600"
+                  : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+              )}
+            >
+              Lainnya
+            </button>
+          </div>
+        )}
+
+        <Button size="sm" variant="outline" onClick={openAdd} className="h-7 gap-1 text-[11px] px-2 shrink-0">
+          <Plus className="h-3 w-3" /> Tambah Catatan
+        </Button>
+      </div>
 
       {isLoading ? (
         <p className="text-sm text-slate-400 py-8 text-center">Memuat...</p>
