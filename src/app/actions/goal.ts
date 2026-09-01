@@ -52,7 +52,7 @@ export interface GoalData {
   progressLogs: GoalProgressLog[]
 }
 
-/* ── Ambil goal aktif beserta milestone, step, dan log ── */
+/* ── Ambil goal aktif beserta milestone, step, dan log dalam 1 query (nested) ── */
 export async function getActiveGoal(): Promise<GoalData | null> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -60,46 +60,61 @@ export async function getActiveGoal(): Promise<GoalData | null> {
 
   const { data: goals } = await supabase
     .from("goal")
-    .select(GOAL_SELECT)
+    .select(`
+      id, user_id, title, target_date, is_active, created_at, updated_at,
+      goal_milestone (
+        id, goal_id, title, description, "order", created_at, updated_at,
+        goal_step ( id, milestone_id, title, is_completed, "order", target_date, created_at, updated_at )
+      ),
+      goal_progress_log (
+        id, goal_id, milestone_id, step_id, activity, duration, date, created_at
+      )
+    `)
     .eq("user_id", user.id)
     .order("created_at", { ascending: true })
     .limit(1)
+    .maybeSingle()
 
-  const goal = (goals && goals[0]) as GoalData | undefined
+  const goal = goals as any
   if (!goal) return null
 
-  const { data: milestones } = await supabase
-    .from("goal_milestone")
-    .select("id, goal_id, title, description, \"order\", created_at, updated_at")
-    .eq("goal_id", goal.id)
-    .order("order", { ascending: true })
+  const milestonesRaw: any[] = goal.goal_milestone || []
+  const milestonesWithSteps: GoalMilestone[] = milestonesRaw
+    .sort((a: any, b: any) => a.order - b.order)
+    .map((m: any) => ({
+      id: m.id,
+      goal_id: m.goal_id,
+      title: m.title,
+      description: m.description,
+      order: m.order,
+      created_at: m.created_at,
+      updated_at: m.updated_at,
+      steps: (m.goal_step || [])
+        .sort((a: any, b: any) => a.order - b.order)
+        .map((s: any) => ({
+          id: s.id,
+          milestone_id: s.milestone_id,
+          title: s.title,
+          is_completed: s.is_completed,
+          order: s.order,
+          target_date: s.target_date,
+          created_at: s.created_at,
+          updated_at: s.updated_at,
+        })),
+    }))
 
-  const milestoneIds = (milestones || []).map((m: any) => m.id)
-  let steps: GoalStep[] = []
-  if (milestoneIds.length > 0) {
-    const { data: stepRows } = await supabase
-      .from("goal_step")
-      .select("id, milestone_id, title, is_completed, \"order\", target_date, created_at, updated_at")
-      .in("milestone_id", milestoneIds)
-      .order("order", { ascending: true })
-    steps = (stepRows || []) as GoalStep[]
-  }
-
-  const milestonesWithSteps: GoalMilestone[] = (milestones || []).map((m: any) => ({
-    ...m,
-    steps: steps.filter((s) => s.milestone_id === m.id),
-  }))
-
-  const { data: progressLogs } = await supabase
-    .from("goal_progress_log")
-    .select("id, goal_id, milestone_id, step_id, activity, duration, date, created_at")
-    .eq("goal_id", goal.id)
-    .order("date", { ascending: false })
+  const progressLogs = (goal.goal_progress_log || []) as GoalProgressLog[]
 
   return {
-    ...goal,
+    id: goal.id,
+    user_id: goal.user_id,
+    title: goal.title,
+    target_date: goal.target_date,
+    is_active: goal.is_active,
+    created_at: goal.created_at,
+    updated_at: goal.updated_at,
     milestones: milestonesWithSteps,
-    progressLogs: (progressLogs || []) as GoalProgressLog[],
+    progressLogs,
   }
 }
 
