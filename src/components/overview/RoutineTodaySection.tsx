@@ -237,9 +237,11 @@ function XyPie({
         </svg>
         {percentLabel && (
           frac >= 1 ? (
-            /* 100% — tampilkan centang di tengah */
+            /* 100% — tampilkan centang di tengah (latar putih agar kontras di atas pie hitam) */
             <div className="absolute inset-0 flex items-center justify-center leading-none pointer-events-none">
-              <Check className="text-slate-900 drop-shadow" style={{ width: Math.round(size * 0.42), height: Math.round(size * 0.42) }} strokeWidth={3} />
+              <span className="flex items-center justify-center rounded-full bg-white" style={{ width: Math.round(size * 0.5), height: Math.round(size * 0.5) }}>
+                <Check className="text-slate-900 drop-shadow" style={{ width: Math.round(size * 0.34), height: Math.round(size * 0.34) }} strokeWidth={3} />
+              </span>
             </div>
           ) : percentOnSlice && frac > 0 ? (
             /* Persen HANYA di irisan berwarna (centroid); area abu-abu bersih */
