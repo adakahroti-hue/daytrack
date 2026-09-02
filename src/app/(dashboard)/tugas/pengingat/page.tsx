@@ -39,7 +39,7 @@ export default function PengingatPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4 p-4">
+    <div className="mx-auto max-w-none space-y-4 p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-slate-900">
           <Bell className="h-5 w-5" />
