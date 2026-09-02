@@ -471,7 +471,7 @@ function SemuaPageClient() {
     setEditingTask(null)
   }
 
-  const totalTasks = allTasks.length
+  const totalTasks = allTasks.filter((t) => t.status !== 'ide').length
 
   // Today (for relative group labels)
   const today = format(new Date(), 'yyyy-MM-dd')
@@ -482,6 +482,7 @@ function SemuaPageClient() {
     const todayStart = startOfDay(new Date())
     return allTasks.filter(t => (
       (t.status === 'belum' || (t.status === 'proses' && t.tanggal && isBefore(new Date(t.tanggal), todayStart)))
+      && t.status !== 'ide'
       && t.tanggal != today
     ))
   }, [allTasks, today])
