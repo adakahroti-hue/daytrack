@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Plus, Target, Pencil, Trash2 } from "lucide-react"
+import { Plus, Target } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -96,15 +96,13 @@ export default function GoalPage() {
 
   return (
     <div className="mx-auto max-w-none space-y-4 p-4">
-      <div className="flex items-center justify-end gap-2">
-        <Button variant="outline" size="sm" onClick={() => { setGoalName(goal.title); setEditGoalOpen(true) }}>
-          <Pencil className="h-4 w-4" /> Edit Nama
-        </Button>
-        <Button variant="outline" size="sm" className="text-rose-600 border-rose-200 hover:bg-rose-50" onClick={() => setDeleteGoalOpen(true)}>
-          <Trash2 className="h-4 w-4" /> Hapus Goal
-        </Button>
-      </div>
-      <GoalHeader goalTitle={goal.title} goalProgress={stats.goalProgress} targetDate={goal.target_date} />
+      <GoalHeader
+        goalTitle={goal.title}
+        goalProgress={stats.goalProgress}
+        targetDate={goal.target_date}
+        onEdit={() => { setGoalName(goal.title); setEditGoalOpen(true) }}
+        onDelete={() => setDeleteGoalOpen(true)}
+      />
       <GoalStats
         completedSteps={stats.completedSteps}
         totalSteps={stats.totalSteps}

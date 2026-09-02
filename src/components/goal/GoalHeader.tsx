@@ -1,21 +1,47 @@
-import { Target } from "lucide-react"
+import { Target, Pencil, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export function GoalHeader({
   goalTitle,
   goalProgress,
   targetDate,
+  onEdit,
+  onDelete,
 }: {
   goalTitle: string
   goalProgress: number
   targetDate: string | null
+  onEdit?: () => void
+  onDelete?: () => void
 }) {
   const pct = Math.max(0, Math.min(100, Math.round(goalProgress)))
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-4">
-      <div className="flex items-center gap-2 text-slate-900">
-        <Target className="h-4 w-4" />
-        <h2 className="text-sm font-semibold uppercase tracking-wide">Goal Aktif</h2>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2 text-slate-900">
+          <Target className="h-4 w-4" />
+          <h2 className="text-sm font-semibold uppercase tracking-wide">Goal Aktif</h2>
+        </div>
+        <div className="flex items-center gap-1 shrink-0">
+          {onEdit && (
+            <button
+              onClick={onEdit}
+              aria-label="Edit nama goal"
+              className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+          )}
+          {onDelete && (
+            <button
+              onClick={onDelete}
+              aria-label="Hapus goal"
+              className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </div>
       <p className="mt-2 text-xl font-bold text-slate-900">{goalTitle || "—"}</p>
       {targetDate && (
