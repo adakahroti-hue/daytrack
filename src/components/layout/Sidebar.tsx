@@ -99,14 +99,14 @@ const navigation: NavSection[] = [
     href: '/overview',
   },
   {
-    title: 'Goal',
-    icon: Target,
-    href: '/goal',
-  },
-  {
     title: 'Bank Ide',
     icon: Lightbulb,
     href: '/tugas/bank-ide',
+  },
+  {
+    title: 'Goal',
+    icon: Target,
+    href: '/goal',
   },
   {
     title: 'Tugas',
