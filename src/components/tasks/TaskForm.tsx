@@ -62,7 +62,7 @@ export function TaskForm({ initialData, onSubmit, onCancel, hideDate }: TaskForm
       nama: '',
       tanggal: format(new Date(), 'yyyy-MM-dd'),
       estimasi_menit: 0,
-      prioritas: 'p3',
+      prioritas: 'p2',
       status: 'belum',
       ...initialData,
     },
