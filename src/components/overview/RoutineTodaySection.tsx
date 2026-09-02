@@ -4,17 +4,7 @@ import Link from 'next/link'
 import { Check, Minus, Mosque, BookOpen, GlassWater, Repeat, Sparkles, Shield, Moon, ArrowRight, Wallet, HandCoins, Sun, PersonStanding } from 'lucide-react'
 import { format, differenceInCalendarDays } from 'date-fns'
 import { cn, formatRupiah } from '@/lib/utils'
-import { useSholatSunnahRange } from '@/hooks/useSholatSunnah'
-import { usePrayerLogRange } from '@/hooks/usePrayerLogs'
-import { useQuranLogRange } from '@/hooks/useQuranLogs'
-import { useWaterLogRange } from '@/hooks/useMinumAirLogs'
-import { useSyukurLogRange } from '@/hooks/useSyukurLogs'
-import { useDoaLogRange } from '@/hooks/useDoaLogs'
-import { useSedekahLogRange } from '@/hooks/useSedekahLogs'
-import { usePmoLogRange, usePmoLogAll } from '@/hooks/usePmoLogs'
-import { useTidurLogRange } from '@/hooks/useTidurLogs'
-import { useArusKasAll } from '@/hooks/useArusKas'
-import { useMasalahLogAll } from '@/hooks/useMasalahLogs'
+import { useOverviewData } from "@/hooks/useOverviewData"
 import { PERIOD_LABEL, type OverviewPeriod, FocusTodayCard } from './FocusTodaySection'
 import { MentalBlockSection } from './MentalBlockSection'
 import { MaafkanSection } from './MaafkanSection'
@@ -285,14 +275,15 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
     differenceInCalendarDays(new Date(cappedEnd + 'T00:00:00'), new Date(startStr + 'T00:00:00')) + 1
   )
 
-  // Revisi batch 35: angka di bawah subjudul — hijau saat target tercapai, merah khusus filter Kemarin
+  // 1 RPC menggantikan ~12 query paralel (sholat, quran, sunnah, air, syukur, doa, sedekah, pmo, tidur, arus kas, masalah)
+  const { data: ov = {} as Record<string, any[]> } = useOverviewData(startStr, endStr)
   const numColor = (reached: boolean) =>
     reached ? 'text-emerald-600' : isKemarin ? 'text-slate-900' : 'text-slate-900'
   const numColorSoft = (reached: boolean) =>
     reached ? 'text-emerald-600/70' : isKemarin ? 'text-slate-900/70' : 'text-slate-500'
 
   // Sholat 5 waktu
-  const { data: prayerRows = [] } = usePrayerLogRange(startStr, endStr)
+  const prayerRows = (ov.prayer ?? []) as any[]
   const sholatPerWaktu = SHOLAT_5.map(s =>
     (prayerRows as any[]).filter(row => !!row?.[`sholat_${s.key}`]).length
   )
@@ -300,7 +291,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const sholatTarget = 5 * daysElapsed
 
   // Baca Quran
-  const { data: quranEntries = [] } = useQuranLogRange(startStr, endStr)
+  const quranEntries = (ov.quran ?? []) as any[]
   const quranRows = quranEntries as any[]
   const quranPerSesi = QURAN_SESSIONS.map(s =>
     quranRows.filter(e => e.waktu_baca === s.key && e.status === 'sudah').length
@@ -309,7 +300,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const quranTarget = 5 * daysElapsed
 
   // Sholat Sunnah (Dhuha + Tahajud)
-  const { data: sunnahRows = [] } = useSholatSunnahRange(startStr, endStr)
+  const sunnahRows = (ov.sunnah ?? []) as any[]
   const sunnahPerWaktu = SUNNAH_TIMES.map(s =>
     (sunnahRows as any[]).filter(row => !!row?.[`sholat_${s.key}`]).length
   )
@@ -347,7 +338,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   quranReasonCount.forEach((v, k) => { if (v > quranTopReasonCount) { quranTopReasonCount = v; quranTopReason = k } })
 
   // Minum Air
-  const { data: waterEntries = [] } = useWaterLogRange(startStr, endStr)
+  const waterEntries = (ov.water ?? []) as any[]
   const totalMl = (waterEntries as any[]).reduce((sum, e) => sum + (e.jumlah_ml || 0), 0)
   const gelas = Math.round(totalMl / ML_PER_GELAS)
   const targetGelasPeriod = TARGET_GELAS * daysElapsed
@@ -356,13 +347,13 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   )
 
   // Checklist
-  const { data: syukurEntries = [] } = useSyukurLogRange(startStr, endStr)
-  const { data: doaEntries = [] } = useDoaLogRange(startStr, endStr)
-  const { data: sedekahEntries = [] } = useSedekahLogRange(startStr, endStr)
+  const syukurEntries = (ov.syukur ?? []) as any[]
+  const doaEntries = (ov.doa ?? []) as any[]
+  const sedekahEntries = (ov.sedekah ?? []) as any[]
   const sedekahCount = (sedekahEntries as any[]).filter(e => e.status === 'sudah').length
-  const { data: pmoEntries = [] } = usePmoLogRange(startStr, endStr)
-  const { data: pmoAllEntries = [] } = usePmoLogAll()
-  const { data: tidurEntries = [] } = useTidurLogRange(startStr, endStr)
+  const pmoEntries = (ov.pmo ?? []) as any[]
+  const pmoAllEntries = (ov.pmo_all ?? []) as any[]
+  const tidurEntries = (ov.tidur ?? []) as any[]
   // Minum Air — insight waktu sering terlewat
   const waterMissedIdx = waterPerSesi.indexOf(Math.min(...waterPerSesi))
   const waterMostMissed = daysElapsed - waterPerSesi[waterMissedIdx]
@@ -405,7 +396,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
 
 
   // Arus Kas — saldo & sisa alokasi kebutuhan (ALL-TIME, TIDAK dipengaruhi filter periode mana pun)
-  const { data: arusKasEntries = [] } = useArusKasAll()
+  const arusKasEntries = (ov.arus_kas ?? []) as any[]
   const arusKas = (arusKasEntries as any[]) || []
   const akMasuk = arusKas.filter(e => e.kategori === 'uang_masuk').reduce((s, e) => s + (e.nominal || 0), 0)
   const akKeluar = arusKas.filter(e => e.kategori === 'uang_keluar').reduce((s, e) => s + (e.nominal || 0), 0)
@@ -449,7 +440,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const label = PERIOD_LABEL[period]
 
   // Refleksi (journal) — 3 poin terbaru dari SELURUH data (sumber: tab Refleksi /masalah, tidak dibatasi periode)
-  const { data: refleksiEntries = [] } = useMasalahLogAll()
+  const refleksiEntries = (ov.masalah ?? []) as any[]
   const refleksiList = (refleksiEntries as any[])
     .filter(e => e.masalah)
     .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''))
