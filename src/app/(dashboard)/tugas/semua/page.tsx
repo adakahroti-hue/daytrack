@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, memo } from 'react'
 import { format, isToday, isWithinInterval, startOfWeek, endOfWeek, isBefore, startOfDay, differenceInDays } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Plus, Edit, Trash2, Clock, Calendar, Play, Check, CheckCircle2, MoreHorizontal, Flag, Target, AlertTriangle, Layers, Lightbulb } from 'lucide-react'
+import { Plus, Edit, Trash2, Clock, Calendar, Play, Check, CheckCircle2, MoreHorizontal, Flag, Target, AlertTriangle, Layers } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -108,7 +108,6 @@ const TaskCard = memo(({
   onEdit,
   onDelete,
   onStatusChange,
-  onMoveToIde,
   selectionMode,
   selected,
   onToggleSelect,
@@ -118,7 +117,6 @@ const TaskCard = memo(({
   onEdit: (task: Task) => void
   onDelete: (id: string) => void
   onStatusChange: (id: string, status: Task['status']) => void
-  onMoveToIde?: (id: string) => void
   selectionMode?: boolean
   selected?: boolean
   onToggleSelect?: (id: string) => void
@@ -223,13 +221,6 @@ const TaskCard = memo(({
                 inset={false}
               >
                 <Layers className="h-4 w-4" />Penanda Paket
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onMoveToIde?.(task.id)}
-                className="flex items-center gap-2 text-violet-700 dark:text-violet-400 focus:text-violet-700 dark:focus:text-violet-400"
-                inset={false}
-              >
-                <Lightbulb className="h-4 w-4" />Pindahkan ke Bank Ide
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -445,11 +436,6 @@ function SemuaPageClient() {
 
   const handleStatusChange = (id: string, status: Task['status']) => {
     toggleTaskStatus.mutate({ id, status })
-  }
-
-  // Pindahkan tugas ke Bank Ide: ubah status -> 'ide' (lepas dari jadwal/aksi)
-  const handleMoveToIde = (id: string) => {
-    toggleTaskStatus.mutate({ id, status: 'ide' })
   }
 
   const toggleSelect = (id: string) => {
@@ -786,7 +772,6 @@ function SemuaPageClient() {
                       onEdit={handleEdit}
                       onDelete={handleDelete}
                       onStatusChange={handleStatusChange}
-                      onMoveToIde={handleMoveToIde}
                       selectionMode={selectionMode || groupMode === 'lambat'}
                       selected={selectedIds.has(task.id)}
                       onToggleSelect={toggleSelect}
