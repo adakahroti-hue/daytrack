@@ -7,9 +7,10 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { TaskForm } from '@/components/tasks/TaskForm'
-import { TaskCard, type TaskCardTask, type TaskCardStatus } from '@/components/tasks/TaskCard'
-import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus } from '@/hooks/useTasks'
+import { TaskForm } from "@/components/tasks/TaskForm"
+import { TaskCard, type TaskCardTask } from "@/components/tasks/TaskCard"
+import { IdeaCard } from "@/components/bank-ide/IdeaCard"
+import { useTasks, useCreateTask, useUpdateTask, useDeleteTask } from '@/hooks/useTasks'
 import { useTasksRealtime } from '@/hooks/useRealtime'
 
 type Task = TaskCardTask
@@ -18,7 +19,7 @@ type TaskFormData = {
   tanggal?: string
   estimasi_menit: number
   prioritas: 'p1' | 'p2' | 'p3' | 'p4'
-  status: TaskCardStatus
+  status: Task['status']
 }
 
 type EditingTask = TaskFormData & { id: string }
@@ -38,7 +39,6 @@ function BankIdePageClient() {
   const createTask = useCreateTask()
   const updateTask = useUpdateTask()
   const deleteTask = useDeleteTask()
-  const toggleTaskStatus = useToggleTaskStatus()
 
   const handleEdit = (task: Task) => {
     setEditingIde({ id: task.id, nama: task.nama })
@@ -140,14 +140,12 @@ function BankIdePageClient() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {ideTasks.map((task) => (
-            <TaskCard
+            <IdeaCard
               key={task.id}
               task={task}
-              variant="ide"
               onEdit={handleEdit}
               onDelete={handleDelete}
-              onStatusChange={(id, status) => toggleTaskStatus.mutate({ id, status })}
-              onPromoteIde={handlePromoteIde}
+              onPromote={handlePromoteIde}
             />
           ))}
         </div>
