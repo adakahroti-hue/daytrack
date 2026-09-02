@@ -4,6 +4,7 @@ import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, 
 import { type OverviewPeriod } from '@/components/overview/FocusTodaySection'
 import { RoutineTodaySection } from '@/components/overview/RoutineTodaySection'
 import { useHeaderControls, getShotRange } from '@/components/layout/HeaderControls'
+import { PengingatNotif } from '@/components/pengingat/PengingatNotif'
 
 // Revisi batch 18: kartu "Tugas" digabung ke grid Rutinitas (tema hitam-putih).
 // Revisi batch 26: hapus ReflectionSection (card Mental duplikat di mingguan/bulanan/tahunan) —
@@ -45,6 +46,7 @@ export default function OverviewPage() {
 
   return (
     <div className="space-y-3">
+      <PengingatNotif />
       <RoutineTodaySection startStr={startStr} endStr={endStr} metricEndStr={metricEndStr} period={summaryPeriod} />
     </div>
   )
