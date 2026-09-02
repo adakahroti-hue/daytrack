@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, Mosque, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, ScanSearch } from 'lucide-react'
+import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, Mosque, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, ScanSearch, Bell } from 'lucide-react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'

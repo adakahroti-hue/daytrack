@@ -26,6 +26,7 @@ import {
   LayoutDashboard,
   Calendar,
   CalendarDays,
+  Bell,
   Mosque,
   Sunrise,
   BookOpen,
@@ -114,6 +115,7 @@ const navigation: NavSection[] = [
       { title: 'Hari Ini', href: '/tugas/hari-ini', icon: Clock },
       { title: 'Semua', href: '/tugas/semua', icon: CalendarDays },
       { title: 'Selesai', href: '/tugas/selesai', icon: CheckCircle2 },
+      { title: 'Pengingat', href: '/tugas/pengingat', icon: Bell },
     ],
   },
   {
