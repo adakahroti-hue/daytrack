@@ -10,6 +10,7 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useHeaderControls, formatDateForPeriod, formatIndonesianDate, formatIbadahShotLabel, GROUP_MODES } from './HeaderControls'
 import { useTasks } from '@/hooks/useTasks'
+import { useOverdueCount } from '@/hooks/useOverdueCount'
 import { usePmoLogRange } from '@/hooks/usePmoLogs'
 import { getEstimasiText } from '@/lib/utils'
 
@@ -59,12 +60,9 @@ function HariIniMissionSentence() {
 // Inline stats for Semua tab - Total (excluding completed), Terlambat, Proses
 import { isBefore, startOfDay } from 'date-fns'
 // Revisi batch 19: jumlah tugas terlambat — tampil di belakang teks filter Lambat
+// Diperbarui: pakai RPC get_overdue_count (akurat dari DB, tidak bergantung limit/cache useTasks)
 function SemuaOverdueCount() {
-  const { data: allTasks = [] } = useTasks()
-  const overdue = allTasks.filter((t: any) => {
-    const taskDate = t.tanggal ? new Date(t.tanggal) : null
-    return taskDate ? (isBefore(taskDate, startOfDay(new Date())) && t.status !== 'selesai') : false
-  }).length
+  const { data: overdue = 0 } = useOverdueCount()
   if (overdue === 0) return null
   return (
     <span className="ml-1 rounded-full bg-red-500 text-white text-[9px] leading-none px-1 py-0.5 font-bold">
