@@ -62,8 +62,7 @@ import {
   HeartHandshake,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { useTasks } from '@/hooks/useTasks'
-import { format } from 'date-fns'
+import { useTaskCounts } from '@/hooks/useTaskCounts'
 
 interface SidebarProps {
   mobileOpen: boolean
@@ -194,17 +193,12 @@ export function Sidebar({
   const [collapsedSections, setCollapsedSections] = useState<string[]>([])
 
   // Rev 8: hitung jumlah tugas per tab untuk badge di sidebar
-  const today = format(new Date(), 'yyyy-MM-dd')
-  // Pakai query yang SAMA PERSIS dengan masing-masing tab agar badge akurat:
-  // - Hari Ini  -> useTasks(todayStr) (sama dengan tab hari-ini), EXCLUDE yang selesai
-  // - Semua     -> useTasks(undefined) filter belum & tanggal != today
-  // - Selesai   -> useTasks(undefined) filter selesai
-  const { data: todayTasks = [] } = useTasks(today) // -> queryKey ['tugas', today] (identik tab Hari Ini)
-  const { data: allTasks = [] } = useTasks(undefined)
+  // Pakai RPC get_task_counts (1 query ringan) — tidak download 1000 row di layout
+  const { data: tc = { hari_ini: 0, semua: 0, selesai: 0 } } = useTaskCounts()
   const taskCounts: Record<string, number> = {
-    '/tugas/hari-ini': todayTasks.filter(t => t.status !== 'selesai').length,
-    '/tugas/semua': allTasks.filter(t => t.status === 'belum' && t.tanggal != today).length,
-    '/tugas/selesai': allTasks.filter(t => t.status === 'selesai').length,
+    '/tugas/hari-ini': tc.hari_ini,
+    '/tugas/semua': tc.semua,
+    '/tugas/selesai': tc.selesai,
   }
 
   const toggleSection = (title: string) => {

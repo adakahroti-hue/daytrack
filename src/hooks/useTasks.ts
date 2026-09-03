@@ -26,9 +26,9 @@ async function fetchTasksDirect(date?: string, status?: string, limit?: number) 
 export function useTasks(date?: string, status?: string) {
   return useQuery({
     queryKey: ["tugas", date, status],
-    // Tanpa filter tanggal: ambil hingga 1000 task terbaru (cukup untuk badge sidebar).
+    // Tanpa filter tanggal: ambil hingga 300 task terbaru (cukup untuk UI tab Tugas).
     // Dengan filter tanggal: tanpa limit (ambil semua task hari itu).
-    queryFn: () => fetchTasksDirect(date, status, date ? undefined : 1000),
+    queryFn: () => fetchTasksDirect(date, status, date ? undefined : 300),
     staleTime: 60 * 1000, // 1 menit — hindari refetch berulang saat pindah tab
     refetchOnWindowFocus: false,
     placeholderData: (previousData) => previousData, // keep previous data saat refetch
