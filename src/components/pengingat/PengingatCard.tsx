@@ -44,7 +44,7 @@ function PengingatCardComponent({
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 flex-1 min-w-0 relative z-20">
             <Bell className="h-4 w-4 shrink-0 text-slate-400" />
-            <h3 className="font-medium text-base leading-tight flex-1 truncate">{pengingat.nama}</h3>
+            <h3 className="font-medium text-base leading-tight flex-1 break-words">{pengingat.nama}</h3>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
