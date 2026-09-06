@@ -75,7 +75,7 @@ export default function JejakWaktuPage() {
   const elapsed = running ? Date.now() - new Date(running.started_at).getTime() : 0
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4 p-4">
+    <div className="mx-auto max-w-4xl space-y-4 p-4">
       <div>
         <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
           <Timer className="h-5 w-5 text-slate-700" /> Waktu
