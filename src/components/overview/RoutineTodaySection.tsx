@@ -579,8 +579,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         <RoutineCard tint="bg-white border-slate-200" icon={Mosque} iconColor="text-emerald-500" title="Ibadah" hideIcon>
           <div className="mt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                <XyPie value={sholatCount} target={sholatTarget} color="#111827" percentLabel percentOnSlice />
+              <div className="min-w-0 lg:flex-1">
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -639,8 +638,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           )}
           <div className="mt-4 pt-4 border-t border-slate-100">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                <XyPie value={sunnahCount} target={sunnahTarget} color="#111827" percentLabel percentOnSlice />
+              <div className="min-w-0 lg:flex-1">
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -682,8 +680,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           </div>
           <div className="mt-4 pt-4 border-t border-slate-100">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                <XyPie value={quranCount} target={quranTarget} color="#111827" percentLabel percentOnSlice />
+              <div className="min-w-0 lg:flex-1">
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
