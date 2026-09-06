@@ -78,7 +78,7 @@ export default function JejakWaktuPage() {
     <div className="mx-auto max-w-2xl space-y-4 p-4">
       <div>
         <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-          <Timer className="h-5 w-5 text-slate-700" /> Jejak Waktu
+          <Timer className="h-5 w-5 text-slate-700" /> Waktu
         </h1>
         <p className="text-sm text-slate-500">Lacak aktivitas yang sedang kamu lakukan</p>
       </div>

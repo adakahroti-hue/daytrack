@@ -122,7 +122,7 @@ const navigation: NavSection[] = [
     title: 'Waktu',
     icon: Clock,
     items: [
-      { title: 'Jejak Waktu', href: '/jejak-waktu', icon: Timer },
+      { title: 'Waktu', href: '/jejak-waktu', icon: Timer },
     ],
   },
   {
