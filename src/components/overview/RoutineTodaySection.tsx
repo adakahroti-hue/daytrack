@@ -743,8 +743,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         <RoutineCard tint="bg-white border-slate-200" icon={Shield} iconColor="text-sky-500" title="Kesehatan" hideIcon>
           <div className="mt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <div className="min-w-0 lg:flex-1 flex items-center gap-3">
-                <XyPie value={gelas} target={targetGelasPeriod} color="#111827" percentLabel percentOnSlice />
+              <div className="min-w-0 lg:flex-1">
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
