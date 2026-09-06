@@ -372,6 +372,15 @@ function SelesaiPageClient() {
     setSelectedIds(prev => (checked ? [...prev, id] : prev.filter(i => i !== id)))
   }
 
+  // Pilih Semua / Batal Pilih Semua (toggle) untuk semua task selesai yang terlihat
+  const handleSelectAll = () => {
+    setSelectedIds(prev => {
+      const allIds = selesaiTasks.map(t => t.id)
+      const allSelected = allIds.length > 0 && allIds.every(id => prev.includes(id))
+      return allSelected ? [] : allIds
+    })
+  }
+
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return
     if (!confirm(`Yakin ingin menghapus ${selectedIds.length} tugas?`)) return
@@ -590,6 +599,17 @@ function SelesaiPageClient() {
                         <CheckSquare className="h-3.5 w-3.5" />
                         <span className="hidden sm:inline">{isSelectionMode ? 'Batal Pilih' : 'Pilih'}</span>
                       </Button>
+                      {isSelectionMode && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleSelectAll}
+                          className="gap-1.5 text-slate-700 border-slate-300 hover:bg-slate-50 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-800"
+                        >
+                          <span className="hidden sm:inline">Pilih Semua</span>
+                          <span className="sm:hidden">Semua</span>
+                        </Button>
+                      )}
                     </div>
                   )}
                 </div>
