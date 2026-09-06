@@ -75,7 +75,7 @@ export default function JejakWaktuPage() {
   const elapsed = running ? now - new Date(running.started_at).getTime() : 0
 
   return (
-    <div className="mx-auto max-w-2xl space-y-8 p-4 sm:p-6">
+    <div className="mx-auto max-w-3xl space-y-8 p-4 sm:p-6">
       {/* HEADER */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2.5">
