@@ -461,30 +461,29 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         {/* Kartu Tugas — baris atas (sebaris dengan Refleksi saat Capture) */}
         {/* Keuangan — sebaris dengan Tugas (posisi kiri) */}
         <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700" hideIcon>
-          <div className="mt-3 flex items-start gap-4">
+          <div className="mt-3 flex items-stretch gap-4">
             {/* Saldo — kiri, besar */}
-            <div className="shrink-0 pr-6 border-r border-slate-100">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Saldo</p>
-              <p className="mt-1 text-xl font-bold text-slate-900 tabular-nums leading-none">{formatRupiah(akSaldo)}</p>
-              <p className="text-[11px] text-slate-400 mt-1">masuk − keluar</p>
+            <div className="shrink-0 pr-4 border-r border-slate-100 flex flex-col justify-center">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Saldo</p>
+              <p className="mt-0.5 text-lg font-bold text-slate-900 tabular-nums leading-none">{formatRupiah(akSaldo)}</p>
             </div>
-            {/* 4 nilai compact di kanan */}
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2 flex-1 min-w-0">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Pokok</p>
-                <p className="text-sm font-bold text-emerald-600 tabular-nums">{formatRupiah(akKebutuhanSisa)}</p>
+            {/* 4 nilai compact di kanan — 1 baris */}
+            <div className="grid grid-cols-4 gap-x-3 gap-y-0 flex-1 min-w-0">
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 truncate">Pokok</p>
+                <p className="text-sm font-bold text-emerald-600 tabular-nums truncate">{formatRupiah(akKebutuhanSisa)}</p>
               </div>
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Self Reward</p>
-                <p className="text-sm font-bold text-orange-500 tabular-nums">{formatRupiah(akSelfRewardSisa)}</p>
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 truncate">Reward</p>
+                <p className="text-sm font-bold text-orange-500 tabular-nums truncate">{formatRupiah(akSelfRewardSisa)}</p>
               </div>
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Tabung</p>
-                <p className="text-sm font-bold text-blue-600 tabular-nums">{formatRupiah(akTabungSisa)}</p>
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 truncate">Tabung</p>
+                <p className="text-sm font-bold text-blue-600 tabular-nums truncate">{formatRupiah(akTabungSisa)}</p>
               </div>
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Sedekah</p>
-                <p className="text-sm font-bold text-purple-600 tabular-nums">{formatRupiah(akSedekahSisa)}</p>
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 truncate">Sedekah</p>
+                <p className="text-sm font-bold text-purple-600 tabular-nums truncate">{formatRupiah(akSedekahSisa)}</p>
               </div>
             </div>
           </div>
