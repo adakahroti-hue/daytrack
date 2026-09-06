@@ -43,6 +43,7 @@ import {
   PanelLeft,
   PersonStanding,
   Clock,
+  Timer,
   LogOut,
   Loader2,
   User,
@@ -115,6 +116,13 @@ const navigation: NavSection[] = [
       { title: 'Semua', href: '/tugas/semua', icon: CalendarDays },
       { title: 'Selesai', href: '/tugas/selesai', icon: CheckCircle2 },
       { title: 'Pengingat', href: '/tugas/pengingat', icon: Bell },
+    ],
+  },
+  {
+    title: 'Waktu',
+    icon: Clock,
+    items: [
+      { title: 'Jejak Waktu', href: '/jejak-waktu', icon: Timer },
     ],
   },
   {
