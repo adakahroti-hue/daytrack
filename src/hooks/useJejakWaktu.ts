@@ -5,6 +5,7 @@ import {
   getJejakWaktuToday,
   startActivity,
   completeActivity,
+  deleteActivity,
 } from "@/app/actions/jejak-waktu"
 
 export function useJejakWaktu() {
@@ -27,5 +28,10 @@ export function useJejakWaktu() {
     onSuccess: invalidate,
   })
 
-  return { ...data, start, complete }
+  const remove = useMutation({
+    mutationFn: (id: string) => deleteActivity(id),
+    onSuccess: invalidate,
+  })
+
+  return { ...data, start, complete, remove }
 }

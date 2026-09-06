@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { Play, Square, Timer } from "lucide-react"
+import { Play, Square, Timer, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useJejakWaktu } from "@/hooks/useJejakWaktu"
@@ -72,6 +72,14 @@ export default function JejakWaktuPage() {
     }
   }
 
+  const handleDelete = async (id: string) => {
+    try {
+      await remove.mutateAsync(id)
+    } catch (e: any) {
+      setError(e?.message || "Gagal menghapus aktivitas.")
+    }
+  }
+
   const elapsed = running ? now - new Date(running.started_at).getTime() : 0
 
   return (
@@ -130,6 +138,14 @@ export default function JejakWaktuPage() {
             >
               <Square className="h-4 w-4" /> Selesai
             </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleDelete(running.id)}
+              disabled={remove.isPending}
+              className="gap-1.5 border-slate-300 text-slate-500 hover:text-red-600 hover:border-red-300"
+            >
+              <Trash2 className="h-4 w-4" /> Hapus
+            </Button>
           </CardContent>
         </Card>
       )}
@@ -170,10 +186,18 @@ export default function JejakWaktuPage() {
                       </p>
                     )}
                   </div>
-                  <div className="shrink-0 text-right">
+                  <div className="shrink-0 text-right flex items-center gap-2">
                     <p className="text-sm font-bold tabular-nums text-slate-900">
                       {isRun ? formatElapsed(now - new Date(a.started_at).getTime()) : formatDuration(a.duration_seconds)}
                     </p>
+                    <button
+                      onClick={() => handleDelete(a.id)}
+                      disabled={remove.isPending}
+                      aria-label="Hapus aktivitas"
+                      className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
               )
