@@ -443,7 +443,11 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const refleksiEntries = (ov.masalah ?? []) as any[]
   const refleksiList = (refleksiEntries as any[])
     .filter(e => e.masalah)
-    .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''))
+    .sort((a, b) => {
+      const da = a.created_at ? new Date(a.created_at).getTime() : 0
+      const db = b.created_at ? new Date(b.created_at).getTime() : 0
+      return db - da
+    })
     .map(e => ({ id: e.id, masalah: e.masalah as string }))
 
   return (
