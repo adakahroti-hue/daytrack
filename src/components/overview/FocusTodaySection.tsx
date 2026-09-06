@@ -168,9 +168,9 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
     return () => clearInterval(t)
   }, [featuredId, featuredPaused])
 
-  const isShot = period === 'shot'
-  // Filter shot: jangan sertakan tugas yang sedang diproses
-  const displayTasks = isShot ? tasks.filter(t => t.status !== 'proses') : tasks
+  const isCapture = period === 'shot' || period === 'mingguan' || period === 'bulanan' || period === 'tahunan'
+  // Filter capture: jangan sertakan tugas yang sedang diproses
+  const displayTasks = isCapture ? tasks.filter(t => t.status !== 'proses') : tasks
   const displayTotal = displayTasks.length
   const displaySelesai = displayTasks.filter(t => t.status === 'selesai').length
   const priorityCounts = PRIORITY_META.map(p => ({
@@ -193,8 +193,8 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
         </Link>
       </div>
 
-      {isShot ? (
-        /* ── Filter Shot: pie Keseluruhan vs Selesai + breakdown prioritas (tanpa tugas diproses) ── */
+      {isCapture ? (
+        /* ── Filter Capture/Mingguan/Bulanan/Tahunan: pie Keseluruhan vs Selesai + breakdown prioritas (tanpa tugas diproses) ── */
         <div className="mt-3 flex flex-col sm:flex-row sm:items-stretch sm:gap-4">
           {/* Kiri: Keseluruhan vs Selesai */}
           <div className="flex items-center gap-3 sm:flex-1">
