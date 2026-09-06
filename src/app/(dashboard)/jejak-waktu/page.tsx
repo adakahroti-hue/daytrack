@@ -35,7 +35,7 @@ function formatDuration(seconds: number | null): string {
 }
 
 export default function JejakWaktuPage() {
-  const { data: items = [], isLoading, start, complete } = useJejakWaktu()
+  const { data: items = [], isLoading, start, complete, remove } = useJejakWaktu()
   const [name, setName] = useState("")
   const [error, setError] = useState<string | null>(null)
 
