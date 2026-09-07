@@ -155,7 +155,9 @@ export default function AlquranPage() {
                   <p className="text-sm text-slate-800">{a.teksIndonesia}</p>
                   {a.tafsir?.[0]?.teks && (
                     <div className="border-t border-slate-100 pt-2">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-1">Tafsir</p>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600 mb-1">
+                        Pelajaran dari Ayat
+                      </p>
                       <p
                         className="text-sm text-slate-600 leading-relaxed"
                         dangerouslySetInnerHTML={{ __html: a.tafsir[0].teks }}
