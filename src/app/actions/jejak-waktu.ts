@@ -46,17 +46,36 @@ export type JejakWaktu = {
   updated_at: string
 }
 
-export async function getJejakWaktuToday(): Promise<JejakWaktu[]> {
+export type WaktuPeriod = "harian" | "mingguan" | "bulanan" | "tahunan"
+
+function startOfPeriod(period: WaktuPeriod): string {
+  const now = new Date()
+  if (period === "harian") {
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
+  }
+  if (period === "mingguan") {
+    const day = now.getDay() // 0=Minggu
+    const diff = (day + 6) % 7 // senin awal minggu
+    const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff)
+    return new Date(monday.getFullYear(), monday.getMonth(), monday.getDate()).toISOString()
+  }
+  if (period === "bulanan") {
+    return new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+  }
+  // tahunan
+  return new Date(now.getFullYear(), 0, 1).toISOString()
+}
+
+export async function getJejakWaktuByPeriod(period: WaktuPeriod = "harian"): Promise<JejakWaktu[]> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const today = new Date()
-  const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString()
+  const startPeriod = startOfPeriod(period)
   const { data } = await supabase
     .from("jejak_waktu")
     .select("id, user_id, name, started_at, ended_at, duration_seconds, status, created_at, updated_at")
     .eq("user_id", user.id)
-    .gte("started_at", startOfDay)
+    .gte("started_at", startPeriod)
     .order("started_at", { ascending: false })
   return (data || []) as JejakWaktu[]
 }

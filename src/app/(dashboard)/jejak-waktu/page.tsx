@@ -5,6 +5,7 @@ import { Play, Square, Timer, Trash2, RotateCcw, MoreVertical, Plus, ChevronRigh
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useJejakWaktu } from "@/hooks/useJejakWaktu"
+import type { WaktuPeriod } from "@/app/actions/jejak-waktu"
 import { cn, BRAND_COLORS } from "@/lib/utils"
 
 type Item = {
@@ -56,7 +57,8 @@ function fmtGap(ms: number): string {
 }
 
 export default function WaktuPage() {
-  const { data: items = [], isLoading, start, complete, remove, continue: continueMut } = useJejakWaktu()
+  const [period, setPeriod] = useState<WaktuPeriod>("harian")
+  const { data: items = [], isLoading, start, complete, remove, continue: continueMut } = useJejakWaktu(period)
   const [name, setName] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [showSuggest, setShowSuggest] = useState(false)
@@ -161,6 +163,29 @@ export default function WaktuPage() {
           <Timer className="h-6 w-6 text-slate-700" /> Waktu
         </h1>
         <p className="mt-1 text-sm text-slate-500">Lacak aktivitas yang sedang kamu lakukan.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {(
+            [
+              { key: "harian", label: "Harian" },
+              { key: "mingguan", label: "Mingguan" },
+              { key: "bulanan", label: "Bulanan" },
+              { key: "tahunan", label: "Tahunan" },
+            ] as { key: WaktuPeriod; label: string }[]
+          ).map((p) => (
+            <button
+              key={p.key}
+              onClick={() => setPeriod(p.key)}
+              className={cn(
+                "rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors",
+                period === p.key
+                  ? "border-slate-900 bg-slate-900 text-white"
+                  : "border-slate-200 text-slate-600 hover:bg-slate-50"
+              )}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* INPUT AKTIVITAS */}
