@@ -172,6 +172,7 @@ const navigation: NavSection[] = [
     title: 'Alat',
     icon: Wrench,
     items: [
+      { title: 'Alquran', href: '/alquran', icon: BookOpen },
       { title: 'Catatan', href: '/catatan', icon: StickyNote },
       { title: 'SWOT', href: '/swot', icon: ScanSearch },
       { title: 'Playlist', href: '/kesenangan', icon: ListMusic },
