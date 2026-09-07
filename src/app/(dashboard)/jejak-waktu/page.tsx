@@ -128,13 +128,7 @@ function DonutChart({ segments, size = 180 }: { segments: DonutSegment[]; size?:
                 </text>
               )
           )}
-        <text x={cx} y={cy - 4} textAnchor="middle" className="fill-slate-900" style={{ fontSize: 18, fontWeight: 700 }}>
-          {segments.length}
-        </text>
-        <text x={cx} y={cy + 14} textAnchor="middle" className="fill-slate-400" style={{ fontSize: 10 }}>
-          kegiatan
-        </text>
-      </svg>
+        </svg>
       <div className="flex-1 min-w-0 space-y-1.5">
         {segments.map((s, i) => (
           <div key={i} className="flex items-center justify-between gap-2 text-sm">
