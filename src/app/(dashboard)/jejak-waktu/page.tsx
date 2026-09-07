@@ -109,18 +109,25 @@ export default function WaktuPage() {
     return out
   }, [sorted])
 
-  // Total waktu hari ini (akumulasi completed + running saat ini)
-  const totalSeconds = useMemo(() => {
-    let total = 0
+  // Total waktu per nama kegiatan (akumulasi completed + running saat ini)
+  const totalsByName = useMemo(() => {
+    const map = new Map<string, number>()
     for (const it of sorted) {
+      let secs = 0
       if (it.status === "completed") {
-        total += it.duration_seconds || 0
+        secs = it.duration_seconds || 0
       } else if (it.status === "running") {
-        total += Math.max(0, Math.round((now - new Date(it.started_at).getTime()) / 1000))
+        secs = Math.max(0, Math.round((now - new Date(it.started_at).getTime()) / 1000))
       }
+      if (secs <= 0) continue
+      map.set(it.name, (map.get(it.name) || 0) + secs)
     }
-    return total
+    return Array.from(map.entries())
+      .map(([name, secs]) => ({ name, secs }))
+      .sort((a, b) => b.secs - a.secs)
   }, [sorted, now])
+
+  const grandTotal = totalsByName.reduce((s, x) => s + x.secs, 0)
 
   const elapsed = running ? now - new Date(running.started_at).getTime() : 0
 
@@ -402,12 +409,26 @@ export default function WaktuPage() {
       {/* RINGKASAN WAKTU */}
       <div>
         <button className="flex items-center gap-1 text-sm font-semibold text-slate-700 hover:text-slate-900 mb-3">
-          Total Waktu Hari Ini <ChevronRight className="h-4 w-4" />
+          Ringkasan Waktu per Kegiatan <ChevronRight className="h-4 w-4" />
         </button>
         <Card className="rounded-xl border border-slate-200 shadow-none">
-          <CardContent className="pt-5 pb-5 text-center">
-            <p className="text-xs text-slate-400">Total aktivitas tercatat hari ini</p>
-            <p className="mt-1 text-2xl font-bold tabular-nums text-slate-900">{formatDuration(totalSeconds)}</p>
+          <CardContent className="pt-5 pb-5">
+            {totalsByName.length === 0 ? (
+              <p className="text-sm text-slate-400 text-center">Belum ada aktivitas tercatat.</p>
+            ) : (
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <span className="text-xs font-semibold text-slate-500">Total Keseluruhan</span>
+                  <span className="text-sm font-bold tabular-nums text-slate-900">{formatDuration(grandTotal)}</span>
+                </div>
+                {totalsByName.map((x) => (
+                  <div key={x.name} className="flex items-center justify-between gap-3">
+                    <span className="text-sm text-slate-700 truncate">{x.name}</span>
+                    <span className="shrink-0 text-sm font-semibold tabular-nums text-slate-900">{formatDuration(x.secs)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
