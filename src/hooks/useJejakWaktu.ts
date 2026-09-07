@@ -6,6 +6,7 @@ import {
   startActivity,
   completeActivity,
   deleteActivity,
+  continueActivity,
 } from "@/app/actions/jejak-waktu"
 
 export function useJejakWaktu() {
@@ -33,5 +34,10 @@ export function useJejakWaktu() {
     onSuccess: invalidate,
   })
 
-  return { ...data, start, complete, remove }
+  const continueMut = useMutation({
+    mutationFn: (name: string) => continueActivity({ name }),
+    onSuccess: invalidate,
+  })
+
+  return { ...data, start, complete, remove, continue: continueMut }
 }

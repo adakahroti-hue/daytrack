@@ -60,6 +60,32 @@ export async function startActivity(input: unknown) {
   revalidatePath("/jejak-waktu")
 }
 
+// Lanjutkan tugas: buat aktivitas baru dengan nama sama (record baru / posisi beda)
+export async function continueActivity(input: unknown) {
+  const validated = startSchema.parse(input)
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  // Hanya boleh 1 timer aktif
+  const { data: running } = await supabase
+    .from("jejak_waktu")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("status", "running")
+    .limit(1)
+
+  if (running && running.length > 0) {
+    throw new Error("Masih ada aktivitas yang berjalan. Selesaikan dulu sebelum melanjutkan.")
+  }
+
+  const { error } = await supabase
+    .from("jejak_waktu")
+    .insert({ user_id: user.id, name: validated.name, status: "running" })
+  if (error) throw new Error(error.message)
+  revalidatePath("/jejak-waktu")
+}
+
 export async function completeActivity(id: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { Play, Square, Timer, Trash2 } from "lucide-react"
+import { Play, Square, Timer, Trash2, RotateCcw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useJejakWaktu } from "@/hooks/useJejakWaktu"
@@ -35,7 +35,7 @@ function formatDuration(seconds: number | null): string {
 }
 
 export default function JejakWaktuPage() {
-  const { data: items = [], isLoading, start, complete, remove } = useJejakWaktu()
+  const { data: items = [], isLoading, start, complete, remove, continue: continueMut } = useJejakWaktu()
   const [name, setName] = useState("")
   const [error, setError] = useState<string | null>(null)
 
@@ -187,6 +187,15 @@ export default function JejakWaktuPage() {
                     )}
                   </div>
                   <div className="shrink-0 text-right flex items-center gap-2">
+                    <button
+                      onClick={() => continueMut.mutate(a.name)}
+                      disabled={continueMut.isPending}
+                      aria-label="Lanjutkan tugas"
+                      title="Lanjutkan dengan nama sama"
+                      className="p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                    </button>
                     <p className="text-sm font-bold tabular-nums text-slate-900">
                       {isRun ? formatElapsed(now - new Date(a.started_at).getTime()) : formatDuration(a.duration_seconds)}
                     </p>
