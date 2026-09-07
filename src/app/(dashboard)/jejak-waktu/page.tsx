@@ -245,7 +245,7 @@ export default function WaktuPage() {
           </h1>
           <p className="mt-1 text-sm text-slate-500">Lacak aktivitas yang sedang kamu lakukan.</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 justify-end">
           {(
             [
               { key: "harian", label: "Harian" },
