@@ -58,7 +58,7 @@ function fmtGap(ms: number): string {
 
 // Palette warna untuk slice pie (style Daytrack: soft & kontras)
 const PIE_COLORS = [
-  "#0F172A", // slate-900 navy
+  "#3b82f6", // blue (ganti navy hitam)
   "#0ea5e9", // sky
   "#10b981", // emerald
   "#f59e0b", // amber
