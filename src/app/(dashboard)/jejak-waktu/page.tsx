@@ -259,14 +259,14 @@ export default function WaktuPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-8 p-3 sm:px-4 sm:py-5">
       {/* HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-        <div>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="min-w-0">
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2.5">
-            <Timer className="h-6 w-6 text-slate-700" /> Waktu
+            <Timer className="h-6 w-6 text-slate-700 shrink-0" /> Waktu
           </h1>
           <p className="mt-1 text-sm text-slate-500">Lacak aktivitas yang sedang kamu lakukan.</p>
         </div>
-        <div className="flex flex-wrap gap-2 justify-end">
+        <div className="flex flex-wrap gap-2 justify-end shrink-0">
           {(
             [
               { key: "harian", label: "Harian" },
