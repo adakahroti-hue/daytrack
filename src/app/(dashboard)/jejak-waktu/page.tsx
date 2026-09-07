@@ -76,39 +76,37 @@ function DonutChart({ segments, size = 180 }: { segments: DonutSegment[]; size?:
   const total = segments.reduce((s, x) => s + x.value, 0)
   const cx = size / 2
   const cy = size / 2
-  const r = size / 2 - 18
-  const stroke = 22
-  const C = 2 * Math.PI * r
-  let offset = 0
+  const r = size / 2 - 2
+
+  // Buat path irisan pie (terisi penuh, tanpa lubang)
+  const slices = (() => {
+    if (total === 0) return []
+    let acc = 0
+    return segments.map((s, i) => {
+      const frac = s.value / total
+      const a0 = acc * 2 * Math.PI - Math.PI / 2
+      acc += frac
+      const a1 = acc * 2 * Math.PI - Math.PI / 2
+      const x0 = cx + r * Math.cos(a0)
+      const y0 = cy + r * Math.sin(a0)
+      const x1 = cx + r * Math.cos(a1)
+      const y1 = cy + r * Math.sin(a1)
+      const largeArc = frac > 0.5 ? 1 : 0
+      const d = `M ${cx} ${cy} L ${x0.toFixed(2)} ${y0.toFixed(2)} A ${r} ${r} 0 ${largeArc} 1 ${x1.toFixed(2)} ${y1.toFixed(2)} Z`
+      return { d, color: s.color, key: i }
+    })
+  })()
+
   return (
     <div className="flex items-center gap-4">
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0">
-        <g transform={`rotate(-90 ${cx} ${cy})`}>
-          {total === 0 ? (
-            <circle cx={cx} cy={cy} r={r} fill="none" stroke="#e2e8f0" strokeWidth={stroke} />
-          ) : (
-            segments.map((s, i) => {
-              const frac = s.value / total
-              const len = frac * C
-              const seg = (
-                <circle
-                  key={i}
-                  cx={cx}
-                  cy={cy}
-                  r={r}
-                  fill="none"
-                  stroke={s.color}
-                  strokeWidth={stroke}
-                  strokeDasharray={`${len} ${C - len}`}
-                  strokeDashoffset={-offset}
-                  className="transition-all duration-500"
-                />
-              )
-              offset += len
-              return seg
-            })
-          )}
-        </g>
+        {total === 0 ? (
+          <circle cx={cx} cy={cy} r={r} fill="#e2e8f0" />
+        ) : (
+          slices.map((s) => (
+            <path key={s.key} d={s.d} fill={s.color} className="transition-all duration-500" />
+          ))
+        )}
         <text x={cx} y={cy - 4} textAnchor="middle" className="fill-slate-900" style={{ fontSize: 18, fontWeight: 700 }}>
           {segments.length}
         </text>
