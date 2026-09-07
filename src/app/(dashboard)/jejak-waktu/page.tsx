@@ -257,7 +257,7 @@ export default function WaktuPage() {
                 merged.push({ type: "gap", g: gaps[gi] })
                 gi++
               }
-              return merged.map((row, idx) =>
+              return merged.reverse().map((row, idx) =>
                 row.type === "gap" ? (
                   <div
                     key={row.g.id}
