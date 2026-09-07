@@ -194,48 +194,6 @@ export default function WaktuPage() {
           <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2.5">
             Nama kegiatan
           </label>
-          <div className="relative flex-1">
-            <input
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value)
-                setShowSuggest(true)
-              }}
-              onFocus={() => setShowSuggest(true)}
-              onBlur={() => setTimeout(() => setShowSuggest(false), 150)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  if (showSuggest && suggestions.length > 0) {
-                    setName(suggestions[0])
-                    setShowSuggest(false)
-                  } else {
-                    handleStart()
-                  }
-                }
-                if (e.key === "Escape") setShowSuggest(false)
-              }}
-              placeholder="Apa yang sedang kamu lakukan?"
-              className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-slate-500 transition-colors"
-            />
-            {showSuggest && suggestions.length > 0 && (
-              <div className="absolute z-10 left-0 right-0 mt-1 rounded-lg border border-slate-200 bg-white shadow-md overflow-hidden">
-                {suggestions.map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onMouseDown={(e) => {
-                      e.preventDefault()
-                      setName(s)
-                      setShowSuggest(false)
-                    }}
-                    className="block w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <input
