@@ -56,6 +56,81 @@ function fmtGap(ms: number): string {
   return `${m}m`
 }
 
+// Palette warna untuk slice pie (style Daytrack: soft & kontras)
+const PIE_COLORS = [
+  "#0F172A", // slate-900 navy
+  "#0ea5e9", // sky
+  "#10b981", // emerald
+  "#f59e0b", // amber
+  "#8b5cf6", // violet
+  "#ec4899", // pink
+  "#14b8a6", // teal
+  "#ef4444", // red
+  "#6366f1", // indigo
+  "#84cc16", // lime
+]
+
+type DonutSegment = { label: string; value: number; color: string }
+
+function DonutChart({ segments, size = 180 }: { segments: DonutSegment[]; size?: number }) {
+  const total = segments.reduce((s, x) => s + x.value, 0)
+  const cx = size / 2
+  const cy = size / 2
+  const r = size / 2 - 18
+  const stroke = 22
+  const C = 2 * Math.PI * r
+  let offset = 0
+  return (
+    <div className="flex items-center gap-4">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0">
+        <g transform={`rotate(-90 ${cx} ${cy})`}>
+          {total === 0 ? (
+            <circle cx={cx} cy={cy} r={r} fill="none" stroke="#e2e8f0" strokeWidth={stroke} />
+          ) : (
+            segments.map((s, i) => {
+              const frac = s.value / total
+              const len = frac * C
+              const seg = (
+                <circle
+                  key={i}
+                  cx={cx}
+                  cy={cy}
+                  r={r}
+                  fill="none"
+                  stroke={s.color}
+                  strokeWidth={stroke}
+                  strokeDasharray={`${len} ${C - len}`}
+                  strokeDashoffset={-offset}
+                  className="transition-all duration-500"
+                />
+              )
+              offset += len
+              return seg
+            })
+          )}
+        </g>
+        <text x={cx} y={cy - 4} textAnchor="middle" className="fill-slate-900" style={{ fontSize: 18, fontWeight: 700 }}>
+          {segments.length}
+        </text>
+        <text x={cx} y={cy + 14} textAnchor="middle" className="fill-slate-400" style={{ fontSize: 10 }}>
+          kegiatan
+        </text>
+      </svg>
+      <div className="flex-1 min-w-0 space-y-1.5">
+        {segments.map((s, i) => (
+          <div key={i} className="flex items-center justify-between gap-2 text-sm">
+            <span className="flex items-center gap-2 min-w-0">
+              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: s.color }} />
+              <span className="text-slate-700 truncate">{s.label}</span>
+            </span>
+            <span className="shrink-0 font-semibold tabular-nums text-slate-900">{formatDuration(s.value)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function WaktuPage() {
   const [period, setPeriod] = useState<WaktuPeriod>("harian")
   const { data: items = [], isLoading, start, complete, remove, continue: continueMut } = useJejakWaktu(period)
@@ -416,18 +491,13 @@ export default function WaktuPage() {
             {totalsByName.length === 0 ? (
               <p className="text-sm text-slate-400 text-center">Belum ada aktivitas tercatat.</p>
             ) : (
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                  <span className="text-xs font-semibold text-slate-500">Total Keseluruhan</span>
-                  <span className="text-sm font-bold tabular-nums text-slate-900">{formatDuration(grandTotal)}</span>
-                </div>
-                {totalsByName.map((x) => (
-                  <div key={x.name} className="flex items-center justify-between gap-3">
-                    <span className="text-sm text-slate-700 truncate">{x.name}</span>
-                    <span className="shrink-0 text-sm font-semibold tabular-nums text-slate-900">{formatDuration(x.secs)}</span>
-                  </div>
-                ))}
-              </div>
+              <DonutChart
+                segments={totalsByName.slice(0, 10).map((x, i) => ({
+                  label: x.name,
+                  value: x.secs,
+                  color: PIE_COLORS[i % PIE_COLORS.length],
+                }))}
+              />
             )}
           </CardContent>
         </Card>
