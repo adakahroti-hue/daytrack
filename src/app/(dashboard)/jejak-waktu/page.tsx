@@ -121,7 +121,7 @@ function DonutChart({ segments, size = 180 }: { segments: DonutSegment[]; size?:
           <div key={i} className="flex items-center justify-between gap-2 text-sm">
             <span className="flex items-center gap-2 min-w-0">
               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: s.color }} />
-              <span className="text-slate-700 truncate">{s.label}</span>
+              <span className="text-slate-700 break-words">{s.label}</span>
             </span>
             <span className="shrink-0 font-semibold tabular-nums text-slate-900">{formatDuration(s.value)}</span>
           </div>
@@ -442,7 +442,7 @@ export default function WaktuPage() {
                     </span>
                     {/* nama */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-900 truncate">{row.a.name}</p>
+                      <p className="text-sm font-medium text-slate-900 break-words">{row.a.name}</p>
                     </div>
                     {/* durasi */}
                     <span className="shrink-0 w-[80px] text-right text-sm font-bold tabular-nums text-slate-900">
