@@ -93,7 +93,11 @@ function DonutChart({ segments, size = 180 }: { segments: DonutSegment[]; size?:
       const y1 = cy + r * Math.sin(a1)
       const largeArc = frac > 0.5 ? 1 : 0
       const d = `M ${cx} ${cy} L ${x0.toFixed(2)} ${y0.toFixed(2)} A ${r} ${r} 0 ${largeArc} 1 ${x1.toFixed(2)} ${y1.toFixed(2)} Z`
-      return { d, color: s.color, key: i }
+      // posisi tengah irisan (centroid kasar di 0.6r)
+      const mid = (a0 + a1) / 2
+      const lx = cx + r * 0.62 * Math.cos(mid)
+      const ly = cy + r * 0.62 * Math.sin(mid)
+      return { d, color: s.color, key: i, pct: Math.round(frac * 100), lx, ly }
     })
   })()
 
@@ -107,6 +111,23 @@ function DonutChart({ segments, size = 180 }: { segments: DonutSegment[]; size?:
             <path key={s.key} d={s.d} fill={s.color} className="transition-all duration-500" />
           ))
         )}
+        {total > 0 &&
+          slices.map(
+            (s) =>
+              s.pct >= 6 && (
+                <text
+                  key={`t-${s.key}`}
+                  x={s.lx}
+                  y={s.ly}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  className="fill-white"
+                  style={{ fontSize: 11, fontWeight: 700 }}
+                >
+                  {s.pct}%
+                </text>
+              )
+          )}
         <text x={cx} y={cy - 4} textAnchor="middle" className="fill-slate-900" style={{ fontSize: 18, fontWeight: 700 }}>
           {segments.length}
         </text>
