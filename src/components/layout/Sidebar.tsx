@@ -109,6 +109,11 @@ const navigation: NavSection[] = [
     href: '/goal',
   },
   {
+    title: 'Jejak Waktu',
+    icon: Timer,
+    href: '/jejak-waktu',
+  },
+  {
     title: 'Tugas',
     icon: Calendar,
     items: [
@@ -116,13 +121,6 @@ const navigation: NavSection[] = [
       { title: 'Semua', href: '/tugas/semua', icon: CalendarDays },
       { title: 'Selesai', href: '/tugas/selesai', icon: CheckCircle2 },
       { title: 'Pengingat', href: '/tugas/pengingat', icon: Bell },
-    ],
-  },
-  {
-    title: 'Waktu',
-    icon: Clock,
-    items: [
-      { title: 'Waktu', href: '/jejak-waktu', icon: Timer },
     ],
   },
   {
