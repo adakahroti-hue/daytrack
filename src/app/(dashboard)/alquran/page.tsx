@@ -134,8 +134,8 @@ export default function AlquranPage() {
     loadSurahFull(surah, 1)
   }
 
-  const markBookmark = () => {
-    const pos = { surah: curSurah, ayat: curAyat }
+  const markAyat = (ayat: number) => {
+    const pos = { surah: curSurah, ayat }
     setBookmarkPos(pos)
     bookmark.save.mutate(pos)
   }
@@ -285,6 +285,7 @@ export default function AlquranPage() {
                   key={a.nomorAyat}
                   a={a}
                   highlight={bookmarkPos?.surah === curSurah && bookmarkPos?.ayat === a.nomorAyat}
+                  onMark={markAyat}
                 />
               ))}
             </div>
@@ -297,14 +298,6 @@ export default function AlquranPage() {
               className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
             >
               <ChevronLeft className="h-4 w-4" /> Sebelumnya
-            </button>
-
-            <button
-              onClick={markBookmark}
-              disabled={bookmark.save.isPending}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-100"
-            >
-              <Bookmark className="h-4 w-4" /> Tandai terakhir baca
             </button>
 
             <button
@@ -321,7 +314,7 @@ export default function AlquranPage() {
   )
 }
 
-function AyatCard({ a, highlight }: { a: Ayat; highlight?: boolean }) {
+function AyatCard({ a, highlight, onMark }: { a: Ayat; highlight?: boolean; onMark?: (ayat: number) => void }) {
   return (
     <div
       className={cn(
@@ -353,6 +346,21 @@ function AyatCard({ a, highlight }: { a: Ayat; highlight?: boolean }) {
             className="text-sm text-slate-600 leading-relaxed"
             dangerouslySetInnerHTML={{ __html: a.tafsir[0].teks }}
           />
+        </div>
+      )}
+      {onMark && (
+        <div className="border-t border-slate-100 pt-2 flex justify-end">
+          <button
+            onClick={() => onMark(a.nomorAyat)}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+              highlight
+                ? "bg-emerald-500 text-white"
+                : "border border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+            )}
+          >
+            <Bookmark className="h-3.5 w-3.5" /> Tandai sebagai terakhir baca
+          </button>
         </div>
       )}
     </div>
