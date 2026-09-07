@@ -16,31 +16,6 @@ type Item = {
   status: "running" | "completed"
 }
 
-type Category = "Personal" | "Makan" | "Tugas" | "Kerja" | "Hiburan" | "Ibadah" | "Lainnya"
-
-const CATEGORY_STYLE: Record<Category, { pill: string; dot: string }> = {
-  Personal: { pill: "bg-blue-50 text-blue-700 border border-blue-200", dot: "bg-blue-400" },
-  Makan: { pill: "bg-orange-50 text-orange-700 border border-orange-200", dot: "bg-orange-400" },
-  Tugas: { pill: "bg-purple-50 text-purple-700 border border-purple-200", dot: "bg-purple-400" },
-  Kerja: { pill: "bg-emerald-50 text-emerald-700 border border-emerald-200", dot: "bg-emerald-400" },
-  Hiburan: { pill: "bg-pink-50 text-pink-700 border border-pink-200", dot: "bg-pink-400" },
-  Ibadah: { pill: "bg-indigo-50 text-indigo-700 border border-indigo-200", dot: "bg-indigo-400" },
-  Lainnya: { pill: "bg-slate-100 text-slate-600 border border-slate-200", dot: "bg-slate-400" },
-}
-
-function inferCategory(name: string): Category {
-  const n = name.toLowerCase()
-  if (/(makan|sarapan|makan siang|makan malam|snack|ngemil|minum)/.test(n)) return "Makan"
-  if (/(tidur|istirahat|rehat|napu|ngecas)/.test(n)) return "Lainnya"
-  if (/(ibadah|sholat|solat|ngaji|doa|puasa|dzikir)/.test(n)) return "Ibadah"
-  if (/(kerja|meeting|rapat|kantor|project|office)/.test(n)) return "Kerja"
-  if (/(tugas|task|belajar|kuliah|skripsi|pr|assignment)/.test(n)) return "Tugas"
-  if (/(main|game|netflix|hantu|tiktok|yt|youtube|hiburan|nonton|musik|spotify)/.test(n)) return "Hiburan"
-  if (/(mandi|olahraga|gym|senam|belanja|beli|antar|jalan|beres|bersih|pikir|rencan|catat|call|chat)/.test(n))
-    return "Personal"
-  return "Lainnya"
-}
-
 function formatElapsed(ms: number): string {
   const totalSec = Math.max(0, Math.floor(ms / 1000))
   const h = Math.floor(totalSec / 3600)
@@ -114,16 +89,18 @@ export default function WaktuPage() {
     return out
   }, [sorted])
 
-  // Ringkasan per kategori (hanya completed)
-  const summary = useMemo(() => {
-    const map = new Map<Category, number>()
+  // Total waktu hari ini (akumulasi completed + running saat ini)
+  const totalSeconds = useMemo(() => {
+    let total = 0
     for (const it of sorted) {
-      if (it.status !== "completed") continue
-      const cat = inferCategory(it.name)
-      map.set(cat, (map.get(cat) || 0) + (it.duration_seconds || 0))
+      if (it.status === "completed") {
+        total += it.duration_seconds || 0
+      } else if (it.status === "running") {
+        total += Math.max(0, Math.round((now - new Date(it.started_at).getTime()) / 1000))
+      }
     }
-    return Array.from(map.entries()).map(([cat, secs]) => ({ cat, secs }))
-  }, [sorted])
+    return total
+  }, [sorted, now])
 
   const elapsed = running ? now - new Date(running.started_at).getTime() : 0
 
@@ -303,29 +280,10 @@ export default function WaktuPage() {
                       <span className="sm:hidden block">{row.a.ended_at ? formatClock(row.a.ended_at) : row.a.status === "running" ? "now" : "—"}</span>
                       <span className="hidden sm:inline">{row.a.ended_at ? formatClock(row.a.ended_at) : row.a.status === "running" ? "sekarang" : "—"}</span>
                     </span>
-                    {/* nama + kategori */}
+                    {/* nama */}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-slate-900 truncate">{row.a.name}</p>
-                      <div className="mt-1 sm:hidden">
-                        <span
-                          className={cn(
-                            "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium",
-                            CATEGORY_STYLE[inferCategory(row.a.name) in CATEGORY_STYLE ? inferCategory(row.a.name) : "Lainnya"].pill
-                          )}
-                        >
-                          {inferCategory(row.a.name)}
-                        </span>
-                      </div>
                     </div>
-                    {/* kategori (desktop) */}
-                    <span
-                      className={cn(
-                        "hidden sm:inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-                        CATEGORY_STYLE[inferCategory(row.a.name) in CATEGORY_STYLE ? inferCategory(row.a.name) : "Lainnya"].pill
-                      )}
-                    >
-                      {inferCategory(row.a.name)}
-                    </span>
                     {/* durasi */}
                     <span className="shrink-0 w-[80px] text-right text-sm font-bold tabular-nums text-slate-900">
                       {row.a.status === "running"
@@ -366,25 +324,12 @@ export default function WaktuPage() {
       {/* RINGKASAN WAKTU */}
       <div>
         <button className="flex items-center gap-1 text-sm font-semibold text-slate-700 hover:text-slate-900 mb-3">
-          Ringkasan Waktu <ChevronRight className="h-4 w-4" />
+          Total Waktu Hari Ini <ChevronRight className="h-4 w-4" />
         </button>
         <Card className="rounded-xl border border-slate-200 shadow-none">
-          <CardContent className="pt-5 pb-5">
-            {summary.length === 0 ? (
-              <p className="text-sm text-slate-400 text-center">Belum ada data untuk dirangkum.</p>
-            ) : (
-              <div className="flex flex-wrap divide-x divide-slate-100">
-                {summary.map(({ cat, secs }) => (
-                  <div key={cat} className="flex-1 min-w-[120px] px-5 py-2.5 text-center">
-                    <p className="text-xs text-slate-400 flex items-center justify-center gap-1.5">
-                      <span className={cn("w-2 h-2 rounded-full", CATEGORY_STYLE[cat].dot)} />
-                      {cat}
-                    </p>
-                    <p className="mt-1 text-lg font-bold tabular-nums text-slate-900">{formatDuration(secs)}</p>
-                  </div>
-                ))}
-              </div>
-            )}
+          <CardContent className="pt-5 pb-5 text-center">
+            <p className="text-xs text-slate-400">Total aktivitas tercatat hari ini</p>
+            <p className="mt-1 text-2xl font-bold tabular-nums text-slate-900">{formatDuration(totalSeconds)}</p>
           </CardContent>
         </Card>
       </div>
