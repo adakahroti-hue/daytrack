@@ -109,7 +109,7 @@ const navigation: NavSection[] = [
     href: '/goal',
   },
   {
-    title: 'Jejak Waktu',
+    title: 'Waktu',
     icon: Timer,
     href: '/jejak-waktu',
   },
