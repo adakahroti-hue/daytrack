@@ -31,7 +31,7 @@ const CATEGORY_STYLE: Record<Category, { pill: string; dot: string }> = {
 function inferCategory(name: string): Category {
   const n = name.toLowerCase()
   if (/(makan|sarapan|makan siang|makan malam|snack|ngemil|minum)/.test(n)) return "Makan"
-  if (/(tidur|istirahat|rehat|napu|ngecas)/.test(n)) return "Tidur" as Category
+  if (/(tidur|istirahat|rehat|napu|ngecas)/.test(n)) return "Lainnya"
   if (/(ibadah|sholat|solat|ngaji|doa|puasa|dzikir)/.test(n)) return "Ibadah"
   if (/(kerja|meeting|rapat|kantor|project|office)/.test(n)) return "Kerja"
   if (/(tugas|task|belajar|kuliah|skripsi|pr|assignment)/.test(n)) return "Tugas"
@@ -310,7 +310,7 @@ export default function WaktuPage() {
                         <span
                           className={cn(
                             "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium",
-                            CATEGORY_STYLE[inferCategory(row.a.name)].pill
+                            CATEGORY_STYLE[inferCategory(row.a.name) in CATEGORY_STYLE ? inferCategory(row.a.name) : "Lainnya"].pill
                           )}
                         >
                           {inferCategory(row.a.name)}
@@ -321,7 +321,7 @@ export default function WaktuPage() {
                     <span
                       className={cn(
                         "hidden sm:inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-                        CATEGORY_STYLE[inferCategory(row.a.name)].pill
+                        CATEGORY_STYLE[inferCategory(row.a.name) in CATEGORY_STYLE ? inferCategory(row.a.name) : "Lainnya"].pill
                       )}
                     >
                       {inferCategory(row.a.name)}
