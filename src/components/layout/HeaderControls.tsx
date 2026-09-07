@@ -50,6 +50,8 @@ interface HeaderControls {
   navigateIbadah: (direction: 'prev' | 'next') => void
   arusKasShowAll: boolean
   setArusKasShowAll: (v: boolean) => void
+  waktuPeriod: 'harian' | 'mingguan' | 'bulanan' | 'tahunan'
+  setWaktuPeriod: (p: 'harian' | 'mingguan' | 'bulanan' | 'tahunan') => void
 }
 
 const HeaderControlsContext = createContext<HeaderControls | null>(null)
@@ -271,6 +273,7 @@ export function HeaderControlsProvider({
   const [groupMode, setGroupMode] = useState<GroupMode>('prioritas')
   // Arus Kas: toggle "Semua" (abaikan periode) — dikelola di header
   const [arusKasShowAll, setArusKasShowAll] = useState(false)
+  const [waktuPeriod, setWaktuPeriod] = useState<'harian' | 'mingguan' | 'bulanan' | 'tahunan'>('harian')
 
   // Update category and sub-page when pathname changes
   useEffect(() => {
@@ -391,7 +394,9 @@ export function HeaderControlsProvider({
     navigateIbadah,
     arusKasShowAll,
     setArusKasShowAll,
-  }), [dynamicTitle, dynamicDescription, currentDate, period, setPeriod, selectYesterday, page, setPage, navigate, goToToday, onRefresh, isLoading, isToday, navigateToPeriodStart, category, subPage, setSubPage, tugasView, setTugasView, groupMode, ibadahPeriod, ibadahDate, setIbadahPeriod, navigateIbadah, arusKasShowAll, setArusKasShowAll])
+    waktuPeriod,
+    setWaktuPeriod,
+  }), [dynamicTitle, dynamicDescription, currentDate, period, setPeriod, selectYesterday, page, setPage, navigate, goToToday, onRefresh, isLoading, isToday, navigateToPeriodStart, category, subPage, setSubPage, tugasView, setTugasView, groupMode, ibadahPeriod, ibadahDate, setIbadahPeriod, navigateIbadah, arusKasShowAll, setArusKasShowAll, waktuPeriod, setWaktuPeriod])
 
   return (
     <HeaderControlsContext.Provider value={value}>

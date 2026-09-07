@@ -5,7 +5,7 @@ import { Play, Square, Timer, Trash2, RotateCcw, MoreVertical, Plus, ChevronRigh
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useJejakWaktu } from "@/hooks/useJejakWaktu"
-import type { WaktuPeriod } from "@/app/actions/jejak-waktu"
+import { useHeaderControls } from "@/components/layout/HeaderControls"
 import { cn, BRAND_COLORS } from "@/lib/utils"
 
 type Item = {
@@ -151,8 +151,8 @@ function DonutChart({ segments, size = 180 }: { segments: DonutSegment[]; size?:
 }
 
 export default function WaktuPage() {
-  const [period, setPeriod] = useState<WaktuPeriod>("harian")
-  const { data: items = [], isLoading, start, complete, remove, continue: continueMut } = useJejakWaktu(period)
+  const { waktuPeriod } = useHeaderControls()
+  const { data: items = [], isLoading, start, complete, remove, continue: continueMut } = useJejakWaktu(waktuPeriod)
   const [name, setName] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [showSuggest, setShowSuggest] = useState(false)
@@ -258,30 +258,7 @@ export default function WaktuPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 p-3 sm:px-4 sm:py-5">
-      {/* HEADER (judul di-handle global HeaderControls; di sini hanya filter) */}
-      <div className="flex items-center justify-end gap-2 flex-wrap">
-        {(
-          [
-            { key: "harian", label: "Harian" },
-              { key: "mingguan", label: "Mingguan" },
-              { key: "bulanan", label: "Bulanan" },
-              { key: "tahunan", label: "Tahunan" },
-            ] as { key: WaktuPeriod; label: string }[]
-          ).map((p) => (
-            <button
-              key={p.key}
-              onClick={() => setPeriod(p.key)}
-              className={cn(
-                "rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors",
-                period === p.key
-                  ? "border-slate-900 bg-slate-900 text-white"
-                  : "border-slate-200 text-slate-600 hover:bg-slate-50"
-              )}
-            >
-              {p.label}
-            </button>
-          ))}
-        </div>
+      {/* HEADER filter dipindah ke global HeaderControls (sejajar judul) */}
 
       {/* INPUT AKTIVITAS */}
       <Card className="rounded-xl border border-slate-200 shadow-sm">

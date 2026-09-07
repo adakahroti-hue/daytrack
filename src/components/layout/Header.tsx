@@ -162,6 +162,9 @@ export function Header({ onMenuClick }: HeaderProps) {
     setGroupMode,
     arusKasShowAll,
     setArusKasShowAll,
+    category,
+    waktuPeriod,
+    setWaktuPeriod,
   } = useHeaderControls()
 
   // Show period toggle only on Overview page
@@ -259,7 +262,32 @@ export function Header({ onMenuClick }: HeaderProps) {
         {/* Hari Ini Stats — only on tugas/hari-ini */}
         {isHariIni && <HariIniHeaderStats />}
 
-
+        {/* Filter periode tab Waktu — sejajar dengan judul */}
+        {category === 'waktu' && (
+          <div className="flex items-center gap-1 sm:gap-2">
+            {(
+              [
+                { key: 'harian', label: 'Harian' },
+                { key: 'mingguan', label: 'Mingguan' },
+                { key: 'bulanan', label: 'Bulanan' },
+                { key: 'tahunan', label: 'Tahunan' },
+              ] as { key: 'harian' | 'mingguan' | 'bulanan' | 'tahunan'; label: string }[]
+            ).map((p) => (
+              <button
+                key={p.key}
+                onClick={() => setWaktuPeriod(p.key)}
+                className={cn(
+                  "rounded-lg border px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors shrink-0",
+                  waktuPeriod === p.key
+                    ? "border-slate-900 bg-slate-900 text-white"
+                    : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                )}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        )}
         {/* Revisi 1: toggle group (Prioritas/Tanggal/Durasi/Badge/Lambat) — di header */}
         {isSemua && (
           <div className="hidden md:flex items-center gap-0.5 p-0.5 bg-muted/50 rounded-lg border border-border shrink-0">
