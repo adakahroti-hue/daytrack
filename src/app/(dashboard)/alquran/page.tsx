@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { BookOpen, ArrowLeft, Search, BookMarked, ChevronRight } from "lucide-react"
+import { BookOpen, ArrowLeft, Search, BookMarked, ChevronRight, ChevronLeft, Bookmark } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAlquranBookmark } from "@/hooks/useAlquranBookmark"
 
@@ -34,6 +34,7 @@ type SurahDetail = {
 }
 
 const TOTAL_SURAH = 114
+const PAGE = 5
 
 export default function AlquranPage() {
   const [list, setList] = useState<SurahMeta[]>([])
@@ -46,12 +47,17 @@ export default function AlquranPage() {
 
   // Mode mengaji state
   const [curSurah, setCurSurah] = useState(1)
-  const [curAyat, setCurAyat] = useState(1)
-  const [ayatData, setAyatData] = useState<Ayat | null>(null)
+  const [curAyat, setCurAyat] = useState(1) // ayat mulai chunk
+  const [fullAyat, setFullAyat] = useState<Ayat[]>([])
   const [surahMeta, setSurahMeta] = useState<SurahMeta | null>(null)
   const [loadingAyat, setLoadingAyat] = useState(false)
 
   const bookmark = useAlquranBookmark()
+  const [bookmarkPos, setBookmarkPos] = useState<{ surah: number; ayat: number } | null>(null)
+
+  useEffect(() => {
+    if (bookmark.data) setBookmarkPos(bookmark.data)
+  }, [bookmark.data])
 
   useEffect(() => {
     fetch("https://equran.id/api/v2/surat")
@@ -70,41 +76,68 @@ export default function AlquranPage() {
     setLoadingDetail(false)
   }
 
-  const loadAyat = async (surah: number, ayat: number) => {
+  const loadSurahFull = async (surah: number, startAyat = 1) => {
     setLoadingAyat(true)
-    setAyatData(null)
+    setFullAyat([])
     const [metaRes, surahRes] = await Promise.all([
       fetch(`https://equran.id/api/v2/surat/${surah}`).then((r) => r.json()),
       fetch(`/api/alquran/${surah}`).then((r) => r.json()),
     ])
-    const meta: SurahMeta = metaRes.data
-    const surahDetail: SurahDetail = surahRes.data
-    const found = surahDetail.ayat.find((a) => a.nomorAyat === ayat) || surahDetail.ayat[0]
-    setSurahMeta(meta)
-    setAyatData(found || null)
+    setSurahMeta(metaRes.data)
+    setFullAyat(surahRes.data.ayat || [])
+    setCurSurah(surah)
+    setCurAyat(startAyat)
     setLoadingAyat(false)
   }
 
   const startMengaji = async () => {
-    const b = bookmark.data || { surah: 1, ayat: 1 }
-    setCurSurah(b.surah)
-    setCurAyat(b.ayat)
+    const b = bookmarkPos || { surah: 1, ayat: 1 }
     setMode("mengaji")
-    await loadAyat(b.surah, b.ayat)
+    await loadSurahFull(b.surah, b.ayat)
   }
 
-  const nextAyat = async () => {
+  const goPrev = () => {
     let ns = curSurah
-    let na = curAyat + 1
-    if (curAyat >= (surahMeta?.jumlahAyat || 1)) {
-      if (curSurah >= TOTAL_SURAH) return // sudah selesai semua
-      ns = curSurah + 1
-      na = 1
+    let na = curAyat - PAGE
+    if (na < 1) {
+      if (curSurah <= 1) {
+        na = 1
+      } else {
+        ns = curSurah - 1
+        // ke akhir surah sebelumnya
+        na = Math.max(1, (list.find((s) => s.nomor === ns)?.jumlahAyat || 1) - PAGE + 1)
+        loadSurahFull(ns, na)
+        return
+      }
     }
-    setCurSurah(ns)
     setCurAyat(na)
-    await loadAyat(ns, na)
-    bookmark.save.mutate({ surah: ns, ayat: na })
+  }
+
+  const goNext = () => {
+    const total = surahMeta?.jumlahAyat || fullAyat.length
+    let ns = curSurah
+    let na = curAyat + PAGE
+    if (na > total) {
+      if (curSurah >= TOTAL_SURAH) {
+        na = total
+      } else {
+        ns = curSurah + 1
+        na = 1
+        loadSurahFull(ns, 1)
+        return
+      }
+    }
+    setCurAyat(na)
+  }
+
+  const jumpToSurah = (surah: number) => {
+    loadSurahFull(surah, 1)
+  }
+
+  const markBookmark = () => {
+    const pos = { surah: curSurah, ayat: curAyat }
+    setBookmarkPos(pos)
+    bookmark.save.mutate(pos)
   }
 
   const filtered = list.filter(
@@ -113,6 +146,8 @@ export default function AlquranPage() {
       s.arti.toLowerCase().includes(query.toLowerCase()) ||
       s.nomor.toString() === query
   )
+
+  const chunk = fullAyat.slice(curAyat - 1, curAyat - 1 + PAGE)
 
   return (
     <div className="mx-auto max-w-4xl space-y-4 p-4 sm:p-6">
@@ -204,53 +239,80 @@ export default function AlquranPage() {
       ) : (
         // MODE MENGAJI
         <div className="space-y-4">
-          <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm flex items-center justify-between">
+          <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm flex items-center justify-between flex-wrap gap-2">
             <div>
               <p className="text-sm font-semibold text-slate-900">
                 {surahMeta?.namaLatin} ({surahMeta?.arti})
               </p>
               <p className="text-xs text-slate-500">
-                Surah {curSurah} · Ayat {curAyat} dari {surahMeta?.jumlahAyat}
+                Surah {curSurah} · ayat {curAyat}–{Math.min(curAyat + PAGE - 1, surahMeta?.jumlahAyat || 0)} dari {surahMeta?.jumlahAyat}
               </p>
             </div>
-            <span className="flex items-center gap-1.5 text-xs text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
-              <BookMarked className="h-3.5 w-3.5" /> Terakhir baca tersimpan
-            </span>
+            {bookmarkPos && (
+              <span className="flex items-center gap-1.5 text-xs text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
+                <BookMarked className="h-3.5 w-3.5" /> Terakhir: {bookmarkPos.surah}:{bookmarkPos.ayat}
+              </span>
+            )}
           </div>
 
-          {loadingAyat || !ayatData ? (
+          {/* Navigasi surah cepat */}
+          <div className="flex flex-wrap gap-1.5">
+            {list.slice(0, 20).map((s) => (
+              <button
+                key={s.nomor}
+                onClick={() => jumpToSurah(s.nomor)}
+                className={cn(
+                  "px-2 py-1 rounded-md text-xs border",
+                  curSurah === s.nomor
+                    ? "border-slate-900 bg-slate-900 text-white"
+                    : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                )}
+              >
+                {s.nomor}
+              </button>
+            ))}
+            {list.length > 20 && <span className="text-xs text-slate-400 self-center">…</span>}
+          </div>
+
+          {loadingAyat ? (
             <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
-              Memuat ayat…
+              Memuat…
             </div>
           ) : (
-            <div className="rounded-xl border border-slate-200 bg-white px-4 py-6 shadow-sm space-y-3 text-center">
-              <p className="text-xs font-semibold text-slate-400">Ayat {ayatData.nomorAyat}</p>
-              <p className="text-3xl leading-loose text-slate-900 font-arabic" dir="rtl">
-                {ayatData.teksArab}
-              </p>
-              <p className="text-sm italic text-slate-500">{ayatData.teksLatin}</p>
-              <p className="text-sm text-slate-800">{ayatData.teksIndonesia}</p>
-              {ayatData.tafsir?.[0]?.teks && (
-                <div className="border-t border-slate-100 pt-2 text-left">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600 mb-1">
-                    Pelajaran dari Ayat
-                  </p>
-                  <p
-                    className="text-sm text-slate-600 leading-relaxed text-left"
-                    dangerouslySetInnerHTML={{ __html: ayatData.tafsir[0].teks }}
-                  />
-                </div>
-              )}
+            <div className="space-y-4">
+              {chunk.map((a) => (
+                <AyatCard
+                  key={a.nomorAyat}
+                  a={a}
+                  highlight={bookmarkPos?.surah === curSurah && bookmarkPos?.ayat === a.nomorAyat}
+                />
+              ))}
             </div>
           )}
 
-          <div className="flex justify-center">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <button
-              onClick={nextAyat}
-              disabled={loadingAyat || (curSurah >= TOTAL_SURAH && curAyat >= (surahMeta?.jumlahAyat || 1))}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#0F172A] text-white px-5 py-2.5 text-sm font-medium hover:bg-[#1E293B] disabled:opacity-50"
+              onClick={goPrev}
+              disabled={loadingAyat || (curSurah === 1 && curAyat === 1)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
             >
-              Ayat Berikutnya <ChevronRight className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4" /> Sebelumnya
+            </button>
+
+            <button
+              onClick={markBookmark}
+              disabled={bookmark.save.isPending}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-100"
+            >
+              <Bookmark className="h-4 w-4" /> Tandai terakhir baca
+            </button>
+
+            <button
+              onClick={goNext}
+              disabled={loadingAyat || (curSurah >= TOTAL_SURAH && curAyat + PAGE - 1 >= (surahMeta?.jumlahAyat || 0))}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#0F172A] text-white px-4 py-2 text-sm font-medium hover:bg-[#1E293B] disabled:opacity-50"
+            >
+              Berikutnya <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -259,11 +321,21 @@ export default function AlquranPage() {
   )
 }
 
-function AyatCard({ a }: { a: Ayat }) {
+function AyatCard({ a, highlight }: { a: Ayat; highlight?: boolean }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm space-y-2">
+    <div
+      className={cn(
+        "rounded-xl border bg-white px-4 py-4 shadow-sm space-y-2",
+        highlight ? "border-emerald-400 bg-emerald-50/60" : "border-slate-200"
+      )}
+    >
       <div className="flex items-start gap-3">
-        <span className="shrink-0 flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
+        <span
+          className={cn(
+            "shrink-0 flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold",
+            highlight ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-600"
+          )}
+        >
           {a.nomorAyat}
         </span>
         <p className="flex-1 text-right text-2xl leading-loose text-slate-900 font-arabic" dir="rtl">
