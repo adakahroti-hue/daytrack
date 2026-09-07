@@ -8,6 +8,32 @@ const startSchema = z.object({
   name: z.string().trim().min(1, "Nama kegiatan wajib diisi"),
 })
 
+// Auto-stop timer yang masih running (ubah jadi completed + hitung durasi)
+async function autoStopRunning(supabase: any, userId: string) {
+  const { data: running } = await supabase
+    .from("jejak_waktu")
+    .select("id, started_at")
+    .eq("user_id", userId)
+    .eq("status", "running")
+    .limit(1)
+
+  if (running && running.length > 0) {
+    const r = running[0]
+    const start = new Date(r.started_at).getTime()
+    const end = Date.now()
+    const durationSeconds = Math.max(0, Math.round((end - start) / 1000))
+    await supabase
+      .from("jejak_waktu")
+      .update({
+        ended_at: new Date(end).toISOString(),
+        duration_seconds: durationSeconds,
+        status: "completed",
+      })
+      .eq("id", r.id)
+      .eq("user_id", userId)
+  }
+}
+
 export type JejakWaktu = {
   id: string
   user_id: string
@@ -41,17 +67,8 @@ export async function startActivity(input: unknown) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
 
-  // Hanya boleh 1 timer aktif
-  const { data: running } = await supabase
-    .from("jejak_waktu")
-    .select("id")
-    .eq("user_id", user.id)
-    .eq("status", "running")
-    .limit(1)
-
-  if (running && running.length > 0) {
-    throw new Error("Masih ada aktivitas yang berjalan. Selesaikan dulu sebelum memulai yang baru.")
-  }
+  // Jika masih ada timer lama yang jalan, auto-stop dulu
+  await autoStopRunning(supabase, user.id)
 
   const { error } = await supabase
     .from("jejak_waktu")
@@ -67,17 +84,8 @@ export async function continueActivity(input: unknown) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
 
-  // Hanya boleh 1 timer aktif
-  const { data: running } = await supabase
-    .from("jejak_waktu")
-    .select("id")
-    .eq("user_id", user.id)
-    .eq("status", "running")
-    .limit(1)
-
-  if (running && running.length > 0) {
-    throw new Error("Masih ada aktivitas yang berjalan. Selesaikan dulu sebelum melanjutkan.")
-  }
+  // Jika masih ada timer lama yang jalan, auto-stop dulu
+  await autoStopRunning(supabase, user.id)
 
   const { error } = await supabase
     .from("jejak_waktu")
