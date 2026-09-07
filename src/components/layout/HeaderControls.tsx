@@ -64,6 +64,7 @@ function getCategoryFromPath(pathname: string): string {
   if (pathname.startsWith('/goal')) return 'goal'
   if (pathname.startsWith('/swot')) return 'swot'
   if (pathname.startsWith('/arus-kas') || pathname.startsWith('/keranjang')) return 'keuangan'
+  if (pathname.startsWith('/jejak-waktu')) return 'waktu'
   return 'overview'
 }
 
@@ -163,6 +164,7 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
     case 'perbaikan': return 'Perbaikan Diri'
     case 'keuangan': return 'Keuangan'
     case 'swot': return 'Analisis SWOT'
+    case 'waktu': return 'Waktu'
     default: return 'Daytrack'
   }
 }
@@ -234,6 +236,7 @@ function getCategoryDescription(category: string, period: Period, subPage: strin
     case 'mental': return 'Kelola kondisi mental dan perkembangan diri Anda'
     case 'perbaikan': return 'Evaluasi dan tingkatkan diri'
     case 'keuangan': return 'Kelola keuangan Anda'
+    case 'waktu': return 'Lacak aktivitas yang sedang kamu lakukan.'
     default: return 'Kelola dan lacak aktivitas Anda'
   }
 }
