@@ -17,6 +17,8 @@ export function useJejakWaktu() {
     queryKey: ["jejak-waktu"],
     queryFn: getJejakWaktuToday,
     refetchInterval: 15000,
+    staleTime: 30000,
+    placeholderData: (prev) => prev,
   })
 
   const start = useMutation({
