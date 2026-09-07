@@ -261,14 +261,17 @@ export default function WaktuPage() {
                 row.type === "gap" ? (
                   <div
                     key={row.g.id}
-                    className="flex items-center gap-3 px-4 py-3 bg-slate-50/60 border-t border-slate-100"
+                    className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 bg-slate-50/60 border-t border-slate-100"
                     style={{ minHeight: 56 }}
                   >
                     <span className="shrink-0 w-2.5 h-2.5 rounded-full border-2 border-slate-300" />
-                    <span className="shrink-0 w-[120px] sm:w-[180px] text-xs text-slate-400 tabular-nums">
-                      {formatClock(row.g.start.toISOString())} - {formatClock(row.g.end.toISOString())}
+                    <span className="shrink-0 w-[88px] text-[11px] text-slate-400 tabular-nums leading-tight">
+                      {formatClock(row.g.start.toISOString())}
+                      <span className="hidden sm:inline"> - </span>
+                      <span className="sm:hidden block">{formatClock(row.g.end.toISOString())}</span>
+                      <span className="hidden sm:inline">{formatClock(row.g.end.toISOString())}</span>
                     </span>
-                    <span className="flex-1 text-sm text-slate-400">Belum ada aktivitas</span>
+                    <span className="flex-1 min-w-0 text-sm text-slate-400 truncate">Belum ada aktivitas</span>
                     <span className="shrink-0 text-xs text-slate-400">{fmtGap(row.g.ms)}</span>
                     <button
                       onClick={() => setName("")}
@@ -294,9 +297,11 @@ export default function WaktuPage() {
                       )}
                     />
                     {/* jam */}
-                    <span className="shrink-0 w-[120px] sm:w-[180px] text-xs text-slate-400 tabular-nums">
-                      {formatClock(row.a.started_at)} -{" "}
-                      {row.a.ended_at ? formatClock(row.a.ended_at) : row.a.status === "running" ? "sekarang" : "—"}
+                    <span className="shrink-0 w-[88px] sm:w-[180px] text-[11px] sm:text-xs text-slate-400 tabular-nums leading-tight">
+                      {formatClock(row.a.started_at)}
+                      <span className="hidden sm:inline"> - </span>
+                      <span className="sm:hidden block">{row.a.ended_at ? formatClock(row.a.ended_at) : row.a.status === "running" ? "now" : "—"}</span>
+                      <span className="hidden sm:inline">{row.a.ended_at ? formatClock(row.a.ended_at) : row.a.status === "running" ? "sekarang" : "—"}</span>
                     </span>
                     {/* nama + kategori */}
                     <div className="flex-1 min-w-0">
@@ -328,7 +333,7 @@ export default function WaktuPage() {
                         : formatDuration(row.a.duration_seconds)}
                     </span>
                     {/* action menu */}
-                    <div className="shrink-0 w-[40px] flex justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="shrink-0 w-[40px] flex justify-end gap-0.5 sm:opacity-0 sm:group-hover:opacity-100 opacity-100 transition-opacity">
                       <button
                         onClick={() => continueMut.mutate(row.a.name)}
                         disabled={continueMut.isPending}
