@@ -159,7 +159,7 @@ export default function WaktuPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
+    <div className="mx-auto max-w-4xl space-y-8 p-4 sm:p-6">
       {/* HEADER */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2.5">
@@ -171,10 +171,10 @@ export default function WaktuPage() {
       {/* INPUT AKTIVITAS */}
       <Card className="rounded-xl border border-slate-200 shadow-sm">
         <CardContent className="pt-5 pb-5">
-          <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
+          <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2.5">
             Nama kegiatan
           </label>
-          <div className="flex flex-col sm:flex-row gap-2.5">
+          <div className="flex flex-col sm:flex-row gap-3">
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -197,7 +197,7 @@ export default function WaktuPage() {
       {/* CARD TIMER AKTIF */}
       {running && (
         <Card className="rounded-xl border border-emerald-200 bg-emerald-50/60 shadow-sm">
-          <CardContent className="pt-6 pb-6 flex flex-col items-center text-center gap-3">
+          <CardContent className="pt-6 pb-6 flex flex-col items-center text-center gap-4">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium px-2.5 py-1">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -261,7 +261,7 @@ export default function WaktuPage() {
                 row.type === "gap" ? (
                   <div
                     key={row.g.id}
-                    className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 bg-slate-50/60 border-t border-slate-100"
+                    className="flex flex-wrap items-center gap-x-3 gap-y-1 px-5 py-3.5 bg-slate-50/60 border-t border-slate-100"
                     style={{ minHeight: 56 }}
                   >
                     <span className="shrink-0 w-2.5 h-2.5 rounded-full border-2 border-slate-300" />
@@ -284,7 +284,7 @@ export default function WaktuPage() {
                   <div
                     key={row.a.id}
                     className={cn(
-                      "group flex items-center gap-3 px-4 py-2.5 border-t border-slate-100 hover:bg-slate-50/60 transition-colors",
+                      "group flex items-center gap-4 px-5 py-3.5 border-t border-slate-100 hover:bg-slate-50/60 transition-colors",
                       idx === 0 && "border-t-0"
                     )}
                     style={{ minHeight: 58 }}
@@ -369,13 +369,13 @@ export default function WaktuPage() {
           Ringkasan Waktu <ChevronRight className="h-4 w-4" />
         </button>
         <Card className="rounded-xl border border-slate-200 shadow-none">
-          <CardContent className="pt-4 pb-4">
+          <CardContent className="pt-5 pb-5">
             {summary.length === 0 ? (
               <p className="text-sm text-slate-400 text-center">Belum ada data untuk dirangkum.</p>
             ) : (
               <div className="flex flex-wrap divide-x divide-slate-100">
                 {summary.map(({ cat, secs }) => (
-                  <div key={cat} className="flex-1 min-w-[110px] px-4 py-2 text-center">
+                  <div key={cat} className="flex-1 min-w-[120px] px-5 py-2.5 text-center">
                     <p className="text-xs text-slate-400 flex items-center justify-center gap-1.5">
                       <span className={cn("w-2 h-2 rounded-full", CATEGORY_STYLE[cat].dot)} />
                       {cat}
