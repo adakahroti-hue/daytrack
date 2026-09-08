@@ -50,8 +50,8 @@ interface HeaderControls {
   navigateIbadah: (direction: 'prev' | 'next') => void
   arusKasShowAll: boolean
   setArusKasShowAll: (v: boolean) => void
-  waktuPeriod: 'harian' | 'mingguan' | 'bulanan' | 'tahunan'
-  setWaktuPeriod: (p: 'harian' | 'mingguan' | 'bulanan' | 'tahunan') => void
+  waktuPeriod: 'harian' | 'kemarin' | 'shot' | 'mingguan' | 'bulanan' | 'tahunan'
+  setWaktuPeriod: (p: 'harian' | 'kemarin' | 'shot' | 'mingguan' | 'bulanan' | 'tahunan') => void
   waktuDate: Date
   navigateWaktu: (dir: 'prev' | 'next') => void
   goToWaktuToday: () => void
@@ -276,16 +276,17 @@ export function HeaderControlsProvider({
   const [groupMode, setGroupMode] = useState<GroupMode>('prioritas')
   // Arus Kas: toggle "Semua" (abaikan periode) — dikelola di header
   const [arusKasShowAll, setArusKasShowAll] = useState(false)
-  const [waktuPeriod, setWaktuPeriod] = useState<'harian' | 'mingguan' | 'bulanan' | 'tahunan'>('harian')
+  const [waktuPeriod, setWaktuPeriod] = useState<'harian' | 'kemarin' | 'shot' | 'mingguan' | 'bulanan' | 'tahunan'>('harian')
   const [waktuDate, setWaktuDate] = useState<Date>(new Date())
 
   const navigateWaktu = useCallback((dir: 'prev' | 'next') => {
     setWaktuDate((prev) => {
       const d = new Date(prev)
-      if (waktuPeriod === 'harian') d.setDate(d.getDate() + (dir === 'next' ? 1 : -1))
-      else if (waktuPeriod === 'mingguan') d.setDate(d.getDate() + (dir === 'next' ? 7 : -7))
-      else if (waktuPeriod === 'bulanan') d.setMonth(d.getMonth() + (dir === 'next' ? 1 : -1))
-      else d.setFullYear(d.getFullYear() + (dir === 'next' ? 1 : -1))
+      const step = dir === 'next' ? 1 : -1
+      if (waktuPeriod === 'harian' || waktuPeriod === 'kemarin') d.setDate(d.getDate() + step)
+      else if (waktuPeriod === 'mingguan' || waktuPeriod === 'shot') d.setDate(d.getDate() + step * 7)
+      else if (waktuPeriod === 'bulanan') d.setMonth(d.getMonth() + step)
+      else d.setFullYear(d.getFullYear() + step)
       return d
     })
   }, [waktuPeriod])
@@ -411,8 +412,8 @@ export function HeaderControlsProvider({
     navigateIbadah,
     arusKasShowAll,
     setArusKasShowAll,
-    waktuPeriod,
-    setWaktuPeriod,
+    waktuPeriod: waktuPeriod as 'harian' | 'kemarin' | 'shot' | 'mingguan' | 'bulanan' | 'tahunan',
+    setWaktuPeriod: setWaktuPeriod as (p: 'harian' | 'kemarin' | 'shot' | 'mingguan' | 'bulanan' | 'tahunan') => void,
     waktuDate,
     navigateWaktu,
     goToWaktuToday,

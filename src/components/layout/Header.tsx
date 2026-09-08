@@ -265,30 +265,30 @@ export function Header({ onMenuClick }: HeaderProps) {
         {/* Hari Ini Stats — only on tugas/hari-ini */}
         {isHariIni && <HariIniHeaderStats />}
 
-        {/* Filter periode tab Waktu — sejajar dengan judul */}
+        {/* Filter periode tab Waktu — sejajar dengan judul, style sama dengan Overview (default: Harian) */}
         {category === 'waktu' && (
-          <div className="flex items-center gap-1 sm:gap-2">
-            {(
-              [
-                { key: 'harian', label: 'Harian' },
-                { key: 'mingguan', label: 'Mingguan' },
-                { key: 'bulanan', label: 'Bulanan' },
-                { key: 'tahunan', label: 'Tahunan' },
-              ] as { key: 'harian' | 'mingguan' | 'bulanan' | 'tahunan'; label: string }[]
-            ).map((p) => (
-              <button
-                key={p.key}
-                onClick={() => setWaktuPeriod(p.key)}
-                className={cn(
-                  "rounded-lg border px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors shrink-0",
-                  waktuPeriod === p.key
-                    ? "border-slate-900 bg-slate-900 text-white"
-                    : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                )}
-              >
-                {p.label}
-              </button>
-            ))}
+          <div className="hidden sm:flex flex-shrink-0">
+            <div className="flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border w-full justify-center">
+              {([
+                { key: 'kemarin', label: 'Kemarin', icon: History },
+                { key: 'harian', label: 'Harian', icon: Clock },
+                { key: 'shot', label: 'Capture', icon: Flame },
+                { key: 'mingguan', label: 'Mingguan', icon: CalendarDays },
+                { key: 'bulanan', label: 'Bulanan', icon: CalendarRange },
+                { key: 'tahunan', label: 'Tahunan', icon: Calendar },
+              ] as { key: 'harian' | 'kemarin' | 'shot' | 'mingguan' | 'bulanan' | 'tahunan'; label: string; icon: React.ComponentType<{ className?: string }> }[]).map(({ key, label, icon: Icon }) => (
+                <Button
+                  key={key}
+                  variant={waktuPeriod === key ? 'default' : 'ghost'}
+                  size="sm"
+                  className="h-8 px-2 gap-1 justify-center"
+                  onClick={() => setWaktuPeriod(key)}
+                >
+                  <Icon className="h-3.5 w-3.5 flex-shrink-0" />
+                  <span className="hidden sm:inline truncate">{label}</span>
+                </Button>
+              ))}
+            </div>
           </div>
         )}
         {/* Navigasi tanggal tab Waktu */}
@@ -575,6 +575,50 @@ export function Header({ onMenuClick }: HeaderProps) {
                 </Button>
               </div>
             </>
+          )}
+          {/* Tab Waktu (mobile portrait): toggle periode 6 opsi serupa Overview, full width */}
+          {category === 'waktu' && showMobileControls && (
+            <div className="flex items-center gap-0.5 p-0.5 bg-muted/50 rounded-lg border border-border w-full">
+              {([
+                { key: 'kemarin', label: 'Kemarin' },
+                { key: 'harian', label: 'Harian' },
+                { key: 'shot', label: 'Capture' },
+                { key: 'mingguan', label: 'Mingguan' },
+                { key: 'bulanan', label: 'Bulanan' },
+                { key: 'tahunan', label: 'Tahunan' },
+              ] as { key: 'harian' | 'kemarin' | 'shot' | 'mingguan' | 'bulanan' | 'tahunan'; label: string }[]).map((p) => (
+                <button
+                  key={p.key}
+                  type="button"
+                  onClick={() => setWaktuPeriod(p.key)}
+                  className={cn(
+                    'flex-1 px-1 py-1.5 rounded-md text-[11px] font-medium transition-colors whitespace-nowrap',
+                    waktuPeriod === p.key
+                      ? 'bg-[#0F172A] text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                  )}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          )}
+          {/* Navigasi tanggal tab Waktu (mobile portrait) */}
+          {category === 'waktu' && showMobileControls && (
+            <div className="flex items-center justify-between gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border w-full">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => navigateWaktu('prev')} aria-label="Periode sebelumnya">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="text-xs font-medium truncate">
+                  {format(waktuDate, waktuPeriod === 'bulanan' ? 'MMMM yyyy' : waktuPeriod === 'tahunan' ? 'yyyy' : 'd MMM yyyy', { locale: id })}
+                </span>
+              </div>
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => navigateWaktu('next')} aria-label="Periode selanjutnya">
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           )}
         </div>
       )}

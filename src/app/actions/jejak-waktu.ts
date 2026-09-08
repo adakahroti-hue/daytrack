@@ -46,36 +46,60 @@ export type JejakWaktu = {
   updated_at: string
 }
 
-export type WaktuPeriod = "harian" | "mingguan" | "bulanan" | "tahunan"
+export type WaktuPeriod = "harian" | "kemarin" | "shot" | "mingguan" | "bulanan" | "tahunan"
 
-function startOfPeriod(period: WaktuPeriod, anchor: Date = new Date()): string {
+function startOfDay(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate())
+}
+
+// Shot: rentang Minggu–Sabtu (7 hari), sama seperti overview
+function getShotStart(anchor: Date): Date {
+  const d = startOfDay(anchor)
+  const day = d.getDay() // 0=Minggu
+  const baseSunday = new Date(d.getFullYear(), d.getMonth(), d.getDate() - day)
+  const shift = day === 0 ? -7 : 0
+  return new Date(baseSunday.getFullYear(), baseSunday.getMonth(), baseSunday.getDate() + shift)
+}
+
+function getPeriodRange(period: WaktuPeriod, anchor: Date = new Date()): { start: string; end: string | null } {
+  const a = startOfDay(anchor)
   if (period === "harian") {
-    return new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate()).toISOString()
+    return { start: a.toISOString(), end: null }
+  }
+  if (period === "kemarin") {
+    const yesterday = new Date(a.getFullYear(), a.getMonth(), a.getDate() - 1)
+    return { start: yesterday.toISOString(), end: a.toISOString() }
+  }
+  if (period === "shot") {
+    const s = getShotStart(anchor)
+    const e = new Date(s.getFullYear(), s.getMonth(), s.getDate() + 7)
+    return { start: s.toISOString(), end: e.toISOString() }
   }
   if (period === "mingguan") {
     const day = anchor.getDay() // 0=Minggu
-    const diff = (day + 6) % 7 // senin awal minggu
+    const diff = (day + 6) % 7 // Senin awal minggu
     const monday = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate() - diff)
-    return new Date(monday.getFullYear(), monday.getMonth(), monday.getDate()).toISOString()
+    return { start: monday.toISOString(), end: null }
   }
   if (period === "bulanan") {
-    return new Date(anchor.getFullYear(), anchor.getMonth(), 1).toISOString()
+    return { start: new Date(anchor.getFullYear(), anchor.getMonth(), 1).toISOString(), end: null }
   }
   // tahunan
-  return new Date(anchor.getFullYear(), 0, 1).toISOString()
+  return { start: new Date(anchor.getFullYear(), 0, 1).toISOString(), end: null }
 }
 
 export async function getJejakWaktuByPeriod(period: WaktuPeriod = "harian", anchor: Date = new Date()): Promise<JejakWaktu[]> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const startPeriod = startOfPeriod(period, anchor)
-  const { data } = await supabase
+  const { start, end } = getPeriodRange(period, anchor)
+  let query = supabase
     .from("jejak_waktu")
     .select("id, user_id, name, started_at, ended_at, duration_seconds, status, created_at, updated_at")
     .eq("user_id", user.id)
-    .gte("started_at", startPeriod)
-    .order("started_at", { ascending: false })
+    .gte("started_at", start)
+  if (end) query = query.lt("started_at", end)
+  const { data } = await query.order("started_at", { ascending: false })
   return (data || []) as JejakWaktu[]
 }
 
