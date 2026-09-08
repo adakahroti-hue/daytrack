@@ -145,8 +145,8 @@ function DonutChart({ segments, size = 180 }: { segments: DonutSegment[]; size?:
 }
 
 export default function WaktuPage() {
-  const { waktuPeriod } = useHeaderControls()
-  const { data: items = [], isLoading, start, complete, remove, continue: continueMut } = useJejakWaktu(waktuPeriod)
+  const { waktuPeriod, waktuDate } = useHeaderControls()
+  const { data: items = [], isLoading, start, complete, remove, continue: continueMut } = useJejakWaktu(waktuPeriod, waktuDate)
   const { data: allNames = [] } = useJejakWaktuNames()
   const [name, setName] = useState("")
   const [error, setError] = useState<string | null>(null)

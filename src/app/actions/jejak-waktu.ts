@@ -48,29 +48,28 @@ export type JejakWaktu = {
 
 export type WaktuPeriod = "harian" | "mingguan" | "bulanan" | "tahunan"
 
-function startOfPeriod(period: WaktuPeriod): string {
-  const now = new Date()
+function startOfPeriod(period: WaktuPeriod, anchor: Date = new Date()): string {
   if (period === "harian") {
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
+    return new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate()).toISOString()
   }
   if (period === "mingguan") {
-    const day = now.getDay() // 0=Minggu
+    const day = anchor.getDay() // 0=Minggu
     const diff = (day + 6) % 7 // senin awal minggu
-    const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff)
+    const monday = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate() - diff)
     return new Date(monday.getFullYear(), monday.getMonth(), monday.getDate()).toISOString()
   }
   if (period === "bulanan") {
-    return new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+    return new Date(anchor.getFullYear(), anchor.getMonth(), 1).toISOString()
   }
   // tahunan
-  return new Date(now.getFullYear(), 0, 1).toISOString()
+  return new Date(anchor.getFullYear(), 0, 1).toISOString()
 }
 
-export async function getJejakWaktuByPeriod(period: WaktuPeriod = "harian"): Promise<JejakWaktu[]> {
+export async function getJejakWaktuByPeriod(period: WaktuPeriod = "harian", anchor: Date = new Date()): Promise<JejakWaktu[]> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const startPeriod = startOfPeriod(period)
+  const startPeriod = startOfPeriod(period, anchor)
   const { data } = await supabase
     .from("jejak_waktu")
     .select("id, user_id, name, started_at, ended_at, duration_seconds, status, created_at, updated_at")

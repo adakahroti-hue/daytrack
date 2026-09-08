@@ -165,6 +165,9 @@ export function Header({ onMenuClick }: HeaderProps) {
     category,
     waktuPeriod,
     setWaktuPeriod,
+    waktuDate,
+    navigateWaktu,
+    goToWaktuToday,
   } = useHeaderControls()
 
   // Show period toggle only on Overview page
@@ -286,6 +289,23 @@ export function Header({ onMenuClick }: HeaderProps) {
                 {p.label}
               </button>
             ))}
+          </div>
+        )}
+        {/* Navigasi tanggal tab Waktu */}
+        {category === 'waktu' && (
+          <div className="flex items-center gap-1 shrink-0">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateWaktu('prev')} aria-label="Sebelumnya">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-xs sm:text-sm font-medium text-slate-700 tabular-nums min-w-[88px] text-center">
+              {format(waktuDate, waktuPeriod === 'bulanan' ? 'MMMM yyyy' : waktuPeriod === 'tahunan' ? 'yyyy' : 'd MMM yyyy', { locale: id })}
+            </span>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateWaktu('next')} aria-label="Selanjutnya">
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={goToWaktuToday} aria-label="Hari ini">
+              <Calendar className="h-4 w-4" />
+            </Button>
           </div>
         )}
         {/* Revisi 1: toggle group (Prioritas/Tanggal/Durasi/Badge/Lambat) — di header */}

@@ -19,13 +19,13 @@ export function useJejakWaktuNames() {
   })
 }
 
-export function useJejakWaktu(period: WaktuPeriod = "harian") {
+export function useJejakWaktu(period: WaktuPeriod = "harian", anchor: Date = new Date()) {
   const qc = useQueryClient()
-  const invalidate = () => qc.invalidateQueries({ queryKey: ["jejak-waktu", period] })
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["jejak-waktu", period, anchor.toISOString().slice(0, 10)] })
 
   const data = useQuery({
-    queryKey: ["jejak-waktu", period],
-    queryFn: () => getJejakWaktuByPeriod(period),
+    queryKey: ["jejak-waktu", period, anchor.toISOString().slice(0, 10)],
+    queryFn: () => getJejakWaktuByPeriod(period, anchor),
     refetchInterval: 15000,
     staleTime: 30000,
     placeholderData: (prev) => prev,

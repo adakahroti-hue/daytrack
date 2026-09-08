@@ -52,6 +52,9 @@ interface HeaderControls {
   setArusKasShowAll: (v: boolean) => void
   waktuPeriod: 'harian' | 'mingguan' | 'bulanan' | 'tahunan'
   setWaktuPeriod: (p: 'harian' | 'mingguan' | 'bulanan' | 'tahunan') => void
+  waktuDate: Date
+  navigateWaktu: (dir: 'prev' | 'next') => void
+  goToWaktuToday: () => void
 }
 
 const HeaderControlsContext = createContext<HeaderControls | null>(null)
@@ -274,6 +277,20 @@ export function HeaderControlsProvider({
   // Arus Kas: toggle "Semua" (abaikan periode) — dikelola di header
   const [arusKasShowAll, setArusKasShowAll] = useState(false)
   const [waktuPeriod, setWaktuPeriod] = useState<'harian' | 'mingguan' | 'bulanan' | 'tahunan'>('harian')
+  const [waktuDate, setWaktuDate] = useState<Date>(new Date())
+
+  const navigateWaktu = useCallback((dir: 'prev' | 'next') => {
+    setWaktuDate((prev) => {
+      const d = new Date(prev)
+      if (waktuPeriod === 'harian') d.setDate(d.getDate() + (dir === 'next' ? 1 : -1))
+      else if (waktuPeriod === 'mingguan') d.setDate(d.getDate() + (dir === 'next' ? 7 : -7))
+      else if (waktuPeriod === 'bulanan') d.setMonth(d.getMonth() + (dir === 'next' ? 1 : -1))
+      else d.setFullYear(d.getFullYear() + (dir === 'next' ? 1 : -1))
+      return d
+    })
+  }, [waktuPeriod])
+
+  const goToWaktuToday = useCallback(() => setWaktuDate(new Date()), [])
 
   // Update category and sub-page when pathname changes
   useEffect(() => {
@@ -396,7 +413,10 @@ export function HeaderControlsProvider({
     setArusKasShowAll,
     waktuPeriod,
     setWaktuPeriod,
-  }), [dynamicTitle, dynamicDescription, currentDate, period, setPeriod, selectYesterday, page, setPage, navigate, goToToday, onRefresh, isLoading, isToday, navigateToPeriodStart, category, subPage, setSubPage, tugasView, setTugasView, groupMode, ibadahPeriod, ibadahDate, setIbadahPeriod, navigateIbadah, arusKasShowAll, setArusKasShowAll, waktuPeriod, setWaktuPeriod])
+    waktuDate,
+    navigateWaktu,
+    goToWaktuToday,
+  }), [dynamicTitle, dynamicDescription, currentDate, period, setPeriod, selectYesterday, page, setPage, navigate, goToToday, onRefresh, isLoading, isToday, navigateToPeriodStart, category, subPage, setSubPage, tugasView, setTugasView, groupMode, ibadahPeriod, ibadahDate, setIbadahPeriod, navigateIbadah, arusKasShowAll, setArusKasShowAll, waktuPeriod, setWaktuPeriod, waktuDate, navigateWaktu, goToWaktuToday])
 
   return (
     <HeaderControlsContext.Provider value={value}>
