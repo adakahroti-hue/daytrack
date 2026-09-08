@@ -277,9 +277,6 @@ export function Header({ onMenuClick }: HeaderProps) {
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateWaktu('next')} aria-label="Selanjutnya">
               <ChevronRight className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={goToWaktuToday} aria-label="Hari ini">
-              <Calendar className="h-4 w-4" />
-            </Button>
           </div>
         )}
         {/* Filter periode tab Waktu — sejajar dengan judul, style sama dengan Overview (default: Harian) */}
