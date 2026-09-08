@@ -26,7 +26,6 @@ export function AddStepModal({
   const submit = () => {
     if (!title.trim()) return
     onSubmit({ title: title.trim(), target_date: targetDate || null })
-    onClose()
   }
 
   return (

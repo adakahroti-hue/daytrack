@@ -27,14 +27,13 @@ export function AddMilestoneModal({
   const submit = () => {
     if (!title.trim()) return
     onSubmit({ title: title.trim(), description: description.trim() })
-    onClose()
   }
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{initial ? "Edit Step Utama" : "Tambah Step Utama"}</DialogTitle>
+          <DialogTitle>{initial ? "Edit Milestone" : "Tambah Milestone"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1">

@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic"
 
 import { useState, useEffect } from 'react'
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query'
+import { Toaster } from 'sonner'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
 import { HeaderControlsProvider } from '@/components/layout/HeaderControls'
@@ -90,6 +91,7 @@ export default function DashboardLayout({
           </div>
         </div>
       </HeaderControlsProvider>
+      <Toaster position="top-center" richColors />
     </QueryClientProvider>
   )
 }
