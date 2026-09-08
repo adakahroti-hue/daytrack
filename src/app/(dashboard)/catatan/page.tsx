@@ -301,7 +301,7 @@ export default function CatatanPage() {
       )}
 
       <Dialog open={!!viewState} onOpenChange={(open) => !open && setViewState(null)}>
-        <DialogContent className="max-w-[92vw] sm:max-w-lg lg:max-w-xl">
+        <DialogContent className="max-w-[92vw] sm:max-w-lg lg:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {viewState && (
@@ -328,7 +328,7 @@ export default function CatatanPage() {
       </Dialog>
 
       <Dialog open={!!editState} onOpenChange={(open) => !open && setEditState(null)}>
-        <DialogContent className="max-w-[92vw] sm:max-w-lg lg:max-w-xl">
+        <DialogContent className="max-w-[92vw] sm:max-w-lg lg:max-w-3xl">
           <DialogHeader>
             <DialogTitle>{editState?.id ? "Edit Catatan" : "Tambah Catatan"}</DialogTitle>
           </DialogHeader>
