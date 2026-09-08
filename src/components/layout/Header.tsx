@@ -267,7 +267,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
         {/* Navigasi tanggal tab Waktu — di kiri filter waktu */}
         {category === 'waktu' && (
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border shrink-0">
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateWaktu('prev')} aria-label="Sebelumnya">
               <ChevronLeft className="h-4 w-4" />
             </Button>
