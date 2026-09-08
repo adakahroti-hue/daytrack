@@ -81,7 +81,15 @@ export default function GoalPage() {
                 <Button
                   disabled={!goalTitle.trim() || createGoal.isPending}
                   onClick={() => {
-                    createGoal.mutate({ title: goalTitle.trim() }, { onSuccess: () => { setGoalTitle(""); setCreateGoalOpen(false) } })
+                    createGoal.mutate(
+                      { title: goalTitle.trim() },
+                      {
+                        onSuccess: () => { setGoalTitle(""); setCreateGoalOpen(false) },
+                        onError: (e: any) => {
+                          import("sonner").then(({ toast }) => toast.error(`Gagal simpan goal: ${e?.message || "unknown error"}`))
+                        },
+                      }
+                    )
                   }}
                 >
                   Buat
