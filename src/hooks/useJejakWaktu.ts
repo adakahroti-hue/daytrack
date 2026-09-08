@@ -3,12 +3,21 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   getJejakWaktuByPeriod,
+  getJejakWaktuNames,
   type WaktuPeriod,
   startActivity,
   completeActivity,
   deleteActivity,
   continueActivity,
 } from "@/app/actions/jejak-waktu"
+
+export function useJejakWaktuNames() {
+  return useQuery({
+    queryKey: ["jejak-waktu-names"],
+    queryFn: getJejakWaktuNames,
+    staleTime: 60000,
+  })
+}
 
 export function useJejakWaktu(period: WaktuPeriod = "harian") {
   const qc = useQueryClient()

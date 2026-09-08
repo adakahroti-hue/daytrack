@@ -80,6 +80,28 @@ export async function getJejakWaktuByPeriod(period: WaktuPeriod = "harian"): Pro
   return (data || []) as JejakWaktu[]
 }
 
+export async function getJejakWaktuNames(): Promise<string[]> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+  const { data } = await supabase
+    .from("jejak_waktu")
+    .select("name")
+    .eq("user_id", user.id)
+    .order("started_at", { ascending: false })
+    .limit(200)
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const row of (data || []) as { name: string }[]) {
+    const n = row.name.trim()
+    if (n && !seen.has(n.toLowerCase())) {
+      seen.add(n.toLowerCase())
+      out.push(n)
+    }
+  }
+  return out
+}
+
 export async function startActivity(input: unknown) {
   const validated = startSchema.parse(input)
   const supabase = await createClient()

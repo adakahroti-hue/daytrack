@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import { Play, Square, Timer, Trash2, RotateCcw, MoreVertical, Plus, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { useJejakWaktu } from "@/hooks/useJejakWaktu"
+import { useJejakWaktu, useJejakWaktuNames } from "@/hooks/useJejakWaktu"
 import { useHeaderControls } from "@/components/layout/HeaderControls"
 import { cn, BRAND_COLORS } from "@/lib/utils"
 
@@ -147,26 +147,27 @@ function DonutChart({ segments, size = 180 }: { segments: DonutSegment[]; size?:
 export default function WaktuPage() {
   const { waktuPeriod } = useHeaderControls()
   const { data: items = [], isLoading, start, complete, remove, continue: continueMut } = useJejakWaktu(waktuPeriod)
+  const { data: allNames = [] } = useJejakWaktuNames()
   const [name, setName] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [showSuggest, setShowSuggest] = useState(false)
 
-  // Saran nama dari inputan sebelumnya (unik, case-insensitive contains)
+  // Saran nama dari inputan sebelumnya (all-time, lintas hari) — unik, case-insensitive contains
   const suggestions = useMemo(() => {
     const q = name.trim().toLowerCase()
     if (!q) return []
     const seen = new Set<string>()
     const list: string[] = []
-    for (const it of items) {
-      const n = it.name.trim()
-      if (n && n.toLowerCase().includes(q) && !seen.has(n.toLowerCase())) {
-        seen.add(n.toLowerCase())
-        list.push(n)
+    for (const n of allNames) {
+      const t = n.trim()
+      if (t && t.toLowerCase().includes(q) && !seen.has(t.toLowerCase())) {
+        seen.add(t.toLowerCase())
+        list.push(t)
       }
       if (list.length >= 6) break
     }
     return list
-  }, [name, items])
+  }, [name, allNames])
 
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
