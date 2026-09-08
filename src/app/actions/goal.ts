@@ -129,6 +129,9 @@ export async function createGoal(formData: { title: string; target_date?: string
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
   const validated = goalSchema.parse(formData)
+  // Model single-goal: hapus seluruh goal lama milik user dulu (cascade ke milestone/step/log)
+  const { error: delErr } = await supabase.from("goal").delete().eq("user_id", user.id)
+  if (delErr) throw new Error(delErr.message)
   const { data, error } = await supabase
     .from("goal")
     .insert({ user_id: user.id, title: validated.title, target_date: validated.target_date || null })

@@ -1,4 +1,4 @@
-import { Target, Pencil, Trash2 } from "lucide-react"
+import { Target, Pencil, Trash2, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export function GoalHeader({
@@ -7,12 +7,14 @@ export function GoalHeader({
   targetDate,
   onEdit,
   onDelete,
+  onNewGoal,
 }: {
   goalTitle: string
   goalProgress: number
   targetDate: string | null
   onEdit?: () => void
   onDelete?: () => void
+  onNewGoal?: () => void
 }) {
   const pct = Math.max(0, Math.min(100, Math.round(goalProgress)))
   return (
@@ -23,6 +25,15 @@ export function GoalHeader({
           <h2 className="text-sm font-semibold uppercase tracking-wide">Goal Aktif</h2>
         </div>
         <div className="flex items-center gap-1 shrink-0">
+          {onNewGoal && (
+            <button
+              onClick={onNewGoal}
+              aria-label="Buat goal baru"
+              className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          )}
           {onEdit && (
             <button
               onClick={onEdit}

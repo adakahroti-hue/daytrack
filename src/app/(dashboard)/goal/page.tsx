@@ -66,38 +66,6 @@ export default function GoalPage() {
             <Plus className="h-4 w-4" /> Buat Goal
           </Button>
         </div>
-        <Dialog open={createGoalOpen} onOpenChange={(o) => !o && setCreateGoalOpen(false)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Buat Goal Baru</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <Label>Nama Goal</Label>
-                <Input value={goalTitle} onChange={(e) => setGoalTitle(e.target.value)} placeholder="Misal: Menabung rumah" />
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setCreateGoalOpen(false)}>Batal</Button>
-                <Button
-                  disabled={!goalTitle.trim() || createGoal.isPending}
-                  onClick={() => {
-                    createGoal.mutate(
-                      { title: goalTitle.trim() },
-                      {
-                        onSuccess: () => { setGoalTitle(""); setCreateGoalOpen(false) },
-                        onError: (e: any) => {
-                          import("sonner").then(({ toast }) => toast.error(`Gagal simpan goal: ${e?.message || "unknown error"}`))
-                        },
-                      }
-                    )
-                  }}
-                >
-                  Buat
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
     )
   }
@@ -110,6 +78,7 @@ export default function GoalPage() {
         targetDate={goal.target_date}
         onEdit={() => { setGoalName(goal.title); setEditGoalOpen(true) }}
         onDelete={() => setDeleteGoalOpen(true)}
+        onNewGoal={() => setCreateGoalOpen(true)}
       />
       <GoalStats
         completedSteps={stats.completedSteps}
@@ -239,6 +208,40 @@ export default function GoalPage() {
             >
               Hapus
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      {/* Dialog buat goal baru — selalu tersedia (single-goal: goal lama otomatis dihapus) */}
+      <Dialog open={createGoalOpen} onOpenChange={(o) => !o && setCreateGoalOpen(false)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Buat Goal Baru</DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-slate-500">Goal saat ini akan diganti — seluruh milestone, step, dan log progres lamamu akan dihapus.</p>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label>Nama Goal</Label>
+              <Input value={goalTitle} onChange={(e) => setGoalTitle(e.target.value)} placeholder="Misal: Menabung rumah" />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setCreateGoalOpen(false)}>Batal</Button>
+              <Button
+                disabled={!goalTitle.trim() || createGoal.isPending}
+                onClick={() => {
+                  createGoal.mutate(
+                    { title: goalTitle.trim() },
+                    {
+                      onSuccess: () => { setGoalTitle(""); setCreateGoalOpen(false) },
+                      onError: (e: any) => {
+                        import("sonner").then(({ toast }) => toast.error(`Gagal simpan goal: ${e?.message || "unknown error"}`))
+                      },
+                    }
+                  )
+                }}
+              >
+                Buat
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
