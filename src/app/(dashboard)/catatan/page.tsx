@@ -318,6 +318,14 @@ export default function CatatanPage() {
           <NoteLines text={viewState?.isi ?? ""} className="text-sm leading-snug max-h-[60vh] overflow-y-auto text-slate-700" />
           <div className="flex justify-end gap-2 pt-1">
             <Button variant="outline" onClick={() => setViewState(null)}>Tutup</Button>
+            <Button variant="outline" onClick={() => {
+              const v = viewState
+              if (!v) return
+              const text = [v.judul, v.label ? `[${v.label}]` : "", v.isi].filter(Boolean).join("\n\n")
+              navigator.clipboard.writeText(text)
+                .then(() => import("sonner").then(({ toast }) => toast.success("Catatan disalin")))
+                .catch(() => import("sonner").then(({ toast }) => toast.error("Gagal menyalin catatan")))
+            }}>Salin</Button>
             <Button onClick={() => {
               const v = viewState
               setViewState(null)
@@ -390,6 +398,14 @@ export default function CatatanPage() {
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-1">
+              <Button variant="outline" onClick={() => {
+                const e = editState
+                if (!e) return
+                const text = [e.judul, e.label ? `[${e.label}]` : "", e.isi].filter(Boolean).join("\n\n")
+                navigator.clipboard.writeText(text)
+                  .then(() => import("sonner").then(({ toast }) => toast.success("Catatan disalin")))
+                  .catch(() => import("sonner").then(({ toast }) => toast.error("Gagal menyalin catatan")))
+              }}>Salin</Button>
               <Button variant="outline" onClick={() => setEditState(null)}>Batal</Button>
               <Button onClick={handleSave} disabled={isBusy || !editState?.judul.trim() || !editState?.isi.trim()}>
                 {isBusy && <span className="mr-1">…</span>} Simpan
