@@ -115,8 +115,6 @@ const navigation: NavSection[] = [
       { title: 'Hari Ini', href: '/tugas/hari-ini', icon: Clock },
       { title: 'Semua', href: '/tugas/semua', icon: CalendarDays },
       { title: 'Selesai', href: '/tugas/selesai', icon: CheckCircle2 },
-      { title: 'Pengingat', href: '/tugas/pengingat', icon: Bell },
-      { title: 'Bank Ide', href: '/tugas/bank-ide', icon: Lightbulb },
     ],
   },
   {
@@ -173,6 +171,16 @@ const navigation: NavSection[] = [
       { title: 'SWOT', href: '/swot', icon: ScanSearch },
       { title: 'Playlist', href: '/kesenangan', icon: ListMusic },
     ],
+  },
+  {
+    title: 'Bank Ide',
+    icon: Lightbulb,
+    href: '/tugas/bank-ide',
+  },
+  {
+    title: 'Pengingat',
+    icon: Bell,
+    href: '/tugas/pengingat',
   },
 ]
 
