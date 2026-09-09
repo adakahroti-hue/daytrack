@@ -422,12 +422,12 @@ function SidebarContent({
                         !isCollapsed && 'pl-5',
                         isCollapsed && 'justify-center',
                         isActive
-                          ? 'bg-primary text-primary-foreground font-medium'
+                          ? 'bg-primary text-primary-foreground font-normal'
                           : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                       )}
                     >
                       <section.icon className="h-4 w-4 flex-shrink-0" />
-                      {!isCollapsed && <span className="font-medium truncate">{section.title}</span>}
+                      {!isCollapsed && <span className="font-normal truncate">{section.title}</span>}
                     </Link>
                   </TooltipTrigger>
                   {isCollapsed && (
