@@ -99,11 +99,6 @@ const navigation: NavSection[] = [
     href: '/overview',
   },
   {
-    title: 'Bank Ide',
-    icon: Lightbulb,
-    href: '/tugas/bank-ide',
-  },
-  {
     title: 'Goal',
     icon: Target,
     href: '/goal',
@@ -121,6 +116,7 @@ const navigation: NavSection[] = [
       { title: 'Semua', href: '/tugas/semua', icon: CalendarDays },
       { title: 'Selesai', href: '/tugas/selesai', icon: CheckCircle2 },
       { title: 'Pengingat', href: '/tugas/pengingat', icon: Bell },
+      { title: 'Bank Ide', href: '/tugas/bank-ide', icon: Lightbulb },
     ],
   },
   {
