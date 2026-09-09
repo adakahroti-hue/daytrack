@@ -52,69 +52,80 @@ export interface GoalData {
   progressLogs: GoalProgressLog[]
 }
 
-/* ── Ambil goal aktif beserta milestone, step, dan log dalam 1 query (nested) ── */
+/* ── Ambil goal aktif beserta milestone, step, dan log ──
+   Pakai query terpisah per tabel (bukan nested select) agar tidak bergantung
+   nama relasi otomatis Supabase (yang sering salah: singular vs plural). */
 export async function getActiveGoal(): Promise<GoalData | null> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
 
-  const { data: goals } = await supabase
+  // 1) Goal terbaru milik user
+  const { data: goalRow, error: goalErr } = await supabase
     .from("goal")
-    .select(`
-      id, user_id, title, target_date, is_active, created_at, updated_at,
-      goal_milestone (
-        id, goal_id, title, description, "order", created_at, updated_at,
-        goal_step ( id, milestone_id, title, is_completed, "order", target_date, created_at, updated_at )
-      ),
-      goal_progress_log (
-        id, goal_id, milestone_id, step_id, activity, duration, date, created_at
-      )
-    `)
+    .select("id, user_id, title, target_date, is_active, created_at, updated_at")
     .eq("user_id", user.id)
-    .order("created_at", { ascending: true })
+    .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle()
+  if (goalErr) throw new Error(goalErr.message)
+  if (!goalRow) return null
 
-  const goal = goals as any
-  if (!goal) return null
+  // 2) Milestones
+  const { data: milestonesRaw, error: mErr } = await supabase
+    .from("goal_milestone")
+    .select("id, goal_id, title, description, \"order\", created_at, updated_at")
+    .eq("goal_id", goalRow.id)
+    .order("order", { ascending: true })
+  if (mErr) throw new Error(mErr.message)
 
-  const milestonesRaw: any[] = goal.goal_milestone || []
-  const milestonesWithSteps: GoalMilestone[] = milestonesRaw
-    .sort((a: any, b: any) => a.order - b.order)
-    .map((m: any) => ({
-      id: m.id,
-      goal_id: m.goal_id,
-      title: m.title,
-      description: m.description,
-      order: m.order,
-      created_at: m.created_at,
-      updated_at: m.updated_at,
-      steps: (m.goal_step || [])
-        .sort((a: any, b: any) => a.order - b.order)
-        .map((s: any) => ({
-          id: s.id,
-          milestone_id: s.milestone_id,
-          title: s.title,
-          is_completed: s.is_completed,
-          order: s.order,
-          target_date: s.target_date,
-          created_at: s.created_at,
-          updated_at: s.updated_at,
-        })),
-    }))
+  const milestoneIds = (milestonesRaw || []).map((m: any) => m.id)
 
-  const progressLogs = (goal.goal_progress_log || []) as GoalProgressLog[]
+  // 3) Steps (semua step milik milestone goal ini)
+  const stepsRes =
+    milestoneIds.length > 0
+      ? await supabase
+          .from("goal_step")
+          .select("id, milestone_id, title, is_completed, \"order\", target_date, created_at, updated_at")
+          .in("milestone_id", milestoneIds)
+          .order("order", { ascending: true })
+      : { data: [] as any[], error: null }
+  if (stepsRes.error) throw new Error(stepsRes.error.message)
+
+  // 4) Progress logs
+  const { data: logsRaw, error: lErr } = await supabase
+    .from("goal_progress_log")
+    .select("id, goal_id, milestone_id, step_id, activity, duration, date, created_at")
+    .eq("goal_id", goalRow.id)
+  if (lErr) throw new Error(lErr.message)
+
+  // Kelompokkan step per milestone
+  const stepsByMilestone: Record<string, GoalStep[]> = {}
+  for (const s of stepsRes.data || []) {
+    ;(stepsByMilestone[s.milestone_id] ||= []).push(s as GoalStep)
+  }
+
+  const milestones: GoalMilestone[] = (milestonesRaw || []).map((m: any) => ({
+    id: m.id,
+    goal_id: m.goal_id,
+    title: m.title,
+    description: m.description,
+    order: m.order,
+    created_at: m.created_at,
+    updated_at: m.updated_at,
+    steps: (stepsByMilestone[m.id] || []).sort((a, b) => a.order - b.order),
+  }))
 
   return {
-    id: goal.id,
-    user_id: goal.user_id,
-    title: goal.title,
-    target_date: goal.target_date,
-    is_active: goal.is_active,
-    created_at: goal.created_at,
-    updated_at: goal.updated_at,
-    milestones: milestonesWithSteps,
-    progressLogs,
+    id: goalRow.id,
+    user_id: goalRow.user_id,
+    title: goalRow.title,
+    target_date: goalRow.target_date,
+    is_active: goalRow.is_active,
+    created_at: goalRow.created_at,
+    updated_at: goalRow.updated_at,
+    milestones,
+    progressLogs: (logsRaw || []) as GoalProgressLog[],
   }
 }
 
