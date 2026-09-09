@@ -104,11 +104,6 @@ const navigation: NavSection[] = [
     href: '/goal',
   },
   {
-    title: 'Waktu',
-    icon: Timer,
-    href: '/jejak-waktu',
-  },
-  {
     title: 'Tugas',
     icon: Calendar,
     items: [
@@ -171,6 +166,11 @@ const navigation: NavSection[] = [
       { title: 'SWOT', href: '/swot', icon: ScanSearch },
       { title: 'Playlist', href: '/kesenangan', icon: ListMusic },
     ],
+  },
+  {
+    title: 'Waktu',
+    icon: Timer,
+    href: '/jejak-waktu',
   },
   {
     title: 'Bank Ide',
