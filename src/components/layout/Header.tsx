@@ -193,6 +193,15 @@ export function Header({ onMenuClick }: HeaderProps) {
   const isGoal = pathname === '/goal'
   const isKeuangan = isArusKas || isKeranjang
 
+  // Halaman yang menampilkan shortcut tab eksternal di header
+  const isWaktu = pathname.startsWith('/jejak-waktu')
+  const isPengingat = pathname === '/tugas/pengingat'
+  const isBankIde = pathname === '/tugas/bank-ide'
+  const isCatatan = pathname === '/catatan'
+  const isSwot = pathname.startsWith('/swot')
+  const isAlquran = pathname === '/alquran'
+  const showShortcuts =
+    isOverviewPage || isWaktu || isPengingat || isBankIde || isCatatan || isSwot || isAlquran || isKesenangan
   // Semua tab bergaya tabel Quran memakai toolbar navigasi tanggal + toggle periode di header
   // Mental Block sengaja TIDAK masuk isTableTab: data journal (fetch all), tidak terpengaruh filter waktu.
   const isTableTab = isSholat || isQuran || isMinumAir || isDoa || isSyukur || isTidur || isPmo || isMasalah || isKesenangan || isSedekah || isKeuangan || isGoal || isMakan
@@ -344,27 +353,44 @@ export function Header({ onMenuClick }: HeaderProps) {
           </Button>
         )}
 
-        {/* Shortcut tab eksternal — kiri navigasi tanggal (khusus Overview) */}
-        {isOverviewPage && (
+        {/* Shortcut tab eksternal — kiri navigasi tanggal (Overview + Waktu/Pengingat/Bank Ide/Playlist/Catatan/SWOT/Alquran) */}
+        {showShortcuts && (
           <div className="hidden sm:flex items-center gap-1 px-1.5 py-1 bg-muted/50 rounded-lg border border-border shrink-0">
-            <Link href="/jejak-waktu" title="Waktu" aria-label="Waktu" className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 hover:bg-white/60 transition-colors">
-              <Timer className="h-4 w-4" />
-            </Link>
-            <Link href="/tugas/pengingat" title="Pengingat" aria-label="Pengingat" className="p-1.5 rounded-md text-slate-500 hover:text-rose-600 hover:bg-white/60 transition-colors">
-              <Bell className="h-4 w-4" />
-            </Link>
-            <Link href="/tugas/bank-ide" title="Bank Ide" aria-label="Bank Ide" className="p-1.5 rounded-md text-slate-500 hover:text-yellow-600 hover:bg-white/60 transition-colors">
-              <Lightbulb className="h-4 w-4" />
-            </Link>
-            <Link href="/kesenangan" title="Playlist" aria-label="Playlist" className="p-1.5 rounded-md text-slate-500 hover:text-purple-600 hover:bg-white/60 transition-colors">
-              <ListMusic className="h-4 w-4" />
-            </Link>
-            <Link href="/catatan" title="Catatan" aria-label="Catatan" className="p-1.5 rounded-md text-slate-500 hover:text-blue-600 hover:bg-white/60 transition-colors">
-              <StickyNote className="h-4 w-4" />
-            </Link>
-            <Link href="/swot" title="SWOT" aria-label="SWOT" className="p-1.5 rounded-md text-slate-500 hover:text-emerald-600 hover:bg-white/60 transition-colors">
-              <ScanSearch className="h-4 w-4" />
-            </Link>
+            {!isWaktu && (
+              <Link href="/jejak-waktu" title="Waktu" aria-label="Waktu" className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 hover:bg-white/60 transition-colors">
+                <Timer className="h-4 w-4" />
+              </Link>
+            )}
+            {!isPengingat && (
+              <Link href="/tugas/pengingat" title="Pengingat" aria-label="Pengingat" className="p-1.5 rounded-md text-slate-500 hover:text-rose-600 hover:bg-white/60 transition-colors">
+                <Bell className="h-4 w-4" />
+              </Link>
+            )}
+            {!isBankIde && (
+              <Link href="/tugas/bank-ide" title="Bank Ide" aria-label="Bank Ide" className="p-1.5 rounded-md text-slate-500 hover:text-yellow-600 hover:bg-white/60 transition-colors">
+                <Lightbulb className="h-4 w-4" />
+              </Link>
+            )}
+            {!isKesenangan && (
+              <Link href="/kesenangan" title="Playlist" aria-label="Playlist" className="p-1.5 rounded-md text-slate-500 hover:text-purple-600 hover:bg-white/60 transition-colors">
+                <ListMusic className="h-4 w-4" />
+              </Link>
+            )}
+            {!isCatatan && (
+              <Link href="/catatan" title="Catatan" aria-label="Catatan" className="p-1.5 rounded-md text-slate-500 hover:text-blue-600 hover:bg-white/60 transition-colors">
+                <StickyNote className="h-4 w-4" />
+              </Link>
+            )}
+            {!isSwot && (
+              <Link href="/swot" title="SWOT" aria-label="SWOT" className="p-1.5 rounded-md text-slate-500 hover:text-emerald-600 hover:bg-white/60 transition-colors">
+                <ScanSearch className="h-4 w-4" />
+              </Link>
+            )}
+            {!isAlquran && (
+              <Link href="/alquran" title="Alquran" aria-label="Alquran" className="p-1.5 rounded-md text-slate-500 hover:text-teal-600 hover:bg-white/60 transition-colors">
+                <BookOpen className="h-4 w-4" />
+              </Link>
+            )}
           </div>
         )}
 
