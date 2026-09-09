@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, Mosque, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, ScanSearch, Bell } from 'lucide-react'
+import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, Mosque, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, ScanSearch, Bell, Timer } from 'lucide-react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
@@ -347,6 +347,15 @@ export function Header({ onMenuClick }: HeaderProps) {
         {/* Shortcut tab eksternal — kiri navigasi tanggal (khusus Overview) */}
         {isOverviewPage && (
           <div className="hidden sm:flex items-center gap-1 px-1.5 py-1 bg-muted/50 rounded-lg border border-border shrink-0">
+            <Link href="/jejak-waktu" title="Waktu" aria-label="Waktu" className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 hover:bg-white/60 transition-colors">
+              <Timer className="h-4 w-4" />
+            </Link>
+            <Link href="/tugas/pengingat" title="Pengingat" aria-label="Pengingat" className="p-1.5 rounded-md text-slate-500 hover:text-rose-600 hover:bg-white/60 transition-colors">
+              <Bell className="h-4 w-4" />
+            </Link>
+            <Link href="/tugas/bank-ide" title="Bank Ide" aria-label="Bank Ide" className="p-1.5 rounded-md text-slate-500 hover:text-yellow-600 hover:bg-white/60 transition-colors">
+              <Lightbulb className="h-4 w-4" />
+            </Link>
             <Link href="/kesenangan" title="Playlist" aria-label="Playlist" className="p-1.5 rounded-md text-slate-500 hover:text-purple-600 hover:bg-white/60 transition-colors">
               <ListMusic className="h-4 w-4" />
             </Link>
