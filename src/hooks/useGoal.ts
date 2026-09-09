@@ -15,7 +15,12 @@ import {
 } from "@/app/actions/goal"
 
 export function useActiveGoal() {
-  return useQuery({ queryKey: ["goal", "active"], queryFn: () => getActiveGoal() })
+  return useQuery({
+    queryKey: ["goal", "active"],
+    queryFn: () => getActiveGoal(),
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+  })
 }
 
 export function useCreateGoal() {

@@ -71,41 +71,40 @@ export async function getActiveGoal(): Promise<GoalData | null> {
   if (goalErr) throw new Error(goalErr.message)
   if (!goalRow) return null
 
-  // 2) Milestones
-  const { data: milestonesRaw, error: mErr } = await supabase
-    .from("goal_milestone")
-    .select("id, goal_id, title, description, \"order\", created_at, updated_at")
-    .eq("goal_id", goalRow.id)
-    .order("order", { ascending: true })
-  if (mErr) throw new Error(mErr.message)
+  // 2) Milestones + Steps + Progress logs dijalankan PARALLEL (3 round-trip → 1)
+  //    Steps difilter langsung by goal_id lewat FK parent (goal_milestone.goal_id),
+  //    sehingga tidak perlu menunggu hasil milestones lebih dulu.
+  const [mRes, sRes, lRes] = await Promise.all([
+    supabase
+      .from("goal_milestone")
+      .select("id, goal_id, title, description, \"order\", created_at, updated_at")
+      .eq("goal_id", goalRow.id)
+      .order("order", { ascending: true }),
+    supabase
+      .from("goal_step")
+      .select("id, milestone_id, title, is_completed, \"order\", target_date, created_at, updated_at")
+      .eq("goal_milestone.goal_id", goalRow.id)
+      .order("order", { ascending: true }),
+    supabase
+      .from("goal_progress_log")
+      .select("id, goal_id, milestone_id, step_id, activity, duration, date, created_at")
+      .eq("goal_id", goalRow.id),
+  ])
+  if (mRes.error) throw new Error(mRes.error.message)
+  if (sRes.error) throw new Error(sRes.error.message)
+  if (lRes.error) throw new Error(lRes.error.message)
 
-  const milestoneIds = (milestonesRaw || []).map((m: any) => m.id)
-
-  // 3) Steps (semua step milik milestone goal ini)
-  const stepsRes =
-    milestoneIds.length > 0
-      ? await supabase
-          .from("goal_step")
-          .select("id, milestone_id, title, is_completed, \"order\", target_date, created_at, updated_at")
-          .in("milestone_id", milestoneIds)
-          .order("order", { ascending: true })
-      : { data: [] as any[], error: null }
-  if (stepsRes.error) throw new Error(stepsRes.error.message)
-
-  // 4) Progress logs
-  const { data: logsRaw, error: lErr } = await supabase
-    .from("goal_progress_log")
-    .select("id, goal_id, milestone_id, step_id, activity, duration, date, created_at")
-    .eq("goal_id", goalRow.id)
-  if (lErr) throw new Error(lErr.message)
+  const milestonesRaw = (mRes.data || []) as any[]
+  const stepsRaw = (sRes.data || []) as any[]
+  const logsRaw = (lRes.data || []) as any[]
 
   // Kelompokkan step per milestone
   const stepsByMilestone: Record<string, GoalStep[]> = {}
-  for (const s of stepsRes.data || []) {
+  for (const s of stepsRaw) {
     ;(stepsByMilestone[s.milestone_id] ||= []).push(s as GoalStep)
   }
 
-  const milestones: GoalMilestone[] = (milestonesRaw || []).map((m: any) => ({
+  const milestones: GoalMilestone[] = milestonesRaw.map((m: any) => ({
     id: m.id,
     goal_id: m.goal_id,
     title: m.title,
