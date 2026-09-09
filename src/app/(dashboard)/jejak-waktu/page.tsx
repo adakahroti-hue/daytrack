@@ -406,15 +406,11 @@ export default function WaktuPage() {
                   <div
                     key={row.a.id}
                     className={cn(
-                      "group relative flex items-center gap-4 px-5 py-3.5 border-t border-slate-100 hover:bg-slate-50/60 transition-colors",
+                      "group flex items-center gap-4 px-5 py-3.5 border-t border-slate-100 hover:bg-slate-50/60 transition-colors",
                       idx === 0 && "border-t-0"
                     )}
                     style={{ minHeight: 58 }}
                   >
-                    {/* garis penghubung timeline vertikal (kecuali row terbawah) */}
-                    {idx !== merged.length - 1 && (
-                      <span className="absolute left-[26px] top-1/2 bottom-0 w-px bg-slate-200" aria-hidden />
-                    )}
                     {/* timeline dot */}
                     <span
                       className="relative z-10 shrink-0 w-2.5 h-2.5 rounded-full ring-2 ring-white"
@@ -425,8 +421,8 @@ export default function WaktuPage() {
                             : PIE_COLORS[sorted.findIndex((x) => x.id === row.a.id) % PIE_COLORS.length],
                       }}
                     />
-                    {/* jam */}
-                    <span className="shrink-0 w-[88px] sm:w-[180px] text-[11px] sm:text-xs text-slate-400 tabular-nums leading-tight">
+                    {/* jam — garis pembatas vertikal di kanan kolom jam */}
+                    <span className="shrink-0 w-[88px] sm:w-[180px] pr-3 border-r border-slate-200 text-[11px] sm:text-xs text-slate-400 tabular-nums leading-tight">
                       {formatClock(row.a.started_at)}
                       <span className="hidden sm:inline"> - </span>
                       <span className="sm:hidden block">{row.a.ended_at ? formatClock(row.a.ended_at) : row.a.status === "running" ? "now" : "—"}</span>
