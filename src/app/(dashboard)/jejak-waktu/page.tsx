@@ -218,6 +218,16 @@ export default function WaktuPage() {
 
   const grandTotal = totalsByName.reduce((s, x) => s + x.secs, 0)
 
+  // Map warna tetap per NAMA aktivitas — SAMA PERSIS dengan irisan donut (Ringkasan Waktu)
+  // Indexing disamakan dengan DonutChart: totalsByName.slice(0,10) index ke-i -> PIE_COLORS[i]
+  const colorByName = useMemo(() => {
+    const map: Record<string, string> = {}
+    totalsByName.slice(0, 10).forEach((x, i) => {
+      map[x.name] = PIE_COLORS[i % PIE_COLORS.length]
+    })
+    return map
+  }, [totalsByName])
+
   const elapsed = running ? now - new Date(running.started_at).getTime() : 0
 
   const handleStart = async () => {
@@ -411,14 +421,14 @@ export default function WaktuPage() {
                     )}
                     style={{ minHeight: 58 }}
                   >
-                    {/* timeline dot */}
+                    {/* timeline dot — warna SAMA PERSIS dengan irisan donut (per nama aktivitas) */}
                     <span
-                      className="relative z-10 shrink-0 w-2.5 h-2.5 rounded-full ring-2 ring-white"
+                      className={cn(
+                        "relative z-10 shrink-0 w-2.5 h-2.5 rounded-full",
+                        row.a.status === "running" ? "ring-2 ring-emerald-400" : "ring-2 ring-white"
+                      )}
                       style={{
-                        background:
-                          row.a.status === "running"
-                            ? "#10b981"
-                            : PIE_COLORS[sorted.findIndex((x) => x.id === row.a.id) % PIE_COLORS.length],
+                        background: colorByName[row.a.name] || "#94a3b8",
                       }}
                     />
                     {/* jam — garis pembatas vertikal di kanan kolom jam */}
