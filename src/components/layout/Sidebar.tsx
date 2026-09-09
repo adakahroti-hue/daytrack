@@ -419,6 +419,7 @@ function SidebarContent({
                       onClick={onNavClick}
                       className={cn(
                         'flex items-center gap-3 px-2 py-2 text-sm rounded-md transition-colors min-h-[40px]',
+                        !isCollapsed && 'pl-5',
                         isCollapsed && 'justify-center',
                         isActive
                           ? 'bg-primary text-primary-foreground font-medium'
