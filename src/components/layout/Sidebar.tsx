@@ -425,7 +425,7 @@ function SidebarContent({
                           : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                       )}
                     >
-                      <section.icon className="h-5 w-5 flex-shrink-0" />
+                      <section.icon className="h-4 w-4 flex-shrink-0" />
                       {!isCollapsed && <span className="font-medium truncate">{section.title}</span>}
                     </Link>
                   </TooltipTrigger>
