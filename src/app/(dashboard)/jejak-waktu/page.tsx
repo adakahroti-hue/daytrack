@@ -56,7 +56,7 @@ function fmtGap(ms: number): string {
   return `${m}m`
 }
 
-// Palette warna untuk slice pie (style Daytrack: soft & kontras)
+// Palette warna untuk slice pie & titik timeline aktivitas (style Daytrack: soft & kontras)
 const PIE_COLORS = [
   "#3b82f6", // blue (ganti navy hitam)
   "#0ea5e9", // sky
@@ -406,17 +406,24 @@ export default function WaktuPage() {
                   <div
                     key={row.a.id}
                     className={cn(
-                      "group flex items-center gap-4 px-5 py-3.5 border-t border-slate-100 hover:bg-slate-50/60 transition-colors",
+                      "group relative flex items-center gap-4 px-5 py-3.5 border-t border-slate-100 hover:bg-slate-50/60 transition-colors",
                       idx === 0 && "border-t-0"
                     )}
                     style={{ minHeight: 58 }}
                   >
+                    {/* garis penghubung timeline vertikal (kecuali row terbawah) */}
+                    {idx !== merged.length - 1 && (
+                      <span className="absolute left-[26px] top-1/2 bottom-0 w-px bg-slate-200" aria-hidden />
+                    )}
                     {/* timeline dot */}
                     <span
-                      className={cn(
-                        "shrink-0 w-2.5 h-2.5 rounded-full",
-                        row.a.status === "running" ? "bg-emerald-500" : "bg-slate-300"
-                      )}
+                      className="relative z-10 shrink-0 w-2.5 h-2.5 rounded-full ring-2 ring-white"
+                      style={{
+                        background:
+                          row.a.status === "running"
+                            ? "#10b981"
+                            : PIE_COLORS[sorted.findIndex((x) => x.id === row.a.id) % PIE_COLORS.length],
+                      }}
                     />
                     {/* jam */}
                     <span className="shrink-0 w-[88px] sm:w-[180px] text-[11px] sm:text-xs text-slate-400 tabular-nums leading-tight">
@@ -430,13 +437,13 @@ export default function WaktuPage() {
                       <p className="text-sm font-medium text-slate-900 break-words">{row.a.name}</p>
                     </div>
                     {/* durasi */}
-                    <span className="shrink-0 w-[80px] text-right text-sm font-bold tabular-nums text-slate-900">
+                    <span className="shrink-0 w-[72px] pr-1 text-right text-sm font-bold tabular-nums text-slate-900">
                       {row.a.status === "running"
                         ? formatElapsed(now - new Date(row.a.started_at).getTime())
                         : formatDuration(row.a.duration_seconds)}
                     </span>
-                    {/* action menu */}
-                    <div className="shrink-0 w-[40px] flex justify-end gap-0.5 sm:opacity-0 sm:group-hover:opacity-100 opacity-100 transition-opacity">
+                    {/* action menu — selalu tampil */}
+                    <div className="shrink-0 ml-1 flex justify-end gap-0.5 opacity-100">
                       <button
                         onClick={() => continueMut.mutate(row.a.name)}
                         disabled={continueMut.isPending}
@@ -461,9 +468,6 @@ export default function WaktuPage() {
             })()}
           </div>
         )}
-        <button className="mt-3 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800">
-          Lihat semua aktivitas <ChevronRight className="h-4 w-4" />
-        </button>
       </div>
 
       {/* RINGKASAN WAKTU */}
