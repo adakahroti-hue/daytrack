@@ -394,6 +394,48 @@ export function Header({ onMenuClick }: HeaderProps) {
           </div>
         )}
 
+        {/* Navigasi tanggal tab Waktu — di header (sebelah kanan shortcut), desktop */}
+        {isWaktu && (
+          <div className="hidden sm:flex flex-1 items-center justify-start gap-2 min-w-0">
+            <div className="flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateWaktu('prev')} aria-label="Periode sebelumnya">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="flex items-center gap-1">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="text-xs font-medium whitespace-nowrap">
+                  {format(waktuDate, waktuPeriod === 'bulanan' ? 'MMMM yyyy' : waktuPeriod === 'tahunan' ? 'yyyy' : 'd MMM yyyy', { locale: id })}
+                </span>
+              </div>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateWaktu('next')} aria-label="Periode selanjutnya">
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={goToWaktuToday} aria-label="Hari ini">
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Filter periode tab Waktu — dropdown di header (mobile, selalu tampil) */}
+        {isWaktu && (
+          <div className="sm:hidden flex items-center shrink-0">
+            <select
+              value={waktuPeriod}
+              onChange={(e) => setWaktuPeriod(e.target.value as 'harian' | 'kemarin' | 'shot' | 'mingguan' | 'bulanan' | 'tahunan')}
+              className="h-9 rounded-md border border-border bg-muted/50 px-2 text-sm text-slate-700 outline-none"
+              aria-label="Filter periode waktu"
+            >
+              <option value="kemarin">Kemarin</option>
+              <option value="harian">Harian</option>
+              <option value="shot">Capture</option>
+              <option value="mingguan">Mingguan</option>
+              <option value="bulanan">Bulanan</option>
+              <option value="tahunan">Tahunan</option>
+            </select>
+          </div>
+        )}
+
         {/* Date Navigation — hidden on Hari Ini, Semua, Selesai, Sholat tabs; juga disembunyikan saat filter Kemarin (batch 25) */}
         {isOverviewPage && period !== 'yesterday' && (
         <div className="flex-1 flex items-center justify-start gap-2 min-w-0">
