@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, Fragment } from "react"
 import { Play, Square, Timer, Trash2, RotateCcw, MoreVertical, Plus, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -413,62 +413,118 @@ export default function WaktuPage() {
                     </button>
                   </div>
                 ) : (
-                  <div
-                    key={row.a.id}
-                    className={cn(
-                      "group flex items-center gap-4 px-5 py-3.5 border-t border-slate-100 hover:bg-slate-50/60 transition-colors",
-                      idx === 0 && "border-t-0"
-                    )}
-                    style={{ minHeight: 58 }}
-                  >
-                    {/* timeline dot — warna SAMA PERSIS dengan irisan donut (per nama aktivitas) */}
-                    <span
+                  <Fragment key={row.a.id}>
+                    {/* MOBILE: stacked 2 baris (rapi, tidak mepet) */}
+                    <div
                       className={cn(
-                        "relative z-10 shrink-0 w-2.5 h-2.5 rounded-full",
-                        row.a.status === "running" ? "ring-2 ring-emerald-400" : "ring-2 ring-white"
+                        "sm:hidden group flex flex-col gap-2 px-5 py-3 border-t border-slate-100 hover:bg-slate-50/60 transition-colors",
+                        idx === 0 && "border-t-0"
                       )}
-                      style={{
-                        background: colorByName[row.a.name] || "#94a3b8",
-                      }}
-                    />
-                    {/* jam — garis pembatas vertikal di kanan kolom jam */}
-                    <span className="shrink-0 w-[88px] sm:w-[180px] pr-3 border-r border-slate-200 text-[11px] sm:text-xs text-slate-400 tabular-nums leading-tight">
-                      {formatClock(row.a.started_at)}
-                      <span className="hidden sm:inline"> - </span>
-                      <span className="sm:hidden block">{row.a.ended_at ? formatClock(row.a.ended_at) : row.a.status === "running" ? "now" : "—"}</span>
-                      <span className="hidden sm:inline">{row.a.ended_at ? formatClock(row.a.ended_at) : row.a.status === "running" ? "sekarang" : "—"}</span>
-                    </span>
-                    {/* nama */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-900 break-words">{row.a.name}</p>
+                    >
+                      <div className="flex items-center gap-3">
+                        {/* timeline dot */}
+                        <span
+                          className={cn(
+                            "relative z-10 shrink-0 w-2.5 h-2.5 rounded-full",
+                            row.a.status === "running" ? "ring-2 ring-emerald-400" : "ring-2 ring-white"
+                          )}
+                          style={{ background: colorByName[row.a.name] || "#94a3b8" }}
+                        />
+                        {/* nama */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-slate-900 break-words">{row.a.name}</p>
+                        </div>
+                        {/* action menu — selalu tampil */}
+                        <div className="shrink-0 flex justify-end gap-0.5 opacity-100">
+                          <button
+                            onClick={() => continueMut.mutate(row.a.name)}
+                            disabled={continueMut.isPending}
+                            aria-label="Lanjutkan tugas"
+                            title="Lanjutkan dengan nama sama"
+                            className="p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                          >
+                            <RotateCcw className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(row.a.id)}
+                            disabled={remove.isPending}
+                            aria-label="Hapus aktivitas"
+                            className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 pl-5">
+                        {/* jam */}
+                        <span className="shrink-0 text-[11px] text-slate-400 tabular-nums leading-tight">
+                          {formatClock(row.a.started_at)}
+                          <span className="sm:hidden"> - </span>
+                          {row.a.ended_at ? formatClock(row.a.ended_at) : row.a.status === "running" ? "now" : "—"}
+                        </span>
+                        {/* durasi */}
+                        <span className="ml-auto shrink-0 text-sm font-bold tabular-nums text-slate-900">
+                          {row.a.status === "running"
+                            ? formatElapsed(now - new Date(row.a.started_at).getTime())
+                            : formatDuration(row.a.duration_seconds)}
+                        </span>
+                      </div>
                     </div>
-                    {/* durasi */}
-                    <span className="shrink-0 w-[72px] pr-1 text-right text-sm font-bold tabular-nums text-slate-900">
-                      {row.a.status === "running"
-                        ? formatElapsed(now - new Date(row.a.started_at).getTime())
-                        : formatDuration(row.a.duration_seconds)}
-                    </span>
-                    {/* action menu — selalu tampil */}
-                    <div className="shrink-0 ml-1 flex justify-end gap-0.5 opacity-100">
-                      <button
-                        onClick={() => continueMut.mutate(row.a.name)}
-                        disabled={continueMut.isPending}
-                        aria-label="Lanjutkan tugas"
-                        title="Lanjutkan dengan nama sama"
-                        className="p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100"
-                      >
-                        <RotateCcw className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(row.a.id)}
-                        disabled={remove.isPending}
-                        aria-label="Hapus aktivitas"
-                        className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                    {/* DESKTOP: single row */}
+                    <div
+                      className={cn(
+                        "hidden sm:flex group items-center gap-4 px-5 py-3.5 border-t border-slate-100 hover:bg-slate-50/60 transition-colors",
+                        idx === 0 && "border-t-0"
+                      )}
+                      style={{ minHeight: 58 }}
+                    >
+                      {/* timeline dot */}
+                      <span
+                        className={cn(
+                          "relative z-10 shrink-0 w-2.5 h-2.5 rounded-full",
+                          row.a.status === "running" ? "ring-2 ring-emerald-400" : "ring-2 ring-white"
+                        )}
+                        style={{ background: colorByName[row.a.name] || "#94a3b8" }}
+                      />
+                      {/* jam — garis pembatas vertikal di kanan kolom jam */}
+                      <span className="shrink-0 w-[88px] sm:w-[180px] pr-3 border-r border-slate-200 text-[11px] sm:text-xs text-slate-400 tabular-nums leading-tight">
+                        {formatClock(row.a.started_at)}
+                        <span className="hidden sm:inline"> - </span>
+                        <span className="sm:hidden block">{row.a.ended_at ? formatClock(row.a.ended_at) : row.a.status === "running" ? "now" : "—"}</span>
+                        <span className="hidden sm:inline">{row.a.ended_at ? formatClock(row.a.ended_at) : row.a.status === "running" ? "sekarang" : "—"}</span>
+                      </span>
+                      {/* nama */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-900 break-words">{row.a.name}</p>
+                      </div>
+                      {/* durasi */}
+                      <span className="shrink-0 w-[72px] pr-1 text-right text-sm font-bold tabular-nums text-slate-900">
+                        {row.a.status === "running"
+                          ? formatElapsed(now - new Date(row.a.started_at).getTime())
+                          : formatDuration(row.a.duration_seconds)}
+                      </span>
+                      {/* action menu — selalu tampil */}
+                      <div className="shrink-0 ml-1 flex justify-end gap-0.5 opacity-100">
+                        <button
+                          onClick={() => continueMut.mutate(row.a.name)}
+                          disabled={continueMut.isPending}
+                          aria-label="Lanjutkan tugas"
+                          title="Lanjutkan dengan nama sama"
+                          className="p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                        >
+                          <RotateCcw className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(row.a.id)}
+                          disabled={remove.isPending}
+                          aria-label="Hapus aktivitas"
+                          className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  </Fragment>
                 )
               )
             })()}
