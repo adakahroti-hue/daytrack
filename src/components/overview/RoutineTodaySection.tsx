@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Check, Minus, Mosque, BookOpen, GlassWater, Repeat, Sparkles, Shield, Moon, ArrowRight, Wallet, HandCoins, Sun, PersonStanding } from 'lucide-react'
+import { Check, Minus, Mosque, BookOpen, GlassWater, Repeat, Sparkles, Shield, Moon, ArrowRight, Wallet, HandCoins, Sun, PersonStanding, StickyNote, ScanSearch, ListMusic, Wrench } from 'lucide-react'
 import { format, differenceInCalendarDays } from 'date-fns'
 import { cn, formatRupiah } from '@/lib/utils'
 import { useOverviewData } from "@/hooks/useOverviewData"
@@ -886,6 +886,27 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           </div>
         </RoutineCard>
 
+        {/* Kategori Alat — shortcut ke tab Alquran, Catatan, SWOT, Playlist */}
+        <RoutineCard tint="bg-white border-slate-200" icon={Wrench} iconColor="text-slate-600" title="Alat" hideIcon>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <Link href="/alquran" className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+              <BookOpen className="h-4 w-4 text-slate-500" />
+              <span className="truncate">Alquran</span>
+            </Link>
+            <Link href="/catatan" className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+              <StickyNote className="h-4 w-4 text-slate-500" />
+              <span className="truncate">Catatan</span>
+            </Link>
+            <Link href="/swot" className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+              <ScanSearch className="h-4 w-4 text-slate-500" />
+              <span className="truncate">SWOT</span>
+            </Link>
+            <Link href="/kesenangan" className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+              <ListMusic className="h-4 w-4 text-slate-500" />
+              <span className="truncate">Playlist</span>
+            </Link>
+          </div>
+        </RoutineCard>
       </div>
     </section>
   )
