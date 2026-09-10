@@ -48,44 +48,57 @@ export type JejakWaktu = {
 
 export type WaktuPeriod = "harian" | "kemarin" | "shot" | "mingguan" | "bulanan" | "tahunan"
 
-function startOfDay(d: Date): Date {
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate())
+// Semua batas periode dihitung dalam WIB (UTC+7) agar "hari ini" = tengah malam WIB,
+// bukan tengah malam UTC (yang bergeser 7 jam & membuat aktivitas pagi WIB masuk hari salah).
+const WIB_MS = 7 * 60 * 60 * 1000
+// Kembalikan Date yang field UTC-nya merepresentasikan kalender WIB dari d
+function asWib(d: Date): Date {
+  return new Date(d.getTime() + WIB_MS)
+}
+// Instant UTC dari awal hari WIB (00:00 WIB) untuk d
+function wibDayStart(d: Date): Date {
+  const w = asWib(d)
+  const s = Date.UTC(w.getUTCFullYear(), w.getUTCMonth(), w.getUTCDate())
+  return new Date(s - WIB_MS)
 }
 
-// Shot: rentang Minggu–Sabtu (7 hari), sama seperti overview
+// Shot: rentang Minggu–Sabtu (7 hari), dihitung dalam WIB
 function getShotStart(anchor: Date): Date {
-  const d = startOfDay(anchor)
-  const day = d.getDay() // 0=Minggu
-  const baseSunday = new Date(d.getFullYear(), d.getMonth(), d.getDate() - day)
-  const shift = day === 0 ? -7 : 0
-  return new Date(baseSunday.getFullYear(), baseSunday.getMonth(), baseSunday.getDate() + shift)
+  const w = asWib(anchor)
+  const day = w.getUTCDay() // 0=Minggu
+  let sun = Date.UTC(w.getUTCFullYear(), w.getUTCMonth(), w.getUTCDate() - day) // Minggu 00:00 WIB
+  if (day === 0) sun -= 7 * 24 * 60 * 60 * 1000 // jika hari ini Minggu, mundur 1 minggu
+  return new Date(sun - WIB_MS)
 }
 
 function getPeriodRange(period: WaktuPeriod, anchor: Date = new Date()): { start: string; end: string | null } {
-  const a = startOfDay(anchor)
   if (period === "harian") {
-    return { start: a.toISOString(), end: null }
+    return { start: wibDayStart(anchor).toISOString(), end: null }
   }
   if (period === "kemarin") {
-    const yesterday = new Date(a.getFullYear(), a.getMonth(), a.getDate() - 1)
-    return { start: yesterday.toISOString(), end: a.toISOString() }
+    const today = wibDayStart(anchor)
+    const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000)
+    return { start: yesterday.toISOString(), end: today.toISOString() }
   }
   if (period === "shot") {
     const s = getShotStart(anchor)
-    const e = new Date(s.getFullYear(), s.getMonth(), s.getDate() + 7)
+    const e = new Date(s.getTime() + 7 * 24 * 60 * 60 * 1000)
     return { start: s.toISOString(), end: e.toISOString() }
   }
   if (period === "mingguan") {
-    const day = anchor.getDay() // 0=Minggu
+    const w = asWib(anchor)
+    const day = w.getUTCDay()
     const diff = (day + 6) % 7 // Senin awal minggu
-    const monday = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate() - diff)
-    return { start: monday.toISOString(), end: null }
+    const monday = Date.UTC(w.getUTCFullYear(), w.getUTCMonth(), w.getUTCDate() - diff)
+    return { start: new Date(monday - WIB_MS).toISOString(), end: null }
   }
   if (period === "bulanan") {
-    return { start: new Date(anchor.getFullYear(), anchor.getMonth(), 1).toISOString(), end: null }
+    const w = asWib(anchor)
+    return { start: new Date(Date.UTC(w.getUTCFullYear(), w.getUTCMonth(), 1) - WIB_MS).toISOString(), end: null }
   }
   // tahunan
-  return { start: new Date(anchor.getFullYear(), 0, 1).toISOString(), end: null }
+  const w = asWib(anchor)
+  return { start: new Date(Date.UTC(w.getUTCFullYear(), 0, 1) - WIB_MS).toISOString(), end: null }
 }
 
 export async function getJejakWaktuByPeriod(period: WaktuPeriod = "harian", anchor: Date = new Date()): Promise<JejakWaktu[]> {
