@@ -316,8 +316,8 @@ export default function AlquranPage() {
           </div>
 
           {/* Navigasi surah cepat */}
-          <div className="flex flex-wrap gap-1.5">
-            {list.slice(0, 20).map((s) => (
+          <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pr-1">
+            {list.slice(0, 30).map((s) => (
               <button
                 key={s.nomor}
                 onClick={() => jumpToSurah(s.nomor)}
@@ -331,7 +331,7 @@ export default function AlquranPage() {
                 {s.nomor}
               </button>
             ))}
-            {list.length > 20 && <span className="text-xs text-slate-400 self-center">…</span>}
+            {list.length > 30 && <span className="text-xs text-slate-400 self-center">…</span>}
           </div>
 
           {loadingAyat ? (
