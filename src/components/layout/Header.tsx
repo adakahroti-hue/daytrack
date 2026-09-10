@@ -338,8 +338,8 @@ export function Header({ onMenuClick }: HeaderProps) {
         </div>
       )}
 
-      {/* Right side controls */}
-      <div className="flex items-center gap-2 sm:gap-3 min-w-0 overflow-x-auto scrollbar-none">
+      {/* Right side controls — ml-auto agar selalu mentok ke ujung kanan (terutama saat judul disembunyikan) */}
+      <div className="ml-auto flex items-center gap-2 sm:gap-3 min-w-0 overflow-x-auto scrollbar-none">
         {/* Hari Ini Stats — only on tugas/hari-ini */}
         {isHariIni && <HariIniHeaderStats />}
 
