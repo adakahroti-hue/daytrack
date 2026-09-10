@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { BookOpen, ArrowLeft, Search, BookMarked, ChevronRight, ChevronLeft, Bookmark, ChevronDown, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAlquranBookmark } from "@/hooks/useAlquranBookmark"
+import { useHeaderControls } from "@/components/layout/HeaderControls"
 
 type SurahMeta = {
   nomor: number
@@ -58,11 +59,12 @@ function cacheSet(key: string, data: unknown) {
 export default function AlquranPage() {
   const [list, setList] = useState<SurahMeta[]>([])
   const [loadingList, setLoadingList] = useState(true)
-  const [mode, setMode] = useState<"pilih" | "mengaji">("mengaji")
   const [selected, setSelected] = useState<number | null>(null)
   const [detail, setDetail] = useState<SurahDetail | null>(null)
   const [loadingDetail, setLoadingDetail] = useState(false)
   const [query, setQuery] = useState("")
+
+  const { alquranMode: mode, setAlquranMode: setMode } = useHeaderControls()
 
   // Mode mengaji state
   const [curSurah, setCurSurah] = useState(1)
@@ -211,21 +213,13 @@ export default function AlquranPage() {
 
   return (
     <div className="space-y-4 p-4 sm:p-6">
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2.5">
-            <BookOpen className="h-6 w-6 text-slate-700" /> Alquran
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">Baca Alquran 30 juz lengkap dengan terjemahan dan tafsir.</p>
-        </div>
-        <div className="flex gap-2">
-          <ButtonLite active={mode === "pilih"} onClick={() => setMode("pilih")}>
-            Pilih Surah
-          </ButtonLite>
-          <ButtonLite active={mode === "mengaji"} onClick={startMengaji}>
-            <BookMarked className="h-4 w-4" /> Mode Mengaji
-          </ButtonLite>
-        </div>
+      <div className="sm:hidden flex gap-2">
+        <ButtonLite active={mode === "pilih"} onClick={() => setMode("pilih")}>
+          Pilih Surah
+        </ButtonLite>
+        <ButtonLite active={mode === "mengaji"} onClick={startMengaji}>
+          <BookMarked className="h-4 w-4" /> Mode Mengaji
+        </ButtonLite>
       </div>
 
       {mode === "pilih" ? (

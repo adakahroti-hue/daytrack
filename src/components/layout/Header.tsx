@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, Mosque, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, ScanSearch, Bell, Timer } from 'lucide-react'
+import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, BookMarked, Mosque, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, ScanSearch, Bell, Timer } from 'lucide-react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
@@ -168,6 +168,8 @@ export function Header({ onMenuClick }: HeaderProps) {
     waktuDate,
     navigateWaktu,
     goToWaktuToday,
+    alquranMode,
+    setAlquranMode,
   } = useHeaderControls()
 
   // Show period toggle only on Overview page
@@ -539,6 +541,32 @@ export function Header({ onMenuClick }: HeaderProps) {
                   <span className="hidden sm:inline truncate">{label}</span>
                 </Button>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Alquran: toggle Pilih Surah / Mode Mengaji — di header kanan */}
+        {isAlquran && (
+          <div className="hidden sm:flex flex-shrink-0">
+            <div className="flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border">
+              <Button
+                variant={alquranMode === 'pilih' ? 'default' : 'ghost'}
+                size="sm"
+                className="h-8 px-2 gap-1 justify-center"
+                onClick={() => setAlquranMode('pilih')}
+              >
+                <BookOpen className="h-3.5 w-3.5 flex-shrink-0" />
+                <span className="hidden sm:inline truncate">Pilih Surah</span>
+              </Button>
+              <Button
+                variant={alquranMode === 'mengaji' ? 'default' : 'ghost'}
+                size="sm"
+                className="h-8 px-2 gap-1 justify-center"
+                onClick={() => setAlquranMode('mengaji')}
+              >
+                <BookMarked className="h-3.5 w-3.5 flex-shrink-0" />
+                <span className="hidden sm:inline truncate">Mode Mengaji</span>
+              </Button>
             </div>
           </div>
         )}

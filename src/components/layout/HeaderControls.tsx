@@ -55,6 +55,8 @@ interface HeaderControls {
   waktuDate: Date
   navigateWaktu: (dir: 'prev' | 'next') => void
   goToWaktuToday: () => void
+  alquranMode: 'pilih' | 'mengaji'
+  setAlquranMode: (m: 'pilih' | 'mengaji') => void
 }
 
 const HeaderControlsContext = createContext<HeaderControls | null>(null)
@@ -278,6 +280,8 @@ export function HeaderControlsProvider({
   const [arusKasShowAll, setArusKasShowAll] = useState(false)
   const [waktuPeriod, setWaktuPeriod] = useState<'harian' | 'kemarin' | 'shot' | 'mingguan' | 'bulanan' | 'tahunan'>('harian')
   const [waktuDate, setWaktuDate] = useState<Date>(new Date())
+  // Alquran: mode Pilih Surah / Mode Mengaji — dikelola di header
+  const [alquranMode, setAlquranMode] = useState<'pilih' | 'mengaji'>('mengaji')
 
   const navigateWaktu = useCallback((dir: 'prev' | 'next') => {
     setWaktuDate((prev) => {
@@ -417,7 +421,9 @@ export function HeaderControlsProvider({
     waktuDate,
     navigateWaktu,
     goToWaktuToday,
-  }), [dynamicTitle, dynamicDescription, currentDate, period, setPeriod, selectYesterday, page, setPage, navigate, goToToday, onRefresh, isLoading, isToday, navigateToPeriodStart, category, subPage, setSubPage, tugasView, setTugasView, groupMode, ibadahPeriod, ibadahDate, setIbadahPeriod, navigateIbadah, arusKasShowAll, setArusKasShowAll, waktuPeriod, setWaktuPeriod, waktuDate, navigateWaktu, goToWaktuToday])
+    alquranMode,
+    setAlquranMode,
+  }), [dynamicTitle, dynamicDescription, currentDate, period, setPeriod, selectYesterday, page, setPage, navigate, goToToday, onRefresh, isLoading, isToday, navigateToPeriodStart, category, subPage, setSubPage, tugasView, setTugasView, groupMode, ibadahPeriod, ibadahDate, setIbadahPeriod, navigateIbadah, arusKasShowAll, setArusKasShowAll, waktuPeriod, setWaktuPeriod, waktuDate, navigateWaktu, goToWaktuToday, alquranMode])
 
   return (
     <HeaderControlsContext.Provider value={value}>
