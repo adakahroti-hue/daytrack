@@ -156,7 +156,7 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
         case 'daily': return 'Overview Harian'
         case 'yesterday': return 'Overview Kemarin'
         case 'weekly': return 'Overview Mingguan'
-        case 'shot': return 'Overview Capture'
+        case 'shot': return 'Overview'
         case 'monthly': return 'Overview Bulanan'
         case 'yearly': return 'Overview Tahunan'
       }
@@ -231,7 +231,7 @@ function getCategoryDescription(category: string, period: Period, subPage: strin
         case 'daily': return 'Ringkasan aktivitas harian Anda'
         case 'yesterday': return 'Ringkasan aktivitas kemarin'
         case 'weekly': return 'Ringkasan aktivitas mingguan Anda'
-        case 'shot': return 'Ringkasan aktivitas Minggu\u2013Sabtu Anda'
+        case 'shot': return 'Ringkasan aktivitas Anda'
         case 'monthly': return 'Ringkasan aktivitas bulanan Anda'
         case 'yearly': return 'Ringkasan aktivitas tahunan Anda'
       }
