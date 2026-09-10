@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { BookOpen, ArrowLeft, Search, BookMarked, ChevronRight, ChevronLeft, Bookmark } from "lucide-react"
+import { BookOpen, ArrowLeft, Search, BookMarked, ChevronRight, ChevronLeft, Bookmark, ChevronDown, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAlquranBookmark } from "@/hooks/useAlquranBookmark"
 
@@ -374,7 +374,18 @@ export default function AlquranPage() {
   )
 }
 
-function AyatCard({ a, highlight, onMark }: { a: Ayat; highlight?: boolean; onMark?: (ayat: number) => void }) {
+function AyatCard({
+  a,
+  highlight,
+  onMark,
+}: {
+  a: Ayat
+  highlight?: boolean
+  onMark?: (ayat: number) => void
+}) {
+  const [showTafsir, setShowTafsir] = useState(false)
+  const hasTafsir = !!a.tafsir?.[0]?.teks
+
   return (
     <div
       className={cn(
@@ -397,18 +408,26 @@ function AyatCard({ a, highlight, onMark }: { a: Ayat; highlight?: boolean; onMa
       </div>
       <p className="text-sm italic text-slate-500">{a.teksLatin}</p>
       <p className="text-sm text-slate-800">{a.teksIndonesia}</p>
-      {a.tafsir?.[0]?.teks && (
+      {hasTafsir && (
         <div className="border-t border-slate-100 pt-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600 mb-1.5">
-            Pelajaran dari Ayat
-          </p>
-          <div className="space-y-2 text-sm text-slate-600 leading-relaxed">
-            {a.tafsir[0].teks
-              .split(/\n+/)
-              .map((line: string, i: number) =>
-                line.trim() ? <p key={i}>{line.trim()}</p> : null
-              )}
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowTafsir(!showTafsir)}
+            aria-expanded={showTafsir}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-emerald-600 hover:text-emerald-700 transition-colors"
+          >
+            {showTafsir ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+            {showTafsir ? "Sembunyikan Pelajaran" : "Pelajaran dari Ayat"}
+          </button>
+          {showTafsir && (
+            <div className="mt-2 space-y-2 text-sm text-slate-600 leading-relaxed">
+              {a.tafsir[0].teks
+                .split(/\n+/)
+                .map((line: string, i: number) =>
+                  line.trim() ? <p key={i}>{line.trim()}</p> : null
+                )}
+            </div>
+          )}
         </div>
       )}
       {onMark && (
