@@ -344,20 +344,6 @@ export function Header({ onMenuClick }: HeaderProps) {
         {/* Hari Ini Stats — only on tugas/hari-ini */}
         {isHariIni && <HariIniHeaderStats />}
 
-        {/* Navigasi tanggal tab Waktu — di kiri filter waktu */}
-        {category === 'waktu' && (
-          <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border shrink-0">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateWaktu('prev')} aria-label="Sebelumnya">
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-xs sm:text-sm font-medium text-slate-700 tabular-nums min-w-[88px] text-center">
-              {format(waktuDate, waktuPeriod === 'bulanan' ? 'MMMM yyyy' : waktuPeriod === 'tahunan' ? 'yyyy' : 'd MMM yyyy', { locale: id })}
-            </span>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigateWaktu('next')} aria-label="Selanjutnya">
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
         {/* Revisi 1: toggle group (Prioritas/Tanggal/Durasi/Badge/Lambat) — di header */}
         {isSemua && (
           <div className="hidden md:flex items-center gap-0.5 p-0.5 bg-muted/50 rounded-lg border border-border shrink-0">
