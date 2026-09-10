@@ -422,26 +422,6 @@ export function Header({ onMenuClick }: HeaderProps) {
           </Button>
         )}
 
-        {/* Period Toggle Group — only on Overview page — PALING KANAN */}
-        {isOverviewPage && (
-          <div className="hidden sm:flex flex-shrink-0">
-            <div className="flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border w-full justify-center">
-              {Object.entries(periodLabels).map(([key, { label, icon: Icon }]) => (
-                <Button
-                  key={key}
-                  variant={period === key ? 'default' : 'ghost'}
-                  size="sm"
-                  className="h-8 px-2 gap-1 justify-center"
-                  onClick={() => handlePeriodChange(key as 'yesterday' | 'daily' | 'shot' | 'weekly' | 'monthly' | 'yearly')}
-                >
-                  <Icon className="h-3.5 w-3.5 flex-shrink-0" />
-                  <span className="hidden sm:inline truncate">{label}</span>
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Navigasi tanggal tab Waktu — di header, desktop */}
         {isWaktu && (
           <div className="hidden sm:flex flex-1 items-center justify-start gap-2 min-w-0">
@@ -573,6 +553,26 @@ export function Header({ onMenuClick }: HeaderProps) {
                 >
                   {opt.label}
                 </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Period Toggle Group — only on Overview page — PALING KANAN */}
+        {isOverviewPage && (
+          <div className="hidden sm:flex flex-shrink-0">
+            <div className="flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border w-full justify-center">
+              {Object.entries(periodLabels).map(([key, { label, icon: Icon }]) => (
+                <Button
+                  key={key}
+                  variant={period === key ? 'default' : 'ghost'}
+                  size="sm"
+                  className="h-8 px-2 gap-1 justify-center"
+                  onClick={() => handlePeriodChange(key as 'yesterday' | 'daily' | 'shot' | 'weekly' | 'monthly' | 'yearly')}
+                >
+                  <Icon className="h-3.5 w-3.5 flex-shrink-0" />
+                  <span className="hidden sm:inline truncate">{label}</span>
+                </Button>
               ))}
             </div>
           </div>
