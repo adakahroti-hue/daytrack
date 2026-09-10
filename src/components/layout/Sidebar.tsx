@@ -312,9 +312,10 @@ function SidebarContent({
 
   return (
     <div className="flex h-full flex-col">
-      {/* Logo header — disembunyikan saat sidebar di-collapse */}
-      {!isCollapsed && (
-        <div className={cn('flex h-16 items-center border-b px-3')}>
+      {/* Logo header — tinggi tetap h-16 + border-b. Tombol collapse tetap di baris ini.
+          Saat collapsed, logo disembunyikan tapi tombol tetap ter-position rapi (tidak melayang). */}
+      <div className={cn('flex h-16 items-center border-b px-3', isCollapsed && 'justify-center')}>
+        {!isCollapsed && (
           <Link
             href="/overview"
             className="flex items-center gap-2 font-bold text-lg text-primary flex-1 min-w-0"
@@ -329,8 +330,7 @@ function SidebarContent({
             />
             <span className="truncate">Daytrack</span>
           </Link>
-        </div>
-      )}
+        )}
         {!showMobileClose && (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -349,6 +349,7 @@ function SidebarContent({
             </TooltipContent>
           </Tooltip>
         )}
+      </div>
 
         {/* Mobile close button */}
         {showMobileClose && onCloseMobile && (
