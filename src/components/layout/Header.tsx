@@ -204,7 +204,7 @@ export function Header({ onMenuClick }: HeaderProps) {
     isOverviewPage || isWaktu || isPengingat || isBankIde || isCatatan || isSwot || isAlquran || isKesenangan
   // Semua tab bergaya tabel Quran memakai toolbar navigasi tanggal + toggle periode di header
   // Mental Block sengaja TIDAK masuk isTableTab: data journal (fetch all), tidak terpengaruh filter waktu.
-  const isTableTab = isSholat || isQuran || isMinumAir || isDoa || isSyukur || isTidur || isPmo || isMasalah || isKesenangan || isSedekah || isKeuangan || isGoal || isMakan
+  const isTableTab = isSholat || isQuran || isMinumAir || isDoa || isSyukur || isTidur || isPmo || isMasalah || isKesenangan || isSedekah || isKeuangan || isMakan
   // Revisi: tombol show/hide filter tanggal — toggle & navigasi tanggal mobile baru tampil setelah diklik
   const [showMobileControls, setShowMobileControls] = useState(false)
 
