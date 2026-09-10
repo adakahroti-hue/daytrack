@@ -20,7 +20,7 @@ function errMsg(e: any) {
 }
 
 export default function GoalPage() {
-  const { data: goal, isLoading } = useActiveGoal()
+  const { data: goal, isLoading, error: goalError } = useActiveGoal()
   const { data: goals } = useListGoals()
   const setActiveGoal = useSetActiveGoal()
   const createGoal = useCreateGoal()
@@ -97,6 +97,17 @@ export default function GoalPage() {
 
   if (isLoading) {
     return <div className="p-6 text-sm text-slate-400">Memuat…</div>
+  }
+
+  if (goalError) {
+    return (
+      <div className="mx-auto max-w-2xl p-6">
+        <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-center">
+          <p className="text-sm font-medium text-rose-700">Gagal memuat goal</p>
+          <p className="mt-1 text-xs text-rose-600/80 break-words">{goalError.message}</p>
+        </div>
+      </div>
+    )
   }
 
   if (!goal) {

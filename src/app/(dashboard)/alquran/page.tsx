@@ -339,13 +339,16 @@ function AyatCard({ a, highlight, onMark }: { a: Ayat; highlight?: boolean; onMa
       <p className="text-sm text-slate-800">{a.teksIndonesia}</p>
       {a.tafsir?.[0]?.teks && (
         <div className="border-t border-slate-100 pt-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600 mb-1">
+          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600 mb-1.5">
             Pelajaran dari Ayat
           </p>
-          <p
-            className="text-sm text-slate-600 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: a.tafsir[0].teks }}
-          />
+          <div className="space-y-2 text-sm text-slate-600 leading-relaxed">
+            {a.tafsir[0].teks
+              .split(/\n+/)
+              .map((line: string, i: number) =>
+                line.trim() ? <p key={i}>{line.trim()}</p> : null
+              )}
+          </div>
         </div>
       )}
       {onMark && (
