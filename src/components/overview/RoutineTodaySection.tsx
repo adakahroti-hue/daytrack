@@ -287,8 +287,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const sholatPerWaktu = SHOLAT_5.map(s =>
     (prayerRows as any[]).filter(row => !!row?.[`sholat_${s.key}`]).length
   )
-  const sholatCount = sholatPerWaktu.reduce((a, b) => a + b, 0)
-  const sholatTarget = 5 * daysElapsed
+
 
   // Baca Quran
   const quranEntries = (ov.quran ?? []) as any[]
@@ -296,16 +295,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const quranPerSesi = QURAN_SESSIONS.map(s =>
     quranRows.filter(e => e.waktu_baca === s.key && e.status === 'sudah').length
   )
-  const quranCount = quranPerSesi.reduce((a, b) => a + b, 0)
-  const quranTarget = 5 * daysElapsed
+
 
   // Sholat Sunnah (Dhuha + Tahajud)
   const sunnahRows = (ov.sunnah ?? []) as any[]
   const sunnahPerWaktu = SUNNAH_TIMES.map(s =>
     (sunnahRows as any[]).filter(row => !!row?.[`sholat_${s.key}`]).length
   )
-  const sunnahCount = sunnahPerWaktu.reduce((a, b) => a + b, 0)
-  const sunnahTarget = 2 * daysElapsed
+
 
   // Insight Sholat 5 Waktu: waktu paling sering terlewat + alasan paling sering
   const sholatMissedIdx = sholatPerWaktu.indexOf(Math.min(...sholatPerWaktu))
@@ -341,7 +338,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const waterEntries = (ov.water ?? []) as any[]
   const totalMl = (waterEntries as any[]).reduce((sum, e) => sum + (e.jumlah_ml || 0), 0)
   const gelas = Math.round(totalMl / ML_PER_GELAS)
-  const targetGelasPeriod = TARGET_GELAS * daysElapsed
+
   const waterPerSesi = WATER_SESSIONS.map(s =>
     (waterEntries as any[]).filter(e => e.waktu_minum === s.key && e.status === 'sudah').length
   )
@@ -360,8 +357,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
 
   // Tidur — rata-rata durasi, tidur paling lambat, bangun paling lambat, alasan begadang terpopuler
   const tidurRows = tidurEntries as any[]
-  const durasiVals = tidurRows.map(e => e.durasi_jam).filter((v: number | null) => typeof v === 'number' && v > 0)
-  const avgDurasi = durasiVals.length ? Math.round(durasiVals.reduce((a: number, b: number) => a + b, 0) / durasiVals.length * 10) / 10 : 0
   const jamTidurList = tidurRows.map(e => e.jam_tidur).filter(Boolean).sort() as string[]
   const jamBangunList = tidurRows.map(e => e.jam_bangun).filter(Boolean).sort() as string[]
   const fmtJam = (v: string | null) => v ? v.slice(0, 5) : null
@@ -474,19 +469,19 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             <div className="grid grid-cols-4 gap-x-3 gap-y-0 flex-1 min-w-0">
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 truncate">Pokok</p>
-                <p className="text-sm font-bold text-emerald-600 tabular-nums truncate">{formatRupiah(akKebutuhanSisa)}</p>
+                <p className="text-sm font-bold text-slate-900 tabular-nums truncate">{formatRupiah(akKebutuhanSisa)}</p>
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 truncate">Reward</p>
-                <p className="text-sm font-bold text-orange-500 tabular-nums truncate">{formatRupiah(akSelfRewardSisa)}</p>
+                <p className="text-sm font-bold text-slate-900 tabular-nums truncate">{formatRupiah(akSelfRewardSisa)}</p>
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 truncate">Tabung</p>
-                <p className="text-sm font-bold text-blue-600 tabular-nums truncate">{formatRupiah(akTabungSisa)}</p>
+                <p className="text-sm font-bold text-slate-900 tabular-nums truncate">{formatRupiah(akTabungSisa)}</p>
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 truncate">Sedekah</p>
-                <p className="text-sm font-bold text-purple-600 tabular-nums truncate">{formatRupiah(akSedekahSisa)}</p>
+                <p className="text-sm font-bold text-slate-900 tabular-nums truncate">{formatRupiah(akSedekahSisa)}</p>
               </div>
             </div>
           </div>
@@ -585,11 +580,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                       <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
                   </div>
-                  {isWeekly ? (
-                    <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{sholatCount}/{sholatTarget}</span> sholat</p>
-                  ) : (
-                    <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{sholatCount}/{sholatTarget}</span> sholat</p>
-                  )}
+
                 </div>
               </div>
               <div className="grid grid-cols-5 gap-x-2 lg:gap-x-6 shrink-0 w-full lg:w-auto">
@@ -644,11 +635,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                       <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
                   </div>
-                  {isWeekly ? (
-                    <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{sunnahCount}/{sunnahTarget}</span> sholat</p>
-                  ) : (
-                    <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{sunnahCount}/{sunnahTarget}</span> sholat</p>
-                  )}
+
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-x-2 lg:gap-x-6 shrink-0 w-full lg:w-auto">
@@ -686,11 +673,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                       <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
                   </div>
-                  {isWeekly ? (
-                    <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{quranCount}/{quranTarget}</span> sesi</p>
-                  ) : (
-                    <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{quranCount}/{quranTarget}</span> sesi</p>
-                  )}
+
                 </div>
               </div>
               <div className="grid grid-cols-5 gap-x-2 lg:gap-x-6 shrink-0 w-full lg:w-auto">
@@ -736,7 +719,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         </RoutineCard>
 
         {/* Kesehatan — dipindah ke paling bawah */}
-        <RoutineCard tint="bg-white border-slate-200" icon={Shield} iconColor="text-sky-500" title="Kesehatan" hideIcon className="order-4">
+        <RoutineCard tint="bg-white border-slate-200" icon={Shield} iconColor="text-sky-500" title="Habit" hideIcon className="order-4">
           <div className="mt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1">
@@ -749,11 +732,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                       <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
                   </div>
-                  {isWeekly ? (
-                    <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{gelas}/{targetGelasPeriod}</span> gelas</p>
-                  ) : (
-                    <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{gelas}/{targetGelasPeriod}</span> gelas</p>
-                  )}
+
                   {isHarian && gelas >= TARGET_GELAS && (
                     <p className="text-xs text-slate-500 mt-1">
                       Target tercapai 🎉
@@ -797,13 +776,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-4 pt-4 border-t border-slate-100">
             <div className="mt-1.5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 flex items-center gap-3">
-                {isWeekly ? (
-                  <XyPie value={checklist[3].days} target={daysElapsed} color="#111827" size={52} percentLabel percentOnSlice />
-                ) : (
-                  <div className="flex items-baseline gap-1.5 leading-none pl-[2px]">
-                    <span className={cn('text-[22px] font-bold tabular-nums', numColor(checklist[3].days >= daysElapsed))}>{checklist[3].days}<span className={cn('text-lg', numColorSoft(checklist[3].days >= daysElapsed))}>/{daysElapsed}</span></span>
-                  </div>
-                )}
+
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
@@ -813,14 +786,11 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                       <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
                   </div>
-                  <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{checklist[3].days}/{daysElapsed}</span> hari tepat</p>
+
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm lg:justify-end">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-slate-500">Durasi tidur/hari</span>
-                  <span className="font-semibold text-slate-900 tabular-nums">{tidurDurasiList.length ? `${avgDurasi} jam` : '—'}</span>
-                </div>
+
                 {tidurDurasiList.length > 0 && (
                   <div className="flex flex-wrap items-center gap-1.5">
                     {tidurDurasiList.slice(-7).map((d) => {
