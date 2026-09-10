@@ -96,12 +96,16 @@ export async function getActiveGoal(): Promise<GoalData | null> {
   // 3) Steps — difilter by milestone_ids (HINDARI cross-table filter .eq("goal_milestone.goal_id")
   //    yang rawan gagal kalau Supabase tak mendeteksi relasi FK otomatis → throw & crash).
   const milestoneIds = (milestonesRaw || []).map((m: any) => m.id)
-  const { data: stepsRaw, error: sErr } = await supabase
-    .from("goal_step")
-    .select("id, milestone_id, title, is_completed, \"order\", target_date, created_at, updated_at")
-    .in("milestone_id", milestoneIds.length ? milestoneIds : ["__no_milestone__"])
-    .order("order", { ascending: true })
-  if (sErr) throw new Error(sErr.message)
+  let stepsRaw: any[] = []
+  if (milestoneIds.length > 0) {
+    const { data, error: sErr } = await supabase
+      .from("goal_step")
+      .select("id, milestone_id, title, is_completed, \"order\", target_date, created_at, updated_at")
+      .in("milestone_id", milestoneIds)
+      .order("order", { ascending: true })
+    if (sErr) throw new Error(sErr.message)
+    stepsRaw = data || []
+  }
 
   // 4) Progress logs (by goal_id)
   const { data: logsRaw, error: lErr } = await supabase
