@@ -30,7 +30,10 @@ export function PengingatNotif() {
       const tgl = todayStr()
       const jam = nowHHMM()
       const matched = items.filter(
-        (p) => p.tanggal === tgl && p.jam === jam && !dismissed.has(p.id)
+        (p) =>
+          p.tanggal === tgl &&
+          (p.jam || "").slice(0, 5) === jam &&
+          !dismissed.has(p.id)
       )
       setDue(matched)
     }
