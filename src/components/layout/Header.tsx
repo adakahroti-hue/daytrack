@@ -357,32 +357,6 @@ export function Header({ onMenuClick }: HeaderProps) {
             </Button>
           </div>
         )}
-        {/* Filter periode tab Waktu — sejajar dengan judul, style sama dengan Overview (default: Harian) */}
-        {category === 'waktu' && (
-          <div className="hidden sm:flex flex-shrink-0">
-            <div className="flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border w-full justify-center">
-              {([
-                { key: 'kemarin', label: 'Kemarin', icon: History },
-                { key: 'harian', label: 'Harian', icon: Clock },
-                { key: 'shot', label: 'Capture', icon: Flame },
-                { key: 'mingguan', label: 'Mingguan', icon: CalendarDays },
-                { key: 'bulanan', label: 'Bulanan', icon: CalendarRange },
-                { key: 'tahunan', label: 'Tahunan', icon: Calendar },
-              ] as { key: 'harian' | 'kemarin' | 'shot' | 'mingguan' | 'bulanan' | 'tahunan'; label: string; icon: React.ComponentType<{ className?: string }> }[]).map(({ key, label, icon: Icon }) => (
-                <Button
-                  key={key}
-                  variant={waktuPeriod === key ? 'default' : 'ghost'}
-                  size="sm"
-                  className="h-8 px-2 gap-1 justify-center"
-                  onClick={() => setWaktuPeriod(key)}
-                >
-                  <Icon className="h-3.5 w-3.5 flex-shrink-0" />
-                  <span className="hidden sm:inline truncate">{label}</span>
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
         {/* Revisi 1: toggle group (Prioritas/Tanggal/Durasi/Badge/Lambat) — di header */}
         {isSemua && (
           <div className="hidden md:flex items-center gap-0.5 p-0.5 bg-muted/50 rounded-lg border border-border shrink-0">
@@ -553,6 +527,33 @@ export function Header({ onMenuClick }: HeaderProps) {
                 >
                   {opt.label}
                 </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Filter periode tab Waktu — PALING KANAN */}
+        {category === 'waktu' && (
+          <div className="hidden sm:flex flex-shrink-0">
+            <div className="flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border w-full justify-center">
+              {([
+                { key: 'kemarin', label: 'Kemarin', icon: History },
+                { key: 'harian', label: 'Harian', icon: Clock },
+                { key: 'shot', label: 'Capture', icon: Flame },
+                { key: 'mingguan', label: 'Mingguan', icon: CalendarDays },
+                { key: 'bulanan', label: 'Bulanan', icon: CalendarRange },
+                { key: 'tahunan', label: 'Tahunan', icon: Calendar },
+              ] as { key: 'harian' | 'kemarin' | 'shot' | 'mingguan' | 'bulanan' | 'tahunan'; label: string; icon: React.ComponentType<{ className?: string }> }[]).map(({ key, label, icon: Icon }) => (
+                <Button
+                  key={key}
+                  variant={waktuPeriod === key ? 'default' : 'ghost'}
+                  size="sm"
+                  className="h-8 px-2 gap-1 justify-center"
+                  onClick={() => setWaktuPeriod(key)}
+                >
+                  <Icon className="h-3.5 w-3.5 flex-shrink-0" />
+                  <span className="hidden sm:inline truncate">{label}</span>
+                </Button>
               ))}
             </div>
           </div>
