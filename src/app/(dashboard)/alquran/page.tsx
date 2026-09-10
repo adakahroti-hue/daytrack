@@ -210,7 +210,7 @@ export default function AlquranPage() {
   const chunk = fullAyat.slice(curAyat - 1, curAyat - 1 + PAGE)
 
   return (
-    <div className="mx-auto max-w-6xl space-y-4 p-4 sm:p-6">
+    <div className="space-y-4 p-4 sm:p-6">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2.5">
