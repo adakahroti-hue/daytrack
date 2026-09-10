@@ -61,6 +61,7 @@ import {
   Brain,
   Utensils,
   HeartHandshake,
+  HeartPulse,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useTaskCounts } from '@/hooks/useTaskCounts'
@@ -148,8 +149,8 @@ const navigation: NavSection[] = [
     ],
   },
   {
-    title: 'Kesehatan',
-    icon: Heart,
+    title: 'Habit',
+    icon: HeartPulse,
     items: [
       { title: 'Minum Air', href: '/minum-air', icon: GlassWater },
       { title: 'PMO', href: '/pmo', icon: Shield },
@@ -369,6 +370,38 @@ function SidebarContent({
             if ('items' in section) {
               const isSectionOpen = !collapsedSections.includes(section.title)
               const isActive = section.items.some(item => matchesPath(pathname, item.href))
+
+              // Mode COLLAPSED: tampilkan ICON TIAP ITEM (semua tab tetap kelihatan)
+              if (isCollapsed) {
+                return (
+                  <Fragment key={section.title}>
+                    {section.items.map((item) => {
+                      const itemActive = matchesPath(pathname, item.href)
+                      return (
+                        <li key={item.title}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Link
+                                href={item.href}
+                                onClick={onNavClick}
+                                className={cn(
+                                  'flex items-center justify-center px-2 py-2 text-sm rounded-md transition-colors min-h-[40px]',
+                                  itemActive
+                                    ? 'bg-primary text-primary-foreground font-normal'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                                )}
+                              >
+                                <item.icon className="h-4 w-4 flex-shrink-0" />
+                              </Link>
+                            </TooltipTrigger>
+                            <TooltipContent side="right">{item.title}</TooltipContent>
+                          </Tooltip>
+                        </li>
+                      )
+                    })}
+                  </Fragment>
+                )
+              }
 
               return (
                 <Fragment key={section.title}>
