@@ -5,8 +5,7 @@ import { Check, Minus, Mosque, BookOpen, GlassWater, Repeat, Sparkles, Shield, M
 import { format, differenceInCalendarDays } from 'date-fns'
 import { cn, formatRupiah } from '@/lib/utils'
 import { useOverviewData } from "@/hooks/useOverviewData"
-import { PERIOD_LABEL, type OverviewPeriod, FocusTodayCard } from './FocusTodaySection'
-import { MentalBlockSection } from './MentalBlockSection'
+import { PERIOD_LABEL, type OverviewPeriod } from './FocusTodaySection'
 import { MaafkanSection } from './MaafkanSection'
 
 // ─── Revisi batch 18: section "Rutinitas" untuk tab Overview (tema hitam-putih) ───
@@ -462,9 +461,8 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        {/* Kartu Tugas — baris atas (sebaris dengan Refleksi saat Capture) */}
-        {/* Keuangan — sebaris dengan Tugas (posisi kiri) */}
-        <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700" hideIcon order-1>
+        {/* Keuangan — baris 1 kiri */}
+        <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700" hideIcon className="order-1">
           <div className="mt-3 flex items-stretch gap-4">
             {/* Saldo — kiri, besar */}
             <div className="shrink-0 pr-4 border-r border-slate-100 flex flex-col justify-center">
@@ -494,7 +492,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         </RoutineCard>
 
         {/* Optimasi Hoki — dipindah ke sebaris Keuangan (posisi kanan baris 1) */}
-        <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-purple-500" title="Hoki" hideIcon order-2>
+        <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-purple-500" title="Hoki" hideIcon className="order-2">
           <div className="mt-3 px-2 sm:px-3 py-1 grid grid-cols-3 gap-2 sm:gap-3">
             {/* Bersyukur */}
             <div className="relative flex items-center gap-2 text-left">
@@ -573,7 +571,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         <MaafkanSection className="order-6" />
 
         {/* Ibadah — baris 2 (setelah Keuangan & Hoki) */}
-        <RoutineCard tint="bg-white border-slate-200" icon={Mosque} iconColor="text-emerald-500" title="Ibadah" hideIcon order-3>
+        <RoutineCard tint="bg-white border-slate-200" icon={Mosque} iconColor="text-emerald-500" title="Ibadah" hideIcon className="order-3">
           <div className="mt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1">
@@ -737,7 +735,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         </RoutineCard>
 
         {/* Kesehatan — dipindah ke paling bawah */}
-        <RoutineCard tint="bg-white border-slate-200" icon={Shield} iconColor="text-sky-500" title="Kesehatan" hideIcon>
+        <RoutineCard tint="bg-white border-slate-200" icon={Shield} iconColor="text-sky-500" title="Kesehatan" hideIcon className="order-4">
           <div className="mt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1">
