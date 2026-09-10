@@ -220,13 +220,22 @@ export default function WaktuPage() {
 
   // Map warna tetap per NAMA aktivitas — SAMA PERSIS dengan irisan donut (Ringkasan Waktu)
   // Indexing disamakan dengan DonutChart: totalsByName index ke-i -> PIE_COLORS[i]
+  // + nama dari aktivitas berdurasi 0 pun tetap dapat warna (tidak jatuh ke abu-abu fallback)
   const colorByName = useMemo(() => {
     const map: Record<string, string> = {}
+    // 1) urutan warna mengikuti ranking durasi (donut)
     totalsByName.forEach((x, i) => {
       map[x.name] = PIE_COLORS[i % PIE_COLORS.length]
     })
+    // 2) sisa nama yang belum terpetakan (durasi 0) — warna sisa dari palet
+    let next = totalsByName.length
+    for (const it of sorted) {
+      if (!map[it.name]) {
+        map[it.name] = PIE_COLORS[next++ % PIE_COLORS.length]
+      }
+    }
     return map
-  }, [totalsByName])
+  }, [totalsByName, sorted])
 
   const elapsed = running ? now - new Date(running.started_at).getTime() : 0
 
