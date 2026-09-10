@@ -372,6 +372,10 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   let tidurTopAlasan = null as string | null
   let tidurTopAlasanCount = 0
   tidurAlasanCount.forEach((v, k) => { if (v > tidurTopAlasanCount) { tidurTopAlasanCount = v; tidurTopAlasan = k } })
+  // Durasi tidur per hari (untuk card Kesehatan → Waktu Tidur)
+  const tidurDurasiList = tidurRows
+    .map((e) => ({ tgl: e.tanggal, jam: typeof e.durasi_jam === 'number' ? e.durasi_jam : 0 }))
+    .filter((d) => d.jam > 0)
 
   // PMO — alasan relapse terpopuler (jika ada)
   const pmoRows = pmoEntries as any[]
@@ -460,7 +464,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {/* Kartu Tugas — baris atas (sebaris dengan Refleksi saat Capture) */}
         {/* Keuangan — sebaris dengan Tugas (posisi kiri) */}
-        <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700" hideIcon>
+        <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700" hideIcon order-1>
           <div className="mt-3 flex items-stretch gap-4">
             {/* Saldo — kiri, besar */}
             <div className="shrink-0 pr-4 border-r border-slate-100 flex flex-col justify-center">
@@ -490,7 +494,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         </RoutineCard>
 
         {/* Optimasi Hoki — dipindah ke sebaris Keuangan (posisi kanan baris 1) */}
-        <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-purple-500" title="Hoki" hideIcon>
+        <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-purple-500" title="Hoki" hideIcon order-2>
           <div className="mt-3 px-2 sm:px-3 py-1 grid grid-cols-3 gap-2 sm:gap-3">
             {/* Bersyukur */}
             <div className="relative flex items-center gap-2 text-left">
@@ -548,15 +552,8 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           </div>
         </RoutineCard>
 
-        {/* Kartu Tugas — sebaris dengan Refleksi (posisi kiri baris 2) */}
-        <div className="col-span-1">
-          <FocusTodayCard startStr={startStr} endStr={metricEndStr} period={period} />
-        </div>
-
-        {/* Optimasi Hoki — 1 card "Hoki" berisi 3 sub (Bersyukur / Doakan / Sedekah) sejajar horizontal */}
-        {/* Refleksi — list semua (tak dipengaruhi filter) — dipindah ke posisi Hoki */}
-        <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-slate-700" title="Refleksi" href="/masalah" linkColor="text-slate-700 hover:text-slate-900" className="col-span-1" hideIcon>
-          <div className="mt-3">
+        {/* Refleksi — list semua (tak dipengaruhi filter) */}
+        <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-slate-700" title="Refleksi" href="/masalah" linkColor="text-slate-700 hover:text-slate-900" className="col-span-1 order-5" hideIcon>
             {refleksiList.length > 0 ? (
               <ul className="space-y-1.5 max-h-[7.5rem] overflow-y-auto pr-1">
                 {refleksiList.map((r) => (
@@ -569,17 +566,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             ) : (
               <p className="mt-1 text-sm text-slate-500">Belum ada refleksi pada periode ini.</p>
             )}
-          </div>
         </RoutineCard>
 
 
         {/* Maafkan — list semua (tak dipengaruhi filter), sebaris dengan Refleksi */}
-        <MaafkanSection />
+        <MaafkanSection className="order-6" />
 
-        <MentalBlockSection />
-
-        {/* Ibadah — dipindah ke paling bawah */}
-        <RoutineCard tint="bg-white border-slate-200" icon={Mosque} iconColor="text-emerald-500" title="Ibadah" hideIcon>
+        {/* Ibadah — baris 2 (setelah Keuangan & Hoki) */}
+        <RoutineCard tint="bg-white border-slate-200" icon={Mosque} iconColor="text-emerald-500" title="Ibadah" hideIcon order-3>
           <div className="mt-3">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1">
@@ -825,22 +819,16 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               </div>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm lg:justify-end">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-slate-500">Avg Durasi</span>
-                  <span className="font-semibold text-slate-900 tabular-nums">{avgDurasi > 0 ? `${avgDurasi} jam` : '—'}</span>
+                  <span className="text-xs text-slate-500">Durasi tidur/hari</span>
+                  <span className="font-semibold text-slate-900 tabular-nums">{tidurDurasiList.length ? `${avgDurasi} jam` : '—'}</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-slate-500">Tidur lambat</span>
-                  <span className="font-semibold text-slate-900 tabular-nums">{tidurPalingLambat ?? '—'}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-slate-500">Bangun lambat</span>
-                  <span className="font-semibold text-slate-900 tabular-nums">{bangunPalingLambat ?? '—'}</span>
-                </div>
-                {tidurTopAlasan && (
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-slate-500">Alasan</span>
-                    <span className="font-semibold text-slate-900">{REASON_LABELS[tidurTopAlasan] ?? tidurTopAlasan}</span>
-                    <span className="text-xs text-slate-400">({tidurTopAlasanCount}×)</span>
+                {tidurDurasiList.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {tidurDurasiList.slice(-7).map((d) => (
+                      <span key={d.tgl} className="px-2 py-0.5 rounded-md bg-slate-100 text-xs font-medium text-slate-700 tabular-nums">
+                        {d.jam}j
+                      </span>
+                    ))}
                   </div>
                 )}
               </div>

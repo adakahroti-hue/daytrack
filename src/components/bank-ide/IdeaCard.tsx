@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import type { TaskCardTask } from "@/components/tasks/TaskCard"
+import type { Idea } from "@/app/actions/bank-ide"
 
 // Palet background lembut (mirip aksen tab Semua) — tiap card dapat warna beda berdasarkan id
 const IDE_BG = [
@@ -31,13 +31,13 @@ function ideaBg(id: string): string {
 }
 
 export function IdeaCard({
-  task,
+  idea,
   onEdit,
   onDelete,
   onPromote,
 }: {
-  task: TaskCardTask
-  onEdit: (task: TaskCardTask) => void
+  idea: Idea
+  onEdit: (idea: Idea) => void
   onDelete: (id: string) => void
   onPromote: (id: string) => void
 }) {
@@ -45,9 +45,9 @@ export function IdeaCard({
     <div
       role="button"
       tabIndex={0}
-      onClick={() => onEdit(task)}
-      onKeyDown={(e) => { if (e.key === "Enter") onEdit(task) }}
-      className={`group relative cursor-pointer rounded-[13px] border p-5 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-sm ${ideaBg(task.id)}`}
+      onClick={() => onEdit(idea)}
+      onKeyDown={(e) => { if (e.key === "Enter") onEdit(idea) }}
+      className={`group relative cursor-pointer rounded-[13px] border p-5 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-sm ${ideaBg(idea.id)}`}
     >
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -60,23 +60,23 @@ export function IdeaCard({
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-40">
-          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(task) }}>
+          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(idea) }}>
             <Pencil className="h-4 w-4" /> Edit
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onPromote(task.id) }}>
+          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onPromote(idea.id) }}>
             <ArrowRightCircle className="h-4 w-4" /> Jadikan Tugas
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             className="text-destructive focus:text-destructive"
-            onClick={(e) => { e.stopPropagation(); onDelete(task.id) }}
+            onClick={(e) => { e.stopPropagation(); onDelete(idea.id) }}
           >
             <Trash2 className="h-4 w-4" /> Hapus
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       <p className="line-clamp-4 text-center text-[15px] font-medium leading-relaxed text-slate-900">
-        {task.nama}
+        {idea.catatan}
       </p>
     </div>
   )

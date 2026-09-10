@@ -86,21 +86,13 @@ export const STATUS_COLORS = {
     ring: 'focus-visible:ring-red-400/50',
     soft: 'bg-red-50 dark:bg-red-900/20',
   },
-  ide: {
-    bg: 'bg-violet-100 dark:bg-violet-900/30',
-    text: 'text-violet-700 dark:text-violet-300',
-    border: 'border-violet-200 dark:border-violet-800',
-    ring: 'focus-visible:ring-violet-400/50',
-    soft: 'bg-violet-50 dark:bg-violet-900/20',
-  },
 }
 
-// Short status labels — dipakai oleh TaskCard (badge) & tab Bank Ide
+// Short status labels — dipakai oleh TaskCard (badge)
 export const STATUS_SHORT_LABELS: Record<string, string> = {
   belum: 'Belum',
   proses: 'Proses',
   selesai: 'Selesai',
-  ide: 'Ide',
 }
 
 // Card background per prioritas (sticky-note style) — dipakai TaskCard shared

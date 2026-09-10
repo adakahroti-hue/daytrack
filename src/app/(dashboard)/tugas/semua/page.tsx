@@ -25,7 +25,7 @@ type Task = {
   tanggal: string
   estimasi_menit: number
   prioritas: 'p1' | 'p2' | 'p3' | 'p4'
-  status: 'belum' | 'proses' | 'selesai' | 'ide'
+  status: 'belum' | 'proses' | 'selesai'
   created_at: string
   updated_at: string
   started_at: string | null
@@ -40,7 +40,7 @@ type TaskFormData = {
   tanggal?: string
   estimasi_menit: number
   prioritas: 'p1' | 'p2' | 'p3' | 'p4'
-  status: 'belum' | 'proses' | 'selesai' | 'ide'
+  status: 'belum' | 'proses' | 'selesai'
 }
 
 type EditingTask = TaskFormData & { id: string }
@@ -52,14 +52,12 @@ const STATUS_LABELS: Record<Task['status'], string> = {
   belum: 'Belum',
   proses: 'Sedang Dikerjakan',
   selesai: 'Selesai',
-  ide: 'Ide',
 }
 
 const STATUS_SHORT_LABELS: Record<Task['status'], string> = {
   belum: 'Belum',
   proses: 'Proses',
   selesai: 'Selesai',
-  ide: 'Ide',
 }
 
 const PRIORITY_FULL_LABELS: Record<Task['prioritas'], string> = {
@@ -457,7 +455,7 @@ function SemuaPageClient() {
     setEditingTask(null)
   }
 
-  const totalTasks = allTasks.filter((t) => t.status !== 'ide').length
+  const totalTasks = allTasks.length
 
   // Today (for relative group labels)
   const today = format(new Date(), 'yyyy-MM-dd')
@@ -468,7 +466,6 @@ function SemuaPageClient() {
     const todayStart = startOfDay(new Date())
     return allTasks.filter(t => (
       (t.status === 'belum' || (t.status === 'proses' && t.tanggal && isBefore(new Date(t.tanggal), todayStart)))
-      && t.status !== 'ide'
       && t.tanggal != today
     ))
   }, [allTasks, today])

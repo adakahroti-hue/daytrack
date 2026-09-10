@@ -6,7 +6,7 @@ import { useMaafkanAll, useDeleteMaafkan } from '@/hooks/useMaafkan'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
-export function MaafkanSection() {
+export function MaafkanSection({ className }: { className?: string }) {
   const { data: entries = [], isLoading } = useMaafkanAll()
   const deleteMaafkan = useDeleteMaafkan()
 
@@ -16,7 +16,7 @@ export function MaafkanSection() {
     .map((e: any) => ({ id: e.id, kejadian: e.kejadian as string }))
 
   return (
-    <RoutineCardShell title="Maafkan" href="/maafkan" linkColor="text-slate-700 hover:text-slate-900" hideIcon>
+    <RoutineCardShell title="Maafkan" href="/maafkan" linkColor="text-slate-700 hover:text-slate-900" hideIcon className={className}>
       <div className="mt-3">
         {isLoading ? (
           <div className="flex items-center justify-center py-6">
@@ -48,15 +48,16 @@ export function MaafkanSection() {
 }
 
 // Shell ringan meniru RoutineCard (tanpa icon) agar konsisten dengan card Refleksi
-function RoutineCardShell({ title, href, linkColor, hideIcon, children }: {
+function RoutineCardShell({ title, href, linkColor, hideIcon, className, children }: {
   title: string
   href: string
   linkColor: string
   hideIcon?: boolean
+  className?: string
   children: React.ReactNode
 }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
+    <section className={cn("rounded-xl border border-slate-200 bg-white p-4 sm:p-5", className)}>
       <div className="flex items-center gap-2">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{title}</h3>
         <Link href={href} aria-label={`Buka tab ${title}`} className={cn("ml-auto p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors", linkColor)}>

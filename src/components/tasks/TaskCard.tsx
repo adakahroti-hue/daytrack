@@ -3,7 +3,7 @@
 import { memo } from 'react'
 import { format, isBefore, startOfDay, differenceInDays } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Play, Check, CheckCircle2, MoreHorizontal, Edit, Trash2, Layers, Clock, Calendar, AlertTriangle, Lightbulb } from 'lucide-react'
+import { Play, Check, CheckCircle2, MoreHorizontal, Edit, Trash2, Layers, Clock, Calendar, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -12,26 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, BRAND_COLORS, getActualDurationText, compareEstimasiVsActual, getLiveDurationText, PRIORITY_CARD_COLORS, STATUS_SHORT_LABELS, CARD_BASE, CARD_HOVER } from '@/lib/utils'
 import { TaskGroupRibbon } from '@/components/tasks/task-group'
 
-const IDE_ACCENTS = [
-  'border-l-rose-400',
-  'border-l-orange-400',
-  'border-l-amber-400',
-  'border-l-lime-400',
-  'border-l-emerald-400',
-  'border-l-teal-400',
-  'border-l-sky-400',
-  'border-l-indigo-400',
-  'border-l-fuchsia-400',
-  'border-l-pink-400',
-]
-
-function ideAccent(id: string): string {
-  let h = 0
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
-  return IDE_ACCENTS[h % IDE_ACCENTS.length]
-}
-
-export type TaskCardStatus = 'belum' | 'proses' | 'selesai' | 'ide'
+export type TaskCardStatus = 'belum' | 'proses' | 'selesai'
 
 export type TaskCardTask = {
   id: string
@@ -50,53 +31,43 @@ export type TaskCardTask = {
   group_order?: number | null
 }
 
-// variant:
-//  - 'action': tab tugas biasa (Hari Ini/Semua) — tombol Mulai/Selesai
-//  - 'ide': tab Bank Ide — tombol "Jadikan Tugas" (ubah status ide -> belum)
-export type TaskCardVariant = 'action' | 'ide'
+// TaskCard hanya untuk tabel tugas (status: belum/proses/selesai).
+// Ide sudah pindah ke tabel bank_ide (lihat src/components/bank-ide/IdeaCard.tsx).
 
 function TaskCardComponent({
   task,
   onEdit,
   onDelete,
   onStatusChange,
-  onPromoteIde,
   selectionMode,
   selected,
   onToggleSelect,
   onSetGroup,
-  variant = 'action',
 }: {
   task: TaskCardTask
   onEdit: (task: TaskCardTask) => void
   onDelete: (id: string) => void
   onStatusChange: (id: string, status: TaskCardStatus) => void
-  onPromoteIde?: (id: string) => void
   selectionMode?: boolean
   selected?: boolean
   onToggleSelect?: (id: string) => void
   onSetGroup?: (task: TaskCardTask) => void
-  variant?: TaskCardVariant
 }) {
   const isCompleted = task.status === 'selesai'
   const isInProgress = task.status === 'proses'
   const isPending = task.status === 'belum'
-  const isIde = task.status === 'ide'
 
   const handlePrimaryAction = () => {
-    if (isIde) {
-      onPromoteIde?.(task.id)
-    } else if (isPending) {
+    if (isPending) {
       onStatusChange(task.id, 'proses')
     } else if (isInProgress) {
       onStatusChange(task.id, 'selesai')
     }
   }
 
-  const primaryButtonText = isIde ? 'Jadikan Tugas' : isPending ? 'Mulai' : 'Selesai'
+  const primaryButtonText = isPending ? 'Mulai' : 'Selesai'
   const primaryButtonDisabled = isCompleted
   const PrimaryButtonIcon = () => {
-    if (isIde) return <Lightbulb className="h-3.5 w-3.5" />
     if (isPending) return <Play className="h-3.5 w-3.5" />
     if (isInProgress) return <Check className="h-3.5 w-3.5" />
     return <CheckCircle2 className="h-3.5 w-3.5" />
@@ -126,9 +97,7 @@ function TaskCardComponent({
               'rounded-xl transition-colors duration-200',
               isInProgress
                 ? 'bg-blue-50 border-blue-300 hover:border-blue-400 dark:bg-blue-950/40 dark:border-blue-800'
-                : isIde
-                  ? cn('bg-white border-slate-200 hover:border-slate-300 dark:bg-white dark:border-slate-200 min-h-[120px] border-t-4', ideAccent(task.id))
-                  : PRIORITY_CARD_COLORS[task.prioritas]
+                : PRIORITY_CARD_COLORS[task.prioritas]
             ),
         CARD_HOVER,
         isCompleted && 'opacity-60',
@@ -139,7 +108,7 @@ function TaskCardComponent({
       {task.group_id && task.group_order != null && (
         <TaskGroupRibbon groupId={task.group_id} order={task.group_order} />
       )}
-      <CardContent className={cn("px-4 space-y-2.5", isIde ? "pt-5 pb-3" : "pt-4 pb-3")}>
+      <CardContent className="px-4 pt-4 pb-3 space-y-2.5">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 flex-1 min-w-0 relative z-20">
             {selectionMode && (
@@ -150,7 +119,7 @@ function TaskCardComponent({
                 aria-label="Pilih tugas"
               />
             )}
-            <h3 className={cn("font-medium text-base leading-tight capitalize flex-1", task.group_id && "pl-7", isIde && "pb-1")}>{task.nama}</h3>
+            <h3 className={cn("font-medium text-base leading-tight capitalize flex-1", task.group_id && "pl-7")}>{task.nama}</h3>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -171,24 +140,13 @@ function TaskCardComponent({
               >
                 <Edit className="h-4 w-4" />Edit Tugas
               </DropdownMenuItem>
-              {isIde && (
               <DropdownMenuItem
-                onClick={handlePrimaryAction}
-                className="flex items-center gap-2"
-                inset={false}
-              >
-                <PrimaryButtonIcon />{primaryButtonText}
-              </DropdownMenuItem>
-              )}
-              {!isIde && (
-              <DropdownMenuItem
-                onClick={() => onSetGroup?.(task as any)}
+                onClick={() => onSetGroup?.(task)}
                 className="flex items-center gap-2"
                 inset={false}
               >
                 <Layers className="h-4 w-4" />Penanda Paket
               </DropdownMenuItem>
-              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => onDelete(task.id)}
@@ -208,7 +166,6 @@ function TaskCardComponent({
           </div>
         )}
 
-        {!isIde && (
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
             <div className="flex items-center gap-1.5">
@@ -218,7 +175,7 @@ function TaskCardComponent({
             <div className="flex items-center gap-1.5">
               <Calendar className="h-3.5 w-3.5 shrink-0" />
               <span className={cn('whitespace-nowrap', isOverdue && 'text-destructive font-medium')}>
-                {task.tanggal ? format(taskDate!, 'd MMM yyyy', { locale: id }) : (isIde ? 'Belum ditentukan' : 'Belum ditentukan')}
+                {task.tanggal ? format(taskDate!, 'd MMM yyyy', { locale: id }) : 'Belum ditentukan'}
               </span>
             </div>
             {isOverdue && !isCompleted && (
@@ -258,9 +215,8 @@ function TaskCardComponent({
             </div>
           )}
         </div>
-        )}
 
-        {isIde ? null : (
+        {/* Bottom Row: Status Badge + Primary Action - Fixed at bottom */}
         <div className="flex items-center justify-between pt-2 border-t border-border/50">
           <Badge variant="outline" className={statusBadgeClass}>
             {STATUS_SHORT_LABELS[task.status]}
@@ -281,11 +237,10 @@ function TaskCardComponent({
             <span className="flex items-center gap-1.5">
               <PrimaryButtonIcon />
               <span className="hidden sm:inline">{primaryButtonText}</span>
-              <span className="sm:hidden">{isIde ? 'Jadikan' : isPending ? 'Mulai' : 'Selesai'}</span>
+              <span className="sm:hidden">{isPending ? 'Mulai' : 'Selesai'}</span>
             </span>
           </Button>
         </div>
-        )}
       </CardContent>
     </Card>
   )

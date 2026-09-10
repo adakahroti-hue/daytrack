@@ -332,6 +332,13 @@ export function useImprovementBacklogRealtime() {
   })
 }
 
+export function useBankIdeRealtime(queryKeys: string[][] = [['bank_ide']]) {
+  return useRealtime({
+    table: 'bank_ide',
+    queryKeys,
+  })
+}
+
 // Multi-table realtime hook for overview pages
 export function useOverviewRealtime() {
   const queryClient = useQueryClient()
@@ -341,7 +348,7 @@ export function useOverviewRealtime() {
 
   useEffect(() => {
     const supabase = supabaseRef.current
-    const tables = ['tugas', 'sholat', 'quran', 'doa', 'tidur', 'minum_air', 'refleksi', 'pmo', 'syukur', 'sedekah', 'fun_queue', 'improvement_backlog']
+    const tables = ['tugas', 'bank_ide', 'sholat', 'quran', 'doa', 'tidur', 'minum_air', 'refleksi', 'pmo', 'syukur', 'sedekah', 'fun_queue', 'improvement_backlog']
     
     // Use stable channel name
     const channelName = `daytrack:overview:all`
