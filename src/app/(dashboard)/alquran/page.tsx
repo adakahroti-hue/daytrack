@@ -39,7 +39,7 @@ const PAGE = 5
 export default function AlquranPage() {
   const [list, setList] = useState<SurahMeta[]>([])
   const [loadingList, setLoadingList] = useState(true)
-  const [mode, setMode] = useState<"pilih" | "mengaji">("pilih")
+  const [mode, setMode] = useState<"pilih" | "mengaji">("mengaji")
   const [selected, setSelected] = useState<number | null>(null)
   const [detail, setDetail] = useState<SurahDetail | null>(null)
   const [loadingDetail, setLoadingDetail] = useState(false)

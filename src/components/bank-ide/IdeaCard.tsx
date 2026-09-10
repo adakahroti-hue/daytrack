@@ -47,38 +47,35 @@ export function IdeaCard({
       tabIndex={0}
       onClick={() => onEdit(task)}
       onKeyDown={(e) => { if (e.key === "Enter") onEdit(task) }}
-      className={`group cursor-pointer rounded-[13px] border p-5 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-sm ${ideaBg(task.id)}`}
+      className={`group relative cursor-pointer rounded-[13px] border p-5 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-sm ${ideaBg(task.id)}`}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-h-[3.5rem]" />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              onClick={(e) => e.stopPropagation()}
-              aria-label="Menu ide"
-              className="shrink-0 rounded p-1 text-slate-500 opacity-0 transition-opacity hover:bg-black/5 hover:text-slate-700 group-hover:opacity-100"
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(task) }}>
-              <Pencil className="h-4 w-4" /> Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onPromote(task.id) }}>
-              <ArrowRightCircle className="h-4 w-4" /> Jadikan Tugas
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              onClick={(e) => { e.stopPropagation(); onDelete(task.id) }}
-            >
-              <Trash2 className="h-4 w-4" /> Hapus
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <p className="line-clamp-4 text-[15px] font-medium leading-relaxed text-slate-900">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            onClick={(e) => e.stopPropagation()}
+            aria-label="Menu ide"
+            className="shrink-0 absolute right-3 top-3 rounded p-1 text-slate-500 opacity-0 transition-opacity hover:bg-black/5 hover:text-slate-700 group-hover:opacity-100"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-40">
+          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(task) }}>
+            <Pencil className="h-4 w-4" /> Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onPromote(task.id) }}>
+            <ArrowRightCircle className="h-4 w-4" /> Jadikan Tugas
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            className="text-destructive focus:text-destructive"
+            onClick={(e) => { e.stopPropagation(); onDelete(task.id) }}
+          >
+            <Trash2 className="h-4 w-4" /> Hapus
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <p className="line-clamp-4 text-center text-[15px] font-medium leading-relaxed text-slate-900">
         {task.nama}
       </p>
     </div>

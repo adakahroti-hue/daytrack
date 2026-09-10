@@ -154,17 +154,8 @@ export async function createGoal(formData: { title: string; target_date?: string
   if (!user) throw new Error("Unauthorized")
   const validated = goalSchema.parse(formData)
 
-  // Model MULTI-GOAL: goal lama TIDAK dihapus, hanya dinonaktifkan (is_active=false).
-  // Goal baru di-insert sebagai aktif. Data lama (milestone/step/log) tetap utuh & bisa dipilih kembali.
-  // Nonaktifkan semua goal lama milik user dalam 1 query.
-  const { error: deactErr } = await supabase
-    .from("goal")
-    .update({ is_active: false })
-    .eq("user_id", user.id)
-    .eq("is_active", true)
-  if (deactErr) throw new Error(deactErr.message)
-
-  // Insert goal baru sebagai aktif
+  // Model MULTI-GOAL: goal lama TIDAK dihapus, hanya dinonaktifkan (is_active=false) bila kolom ada.
+  // Insert goal baru sebagai aktif terlebih dahulu (prioritas: data tersimpan), lalu deactivate best-effort.
   const { data, error } = await supabase
     .from("goal")
     .insert({
@@ -176,6 +167,18 @@ export async function createGoal(formData: { title: string; target_date?: string
     .select(GOAL_SELECT)
     .single()
   if (error) throw new Error(error.message)
+
+  // Nonaktifkan goal lain milik user (best-effort: kalau kolom is_active belum ada, diabaikan)
+  const { error: deactErr } = await supabase
+    .from("goal")
+    .update({ is_active: false })
+    .eq("user_id", user.id)
+    .eq("is_active", true)
+    .neq("id", data.id)
+  if (deactErr) {
+    console.warn("createGoal: gagal nonaktifkan goal lama (mungkin kolom is_active belum ada):", deactErr.message)
+  }
+
   revalidatePath("/goal")
   return { data, error: null }
 }
