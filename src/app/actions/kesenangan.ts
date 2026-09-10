@@ -72,9 +72,6 @@ export async function upsertKesenangan(formData: KesenanganFormData) {
   if (error) throw new Error(error.message)
 
   revalidatePath("/kesenangan")
-  revalidatePath("/overview/bulanan")
-  revalidatePath("/overview/mingguan")
-  revalidatePath("/overview/harian")
   
   return { data, error: null }
 }

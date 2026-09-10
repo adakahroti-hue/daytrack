@@ -87,9 +87,6 @@ export async function upsertPrayerLog(formData: PrayerLogFormData) {
   if (error) throw new Error(error.message)
 
   revalidatePath("/sholat")
-  revalidatePath("/overview/bulanan")
-  revalidatePath("/overview/mingguan")
-  revalidatePath("/overview/harian")
 
   return { data, error: null }
 }
@@ -182,9 +179,6 @@ export async function togglePrayer(tanggal: string, prayerTime: typeof PRAYER_TI
   if (error) throw new Error(error.message)
 
   revalidatePath("/sholat")
-  revalidatePath("/overview/bulanan")
-  revalidatePath("/overview/mingguan")
-  revalidatePath("/overview/harian")
 
   return { data, error: null }
 }

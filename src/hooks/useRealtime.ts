@@ -302,33 +302,11 @@ export function useMinumAirLogRealtime(dateKey: string) {
   })
 }
 
-export function useMasalahLogRealtime(dateKey: string) {
-  return useRealtime({
-    table: 'refleksi',
-    filter: `tanggal=eq.${dateKey}`,
-    queryKeys: [['refleksi', dateKey], ['refleksi', 'range']],
-  })
-}
-
 export function usePmoLogRealtime(dateKey: string) {
   return useRealtime({
     table: 'pmo',
     filter: `tanggal=eq.${dateKey}`,
     queryKeys: [['pmo', dateKey], ['pmo', 'range']],
-  })
-}
-
-export function useFunQueueRealtime() {
-  return useRealtime({
-    table: 'fun_queue',
-    queryKeys: [['fun_queue']],
-  })
-}
-
-export function useImprovementBacklogRealtime() {
-  return useRealtime({
-    table: 'improvement_backlog',
-    queryKeys: [['improvement_backlog']],
   })
 }
 

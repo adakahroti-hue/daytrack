@@ -46,7 +46,7 @@ export async function upsertMentalBlock(formData: MentalBlockFormData) {
   }
 
   if (error) throw new Error(error.message)
-  revalidatePath("/mental-block"); revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
+  revalidatePath("/mental-block");
   return { data, error: null }
 }
 
@@ -67,7 +67,7 @@ export async function updateMentalBlock(id: string, formData: { masalah?: string
     .single()
 
   if (error) throw new Error(error.message)
-  revalidatePath("/mental-block"); revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
+  revalidatePath("/mental-block");
   return { data, error: null }
 }
 
@@ -77,7 +77,7 @@ export async function deleteMentalBlock(id: string) {
   if (!user) throw new Error("Unauthorized")
   const { error } = await supabase.from("mental_block").delete().eq("id", id).eq("user_id", user.id)
   if (error) throw new Error(error.message)
-  revalidatePath("/mental-block"); revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
+  revalidatePath("/mental-block");
   return { error: null }
 }
 

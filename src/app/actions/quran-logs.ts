@@ -75,9 +75,6 @@ export async function upsertQuranLog(formData: QuranLogFormData) {
   if (error) throw new Error(error.message)
 
   revalidatePath("/quran")
-  revalidatePath("/overview/bulanan")
-  revalidatePath("/overview/mingguan")
-  revalidatePath("/overview/harian")
 
   return { data, error: null }
 }
@@ -97,9 +94,6 @@ export async function deleteQuranLog(id: string) {
   if (error) throw new Error(error.message)
 
   revalidatePath("/quran")
-  revalidatePath("/overview/bulanan")
-  revalidatePath("/overview/mingguan")
-  revalidatePath("/overview/harian")
 
   return { error: null }
 }

@@ -56,7 +56,7 @@ export async function upsertPmoLog(formData: PmoLogFormData) {
   }
 
   if (error) throw new Error(error.message)
-  revalidatePath("/pmo"); revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
+  revalidatePath("/pmo");
   return { data, error: null }
 }
 
@@ -66,7 +66,7 @@ export async function deletePmoLog(id: string) {
   if (!user) throw new Error("Unauthorized")
   const { error } = await supabase.from("pmo").delete().eq("id", id).eq("user_id", user.id)
   if (error) throw new Error(error.message)
-  revalidatePath("/pmo"); revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
+  revalidatePath("/pmo");
   return { error: null }
 }
 

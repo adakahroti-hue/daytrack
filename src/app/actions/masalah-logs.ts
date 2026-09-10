@@ -49,7 +49,7 @@ export async function upsertMasalahLog(formData: MasalahLogFormData) {
   }
 
   if (error) throw new Error(error.message)
-  revalidatePath("/masalah"); revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
+  revalidatePath("/masalah");
   return { data, error: null }
 }
 
@@ -71,7 +71,7 @@ export async function updateMasalahLog(id: string, formData: { masalah?: string;
     .single()
 
   if (error) throw new Error(error.message)
-  revalidatePath("/masalah"); revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
+  revalidatePath("/masalah");
   return { data, error: null }
 }
 
@@ -81,27 +81,10 @@ export async function deleteMasalahLog(id: string) {
   if (!user) throw new Error("Unauthorized")
   const { error } = await supabase.from("refleksi").delete().eq("id", id).eq("user_id", user.id)
   if (error) throw new Error(error.message)
-  revalidatePath("/masalah"); revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
+  revalidatePath("/masalah");
   return { error: null }
 }
 
-export async function getMasalahLog(tanggal: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("refleksi").select("id, user_id, tanggal, masalah, status, created_at, updated_at").eq("user_id", user.id).eq("tanggal", tanggal).order("created_at", { ascending: false })
-  if (error) throw new Error(error.message)
-  return data || []
-}
-
-export async function getMasalahLogRange(startDate: string, endDate: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase.from("refleksi").select("id, user_id, tanggal, masalah, status, created_at, updated_at").eq("user_id", user.id).gte("tanggal", startDate).lte("tanggal", endDate).order("tanggal", { ascending: false })
-  if (error) throw new Error(error.message)
-  return data || []
-}
 
 // Tampilkan SELURUH refleksi (journal) — tidak dibatasi periode tanggal.
 export async function getMasalahLogAll() {

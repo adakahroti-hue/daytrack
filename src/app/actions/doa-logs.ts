@@ -61,9 +61,6 @@ export async function upsertDoaLog(formData: DoaLogFormData) {
   }
   if (error) throw new Error(error.message)
   revalidatePath("/doa")
-  revalidatePath("/overview/bulanan")
-  revalidatePath("/overview/mingguan")
-  revalidatePath("/overview/harian")
   return { data, error: null }
 }
 
@@ -78,9 +75,6 @@ export async function deleteDoaLog(id: string) {
     .eq("user_id", user.id)
   if (error) throw new Error(error.message)
   revalidatePath("/doa")
-  revalidatePath("/overview/bulanan")
-  revalidatePath("/overview/mingguan")
-  revalidatePath("/overview/harian")
   return { error: null }
 }
 

@@ -63,7 +63,7 @@ export async function upsertWaterLog(formData: WaterLogFormData) {
   }
 
   if (error) throw new Error(error.message)
-  revalidatePath("/minum-air"); revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
+  revalidatePath("/minum-air");
   return { data, error: null }
 }
 
@@ -73,7 +73,7 @@ export async function deleteWaterLog(id: string) {
   if (!user) throw new Error("Unauthorized")
   const { error } = await supabase.from("minum_air").delete().eq("id", id).eq("user_id", user.id)
   if (error) throw new Error(error.message)
-  revalidatePath("/minum-air"); revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
+  revalidatePath("/minum-air");
   return { error: null }
 }
 

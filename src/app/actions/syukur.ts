@@ -60,9 +60,6 @@ export async function upsertSyukur(formData: SyukurFormData) {
   if (error) throw new Error(error.message)
 
   revalidatePath("/syukur")
-  revalidatePath("/overview/bulanan")
-  revalidatePath("/overview/mingguan")
-  revalidatePath("/overview/harian")
   
   return { data, error: null }
 }

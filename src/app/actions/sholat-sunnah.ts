@@ -71,9 +71,6 @@ export async function upsertSholatSunnah(formData: SholatSunnahFormData) {
   if (error) throw new Error(error.message)
 
   revalidatePath("/sholat-sunnah")
-  revalidatePath("/overview/bulanan")
-  revalidatePath("/overview/mingguan")
-  revalidatePath("/overview/harian")
 
   return { data, error: null }
 }

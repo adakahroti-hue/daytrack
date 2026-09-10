@@ -68,9 +68,6 @@ export async function upsertArusKas(formData: ArusKasFormData) {
 
   if (error) throw new Error(error.message)
   revalidatePath("/arus-kas")
-  revalidatePath("/overview/bulanan")
-  revalidatePath("/overview/mingguan")
-  revalidatePath("/overview/harian")
   return { data, error: null }
 }
 

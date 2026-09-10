@@ -107,7 +107,7 @@ export async function upsertTidurLog(formData: TidurLogFormData) {
     await supabase.from("tidur").update({ durasi_jam: nextDurasi }).eq("id", nextLog.id).eq("user_id", user.id)
   }
 
-  revalidatePath("/tidur"); revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
+  revalidatePath("/tidur");
   return { data, error: null }
 }
 
@@ -117,7 +117,7 @@ export async function deleteTidurLog(id: string) {
   if (!user) throw new Error("Unauthorized")
   const { error } = await supabase.from("tidur").delete().eq("id", id).eq("user_id", user.id)
   if (error) throw new Error(error.message)
-  revalidatePath("/tidur"); revalidatePath("/overview/harian"); revalidatePath("/overview/mingguan"); revalidatePath("/overview/bulanan")
+  revalidatePath("/tidur");
   return { error: null }
 }
 

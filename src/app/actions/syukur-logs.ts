@@ -76,9 +76,6 @@ export async function upsertSyukurLog(formData: SyukurLogFormData) {
   if (error) throw new Error(error.message)
 
   revalidatePath("/syukur")
-  revalidatePath("/overview/bulanan")
-  revalidatePath("/overview/mingguan")
-  revalidatePath("/overview/harian")
 
   return { data, error: null }
 }
@@ -98,9 +95,6 @@ export async function deleteSyukurLog(id: string) {
   if (error) throw new Error(error.message)
 
   revalidatePath("/syukur")
-  revalidatePath("/overview/bulanan")
-  revalidatePath("/overview/mingguan")
-  revalidatePath("/overview/harian")
 
   return { error: null }
 }

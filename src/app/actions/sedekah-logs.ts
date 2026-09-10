@@ -78,9 +78,6 @@ export async function upsertSedekahLog(formData: SedekahLogFormData) {
   if (error) throw new Error(error.message)
 
   revalidatePath("/sedekah")
-  revalidatePath("/overview/bulanan")
-  revalidatePath("/overview/mingguan")
-  revalidatePath("/overview/harian")
 
   return { data, error: null }
 }
@@ -100,9 +97,6 @@ export async function deleteSedekahLog(id: string) {
   if (error) throw new Error(error.message)
 
   revalidatePath("/sedekah")
-  revalidatePath("/overview/bulanan")
-  revalidatePath("/overview/mingguan")
-  revalidatePath("/overview/harian")
 
   return { error: null }
 }

@@ -83,9 +83,6 @@ export async function upsertSholat(formData: SholatFormData) {
   if (error) throw new Error(error.message)
 
   revalidatePath("/sholat")
-  revalidatePath("/overview/bulanan")
-  revalidatePath("/overview/mingguan")
-  revalidatePath("/overview/harian")
   
   return { data, error: null }
 }
@@ -137,9 +134,6 @@ export async function toggleSholat(tanggal: string, sholatTime: typeof SHOLAT_TI
   if (error) throw new Error(error.message)
 
   revalidatePath("/sholat")
-  revalidatePath("/overview/bulanan")
-  revalidatePath("/overview/mingguan")
-  revalidatePath("/overview/harian")
   
   return { data, error: null }
 }
@@ -231,9 +225,6 @@ export async function updateSholatCell(
   if (error) throw new Error(error.message)
 
   revalidatePath("/sholat")
-  revalidatePath("/overview/bulanan")
-  revalidatePath("/overview/mingguan")
-  revalidatePath("/overview/harian")
 
   return { data, error: null }
 }
@@ -272,9 +263,6 @@ export async function clearSholatCell(
   if (error) throw new Error(error.message)
 
   revalidatePath("/sholat")
-  revalidatePath("/overview/bulanan")
-  revalidatePath("/overview/mingguan")
-  revalidatePath("/overview/harian")
 
   return { data, error: null }
 }
