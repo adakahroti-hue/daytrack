@@ -177,12 +177,12 @@ export default function CatatanPage() {
         </div>
 
         {notes.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5 flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 flex-1 min-w-0 overflow-x-auto scrollbar-none -mx-1 px-1 pb-1 sm:mx-0 sm:px-0 sm:pb-0 sm:flex-wrap sm:overflow-visible">
             <button
               type="button"
               onClick={() => { setFilterKat("semua"); setShowAll(false) }}
               className={cn(
-                "rounded-full px-3 py-1 text-xs font-medium border transition-colors",
+                "rounded-full px-3 py-1 text-xs font-medium border transition-colors shrink-0 whitespace-nowrap",
                 filterKat === "semua"
                   ? "bg-purple-600 text-white border-purple-600"
                   : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
@@ -196,7 +196,7 @@ export default function CatatanPage() {
                 type="button"
                 onClick={() => { setFilterKat(cat); setShowAll(false) }}
                 className={cn(
-                  "rounded-full px-3 py-1 text-xs font-medium border transition-colors",
+                  "rounded-full px-3 py-1 text-xs font-medium border transition-colors shrink-0 whitespace-nowrap",
                   filterKat === cat
                     ? "bg-purple-600 text-white border-purple-600"
                     : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
@@ -209,7 +209,7 @@ export default function CatatanPage() {
               type="button"
               onClick={() => { setFilterKat("lainnya"); setShowAll(false) }}
               className={cn(
-                "rounded-full px-3 py-1 text-xs font-medium border transition-colors",
+                "rounded-full px-3 py-1 text-xs font-medium border transition-colors shrink-0 whitespace-nowrap",
                 filterKat === "lainnya"
                   ? "bg-purple-600 text-white border-purple-600"
                   : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
@@ -220,8 +220,10 @@ export default function CatatanPage() {
           </div>
         )}
 
-        <Button size="sm" variant="outline" onClick={openAdd} className="h-7 gap-1 text-[11px] px-2 shrink-0">
-          <Plus className="h-3 w-3" /> Tambah Catatan
+        <Button size="sm" variant="outline" onClick={openAdd} aria-label="Tambah Catatan"
+          className="h-8 w-8 p-0 sm:h-7 sm:w-auto sm:gap-1 sm:px-2 shrink-0">
+          <Plus className="h-4 w-4 sm:h-3 sm:w-3" />
+          <span className="hidden sm:inline text-[11px]">Tambah Catatan</span>
         </Button>
       </div>
 
@@ -233,7 +235,7 @@ export default function CatatanPage() {
         </p>
       ) : (
         <>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-3">
           {visibleNotes.map((n) => {
             const c = NOTE_COLORS[(n.warna as CatatanWarna) || "yellow"]
             const isiLines = (n.isi || "").split("\n")
@@ -278,12 +280,12 @@ export default function CatatanPage() {
                 )}
                 <div className="flex items-center justify-end gap-1 pt-2 mt-auto">
                   <Button size="icon" aria-label="Edit catatan" onClick={(e) => { e.stopPropagation(); openEdit(n) }}
-                    className={cn("h-6 w-6 p-0", isDesktop ? "bg-slate-100 text-slate-600 hover:bg-slate-200" : "text-slate-500 hover:text-slate-700")}>
-                    <Pencil className="h-3 w-3" />
+                    className={cn("h-8 w-8 sm:h-6 sm:w-6 p-0", isDesktop ? "bg-slate-100 text-slate-600 hover:bg-slate-200" : "text-slate-500 hover:text-slate-700")}>
+                    <Pencil className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
                   </Button>
                   <Button size="icon" aria-label="Hapus catatan" onClick={(e) => { e.stopPropagation(); handleDelete(n.id) }}
-                    className={cn("h-6 w-6 p-0", isDesktop ? "bg-rose-100 text-rose-600 hover:bg-rose-200" : "text-rose-500 hover:text-rose-600")}>
-                    <Trash2 className="h-3 w-3" />
+                    className={cn("h-8 w-8 sm:h-6 sm:w-6 p-0", isDesktop ? "bg-rose-100 text-rose-600 hover:bg-rose-200" : "text-rose-500 hover:text-rose-600")}>
+                    <Trash2 className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
                   </Button>
                 </div>
               </div>
@@ -377,7 +379,7 @@ export default function CatatanPage() {
                 ref={isiRef}
                 placeholder="Tulis isi catatan..."
                 rows={10}
-                className="resize-y min-h-[220px]"
+                className="resize-y min-h-[160px] sm:min-h-[220px]"
                 value={editState?.isi ?? ""}
                 onChange={(e) => setEditState(prev => prev ? { ...prev, isi: e.target.value } : prev)}
               />
