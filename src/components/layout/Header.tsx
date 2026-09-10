@@ -187,6 +187,8 @@ export function Header({ onMenuClick }: HeaderProps) {
   const isPmo = pathname === '/pmo'
   const isMasalah = pathname === '/masalah'
   const isKesenangan = pathname === '/kesenangan'
+  const isMentalBlock = pathname === '/mental-block'
+  const isMaafkan = pathname === '/maafkan'
   // Tab keuangan (Arus Kas & Keranjang) ikut pakai toolbar navigasi tanggal + toggle periode ibadah-style di header
   const isArusKas = pathname === '/arus-kas'
   const isKeranjang = pathname === '/keranjang'
@@ -201,7 +203,31 @@ export function Header({ onMenuClick }: HeaderProps) {
   const isSwot = pathname.startsWith('/swot')
   const isAlquran = pathname === '/alquran'
   const showShortcuts =
-    isOverviewPage || isWaktu || isPengingat || isBankIde || isCatatan || isSwot || isAlquran || isKesenangan
+    isOverviewPage ||
+    isHariIni ||
+    isSemua ||
+    isSelesai ||
+    isGoal ||
+    isWaktu ||
+    isPengingat ||
+    isBankIde ||
+    isCatatan ||
+    isSwot ||
+    isAlquran ||
+    isKesenangan ||
+    isMentalBlock ||
+    isMaafkan ||
+    isMasalah ||
+    isSholat ||
+    isQuran ||
+    isMinumAir ||
+    isDoa ||
+    isSyukur ||
+    isSedekah ||
+    isPmo ||
+    isTidur ||
+    isMakan ||
+    isKeuangan
   // Semua tab bergaya tabel Quran memakai toolbar navigasi tanggal + toggle periode di header
   // Mental Block sengaja TIDAK masuk isTableTab: data journal (fetch all), tidak terpengaruh filter waktu.
   const isTableTab = isSholat || isQuran || isMinumAir || isDoa || isSyukur || isTidur || isPmo || isMasalah || isKesenangan || isSedekah || isKeuangan || isMakan
@@ -289,7 +315,8 @@ export function Header({ onMenuClick }: HeaderProps) {
         </div>
       )}
 
-      {/* Page title & description — left side */}
+      {/* Page title & description — disembunyikan di Overview (langsung shortcut → navigasi tanggal) */}
+      {!isOverviewPage && (
       <div className="flex-1 min-w-0">
         <h1 className="flex items-center gap-2 text-lg font-semibold truncate">
           {(() => {
@@ -300,6 +327,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         </h1>
         <p className="text-xs text-muted-foreground truncate">{description}</p>
       </div>
+      )}
 
       {/* Center — kalimat misi Hari Ini (diposisikan di tengah header) */}
       {isHariIni && (
