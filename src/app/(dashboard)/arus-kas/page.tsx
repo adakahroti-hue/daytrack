@@ -57,6 +57,31 @@ const DOMPET_OPTIONS: { value: "kebutuhan" | "tabungan" | "self_reward" | "sedek
   { value: "paylater", label: "Paylater" },
 ]
 
+// Rantai prioritas dompet sumber uang keluar (paylater = utang, bukan budget → dikecualikan).
+// Bila dompet di depan sudah habis (sisa ≤ 0), otomatis ambil dari dompet berikutnya.
+const DOMPET_CHAIN: ("kebutuhan" | "self_reward" | "sedekah" | "tabungan")[] = [
+  "kebutuhan", // Pokok
+  "self_reward", // Self Reward
+  "sedekah", // Sedekah
+  "tabungan", // Tabungan
+]
+
+// Pilih dompet otomatis berdasarkan sisa alokasi (sisa > 0). Kembalikan juga alasan
+// bila terpaksa mengambil dari dompet di bawahnya karena dompet sebelumnya habis.
+function pickAutoDompet(sisaMap: Record<string, number>): { dompet: "kebutuhan" | "self_reward" | "sedekah" | "tabungan"; reason: string | null } {
+  for (let i = 0; i < DOMPET_CHAIN.length; i++) {
+    const d = DOMPET_CHAIN[i]
+    if ((sisaMap[d] ?? 0) > 0) {
+      if (i === 0) return { dompet: d, reason: null }
+      const prevLabel = DOMPET_OPTIONS.find(o => o.value === DOMPET_CHAIN[i - 1])?.label ?? ""
+      const curLabel = DOMPET_OPTIONS.find(o => o.value === d)?.label ?? ""
+      return { dompet: d, reason: `${prevLabel} habis, otomatis ambil dari ${curLabel}` }
+    }
+  }
+  // Semua dompet budget habis → fallback ke Pokok (pengguna bisa ganti manual)
+  return { dompet: "kebutuhan", reason: "Semua dompet habis" }
+}
+
 // Warna badge klasifikasi (kategori rinci uang keluar)
 const KLASIFIKASI_BADGE: Record<string, string> = {
   beli_makanan: "bg-orange-50 text-orange-700 border-orange-200",
@@ -247,6 +272,18 @@ export default function ArusKasPage() {
     })
   }, [ringkasan.masuk, logs])
 
+  // Sisa alokasi per dompet (budget): dipakai untuk logika dompet berantai otomatis.
+  const sisaDompet = useMemo(() => {
+    const m: Record<string, number> = {}
+    for (const item of alokasi) m[item.dompet] = item.nilai
+    return m
+  }, [alokasi])
+
+  // Mode dompet otomatis: bila true, dompet dipilih otomatis dari rantai saat simpan.
+  const [autoDompet, setAutoDompet] = useState(true)
+  // Pesan alasan pilihan dompet otomatis (tampil di dialog saat mode otomatis aktif).
+  const autoPick = useMemo(() => autoDompet ? pickAutoDompet(sisaDompet) : null, [autoDompet, sisaDompet])
+
   const openAdd = () => {
     setNominalInput("")
     setEditState({ id: null, tanggal: todayStr, kategori: "uang_masuk", nominal: 0, alasan: "", dompet: null, klasifikasi: null })
@@ -261,12 +298,17 @@ export default function ArusKasPage() {
     if (!editState) return
     if (!editState.alasan.trim()) return
     if (editState.nominal <= 0) return
+    // Dompet otomatis: bila aktif & uang keluar, pilih dari rantai (habis → dompet berikutnya).
+    const dompetFinal =
+      editState.kategori === "uang_keluar" && autoDompet && editState.id === null && autoPick
+        ? autoPick.dompet
+        : (editState.kategori === "uang_keluar" ? editState.dompet : null)
     const payload = {
       tanggal: editState.tanggal,
       kategori: editState.kategori,
       nominal: editState.nominal,
       alasan: editState.alasan.trim(),
-      dompet: editState.kategori === "uang_keluar" ? editState.dompet : null,
+      dompet: dompetFinal,
       klasifikasi: editState.kategori === "uang_keluar" ? editState.klasifikasi : null,
     }
     if (editState.id) {
@@ -588,8 +630,30 @@ export default function ArusKasPage() {
               </div>
               {editState?.kategori === "uang_keluar" && (
                 <div className="mt-2">
-                  <Label>Sumber Dana (Dompet)</Label>
-                  <div className="grid grid-cols-2 gap-2 mt-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <Label>Sumber Dana (Dompet)</Label>
+                    <button
+                      type="button"
+                      onClick={() => setAutoDompet(prev => !prev)}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium border transition-colors",
+                        autoDompet
+                          ? "bg-indigo-100 text-indigo-700 border-indigo-300"
+                          : "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100"
+                      )}
+                      aria-pressed={autoDompet}
+                    >
+                      <span className={cn("h-2 w-2 rounded-full", autoDompet ? "bg-indigo-600" : "bg-slate-300")} />
+                      {autoDompet ? "Otomatis" : "Manual"}
+                    </button>
+                  </div>
+                  {autoDompet && autoPick && (
+                    <p className="mt-1 text-[11px] text-indigo-600">
+                      Ambil dari: <span className="font-semibold">{DOMPET_OPTIONS.find(o => o.value === autoPick.dompet)?.label}</span>
+                      {autoPick.reason ? <span className="text-slate-500"> · {autoPick.reason}</span> : null}
+                    </p>
+                  )}
+                  <div className={cn("grid grid-cols-2 gap-2 mt-1", autoDompet && "opacity-50 pointer-events-none")}>
                     {DOMPET_OPTIONS.map(opt => (
                       <button key={opt.value} type="button"
                         onClick={() => setEditState(prev => prev ? { ...prev, dompet: opt.value } : prev)}
@@ -601,6 +665,9 @@ export default function ArusKasPage() {
                       </button>
                     ))}
                   </div>
+                  {autoDompet && (
+                    <p className="mt-1 text-[10px] text-slate-400">Mode otomatis aktif — pilih manual untuk override.</p>
+                  )}
                 </div>
               )}
               {editState?.kategori === "uang_keluar" && (

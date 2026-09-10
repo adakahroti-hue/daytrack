@@ -228,9 +228,10 @@ export function Header({ onMenuClick }: HeaderProps) {
     isTidur ||
     isMakan ||
     isKeuangan
-  // Semua tab bergaya tabel Quran memakai toolbar navigasi tanggal + toggle periode di header
-  // Mental Block sengaja TIDAK masuk isTableTab: data journal (fetch all), tidak terpengaruh filter waktu.
-  const isTableTab = isSholat || isQuran || isMinumAir || isDoa || isSyukur || isTidur || isPmo || isMasalah || isKesenangan || isSedekah || isKeuangan || isMakan
+  // Semua tab bergaya tabel Quran memakai toolbar navigasi tanggal + toggle periode di header.
+  // Journal-type tabs sengaja TIDAK masuk isTableTab: data di-fetch semua (fetch all), tidak
+  // terpengaruh filter waktu — termasuk Mental Block, Refleksi (masalah) & Playlist (kesenangan).
+  const isTableTab = isSholat || isQuran || isMinumAir || isDoa || isSyukur || isTidur || isPmo || isSedekah || isKeuangan || isMakan
   // Revisi: tombol show/hide filter tanggal — toggle & navigasi tanggal mobile baru tampil setelah diklik
   const [showMobileControls, setShowMobileControls] = useState(false)
 
