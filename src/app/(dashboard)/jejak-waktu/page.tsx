@@ -372,7 +372,9 @@ export default function WaktuPage() {
             Belum ada aktivitas hari ini.
           </div>
         ) : (
-          <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div className="relative rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            {/* Jalur timeline vertikal — garis tipis di kiri, sejajar dengan titik indikator */}
+            <div className="pointer-events-none absolute inset-y-0 left-[25px] w-px bg-slate-200" aria-hidden />
             {/* Build list: aktivitas + gap */}
             {(() => {
               const merged: ({ type: "act"; a: Item } | { type: "gap"; g: any })[] = []
@@ -393,10 +395,10 @@ export default function WaktuPage() {
                 row.type === "gap" ? (
                   <div
                     key={row.g.id}
-                    className="flex flex-wrap items-center gap-x-3 gap-y-1 px-5 py-3.5 bg-slate-50/60 border-t border-slate-100"
+                    className="relative flex flex-wrap items-center gap-x-3 gap-y-1 px-5 py-3.5 pl-14 bg-slate-50/60 border-t border-slate-100"
                     style={{ minHeight: 56 }}
                   >
-                    <span className="shrink-0 w-2.5 h-2.5 rounded-full border-2 border-slate-300" />
+                    <span className="absolute left-[19px] z-10 w-3 h-3 rounded-full border-2 border-slate-300 bg-white" />
                     <span className="shrink-0 w-[88px] text-[11px] text-slate-400 tabular-nums leading-tight">
                       {formatClock(row.g.start.toISOString())}
                       <span className="hidden sm:inline"> - </span>
@@ -417,7 +419,7 @@ export default function WaktuPage() {
                     {/* MOBILE: stacked 2 baris (rapi, tidak mepet) */}
                     <div
                       className={cn(
-                        "sm:hidden group flex flex-col gap-2 px-5 py-3 border-t border-slate-100 hover:bg-slate-50/60 transition-colors",
+                        "relative sm:hidden group flex flex-col gap-2 px-5 py-3 pl-14 border-t border-slate-100 hover:bg-slate-50/60 transition-colors",
                         idx === 0 && "border-t-0"
                       )}
                     >
@@ -425,7 +427,7 @@ export default function WaktuPage() {
                         {/* timeline dot */}
                         <span
                           className={cn(
-                            "relative z-10 shrink-0 w-2.5 h-2.5 rounded-full",
+                            "absolute left-[19px] z-10 shrink-0 w-3 h-3 rounded-full",
                             row.a.status === "running" ? "ring-2 ring-emerald-400" : "ring-2 ring-white"
                           )}
                           style={{ background: colorByName[row.a.name] || "#94a3b8" }}
@@ -473,7 +475,7 @@ export default function WaktuPage() {
                     {/* DESKTOP: single row */}
                     <div
                       className={cn(
-                        "hidden sm:flex group items-center gap-4 px-5 py-3.5 border-t border-slate-100 hover:bg-slate-50/60 transition-colors",
+                        "relative hidden sm:flex group items-center gap-4 px-5 py-3.5 pl-14 border-t border-slate-100 hover:bg-slate-50/60 transition-colors",
                         idx === 0 && "border-t-0"
                       )}
                       style={{ minHeight: 58 }}
@@ -481,7 +483,7 @@ export default function WaktuPage() {
                       {/* timeline dot */}
                       <span
                         className={cn(
-                          "relative z-10 shrink-0 w-2.5 h-2.5 rounded-full",
+                          "absolute left-[19px] z-10 shrink-0 w-3 h-3 rounded-full",
                           row.a.status === "running" ? "ring-2 ring-emerald-400" : "ring-2 ring-white"
                         )}
                         style={{ background: colorByName[row.a.name] || "#94a3b8" }}
