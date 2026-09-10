@@ -396,7 +396,7 @@ function AyatCard({
         >
           {a.nomorAyat}
         </span>
-        <p className="flex-1 text-right text-2xl leading-loose text-slate-900 font-arabic" dir="rtl">
+        <p className="flex-1 text-right text-2xl sm:text-3xl leading-loose text-slate-900 font-arabic" dir="rtl">
           {a.teksArab}
         </p>
       </div>

@@ -219,10 +219,10 @@ export default function WaktuPage() {
   const grandTotal = totalsByName.reduce((s, x) => s + x.secs, 0)
 
   // Map warna tetap per NAMA aktivitas — SAMA PERSIS dengan irisan donut (Ringkasan Waktu)
-  // Indexing disamakan dengan DonutChart: totalsByName.slice(0,10) index ke-i -> PIE_COLORS[i]
+  // Indexing disamakan dengan DonutChart: totalsByName index ke-i -> PIE_COLORS[i]
   const colorByName = useMemo(() => {
     const map: Record<string, string> = {}
-    totalsByName.slice(0, 10).forEach((x, i) => {
+    totalsByName.forEach((x, i) => {
       map[x.name] = PIE_COLORS[i % PIE_COLORS.length]
     })
     return map
@@ -510,7 +510,7 @@ export default function WaktuPage() {
               <p className="text-sm text-slate-400 text-center">Belum ada aktivitas tercatat.</p>
             ) : (
               <DonutChart
-                segments={totalsByName.slice(0, 10).map((x, i) => ({
+                segments={totalsByName.map((x, i) => ({
                   label: x.name,
                   value: x.secs,
                   color: PIE_COLORS[i % PIE_COLORS.length],
