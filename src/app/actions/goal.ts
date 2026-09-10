@@ -60,15 +60,29 @@ export async function getActiveGoal(): Promise<GoalData | null> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
 
-  // 1) Goal terbaru milik user
-  const { data: goalRow, error: goalErr } = await supabase
+  // 1) Goal aktif milik user (is_active=true); kalau tidak ada, ambil yang terbaru
+  let goalRow: any = null
+  const { data: activeRow, error: activeErr } = await supabase
     .from("goal")
     .select("id, user_id, title, target_date, is_active, created_at, updated_at")
     .eq("user_id", user.id)
-    .order("created_at", { ascending: false })
+    .eq("is_active", true)
     .limit(1)
     .maybeSingle()
-  if (goalErr) throw new Error(goalErr.message)
+  if (activeErr) throw new Error(activeErr.message)
+  if (activeRow) {
+    goalRow = activeRow
+  } else {
+    const { data: latest, error: latestErr } = await supabase
+      .from("goal")
+      .select("id, user_id, title, target_date, is_active, created_at, updated_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    if (latestErr) throw new Error(latestErr.message)
+    goalRow = latest
+  }
   if (!goalRow) return null
 
   // 2) Milestones + Steps + Progress logs dijalankan PARALLEL (3 round-trip → 1)
@@ -139,12 +153,26 @@ export async function createGoal(formData: { title: string; target_date?: string
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
   const validated = goalSchema.parse(formData)
-  // Model single-goal: hapus seluruh goal lama milik user dulu (cascade ke milestone/step/log)
-  const { error: delErr } = await supabase.from("goal").delete().eq("user_id", user.id)
-  if (delErr) throw new Error(delErr.message)
+
+  // Model MULTI-GOAL: goal lama TIDAK dihapus, hanya dinonaktifkan (is_active=false).
+  // Goal baru di-insert sebagai aktif. Data lama (milestone/step/log) tetap utuh & bisa dipilih kembali.
+  // Nonaktifkan semua goal lama milik user dalam 1 query.
+  const { error: deactErr } = await supabase
+    .from("goal")
+    .update({ is_active: false })
+    .eq("user_id", user.id)
+    .eq("is_active", true)
+  if (deactErr) throw new Error(deactErr.message)
+
+  // Insert goal baru sebagai aktif
   const { data, error } = await supabase
     .from("goal")
-    .insert({ user_id: user.id, title: validated.title, target_date: validated.target_date || null })
+    .insert({
+      user_id: user.id,
+      title: validated.title,
+      target_date: validated.target_date || null,
+      is_active: true,
+    })
     .select(GOAL_SELECT)
     .single()
   if (error) throw new Error(error.message)
@@ -171,6 +199,59 @@ export async function deleteGoal(id: string) {
   if (!user) throw new Error("Unauthorized")
   const { error } = await supabase.from("goal").delete().eq("id", id).eq("user_id", user.id)
   if (error) throw new Error(error.message)
+  revalidatePath("/goal")
+  return { error: null }
+}
+
+/* ── Daftar semua goal (untuk dropdown ganti goal) ── */
+export interface GoalListItem {
+  id: string
+  title: string
+  target_date: string | null
+  is_active: boolean
+  created_at: string
+}
+
+export async function listGoals(): Promise<GoalListItem[]> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+  const { data, error } = await supabase
+    .from("goal")
+    .select("id, title, target_date, is_active, created_at")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+  if (error) throw new Error(error.message)
+  return (data || []) as GoalListItem[]
+}
+
+/* ── Jadikan sebuah goal sebagai aktif (nonaktifkan goal lain) ── */
+export async function setActiveGoal(id: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+  // Pastikan goal milik user
+  const { data: owned, error: ownErr } = await supabase
+    .from("goal")
+    .select("id")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .limit(1)
+    .maybeSingle()
+  if (ownErr) throw new Error(ownErr.message)
+  if (!owned) throw new Error("Goal tidak ditemukan")
+  // Nonaktifkan semua, lalu aktifkan yang dipilih
+  const { error: deactErr } = await supabase
+    .from("goal")
+    .update({ is_active: false })
+    .eq("user_id", user.id)
+  if (deactErr) throw new Error(deactErr.message)
+  const { error: actErr } = await supabase
+    .from("goal")
+    .update({ is_active: true })
+    .eq("id", id)
+    .eq("user_id", user.id)
+  if (actErr) throw new Error(actErr.message)
   revalidatePath("/goal")
   return { error: null }
 }

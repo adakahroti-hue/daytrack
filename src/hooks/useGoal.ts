@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   getActiveGoal,
+  listGoals,
+  setActiveGoal,
   createGoal,
   updateGoal,
   deleteGoal,
@@ -20,6 +22,25 @@ export function useActiveGoal() {
     queryFn: () => getActiveGoal(),
     staleTime: 30_000,
     refetchOnWindowFocus: false,
+  })
+}
+
+export function useListGoals() {
+  return useQuery({
+    queryKey: ["goal", "list"],
+    queryFn: () => listGoals(),
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+  })
+}
+
+export function useSetActiveGoal() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => setActiveGoal(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["goal"] })
+    },
   })
 }
 

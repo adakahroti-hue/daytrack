@@ -13,7 +13,7 @@ import { RoadmapList } from "@/components/goal/RoadmapList"
 import { AddMilestoneModal } from "@/components/goal/AddMilestoneModal"
 import { AddStepModal } from "@/components/goal/AddStepModal"
 import { ProgressLogList } from "@/components/goal/ProgressLogList"
-import { useActiveGoal, useCreateGoal, useUpdateGoal, useDeleteGoal, useCreateMilestone, useUpdateMilestone, useDeleteMilestone, useCreateStep, useUpdateStep, useToggleStepCompleted, useDeleteStep } from "@/hooks/useGoal"
+import { useActiveGoal, useListGoals, useSetActiveGoal, useCreateGoal, useUpdateGoal, useDeleteGoal, useCreateMilestone, useUpdateMilestone, useDeleteMilestone, useCreateStep, useUpdateStep, useToggleStepCompleted, useDeleteStep } from "@/hooks/useGoal"
 
 function errMsg(e: any) {
   return e?.message || "unknown error"
@@ -21,6 +21,8 @@ function errMsg(e: any) {
 
 export default function GoalPage() {
   const { data: goal, isLoading } = useActiveGoal()
+  const { data: goals } = useListGoals()
+  const setActiveGoal = useSetActiveGoal()
   const createGoal = useCreateGoal()
   const updateGoal = useUpdateGoal()
   const deleteGoal = useDeleteGoal()
@@ -63,7 +65,7 @@ export default function GoalPage() {
         <DialogHeader>
           <DialogTitle>Buat Goal Baru</DialogTitle>
         </DialogHeader>
-        <p className="text-xs text-slate-500">Goal saat ini akan diganti — seluruh milestone, step, dan log progres lamamu akan dihapus.</p>
+        <p className="text-xs text-slate-500">Goal baru akan jadi goal aktif. Goal-goal sebelumnya tetap tersimpan dan bisa dipilih kembali lewat dropdown di atas.</p>
         <div className="space-y-3">
           <div className="space-y-1">
             <Label>Nama Goal</Label>
@@ -118,6 +120,14 @@ export default function GoalPage() {
         goalTitle={goal.title}
         goalProgress={stats.goalProgress}
         targetDate={goal.target_date}
+        goals={goals || []}
+        activeGoalId={goal.id}
+        onSelectGoal={(id) =>
+          setActiveGoal.mutate(id, {
+            onError: (e: any) =>
+              import("sonner").then(({ toast }) => toast.error(`Gagal ganti goal: ${errMsg(e)}`)),
+          })
+        }
         onEdit={() => { setGoalName(goal.title); setEditGoalOpen(true) }}
         onDelete={() => setDeleteGoalOpen(true)}
         onNewGoal={() => setCreateGoalOpen(true)}
