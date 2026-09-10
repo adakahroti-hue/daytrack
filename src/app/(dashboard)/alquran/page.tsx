@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { BookOpen, ArrowLeft, Search, BookMarked, ChevronRight, ChevronLeft, Bookmark } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAlquranBookmark } from "@/hooks/useAlquranBookmark"
@@ -35,6 +35,25 @@ type SurahDetail = {
 
 const TOTAL_SURAH = 114
 const PAGE = 5
+const LIST_CACHE_KEY = "alquran-list-v1"
+
+// Cache client-side: daftar surah (kecil, ~30KB) & detail per surah (ayat+tafsir).
+// Bertahan selama tab browser terbuka — pindah tab Alquran→lain→Alquran instan.
+function cacheGet<T>(key: string): T | null {
+  try {
+    const raw = sessionStorage.getItem(key)
+    return raw ? (JSON.parse(raw) as T) : null
+  } catch {
+    return null
+  }
+}
+function cacheSet(key: string, data: unknown) {
+  try {
+    sessionStorage.setItem(key, JSON.stringify(data))
+  } catch {
+    /* storage penuh — abaikan, fallback fetch */
+  }
+}
 
 export default function AlquranPage() {
   const [list, setList] = useState<SurahMeta[]>([])
@@ -60,31 +79,56 @@ export default function AlquranPage() {
   }, [bookmark.data])
 
   useEffect(() => {
+    const cached = cacheGet<SurahMeta[]>(LIST_CACHE_KEY)
+    if (cached?.length) {
+      setList(cached)
+      setLoadingList(false)
+      return
+    }
     fetch("https://equran.id/api/v2/surat")
       .then((r) => r.json())
-      .then((j) => setList(j.data || []))
+      .then((j) => {
+        setList(j.data || [])
+        cacheSet(LIST_CACHE_KEY, j.data || [])
+      })
       .finally(() => setLoadingList(false))
   }, [])
 
   const openSurah = async (nomor: number) => {
+    const cacheKey = `alquran-detail-v1-${nomor}`
+    const cached = cacheGet<SurahDetail>(cacheKey)
+    if (cached) {
+      setSelected(nomor)
+      setDetail(cached)
+      return
+    }
     setSelected(nomor)
     setLoadingDetail(true)
     setDetail(null)
     const res = await fetch(`/api/alquran/${nomor}`)
     const json = await res.json()
     setDetail(json.data)
+    if (json.data) cacheSet(cacheKey, json.data)
     setLoadingDetail(false)
   }
 
   const loadSurahFull = async (surah: number, startAyat = 1) => {
+    // cek cache dulu — surah yang pernah dibuka langsung tampil
+    const cacheKey = `alquran-detail-v1-${surah}`
+    const cached = cacheGet<SurahDetail>(cacheKey)
+    if (cached) {
+      setSurahMeta(cached)
+      setFullAyat(cached.ayat || [])
+      setCurSurah(surah)
+      setCurAyat(startAyat)
+      setLoadingAyat(false)
+      return
+    }
     setLoadingAyat(true)
-    setFullAyat([])
-    const [metaRes, surahRes] = await Promise.all([
-      fetch(`https://equran.id/api/v2/surat/${surah}`).then((r) => r.json()),
-      fetch(`/api/alquran/${surah}`).then((r) => r.json()),
-    ])
-    setSurahMeta(metaRes.data)
+    const surahRes = await fetch(`/api/alquran/${surah}`).then((r) => r.json())
+    setSurahMeta(surahRes.data)
     setFullAyat(surahRes.data.ayat || [])
+    if (surahRes.data) cacheSet(cacheKey, surahRes.data)
     setCurSurah(surah)
     setCurAyat(startAyat)
     setLoadingAyat(false)
@@ -140,6 +184,22 @@ export default function AlquranPage() {
     bookmark.save.mutate(pos)
   }
 
+  // Prefetch: setelah surah aktif termuat, muat diam-diam surah berikutnya di
+  // belakang layar — begitu pengguna klik "Berikutnya" data sudah siap.
+  const prefetched = useRef<Set<number>>(new Set())
+  useEffect(() => {
+    if (loadingAyat || !fullAyat.length) return
+    const next = curSurah < TOTAL_SURAH ? curSurah + 1 : null
+    if (!next || prefetched.current.has(next)) return
+    prefetched.current.add(next)
+    fetch(`/api/alquran/${next}`)
+      .then((r) => r.json())
+      .then((j) => {
+        if (j?.data) cacheSet(`alquran-detail-v1-${next}`, j.data)
+      })
+      .catch(() => {})
+  }, [curSurah, loadingAyat, fullAyat.length])
+
   const filtered = list.filter(
     (s) =>
       s.namaLatin.toLowerCase().includes(query.toLowerCase()) ||
@@ -150,7 +210,7 @@ export default function AlquranPage() {
   const chunk = fullAyat.slice(curAyat - 1, curAyat - 1 + PAGE)
 
   return (
-    <div className="mx-auto max-w-4xl space-y-4 p-4 sm:p-6">
+    <div className="mx-auto max-w-6xl space-y-4 p-4 sm:p-6">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2.5">
@@ -185,7 +245,7 @@ export default function AlquranPage() {
                 Memuat daftar surah…
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {filtered.map((s) => (
                   <button
                     key={s.nomor}

@@ -797,8 +797,9 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                       const hariNama = format(new Date(d.tgl + 'T00:00:00'), 'EEEE', { locale: id })
                       const hariShort = hariNama.slice(0, 3)
                       return (
-                        <span key={d.tgl} className="px-2 py-0.5 rounded-md bg-slate-100 text-xs font-medium text-slate-700 tabular-nums" title={hariNama}>
-                          {hariShort} {d.jam}j
+                        <span key={d.tgl} className="flex flex-col items-center rounded-md bg-slate-100 px-2 py-1" title={hariNama}>
+                          <span className="text-[10px] font-medium text-slate-500 leading-none">{hariShort}</span>
+                          <span className="mt-0.5 text-xs font-semibold tabular-nums text-slate-900 leading-none">{d.jam}j</span>
                         </span>
                       )
                     })}

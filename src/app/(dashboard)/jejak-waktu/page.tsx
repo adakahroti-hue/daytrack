@@ -361,7 +361,7 @@ export default function WaktuPage() {
       )}
 
       {/* AKTIVITAS HARI INI — VERTICAL TIMELINE */}
-      <div>
+      <div className="max-w-3xl">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-4">Aktivitas Hari Ini</h2>
         {isLoading ? (
           <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 shadow-sm">
@@ -430,9 +430,9 @@ export default function WaktuPage() {
                             : "border-slate-200 bg-white hover:border-slate-300"
                         )}
                       >
-                        <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-4">
+                        <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2">
                           {/* Waktu — desktop: kolom kiri; mobile: di bawah nama */}
-                          <span className="hidden sm:block shrink-0 w-[168px] border-r border-slate-200 pr-4 text-xs text-slate-500 tabular-nums leading-snug">
+                          <span className="hidden sm:block shrink-0 w-[132px] border-r border-slate-200 pr-3 text-xs text-slate-500 tabular-nums leading-snug">
                             {formatClock(row.a.started_at)}
                             <span className="text-slate-300"> – </span>
                             {row.a.ended_at
@@ -454,7 +454,7 @@ export default function WaktuPage() {
                             </p>
                           </div>
                           {/* Durasi */}
-                          <span className="shrink-0 sm:w-[76px] sm:text-right text-sm font-bold tabular-nums text-slate-900">
+                          <span className="shrink-0 sm:w-[64px] sm:text-right text-sm font-bold tabular-nums text-slate-900">
                             {row.a.status === "running"
                               ? formatElapsed(now - new Date(row.a.started_at).getTime())
                               : formatDuration(row.a.duration_seconds)}
