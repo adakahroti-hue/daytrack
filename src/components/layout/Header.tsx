@@ -315,8 +315,8 @@ export function Header({ onMenuClick }: HeaderProps) {
         </div>
       )}
 
-      {/* Page title & description — disembunyikan di Overview (langsung shortcut → navigasi tanggal) */}
-      {!isOverviewPage && (
+      {/* Page title & description — disembunyikan di Overview & Goal (redundant: GoalHeader sudah tampil judul+progress) */}
+      {!isOverviewPage && !isGoal && (
       <div className="flex-1 min-w-0">
         <h1 className="flex items-center gap-2 text-lg font-semibold truncate">
           {(() => {
