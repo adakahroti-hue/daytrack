@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Check, Minus, Mosque, BookOpen, GlassWater, Repeat, Sparkles, Shield, Moon, ArrowRight, Wallet, HandCoins, Sun, PersonStanding } from 'lucide-react'
 import { format, differenceInCalendarDays } from 'date-fns'
+import { id } from 'date-fns/locale'
 import { cn, formatRupiah } from '@/lib/utils'
 import { useOverviewData } from "@/hooks/useOverviewData"
 import { PERIOD_LABEL, type OverviewPeriod } from './FocusTodaySection'
@@ -822,11 +823,15 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                 </div>
                 {tidurDurasiList.length > 0 && (
                   <div className="flex flex-wrap items-center gap-1.5">
-                    {tidurDurasiList.slice(-7).map((d) => (
-                      <span key={d.tgl} className="px-2 py-0.5 rounded-md bg-slate-100 text-xs font-medium text-slate-700 tabular-nums">
-                        {d.jam}j
-                      </span>
-                    ))}
+                    {tidurDurasiList.slice(-7).map((d) => {
+                      const hariNama = format(new Date(d.tgl + 'T00:00:00'), 'EEEE', { locale: id })
+                      const hariShort = hariNama.slice(0, 3)
+                      return (
+                        <span key={d.tgl} className="px-2 py-0.5 rounded-md bg-slate-100 text-xs font-medium text-slate-700 tabular-nums" title={hariNama}>
+                          {hariShort} {d.jam}j
+                        </span>
+                      )
+                    })}
                   </div>
                 )}
               </div>

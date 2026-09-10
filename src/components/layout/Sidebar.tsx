@@ -312,24 +312,25 @@ function SidebarContent({
 
   return (
     <div className="flex h-full flex-col">
-      {/* Logo header */}
-      <div className={cn('flex h-16 items-center border-b px-3', isCollapsed && 'justify-center')}>
-        <Link
-          href="/overview"
-          className="flex items-center gap-2 font-bold text-lg text-primary flex-1 min-w-0"
-          onClick={onNavClick}
-        >
-          <Image
-            src="/daytrack-logo.png"
-            alt="Daytrack logo"
-            width={24}
-            height={24}
-            className="h-6 w-6 flex-shrink-0 rounded-md"
-          />
-          {!isCollapsed && <span className="truncate">Daytrack</span>}
-        </Link>
-
-        {/* Desktop collapse/expand toggle */}
+      {/* Logo header — disembunyikan saat sidebar di-collapse */}
+      {!isCollapsed && (
+        <div className={cn('flex h-16 items-center border-b px-3')}>
+          <Link
+            href="/overview"
+            className="flex items-center gap-2 font-bold text-lg text-primary flex-1 min-w-0"
+            onClick={onNavClick}
+          >
+            <Image
+              src="/daytrack-logo.png"
+              alt="Daytrack logo"
+              width={24}
+              height={24}
+              className="h-6 w-6 flex-shrink-0 rounded-md"
+            />
+            <span className="truncate">Daytrack</span>
+          </Link>
+        </div>
+      )}
         {!showMobileClose && (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -361,7 +362,6 @@ function SidebarContent({
             <X className="h-5 w-5" />
           </Button>
         )}
-      </div>
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2">
@@ -375,6 +375,9 @@ function SidebarContent({
               if (isCollapsed) {
                 return (
                   <Fragment key={section.title}>
+                    {sectionIndex > 0 && (
+                      <li aria-hidden="true" className="mx-2 my-1.5 border-t border-slate-200 dark:border-slate-700/50" />
+                    )}
                     {section.items.map((item) => {
                       const itemActive = matchesPath(pathname, item.href)
                       return (
