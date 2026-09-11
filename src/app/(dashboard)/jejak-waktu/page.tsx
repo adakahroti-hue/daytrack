@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { Play, Square, Timer, Trash2, RotateCcw, MoreVertical, Plus, ChevronRight } from "lucide-react"
+import { Play, Square, Timer, Trash2, RotateCcw, MoreVertical, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useJejakWaktu, useJejakWaktuNames } from "@/hooks/useJejakWaktu"
@@ -102,8 +102,8 @@ function DonutChart({ segments, size = 180 }: { segments: DonutSegment[]; size?:
   })()
 
   return (
-    <div className="flex items-center gap-4">
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0">
+    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0 mx-auto sm:mx-0">
         {total === 0 ? (
           <circle cx={cx} cy={cy} r={r} fill="#e2e8f0" />
         ) : (
@@ -129,16 +129,24 @@ function DonutChart({ segments, size = 180 }: { segments: DonutSegment[]; size?:
               )
           )}
       </svg>
-      <div className="flex-1 min-w-0 space-y-1.5">
+      <div className="w-full sm:flex-1 min-w-0 space-y-1.5">
         {segments.map((s, i) => (
           <div key={i} className="flex items-center justify-between gap-2 text-sm">
             <span className="flex items-center gap-2 min-w-0">
               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: s.color }} />
               <span className="text-slate-700 break-words">{s.label}</span>
             </span>
-            <span className="shrink-0 font-semibold tabular-nums text-slate-900">{formatDuration(s.value)}</span>
+            <span className="flex items-center gap-2 shrink-0">
+              <span className="text-[11px] text-slate-400 tabular-nums">{Math.round((s.value / (total || 1)) * 100)}%</span>
+              <span className="font-semibold tabular-nums text-slate-900">{formatDuration(s.value)}</span>
+            </span>
           </div>
         ))}
+        {/* Baris total — merapikan ringkasan waktu per kegiatan */}
+        <div className="flex items-center justify-between gap-2 text-sm pt-2 mt-1 border-t border-slate-200/70">
+          <span className="font-semibold text-slate-800">Total</span>
+          <span className="font-bold tabular-nums text-slate-900">{formatDuration(total)}</span>
+        </div>
       </div>
     </div>
   )
@@ -510,9 +518,7 @@ export default function WaktuPage() {
 
       {/* RINGKASAN WAKTU */}
       <div>
-        <button className="flex items-center gap-1 text-sm font-semibold text-slate-700 hover:text-slate-900 mb-3">
-          Ringkasan Waktu per Kegiatan <ChevronRight className="h-4 w-4" />
-        </button>
+        <h2 className="text-sm font-semibold text-slate-700 mb-3">Ringkasan Waktu per Kegiatan</h2>
         <Card className="rounded-xl border border-slate-200 shadow-none">
           <CardContent className="pt-5 pb-5">
             {totalsByName.length === 0 ? (

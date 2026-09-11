@@ -57,6 +57,9 @@ interface HeaderControls {
   goToWaktuToday: () => void
   alquranMode: 'pilih' | 'mengaji'
   setAlquranMode: (m: 'pilih' | 'mengaji') => void
+  // Rev mobile: tombol "Tambah" di header kanan (Catatan & Bank Ide) — halaman registrasi handler lewat context
+  headerAddAction: (() => void) | null
+  setHeaderAddAction: (fn: (() => void) | null) => void
 }
 
 const HeaderControlsContext = createContext<HeaderControls | null>(null)
@@ -282,6 +285,8 @@ export function HeaderControlsProvider({
   const [waktuDate, setWaktuDate] = useState<Date>(new Date())
   // Alquran: mode Pilih Surah / Mode Mengaji — dikelola di header
   const [alquranMode, setAlquranMode] = useState<'pilih' | 'mengaji'>('mengaji')
+  // Tombol "Tambah" di header kanan — handler didaftarkan halaman (Catatan/Bank Ide) via context
+  const [headerAddAction, setHeaderAddAction] = useState<(() => void) | null>(null)
 
   const navigateWaktu = useCallback((dir: 'prev' | 'next') => {
     setWaktuDate((prev) => {
@@ -423,7 +428,9 @@ export function HeaderControlsProvider({
     goToWaktuToday,
     alquranMode,
     setAlquranMode,
-  }), [dynamicTitle, dynamicDescription, currentDate, period, setPeriod, selectYesterday, page, setPage, navigate, goToToday, onRefresh, isLoading, isToday, navigateToPeriodStart, category, subPage, setSubPage, tugasView, setTugasView, groupMode, ibadahPeriod, ibadahDate, setIbadahPeriod, navigateIbadah, arusKasShowAll, setArusKasShowAll, waktuPeriod, setWaktuPeriod, waktuDate, navigateWaktu, goToWaktuToday, alquranMode])
+    headerAddAction,
+    setHeaderAddAction,
+  }), [dynamicTitle, dynamicDescription, currentDate, period, setPeriod, selectYesterday, page, setPage, navigate, goToToday, onRefresh, isLoading, isToday, navigateToPeriodStart, category, subPage, setSubPage, tugasView, setTugasView, groupMode, setGroupMode, ibadahPeriod, ibadahDate, setIbadahPeriod, navigateIbadah, arusKasShowAll, setArusKasShowAll, waktuPeriod, setWaktuPeriod, waktuDate, navigateWaktu, goToWaktuToday, alquranMode, headerAddAction])
 
   return (
     <HeaderControlsContext.Provider value={value}>

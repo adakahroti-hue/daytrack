@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, BookMarked, Mosque, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, ScanSearch, Timer } from 'lucide-react'
+import { Menu, X, Plus, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, BookMarked, Mosque, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, ScanSearch, Timer } from 'lucide-react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
@@ -170,6 +170,7 @@ export function Header({ onMenuClick }: HeaderProps) {
     goToWaktuToday,
     alquranMode,
     setAlquranMode,
+    headerAddAction,
   } = useHeaderControls()
 
   // Show period toggle only on Overview page
@@ -536,6 +537,21 @@ export function Header({ onMenuClick }: HeaderProps) {
               ))}
             </div>
           </div>
+        )}
+
+        {/* Catatan & Bank Ide — tombol Tambah pindah ke header kanan atas (rev mobile), warna cerah */}
+        {(isCatatan || isBankIde) && (
+          <Button
+            onClick={() => headerAddAction?.()}
+            className={cn(
+              'flex-shrink-0 h-9 w-9 sm:h-8 sm:w-auto sm:px-3 sm:gap-1 rounded-lg text-white shadow-sm',
+              isCatatan ? 'bg-purple-500 hover:bg-purple-600' : 'bg-amber-500 hover:bg-amber-600'
+            )}
+            aria-label={isCatatan ? 'Tambah Catatan' : 'Tambah Ide'}
+          >
+            <Plus className='h-4 w-4' />
+            <span className='hidden sm:inline text-xs font-semibold'>{isCatatan ? 'Tambah Catatan' : 'Tambah Ide'}</span>
+          </Button>
         )}
 
         {/* Alquran: toggle Pilih Surah / Mode Mengaji — di header kanan (semua ukuran layar) */}

@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useRef } from "react"
-import { Plus, Pencil, Trash2, StickyNote, List, ListOrdered } from "lucide-react"
+import { useState, useRef, useEffect } from "react"
+import { Pencil, Trash2, List, ListOrdered, Copy } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -10,16 +10,33 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { useCatatanAll, useCreateCatatan, useUpdateCatatan, useDeleteCatatan } from "@/hooks/useCatatan"
 import { useRealtime } from "@/hooks/useRealtime"
+import { useHeaderControls } from "@/components/layout/HeaderControls"
 import { useIsDesktop } from "@/hooks/useMediaQuery"
 
 type CatatanWarna = "yellow" | "green" | "blue" | "pink" | "orange"
 
-const NOTE_COLORS: Record<CatatanWarna, { card: string; bar: string; text: string; badge: string }> = {
-  yellow: { card: "bg-amber-50 border-amber-200", bar: "bg-amber-400", text: "text-amber-900", badge: "bg-amber-400 text-amber-950" },
-  green: { card: "bg-emerald-50 border-emerald-200", bar: "bg-emerald-400", text: "text-emerald-900", badge: "bg-emerald-400 text-emerald-950" },
-  blue: { card: "bg-sky-50 border-sky-200", bar: "bg-sky-400", text: "text-sky-900", badge: "bg-sky-400 text-sky-950" },
-  pink: { card: "bg-pink-50 border-pink-200", bar: "bg-pink-400", text: "text-pink-900", badge: "bg-pink-400 text-pink-950" },
-  orange: { card: "bg-orange-50 border-orange-200", bar: "bg-orange-400", text: "text-orange-900", badge: "bg-orange-400 text-orange-950" },
+// Rev: tombol warna kini memakai warna aslinya (sel = warna penuh, unsel = versi muda)
+const NOTE_COLORS: Record<CatatanWarna, { card: string; bar: string; text: string; badge: string; sel: string; unsel: string }> = {
+  yellow: {
+    card: "bg-amber-50 border-amber-200", bar: "bg-amber-400", text: "text-amber-900", badge: "bg-amber-400 text-amber-950",
+    sel: "bg-amber-400 border-amber-400 text-amber-950", unsel: "bg-amber-50 border-amber-200 text-amber-800 hover:bg-amber-100",
+  },
+  green: {
+    card: "bg-emerald-50 border-emerald-200", bar: "bg-emerald-400", text: "text-emerald-900", badge: "bg-emerald-400 text-emerald-950",
+    sel: "bg-emerald-400 border-emerald-400 text-emerald-950", unsel: "bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100",
+  },
+  blue: {
+    card: "bg-sky-50 border-sky-200", bar: "bg-sky-400", text: "text-sky-900", badge: "bg-sky-400 text-sky-950",
+    sel: "bg-sky-400 border-sky-400 text-sky-950", unsel: "bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100",
+  },
+  pink: {
+    card: "bg-pink-50 border-pink-200", bar: "bg-pink-400", text: "text-pink-900", badge: "bg-pink-400 text-pink-950",
+    sel: "bg-pink-400 border-pink-400 text-pink-950", unsel: "bg-pink-50 border-pink-200 text-pink-800 hover:bg-pink-100",
+  },
+  orange: {
+    card: "bg-orange-50 border-orange-200", bar: "bg-orange-400", text: "text-orange-900", badge: "bg-orange-400 text-orange-950",
+    sel: "bg-orange-400 border-orange-400 text-orange-950", unsel: "bg-orange-50 border-orange-200 text-orange-800 hover:bg-orange-100",
+  },
 }
 
 const WARNA_OPTIONS: { value: CatatanWarna; label: string }[] = [
@@ -140,6 +157,23 @@ export default function CatatanPage() {
   const openView = (n: any) =>
     setViewState({ id: n.id, judul: n.judul, isi: n.isi, label: n.label ?? "", warna: n.warna as CatatanWarna })
 
+  // Rev mobile: tombol "Tambah Catatan" pindah ke header kanan atas — registrasi handler via context
+  const { setHeaderAddAction } = useHeaderControls()
+  useEffect(() => {
+    setHeaderAddAction(() => openAdd)
+    return () => setHeaderAddAction(null)
+  }, [setHeaderAddAction])
+
+  // Salin isi dialog edit (judul + label + isi) ke clipboard — dipakai tombol ikon di toolbar Isi
+  const copyEdit = () => {
+    const e = editState
+    if (!e) return
+    const text = [e.judul, e.label ? `[${e.label}]` : "", e.isi].filter(Boolean).join("\n\n")
+    navigator.clipboard.writeText(text)
+      .then(() => import("sonner").then(({ toast }) => toast.success("Catatan disalin")))
+      .catch(() => import("sonner").then(({ toast }) => toast.error("Gagal menyalin catatan")))
+  }
+
   const handleSave = async () => {
     if (!editState) return
     if (!editState.judul.trim() || !editState.isi.trim()) return
@@ -171,11 +205,8 @@ export default function CatatanPage() {
 
   return (
     <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
+      {/* Rev mobile: judul "Catatan" dihapus — deretan kategori jadi baris pertama; tombol tambah pindah ke header */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <div className="flex items-center gap-1.5 text-sm font-bold text-slate-800 shrink-0">
-          <StickyNote className="h-4 w-4 text-purple-600" /> Catatan
-        </div>
-
         {notes.length > 0 && (
           <div className="flex items-center gap-1.5 flex-1 min-w-0 overflow-x-auto scrollbar-none -mx-1 px-1 pb-1 sm:mx-0 sm:px-0 sm:pb-0 sm:flex-wrap sm:overflow-visible">
             <button
@@ -219,19 +250,13 @@ export default function CatatanPage() {
             </button>
           </div>
         )}
-
-        <Button size="sm" variant="outline" onClick={openAdd} aria-label="Tambah Catatan"
-          className="h-8 w-8 p-0 sm:h-7 sm:w-auto sm:gap-1 sm:px-2 shrink-0">
-          <Plus className="h-4 w-4 sm:h-3 sm:w-3" />
-          <span className="hidden sm:inline text-[11px]">Tambah Catatan</span>
-        </Button>
       </div>
 
       {isLoading ? (
         <p className="text-sm text-slate-400 py-8 text-center">Memuat...</p>
       ) : filteredNotes.length === 0 ? (
         <p className="text-sm text-slate-400 py-8 text-center">
-          {notes.length === 0 ? "Belum ada catatan. Klik “Tambah Catatan”." : "Tidak ada catatan pada kategori ini."}
+          {notes.length === 0 ? "Belum ada catatan. Klik tombol tambah (+) di kanan atas." : "Tidak ada catatan pada kategori ini."}
         </p>
       ) : (
         <>
@@ -364,6 +389,7 @@ export default function CatatanPage() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="catatan-isi">Isi</Label>
+              {/* Rev: tombol Salin jadi ikon saja — kanan atas, sebaris dengan Bullet/Number, di luar field isi */}
               <div className="flex items-center gap-1.5 mb-1.5">
                 <Button type="button" variant="outline" size="sm" onClick={() => insertPrefix("bullet")}
                   className="h-7 gap-1 text-[11px] px-2" aria-label="Tambah bullet">
@@ -372,6 +398,10 @@ export default function CatatanPage() {
                 <Button type="button" variant="outline" size="sm" onClick={() => insertPrefix("number")}
                   className="h-7 gap-1 text-[11px] px-2" aria-label="Tambah nomor">
                   <ListOrdered className="h-3.5 w-3.5" /> Number
+                </Button>
+                <Button type="button" variant="outline" size="icon" onClick={copyEdit}
+                  className="ml-auto h-7 w-7 p-0 shrink-0" aria-label="Salin catatan" title="Salin catatan">
+                  <Copy className="h-3.5 w-3.5" />
                 </Button>
               </div>
               <Textarea
@@ -390,24 +420,16 @@ export default function CatatanPage() {
                 {WARNA_OPTIONS.map(opt => (
                   <button key={opt.value} type="button"
                     onClick={() => setEditState(prev => prev ? { ...prev, warna: opt.value } : prev)}
-                    className={cn("rounded-lg border px-1 py-2 text-[11px] font-medium",
+                    className={cn("rounded-lg border px-1 py-2 text-[11px] transition-colors",
                       editState?.warna === opt.value
-                        ? "bg-purple-100 text-purple-700 border-purple-300"
-                        : "border-slate-200 text-slate-500 hover:bg-slate-50")}>
+                        ? cn(NOTE_COLORS[opt.value].sel, "font-semibold")
+                        : NOTE_COLORS[opt.value].unsel)}>
                     {opt.label}
                   </button>
                 ))}
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-1">
-              <Button variant="outline" onClick={() => {
-                const e = editState
-                if (!e) return
-                const text = [e.judul, e.label ? `[${e.label}]` : "", e.isi].filter(Boolean).join("\n\n")
-                navigator.clipboard.writeText(text)
-                  .then(() => import("sonner").then(({ toast }) => toast.success("Catatan disalin")))
-                  .catch(() => import("sonner").then(({ toast }) => toast.error("Gagal menyalin catatan")))
-              }}>Salin</Button>
               <Button variant="outline" onClick={() => setEditState(null)}>Batal</Button>
               <Button onClick={handleSave} disabled={isBusy || !editState?.judul.trim() || !editState?.isi.trim()}>
                 {isBusy && <span className="mr-1">…</span>} Simpan

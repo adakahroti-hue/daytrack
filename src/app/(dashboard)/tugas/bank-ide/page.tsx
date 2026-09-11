@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect } from 'react'
-import { Plus, Lightbulb, CheckCircle2 } from 'lucide-react'
+import { Lightbulb, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -13,6 +13,7 @@ import { useBankIde, useCreateIdea, useUpdateIdea, useDeleteIdea, usePromoteIdea
 import { useBankIdeRealtime } from '@/hooks/useRealtime'
 import type { Idea } from '@/app/actions/bank-ide'
 import type { TaskFormData } from '@/app/actions/tasks'
+import { useHeaderControls } from '@/components/layout/HeaderControls'
 
 function BankIdePageClient() {
   const [isIdeFormOpen, setIsIdeFormOpen] = useState(false)
@@ -21,6 +22,13 @@ function BankIdePageClient() {
   const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => { setIsMounted(true) }, [])
+
+  // Rev mobile: tombol "Tambah Ide" pindah ke header kanan atas — registrasi handler via context
+  const { setHeaderAddAction } = useHeaderControls()
+  useEffect(() => {
+    setHeaderAddAction(() => () => { setEditingIde(null); setIsIdeFormOpen(true) })
+    return () => setHeaderAddAction(null)
+  }, [setHeaderAddAction])
 
   // Ambil ide dari tabel bank_ide (terpisah dari tugas)
   const { data: ideas = [], isLoading, error } = useBankIde()
@@ -123,14 +131,7 @@ function BankIdePageClient() {
         </div>
       )}
 
-      <Button
-        onClick={() => { setEditingIde(null); setIsIdeFormOpen(true) }}
-        className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 bg-black hover:bg-neutral-800 text-white"
-        aria-label="Tambah ide baru"
-        size="icon"
-      >
-        <Plus className="h-6 w-6" />
-      </Button>
+      {/* Tombol tambah ide kini ada di header kanan atas (rev mobile) */}
 
       {/* Dialog catatan ide (hanya catatan) */}
       <Dialog open={isIdeFormOpen} onOpenChange={setIsIdeFormOpen}>
