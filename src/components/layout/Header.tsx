@@ -545,15 +545,16 @@ export function Header({ onMenuClick }: HeaderProps) {
           </div>
         )}
 
-        {/* Alquran: toggle Pilih Surah / Mode Mengaji — di header kanan */}
+        {/* Alquran: toggle Pilih Surah / Mode Mengaji — di header kanan (semua ukuran layar) */}
         {isAlquran && (
-          <div className="hidden sm:flex flex-shrink-0">
+          <div className="flex flex-shrink-0">
             <div className="flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border">
               <Button
                 variant={alquranMode === 'pilih' ? 'default' : 'ghost'}
                 size="sm"
                 className="h-8 px-2 gap-1 justify-center"
                 onClick={() => setAlquranMode('pilih')}
+                aria-label="Pilih Surah"
               >
                 <BookOpen className="h-3.5 w-3.5 flex-shrink-0" />
                 <span className="hidden sm:inline truncate">Pilih Surah</span>
@@ -563,6 +564,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 size="sm"
                 className="h-8 px-2 gap-1 justify-center"
                 onClick={() => setAlquranMode('mengaji')}
+                aria-label="Mode Mengaji"
               >
                 <BookMarked className="h-3.5 w-3.5 flex-shrink-0" />
                 <span className="hidden sm:inline truncate">Mode Mengaji</span>

@@ -225,15 +225,6 @@ export default function AlquranPage() {
 
   return (
     <div className="space-y-4 p-4 sm:p-6">
-      <div className="sm:hidden flex gap-2">
-        <ButtonLite active={mode === "pilih"} onClick={() => setMode("pilih")}>
-          Pilih Surah
-        </ButtonLite>
-        <ButtonLite active={mode === "mengaji"} onClick={startMengaji}>
-          <BookMarked className="h-4 w-4" /> Mode Mengaji
-        </ButtonLite>
-      </div>
-
       {mode === "pilih" ? (
         selected === null ? (
           <>
