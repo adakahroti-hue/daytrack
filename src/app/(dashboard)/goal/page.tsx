@@ -176,6 +176,10 @@ export default function GoalPage() {
             onError: (e: any) => import("sonner").then(({ toast }) => toast.error(`Gagal hapus step: ${errMsg(e)}`)),
           })}
           onAddStep={(milestoneId) => setStepModal({ open: true, milestoneId, edit: null })}
+          onToggleMilestone={(id, c) => updateMilestone.mutate(
+            { id, data: { is_completed: c } },
+            { onError: (e: any) => import("sonner").then(({ toast }) => toast.error(`Gagal update milestone: ${errMsg(e)}`)) }
+          )}
           onEditMilestone={(m) => setMilestoneModal({ open: true, edit: m })}
           onMoveMilestone={(id, dir) => {
             // Tukar order dengan milestone tetangga — optimistic + 2 update paralel

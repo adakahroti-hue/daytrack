@@ -13,6 +13,7 @@ export function MilestoneItem({
   onEditMilestone,
   onDeleteMilestone,
   onToggleAllSteps,
+  onToggleMilestone,
   onMove,
   canMoveUp,
   canMoveDown,
@@ -22,6 +23,7 @@ export function MilestoneItem({
     title: string
     description: string
     order: number
+    is_completed?: boolean
     steps: {
       id: string
       title: string
@@ -37,6 +39,7 @@ export function MilestoneItem({
   onEditMilestone: (milestone: any) => void
   onDeleteMilestone: (id: string) => void
   onToggleAllSteps?: (milestoneId: string, isCompleted: boolean) => void
+  onToggleMilestone?: (milestoneId: string, isCompleted: boolean) => void
   onMove?: (milestoneId: string, direction: "up" | "down") => void
   canMoveUp?: boolean
   canMoveDown?: boolean
@@ -44,8 +47,10 @@ export function MilestoneItem({
   const [open, setOpen] = useState(false)
   const total = milestone.steps.length
   const done = milestone.steps.filter((s) => s.is_completed).length
-  const allDone = total > 0 && done === total
-  const pct = total > 0 ? Math.round((done / total) * 100) : 0
+  const stepsAllDone = total > 0 && done === total
+  // Status centang milestone = dicentang manual ATAU semua step-nya selesai
+  const checked = !!milestone.is_completed || stepsAllDone
+  const pct = total > 0 ? Math.round((done / total) * 100) : checked ? 100 : 0
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white">
@@ -58,23 +63,27 @@ export function MilestoneItem({
           {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         </button>
         <button
-          onClick={() => (total > 0 && onToggleAllSteps) && onToggleAllSteps(milestone.id, !allDone)}
-          disabled={total === 0 || !onToggleAllSteps}
+          onClick={() => {
+            if (!checked && onToggleAllSteps && total > 0 && !stepsAllDone) {
+              // Ada step belum selesai: centang = tandai SEMUA step selesai + milestone
+              onToggleAllSteps(milestone.id, true)
+            }
+            onToggleMilestone?.(milestone.id, !checked)
+          }}
           className={cn(
-            "shrink-0",
-            allDone && total > 0 ? "text-slate-900" : "text-slate-300",
-            total > 0 && onToggleAllSteps && "hover:scale-110 transition-transform"
+            "shrink-0 hover:scale-110 transition-transform",
+            checked ? "text-slate-900" : "text-slate-300"
           )}
-          aria-label={allDone ? "Buka semua step" : "Centang semua step"}
-          title={total === 0 ? "Belum ada step" : allDone ? "Klik untuk buka semua centang" : "Klik untuk centang semua step"}
+          aria-label={checked ? "Buka centang milestone" : "Tandai milestone selesai"}
+          title={checked ? "Klik untuk buka centang" : "Klik untuk tandai selesai"}
         >
-          {allDone && total > 0 ? <CheckCircle2 className="h-5 w-5" /> : <Circle className="h-5 w-5" />}
+          {checked ? <CheckCircle2 className="h-5 w-5" /> : <Circle className="h-5 w-5" />}
         </button>
         <span className="shrink-0 flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-[11px] font-bold text-white tabular-nums">
           {index + 1}
         </span>
         <div className="min-w-0 flex-1">
-          <p className={cn("text-sm font-semibold", allDone && total > 0 ? "text-slate-400 line-through" : "text-slate-900")}>
+          <p className={cn("text-sm font-semibold", checked ? "text-slate-400 line-through" : "text-slate-900")}>
             {index + 1}. {milestone.title}
           </p>
           {milestone.description && (

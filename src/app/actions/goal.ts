@@ -24,6 +24,7 @@ export interface GoalMilestone {
   title: string
   description: string
   order: number
+  is_completed: boolean
   created_at: string
   updated_at: string
   steps: GoalStep[]
@@ -87,10 +88,11 @@ export async function getActiveGoal(): Promise<GoalData | null> {
 
   // 2) Milestones + progress logs DIJALANKAN PARALEL (keduanya hanya butuh goal_id) —
   //    sebelumnya beruntun 4 query; ini memangkas 1 round-trip per pemanggilan.
+  //    is_completed: kolom manual (migrasi 20260911); null-safe untuk DB lama.
   const [milestonesRes, logsRes] = await Promise.all([
     supabase
       .from("goal_milestone")
-      .select("id, goal_id, title, description, \"order\", created_at, updated_at")
+      .select("id, goal_id, title, description, \"order\", is_completed, created_at, updated_at")
       .eq("goal_id", goalRow.id)
       .order("order", { ascending: true }),
     supabase
@@ -98,8 +100,19 @@ export async function getActiveGoal(): Promise<GoalData | null> {
       .select("id, goal_id, milestone_id, step_id, activity, duration, date, created_at")
       .eq("goal_id", goalRow.id),
   ])
-  const milestonesRaw = milestonesRes.data || []
-  if (milestonesRes.error) throw new Error(milestonesRes.error.message)
+  // Toleran DB lama (kolom is_completed belum ada → 42703): retry tanpa kolom itu
+  let milestonesRaw = milestonesRes.data || []
+  if (milestonesRes.error && /42703|column .* does not exist/i.test(milestonesRes.error.message)) {
+    const { data: fallback, error: fbErr } = await supabase
+      .from("goal_milestone")
+      .select("id, goal_id, title, description, \"order\", created_at, updated_at")
+      .eq("goal_id", goalRow.id)
+      .order("order", { ascending: true })
+    if (fbErr) throw new Error(fbErr.message)
+    milestonesRaw = (fallback || []).map((m: any) => ({ ...m, is_completed: false }))
+  } else if (milestonesRes.error) {
+    throw new Error(milestonesRes.error.message)
+  }
   if (logsRes.error) throw new Error(logsRes.error.message)
   const logsRaw = logsRes.data || []
 
@@ -129,6 +142,7 @@ export async function getActiveGoal(): Promise<GoalData | null> {
     title: m.title,
     description: m.description,
     order: m.order,
+    is_completed: !!m.is_completed,
     created_at: m.created_at,
     updated_at: m.updated_at,
     steps: (stepsByMilestone[m.id] || []).sort((a, b) => a.order - b.order),
@@ -289,7 +303,7 @@ export async function createMilestone(formData: { goal_id: string; title: string
   return { error: null }
 }
 
-export async function updateMilestone(id: string, formData: { title?: string; description?: string; order?: number }) {
+export async function updateMilestone(id: string, formData: { title?: string; description?: string; order?: number; is_completed?: boolean }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
@@ -297,12 +311,29 @@ export async function updateMilestone(id: string, formData: { title?: string; de
   if (formData.title !== undefined) updateData.title = formData.title
   if (formData.description !== undefined) updateData.description = formData.description
   if (formData.order !== undefined) updateData.order = formData.order
+  if (formData.is_completed !== undefined) updateData.is_completed = formData.is_completed
+  const goalId = await getGoalIdForMilestone(supabase, id, user.id)
   const { error } = await supabase
     .from("goal_milestone")
     .update(updateData)
     .eq("id", id)
-    .eq("goal_id", (await getGoalIdForMilestone(supabase, id, user.id)))
-  if (error) throw new Error(error.message)
+    .eq("goal_id", goalId)
+  if (error) {
+    // Toleran DB lama: kalau kolom is_completed belum ada (42703), ulangi tanpa itu
+    if (formData.is_completed !== undefined && /42703|column .* does not exist/i.test(error.message)) {
+      const retry: any = { ...updateData }
+      delete retry.is_completed
+      const { error: retryErr } = await supabase
+        .from("goal_milestone")
+        .update(retry)
+        .eq("id", id)
+        .eq("goal_id", goalId)
+      if (retryErr) throw new Error(retryErr.message)
+      revalidatePath("/goal")
+      return { error: null }
+    }
+    throw new Error(error.message)
+  }
   revalidatePath("/goal")
   return { error: null }
 }

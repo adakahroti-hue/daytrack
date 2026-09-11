@@ -123,7 +123,7 @@ export function useCreateMilestone() {
 export function useUpdateMilestone() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { title?: string; description?: string; order?: number } }) =>
+    mutationFn: ({ id, data }: { id: string; data: { title?: string; description?: string; order?: number; is_completed?: boolean } }) =>
       updateMilestone(id, data),
     onMutate: ({ id, data }) => optimisticGoal(qc, (g) => patchMilestoneIn(g, id, data)),
     onError: (_e, _v, ctx: any) => ctx?.(),
