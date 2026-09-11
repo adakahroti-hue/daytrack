@@ -2,6 +2,7 @@ import { CheckCircle2, Circle, Pencil, Trash2 } from "lucide-react"
 
 export function StepItem({
   step,
+  label,
   onToggle,
   onEdit,
   onDelete,
@@ -12,6 +13,7 @@ export function StepItem({
     is_completed: boolean
     target_date: string | null
   }
+  label?: string
   onToggle: (id: string, isCompleted: boolean) => void
   onEdit: (step: any) => void
   onDelete: (id: string) => void
@@ -27,6 +29,7 @@ export function StepItem({
       </button>
       <div className="min-w-0 flex-1">
         <p className={step.is_completed ? "text-sm text-slate-400 line-through" : "text-sm text-slate-900"}>
+          {label ? <span className="font-semibold text-slate-500 mr-1">{label}</span> : null}
           {step.title}
         </p>
         {step.target_date && (

@@ -4,6 +4,7 @@ import { StepItem } from "./StepItem"
 
 export function MilestoneItem({
   milestone,
+  index,
   onToggleStep,
   onEditStep,
   onDeleteStep,
@@ -23,6 +24,7 @@ export function MilestoneItem({
       target_date: string | null
     }[]
   }
+  index: number
   onToggleStep: (id: string, isCompleted: boolean) => void
   onEditStep: (step: any) => void
   onDeleteStep: (id: string) => void
@@ -41,8 +43,13 @@ export function MilestoneItem({
         <button onClick={() => setOpen((o) => !o)} className="text-slate-500">
           {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         </button>
+        <span className="shrink-0 flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-[11px] font-bold text-white tabular-nums">
+          {index + 1}
+        </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-slate-900">{milestone.title}</p>
+          <p className="text-sm font-semibold text-slate-900">
+            {index + 1}. {milestone.title}
+          </p>
           {milestone.description && (
             <p className="text-xs text-slate-500 line-clamp-1">{milestone.description}</p>
           )}
@@ -67,10 +74,11 @@ export function MilestoneItem({
           {total === 0 ? (
             <p className="text-xs text-slate-400 italic">Belum ada step.</p>
           ) : (
-            milestone.steps.map((s) => (
+            milestone.steps.map((s, i) => (
               <StepItem
                 key={s.id}
                 step={s}
+                label={`${index + 1}.${String.fromCharCode(97 + i)}.`}
                 onToggle={onToggleStep}
                 onEdit={onEditStep}
                 onDelete={onDeleteStep}

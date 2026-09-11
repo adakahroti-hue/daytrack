@@ -27,10 +27,11 @@ export function RoadmapList({
   const sorted = [...milestones].sort((a, b) => a.order - b.order)
   return (
     <div className="space-y-3">
-      {sorted.map((m) => (
+      {sorted.map((m, idx) => (
         <MilestoneItem
           key={m.id}
           milestone={m}
+          index={idx}
           onToggleStep={onToggleStep}
           onEditStep={onEditStep}
           onDeleteStep={onDeleteStep}
