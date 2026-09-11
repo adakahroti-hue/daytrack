@@ -7,12 +7,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { GoalHeader } from "@/components/goal/GoalHeader"
-import { GoalStats } from "@/components/goal/GoalStats"
-import { GoalTabs, type GoalTab } from "@/components/goal/GoalTabs"
 import { RoadmapList } from "@/components/goal/RoadmapList"
 import { AddMilestoneModal } from "@/components/goal/AddMilestoneModal"
 import { AddStepModal } from "@/components/goal/AddStepModal"
-import { ProgressLogList } from "@/components/goal/ProgressLogList"
 import { useActiveGoal, useListGoals, useSetActiveGoal, useCreateGoal, useUpdateGoal, useDeleteGoal, useCreateMilestone, useUpdateMilestone, useDeleteMilestone, useCreateStep, useUpdateStep, useToggleStepCompleted, useDeleteStep } from "@/hooks/useGoal"
 
 function errMsg(e: any) {
@@ -34,7 +31,6 @@ export default function GoalPage() {
   const toggleStep = useToggleStepCompleted()
   const deleteStep = useDeleteStep()
 
-  const [tab, setTab] = useState<GoalTab>("roadmap")
   const [editGoalOpen, setEditGoalOpen] = useState(false)
   const [deleteGoalOpen, setDeleteGoalOpen] = useState(false)
   const [goalName, setGoalName] = useState("")
@@ -47,17 +43,12 @@ export default function GoalPage() {
   const [createGoalOpen, setCreateGoalOpen] = useState(false)
   const [goalTitle, setGoalTitle] = useState("")
 
-  const stats = useMemo(() => {
-    if (!goal) return { completedSteps: 0, totalSteps: 0, activeDays: 0, totalDuration: 0, goalProgress: 0 }
-    const allSteps = goal.milestones.flatMap((m) => m.steps)
-    const completedSteps = allSteps.filter((s) => s.is_completed).length
-    const totalSteps = allSteps.length
-    const activeDays = new Set(goal.progressLogs.map((l) => l.date)).size
-    const totalDuration = goal.progressLogs.reduce((a, l) => a + (l.duration || 0), 0)
-    // Progress goal = rata-rata progress tiap milestone (bobot sama per milestone).
-    // - Milestone dengan step: progress = step selesai / total step
-    // - Milestone tanpa step: 100% kalau dicentang manual, selain itu 0%
-    // Jadi 1 milestone saja yang dicentang → goal 100%.
+  // Progress goal = rata-rata progress tiap milestone (bobot sama per milestone).
+  // - Milestone dengan step: progress = step selesai / total step
+  // - Milestone tanpa step: 100% kalau dicentang manual, selain itu 0%
+  // Jadi 1 milestone saja yang dicentang → goal 100%.
+  const goalProgress = useMemo(() => {
+    if (!goal || goal.milestones.length === 0) return 0
     const msProgress = goal.milestones.map((m) => {
       if (m.steps.length > 0) {
         const done = m.steps.filter((s) => s.is_completed).length
@@ -66,10 +57,7 @@ export default function GoalPage() {
       }
       return m.is_completed ? 1 : 0
     })
-    const goalProgress = msProgress.length > 0
-      ? (msProgress.reduce((a, b) => a + b, 0) / msProgress.length) * 100
-      : 0
-    return { completedSteps, totalSteps, activeDays, totalDuration, goalProgress }
+    return (msProgress.reduce((a, b) => a + b, 0) / msProgress.length) * 100
   }, [goal])
 
   // Dialog "Buat Goal Baru" — di-render di LUAR blok if(!goal) agar bisa dipakai saat belum ada goal maupun sudah ada goal
@@ -143,7 +131,7 @@ export default function GoalPage() {
     <div className="mx-auto max-w-none space-y-4 p-4">
       <GoalHeader
         goalTitle={goal.title}
-        goalProgress={stats.goalProgress}
+        goalProgress={goalProgress}
         targetDate={goal.target_date}
         goals={goals || []}
         activeGoalId={goal.id}
@@ -158,17 +146,13 @@ export default function GoalPage() {
         onNewGoal={() => setCreateGoalOpen(true)}
       />
 
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <GoalTabs active={tab} onChange={setTab} />
-        {tab === "roadmap" && (
-          <Button size="sm" className="shrink-0 h-8 px-2.5 sm:px-3" onClick={() => setMilestoneModal({ open: true, edit: null })}>
-            <Plus className="h-4 w-4" /> Tambah Milestone
-          </Button>
-        )}
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <Button size="sm" className="shrink-0 h-8 px-2.5 sm:px-3" onClick={() => setMilestoneModal({ open: true, edit: null })}>
+          <Plus className="h-4 w-4" /> Tambah Milestone
+        </Button>
       </div>
 
-      {tab === "roadmap" && (
-        <RoadmapList
+      <RoadmapList
           milestones={goal.milestones}
           onToggleStep={(id, c) => toggleStep.mutate(
             { id, isCompleted: c },
@@ -218,20 +202,6 @@ export default function GoalPage() {
             onError: (e: any) => import("sonner").then(({ toast }) => toast.error(`Gagal hapus milestone: ${errMsg(e)}`)),
           })}
         />
-      )}
-
-      {tab === "progress" && <ProgressLogList logs={goal.progressLogs} />}
-
-      {tab === "insight" && (
-        <GoalStats
-          completedSteps={stats.completedSteps}
-          totalSteps={stats.totalSteps}
-          activeDays={stats.activeDays}
-          totalDuration={stats.totalDuration}
-          targetDate={goal.target_date}
-          milestoneCount={goal.milestones.length}
-        />
-      )}
 
       <AddMilestoneModal
         open={milestoneModal.open}
