@@ -24,18 +24,18 @@ export function GoalHeader({
 }) {
   const pct = Math.max(0, Math.min(100, Math.round(goalProgress)))
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
+    <div className="rounded-lg border border-slate-200 bg-white p-3 sm:p-4">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 text-slate-900">
-          <Target className="h-4 w-4" />
+          <Target className="h-4 w-4 shrink-0" />
           <h2 className="text-sm font-semibold uppercase tracking-wide">Goal Aktif</h2>
         </div>
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-0.5 sm:gap-1 shrink-0 -mr-1">
           {onNewGoal && (
             <button
               onClick={onNewGoal}
               aria-label="Buat goal baru"
-              className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              className="p-1.5 sm:p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100"
             >
               <Plus className="h-4 w-4" />
             </button>
@@ -44,7 +44,7 @@ export function GoalHeader({
             <button
               onClick={onEdit}
               aria-label="Edit nama goal"
-              className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              className="p-1.5 sm:p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100"
             >
               <Pencil className="h-4 w-4" />
             </button>
@@ -53,7 +53,7 @@ export function GoalHeader({
             <button
               onClick={onDelete}
               aria-label="Hapus goal"
-              className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+              className="p-1.5 sm:p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50"
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -79,7 +79,7 @@ export function GoalHeader({
         </div>
       )}
 
-      <p className="mt-2 text-xl font-bold text-slate-900">{goalTitle || "—"}</p>
+      <p className="mt-2 text-lg sm:text-xl font-bold text-slate-900 break-words leading-snug">{goalTitle || "—"}</p>
       {targetDate && (
         <p className="mt-0.5 text-xs text-slate-500">Target: {targetDate}</p>
       )}

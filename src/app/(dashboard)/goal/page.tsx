@@ -158,10 +158,10 @@ export default function GoalPage() {
         onNewGoal={() => setCreateGoalOpen(true)}
       />
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <GoalTabs active={tab} onChange={setTab} />
         {tab === "roadmap" && (
-          <Button size="sm" onClick={() => setMilestoneModal({ open: true, edit: null })}>
+          <Button size="sm" className="shrink-0 h-8 px-2.5 sm:px-3" onClick={() => setMilestoneModal({ open: true, edit: null })}>
             <Plus className="h-4 w-4" /> Tambah Milestone
           </Button>
         )}

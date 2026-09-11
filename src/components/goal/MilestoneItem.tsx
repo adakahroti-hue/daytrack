@@ -54,7 +54,7 @@ export function MilestoneItem({
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white">
-      <div className="flex items-center gap-2 p-3">
+      <div className="flex items-center gap-1.5 sm:gap-2 p-2.5 sm:p-3">
         <button
           onClick={() => setOpen((o) => !o)}
           className="text-slate-500 shrink-0"
@@ -83,7 +83,7 @@ export function MilestoneItem({
           {index + 1}
         </span>
         <div className="min-w-0 flex-1">
-          <p className={cn("text-sm font-semibold", checked ? "text-slate-400 line-through" : "text-slate-900")}>
+          <p className={cn("text-sm font-semibold break-words leading-snug", checked ? "text-slate-400 line-through" : "text-slate-900")}>
             {index + 1}. {milestone.title}
           </p>
           {milestone.description && (
@@ -91,13 +91,13 @@ export function MilestoneItem({
           )}
         </div>
         <span className="text-xs font-semibold text-slate-700 tabular-nums shrink-0">{pct}%</span>
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
           {onMove && (
             <>
               <button
                 onClick={() => onMove(milestone.id, "up")}
                 disabled={!canMoveUp}
-                className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-25 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                className="p-1.5 sm:p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-25 disabled:hover:bg-transparent disabled:cursor-not-allowed"
                 aria-label="Pindah ke atas"
                 title="Tukar dengan milestone di atas"
               >
@@ -106,7 +106,7 @@ export function MilestoneItem({
               <button
                 onClick={() => onMove(milestone.id, "down")}
                 disabled={!canMoveDown}
-                className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-25 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                className="p-1.5 sm:p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-25 disabled:hover:bg-transparent disabled:cursor-not-allowed"
                 aria-label="Pindah ke bawah"
                 title="Tukar dengan milestone di bawah"
               >
@@ -114,21 +114,21 @@ export function MilestoneItem({
               </button>
             </>
           )}
-          <button onClick={() => onEditMilestone(milestone)} className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100">
+          <button onClick={() => onEditMilestone(milestone)} aria-label="Edit milestone" className="p-1.5 sm:p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100">
             <Pencil className="h-3.5 w-3.5" />
           </button>
-          <button onClick={() => onDeleteMilestone(milestone.id)} className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-slate-100">
+          <button onClick={() => onDeleteMilestone(milestone.id)} aria-label="Hapus milestone" className="p-1.5 sm:p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-slate-100">
             <Trash2 className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
-      <div className="px-3 pb-2">
+      <div className="px-2.5 pb-2 sm:px-3 sm:pb-2">
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
           <div className="h-full rounded-full bg-slate-900 transition-all duration-700" style={{ width: `${pct}%` }} />
         </div>
       </div>
       {open && (
-        <div className="px-3 pb-3 space-y-2">
+        <div className="px-2.5 pb-2.5 sm:px-3 sm:pb-3 space-y-2">
           {total === 0 ? (
             <p className="text-xs text-slate-400 italic">Belum ada step.</p>
           ) : (
