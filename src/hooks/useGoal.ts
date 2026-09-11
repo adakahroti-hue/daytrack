@@ -16,6 +16,47 @@ import {
   addProgressLog,
 } from "@/app/actions/goal"
 
+// ── Optimistic helpers ──────────────────────────────────────────────
+// Semua mutation goal memakai optimistic update: cache ["goal","active"]
+// diubah SEKETIKA saat klik (UI terasa instan), server menyusul di belakang.
+// Kalau gagal → rollback + refetch agar kondisinya sinkron dengan server.
+
+type Patch = (g: any) => any
+
+/** Patch optimistis cache goal aktif; rollback otomatis saat error. */
+function optimisticGoal(
+  qc: ReturnType<typeof useQueryClient>,
+  patch: Patch,
+) {
+  const key = ["goal", "active"]
+  const prev = qc.getQueryData<any>(key)
+  if (prev) qc.setQueryData(key, patch(prev))
+  return () => {
+    if (prev) qc.setQueryData(key, prev)
+    else qc.removeQueries({ queryKey: key })
+  }
+}
+
+/** Patch step by id di dalam struktur goal aktif. */
+function patchStepIn(goalData: any, stepId: string, data: Partial<any>): any {
+  return {
+    ...goalData,
+    milestones: goalData.milestones.map((m: any) =>
+      m.steps.some((s: any) => s.id === stepId)
+        ? { ...m, steps: m.steps.map((s: any) => (s.id === stepId ? { ...s, ...data } : s)) }
+        : m
+    ),
+  }
+}
+
+/** Patch milestone by id. */
+function patchMilestoneIn(goalData: any, msId: string, data: Partial<any>): any {
+  return {
+    ...goalData,
+    milestones: goalData.milestones.map((m: any) => (m.id === msId ? { ...m, ...data } : m)),
+  }
+}
+
 export function useActiveGoal() {
   return useQuery({
     queryKey: ["goal", "active"],
@@ -57,7 +98,9 @@ export function useUpdateGoal() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: { title?: string; target_date?: string | null } }) =>
       updateGoal(id, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["goal"] }),
+    onMutate: ({ id, data }) => optimisticGoal(qc, (g) => (g.id === id ? { ...g, ...data } : g)),
+    onError: (_e, _v, ctx: any) => ctx?.(),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["goal"] }),
   })
 }
 
@@ -73,7 +116,7 @@ export function useCreateMilestone() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (data: { goal_id: string; title: string; description?: string }) => createMilestone(data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["goal"] }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["goal"] }),
   })
 }
 
@@ -82,7 +125,9 @@ export function useUpdateMilestone() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: { title?: string; description?: string; order?: number } }) =>
       updateMilestone(id, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["goal"] }),
+    onMutate: ({ id, data }) => optimisticGoal(qc, (g) => patchMilestoneIn(g, id, data)),
+    onError: (_e, _v, ctx: any) => ctx?.(),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["goal"] }),
   })
 }
 
@@ -90,7 +135,12 @@ export function useDeleteMilestone() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => deleteMilestone(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["goal"] }),
+    onMutate: (id: string) => optimisticGoal(qc, (g) => ({
+      ...g,
+      milestones: g.milestones.filter((m: any) => m.id !== id),
+    })),
+    onError: (_e, _v, ctx: any) => ctx?.(),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["goal"] }),
   })
 }
 
@@ -98,7 +148,7 @@ export function useCreateStep() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (data: { milestone_id: string; title: string; target_date?: string | null }) => createStep(data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["goal"] }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["goal"] }),
   })
 }
 
@@ -112,7 +162,9 @@ export function useUpdateStep() {
       id: string
       data: { title?: string; target_date?: string | null; order?: number; is_completed?: boolean }
     }) => updateStep(id, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["goal"] }),
+    onMutate: ({ id, data }) => optimisticGoal(qc, (g) => patchStepIn(g, id, data)),
+    onError: (_e, _v, ctx: any) => ctx?.(),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["goal"] }),
   })
 }
 
@@ -120,7 +172,14 @@ export function useToggleStepCompleted() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ id, isCompleted }: { id: string; isCompleted: boolean }) => toggleStepCompleted(id, isCompleted),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["goal"] }),
+    onMutate: ({ id, isCompleted }) => optimisticGoal(qc, (g) => patchStepIn(g, id, { is_completed: isCompleted })),
+    onError: (_e, _v, ctx: any) => ctx?.(),
+    onSettled: () => {
+      // TANPA invalidate untuk is_completed murni — patch sudah akurat.
+      // invalidate akan memicu refetch 4-query; cukup segarkan di background tipis.
+      // (tetap invalidate list untuk konsistensi header dropdown goal)
+      qc.invalidateQueries({ queryKey: ["goal", "list"] })
+    },
   })
 }
 
@@ -128,7 +187,15 @@ export function useDeleteStep() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => deleteStep(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["goal"] }),
+    onMutate: (id: string) => optimisticGoal(qc, (g) => ({
+      ...g,
+      milestones: g.milestones.map((m: any) => ({
+        ...m,
+        steps: m.steps.filter((s: any) => s.id !== id),
+      })),
+    })),
+    onError: (_e, _v, ctx: any) => ctx?.(),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["goal"] }),
   })
 }
 
@@ -143,6 +210,6 @@ export function useAddProgressLog() {
       duration?: number
       date?: string
     }) => addProgressLog(data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["goal"] }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["goal"] }),
   })
 }

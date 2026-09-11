@@ -85,17 +85,27 @@ export async function getActiveGoal(): Promise<GoalData | null> {
   }
   if (!goalRow) return null
 
-  // 2) Milestones (by goal_id)
-  const { data: milestonesRaw, error: mErr } = await supabase
-    .from("goal_milestone")
-    .select("id, goal_id, title, description, \"order\", created_at, updated_at")
-    .eq("goal_id", goalRow.id)
-    .order("order", { ascending: true })
-  if (mErr) throw new Error(mErr.message)
+  // 2) Milestones + progress logs DIJALANKAN PARALEL (keduanya hanya butuh goal_id) —
+  //    sebelumnya beruntun 4 query; ini memangkas 1 round-trip per pemanggilan.
+  const [milestonesRes, logsRes] = await Promise.all([
+    supabase
+      .from("goal_milestone")
+      .select("id, goal_id, title, description, \"order\", created_at, updated_at")
+      .eq("goal_id", goalRow.id)
+      .order("order", { ascending: true }),
+    supabase
+      .from("goal_progress_log")
+      .select("id, goal_id, milestone_id, step_id, activity, duration, date, created_at")
+      .eq("goal_id", goalRow.id),
+  ])
+  const milestonesRaw = milestonesRes.data || []
+  if (milestonesRes.error) throw new Error(milestonesRes.error.message)
+  if (logsRes.error) throw new Error(logsRes.error.message)
+  const logsRaw = logsRes.data || []
 
   // 3) Steps — difilter by milestone_ids (HINDARI cross-table filter .eq("goal_milestone.goal_id")
   //    yang rawan gagal kalau Supabase tak mendeteksi relasi FK otomatis → throw & crash).
-  const milestoneIds = (milestonesRaw || []).map((m: any) => m.id)
+  const milestoneIds = milestonesRaw.map((m: any) => m.id)
   let stepsRaw: any[] = []
   if (milestoneIds.length > 0) {
     const { data, error: sErr } = await supabase
@@ -106,13 +116,6 @@ export async function getActiveGoal(): Promise<GoalData | null> {
     if (sErr) throw new Error(sErr.message)
     stepsRaw = data || []
   }
-
-  // 4) Progress logs (by goal_id)
-  const { data: logsRaw, error: lErr } = await supabase
-    .from("goal_progress_log")
-    .select("id, goal_id, milestone_id, step_id, activity, duration, date, created_at")
-    .eq("goal_id", goalRow.id)
-  if (lErr) throw new Error(lErr.message)
 
   // Kelompokkan step per milestone
   const stepsByMilestone: Record<string, GoalStep[]> = {}
