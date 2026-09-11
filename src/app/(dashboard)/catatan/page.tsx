@@ -204,7 +204,8 @@ export default function CatatanPage() {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
+    <div className="max-w-[1440px] mx-auto py-4 sm:py-6 space-y-4">
+      {/* Rev mobile: padding kiri-kanan mobile dihapus (main layout sudah p-4) */}
       {/* Rev mobile: judul "Catatan" dihapus — deretan kategori jadi baris pertama; tombol tambah pindah ke header */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         {notes.length > 0 && (

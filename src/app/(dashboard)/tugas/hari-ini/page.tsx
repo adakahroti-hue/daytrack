@@ -529,7 +529,8 @@ function HariIniPageClient() {
   const showBoard = stats.hasActiveTasks
 
   return (
-    <div className="space-y-6 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
+    <div className="space-y-6 max-w-[1440px] mx-auto py-6 pb-24">
+      {/* Rev mobile: padding kiri-kanan mobile dihapus (main layout sudah p-4) */}
       {/* Toolbar seleksi massal */}
       <div className="flex items-center justify-between gap-2">
         <div className="text-sm text-slate-500">

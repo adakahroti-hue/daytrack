@@ -661,7 +661,8 @@ function SemuaPageClient() {
 
   // Main render - all hooks already executed above
   return (
-    <div className="space-y-6 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
+    <div className="space-y-6 max-w-[1440px] mx-auto py-6 pb-24">
+      {/* Rev mobile: padding kiri-kanan mobile dihapus (main layout sudah p-4) */}
       {/* Stats are now shown in the header — no inline stats here */}
 
       {/* Task Board - grouped sections (same look as Hari Ini tab) */}

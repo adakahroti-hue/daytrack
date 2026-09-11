@@ -327,7 +327,8 @@ export default function ArusKasPage() {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
+    <div className="max-w-[1440px] mx-auto py-4 sm:py-6 space-y-4">
+      {/* Rev mobile: padding kiri-kanan mobile dihapus (main layout sudah p-4) */}
       {/* Saldo + Alokasi Uang Masuk sebaris */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 items-stretch">
         {alokasi.map((item) => (

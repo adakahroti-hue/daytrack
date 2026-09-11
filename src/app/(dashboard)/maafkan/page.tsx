@@ -88,7 +88,8 @@ export default function MaafkanPage() {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
+    <div className="max-w-[1440px] mx-auto py-4 sm:py-6 space-y-4">
+      {/* Rev mobile: padding kiri-kanan mobile dihapus (main layout sudah p-4) */}
 
       {/* Tabel: No | Kejadian | Status | Aksi */}
       <div className={cn("relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-280px)] landscape:max-lg:max-h-none rounded-lg border bg-white", TABLE_BORDER)}>

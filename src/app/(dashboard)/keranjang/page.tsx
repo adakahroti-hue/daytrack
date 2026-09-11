@@ -153,7 +153,8 @@ export default function KeranjangPage() {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
+    <div className="max-w-[1440px] mx-auto py-4 sm:py-6 space-y-4">
+      {/* Rev mobile: padding kiri-kanan mobile dihapus (main layout sudah p-4) */}
       {/* Ringkasan total harga belum dibeli */}
       <div className={cn("rounded-xl border bg-white p-4", TABLE_BORDER)}>
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">

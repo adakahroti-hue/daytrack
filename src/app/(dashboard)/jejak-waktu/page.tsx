@@ -279,7 +279,8 @@ export default function WaktuPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 p-3 sm:px-4 sm:py-5">
+    <div className="mx-auto max-w-5xl space-y-8 py-3 sm:px-4 sm:py-5">
+      {/* Rev mobile: padding kiri-kanan mobile dihapus (main layout sudah p-4) */}
       {/* HEADER filter dipindah ke global HeaderControls (sejajar judul) */}
 
       {/* INPUT AKTIVITAS */}

@@ -505,7 +505,8 @@ function SelesaiPageClient() {
   }
 
   return (
-    <div className="space-y-6 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
+    <div className="space-y-6 max-w-[1440px] mx-auto py-6 pb-24">
+      {/* Rev mobile: padding kiri-kanan mobile dihapus (main layout sudah p-4) */}
       {/* Bulk Action Bar - muncul saat ada tugas dipilih */}
       {selectedIds.length > 0 && (
         <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-900/20 dark:border-blue-800 animate-slide-in">
