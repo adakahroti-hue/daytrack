@@ -84,7 +84,7 @@ export function MilestoneItem({
         </span>
         <div className="min-w-0 flex-1">
           <p className={cn("text-sm font-semibold break-words leading-snug", checked ? "text-slate-400 line-through" : "text-slate-900")}>
-            {index + 1}. {milestone.title}
+            {milestone.title}
           </p>
           {milestone.description && (
             <p className="text-xs text-slate-500 line-clamp-1">{milestone.description}</p>
