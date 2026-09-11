@@ -12,20 +12,18 @@ export function AddStepModal({
 }: {
   open: boolean
   onClose: () => void
-  onSubmit: (data: { title: string; target_date: string | null }) => void
-  initial?: { title: string; target_date: string | null } | null
+  onSubmit: (data: { title: string }) => void
+  initial?: { title: string } | null
 }) {
   const [title, setTitle] = useState("")
-  const [targetDate, setTargetDate] = useState("")
 
   useEffect(() => {
     setTitle(initial?.title || "")
-    setTargetDate(initial?.target_date || "")
   }, [open, initial])
 
   const submit = () => {
     if (!title.trim()) return
-    onSubmit({ title: title.trim(), target_date: targetDate || null })
+    onSubmit({ title: title.trim() })
   }
 
   return (
@@ -36,12 +34,13 @@ export function AddStepModal({
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1">
-            <Label>Judul Step</Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Nama step" />
-          </div>
-          <div className="space-y-1">
-            <Label>Target Tanggal (opsional)</Label>
-            <Input type="date" value={targetDate} onChange={(e) => setTargetDate(e.target.value)} />
+            <Label>Nama Step</Label>
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Nama step"
+              onKeyDown={(e) => { if (e.key === "Enter") submit() }}
+            />
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={onClose}>Batal</Button>

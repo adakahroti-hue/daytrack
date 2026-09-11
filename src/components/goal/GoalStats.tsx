@@ -1,4 +1,4 @@
-import { CheckCircle2, CalendarDays, Clock, ListChecks } from "lucide-react"
+import { CheckCircle2, CalendarDays, Clock, ListChecks, Flag } from "lucide-react"
 
 export function GoalStats({
   completedSteps,
@@ -6,12 +6,14 @@ export function GoalStats({
   activeDays,
   totalDuration,
   targetDate,
+  milestoneCount,
 }: {
   completedSteps: number
   totalSteps: number
   activeDays: number
   totalDuration: number
   targetDate: string | null
+  milestoneCount: number
 }) {
   const fmtDuration = (m: number) => {
     const h = Math.floor(m / 60)
@@ -24,9 +26,10 @@ export function GoalStats({
     { icon: CalendarDays, label: "Hari Aktif", value: `${activeDays}` },
     { icon: Clock, label: "Total Waktu", value: fmtDuration(totalDuration) },
     { icon: CheckCircle2, label: "Target", value: targetDate || "—" },
+    { icon: Flag, label: "Milestone", value: `${milestoneCount}` },
   ]
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
       {items.map((it) => (
         <div key={it.label} className="rounded-lg border border-slate-200 bg-white p-3">
           <div className="flex items-center gap-1.5 text-slate-400">

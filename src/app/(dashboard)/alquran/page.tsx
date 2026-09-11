@@ -80,6 +80,18 @@ export default function AlquranPage() {
     if (bookmark.data) setBookmarkPos(bookmark.data)
   }, [bookmark.data])
 
+  // Default: begitu halaman terbuka, langsung muat posisi terakhir baca (bookmark).
+  // Kalau belum ada bookmark, mulai dari Al-Fatihah ayat 1.
+  const autoLoaded = useRef(false)
+  useEffect(() => {
+    if (autoLoaded.current) return
+    // bookmark.data === undefined masih loading; null = benar-benar tidak ada
+    if (bookmark.isLoading) return
+    autoLoaded.current = true
+    const b = bookmark.data || { surah: 1, ayat: 1 }
+    loadSurahFull(b.surah, b.ayat)
+  }, [bookmark.isLoading, bookmark.data])
+
   useEffect(() => {
     const cached = cacheGet<SurahMeta[]>(LIST_CACHE_KEY)
     if (cached?.length) {
@@ -396,7 +408,7 @@ function AyatCard({
         >
           {a.nomorAyat}
         </span>
-        <p className="flex-1 text-right text-2xl sm:text-3xl leading-loose text-slate-900 font-arabic" dir="rtl">
+        <p className="flex-1 text-right text-3xl leading-loose text-slate-900 font-arabic" dir="rtl">
           {a.teksArab}
         </p>
       </div>

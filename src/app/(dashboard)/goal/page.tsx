@@ -143,13 +143,6 @@ export default function GoalPage() {
         onDelete={() => setDeleteGoalOpen(true)}
         onNewGoal={() => setCreateGoalOpen(true)}
       />
-      <GoalStats
-        completedSteps={stats.completedSteps}
-        totalSteps={stats.totalSteps}
-        activeDays={stats.activeDays}
-        totalDuration={stats.totalDuration}
-        targetDate={goal.target_date}
-      />
 
       <div className="flex items-center justify-between">
         <GoalTabs active={tab} onChange={setTab} />
@@ -182,26 +175,14 @@ export default function GoalPage() {
       {tab === "progress" && <ProgressLogList logs={goal.progressLogs} />}
 
       {tab === "insight" && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-lg border border-slate-200 bg-white p-3">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Milestone</p>
-            <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">{goal.milestones.length}</p>
-          </div>
-          <div className="rounded-lg border border-slate-200 bg-white p-3">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Step Selesai</p>
-            <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">{stats.completedSteps}/{stats.totalSteps}</p>
-          </div>
-          <div className="rounded-lg border border-slate-200 bg-white p-3">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Hari Aktif</p>
-            <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">{stats.activeDays}</p>
-          </div>
-          <div className="rounded-lg border border-slate-200 bg-white p-3">
-            <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Total Waktu</p>
-            <p className="mt-1 text-lg font-bold text-slate-900 tabular-nums">
-              {Math.floor(stats.totalDuration / 60)}j {stats.totalDuration % 60}m
-            </p>
-          </div>
-        </div>
+        <GoalStats
+          completedSteps={stats.completedSteps}
+          totalSteps={stats.totalSteps}
+          activeDays={stats.activeDays}
+          totalDuration={stats.totalDuration}
+          targetDate={goal.target_date}
+          milestoneCount={goal.milestones.length}
+        />
       )}
 
       <AddMilestoneModal
