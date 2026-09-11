@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, BookMarked, Mosque, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, ScanSearch, Bell, Timer } from 'lucide-react'
+import { Menu, X, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, BookMarked, Mosque, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, ScanSearch, Timer } from 'lucide-react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
@@ -199,7 +199,6 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   // Halaman yang menampilkan shortcut tab eksternal di header
   const isWaktu = pathname.startsWith('/jejak-waktu')
-  const isPengingat = pathname === '/tugas/pengingat'
   const isBankIde = pathname === '/tugas/bank-ide'
   const isCatatan = pathname === '/catatan'
   const isSwot = pathname.startsWith('/swot')
@@ -211,7 +210,6 @@ export function Header({ onMenuClick }: HeaderProps) {
     isSelesai ||
     isGoal ||
     isWaktu ||
-    isPengingat ||
     isBankIde ||
     isCatatan ||
     isSwot ||
@@ -285,11 +283,6 @@ export function Header({ onMenuClick }: HeaderProps) {
               <Timer className="h-4 w-4" />
             </Link>
           )}
-          {!isPengingat && (
-            <Link href="/tugas/pengingat" title="Pengingat" aria-label="Pengingat" className="p-1.5 rounded-md text-slate-500 hover:text-rose-600 hover:bg-white/60 transition-colors">
-              <Bell className="h-4 w-4" />
-            </Link>
-          )}
           {!isBankIde && (
             <Link href="/tugas/bank-ide" title="Bank Ide" aria-label="Bank Ide" className="p-1.5 rounded-md text-slate-500 hover:text-yellow-600 hover:bg-white/60 transition-colors">
               <Lightbulb className="h-4 w-4" />
@@ -319,7 +312,7 @@ export function Header({ onMenuClick }: HeaderProps) {
       )}
 
       {/* Page title & description — disembunyikan di tab yang punya header/konten sendiri */}
-      {!(isOverviewPage || isGoal || isWaktu || isHariIni || isSemua || isSelesai || isKeuangan || isMasalah || isMentalBlock || isMaafkan || isSholat || isQuran || isDoa || isSyukur || isSedekah || isMinumAir || isPmo || isTidur || isMakan || isKesenangan || isBankIde || isPengingat || isCatatan || isSwot || isAlquran) && (
+      {!(isOverviewPage || isGoal || isWaktu || isHariIni || isSemua || isSelesai || isKeuangan || isMasalah || isMentalBlock || isMaafkan || isSholat || isQuran || isDoa || isSyukur || isSedekah || isMinumAir || isPmo || isTidur || isMakan || isKesenangan || isBankIde || isCatatan || isSwot || isAlquran) && (
       <div className="flex-1 min-w-0">
         <h1 className="flex items-center gap-2 text-lg font-semibold truncate">
           {(() => {

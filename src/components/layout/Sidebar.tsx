@@ -26,7 +26,6 @@ import {
   LayoutDashboard,
   Calendar,
   CalendarDays,
-  Bell,
   Mosque,
   Sunrise,
   BookOpen,
@@ -177,11 +176,6 @@ const navigation: NavSection[] = [
     title: 'Bank Ide',
     icon: Lightbulb,
     href: '/tugas/bank-ide',
-  },
-  {
-    title: 'Pengingat',
-    icon: Bell,
-    href: '/tugas/pengingat',
   },
 ]
 
