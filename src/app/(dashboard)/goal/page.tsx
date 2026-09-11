@@ -160,6 +160,17 @@ export default function GoalPage() {
             { id, isCompleted: c },
             { onError: (e: any) => import("sonner").then(({ toast }) => toast.error(`Gagal update step: ${errMsg(e)}`)) }
           )}
+          onToggleAllSteps={(milestoneId, c) => {
+            const m = goal.milestones.find((m) => m.id === milestoneId)
+            if (!m) return
+            const targets = m.steps.filter((s) => s.is_completed !== c)
+            targets.forEach((s) =>
+              toggleStep.mutate(
+                { id: s.id, isCompleted: c },
+                { onError: (e: any) => import("sonner").then(({ toast }) => toast.error(`Gagal update step: ${errMsg(e)}`)) }
+              )
+            )
+          }}
           onEditStep={(step) => setStepModal({ open: true, milestoneId: step.milestone_id, edit: step })}
           onDeleteStep={(id) => deleteStep.mutate(id, {
             onError: (e: any) => import("sonner").then(({ toast }) => toast.error(`Gagal hapus step: ${errMsg(e)}`)),

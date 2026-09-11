@@ -1,5 +1,6 @@
 import { useState } from "react"
-import { ChevronDown, ChevronRight, Pencil, Trash2, Plus } from "lucide-react"
+import { ChevronDown, ChevronRight, Pencil, Trash2, Plus, CheckCircle2, Circle } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { StepItem } from "./StepItem"
 
 export function MilestoneItem({
@@ -11,6 +12,7 @@ export function MilestoneItem({
   onAddStep,
   onEditMilestone,
   onDeleteMilestone,
+  onToggleAllSteps,
 }: {
   milestone: {
     id: string
@@ -31,23 +33,42 @@ export function MilestoneItem({
   onAddStep: (milestoneId: string) => void
   onEditMilestone: (milestone: any) => void
   onDeleteMilestone: (id: string) => void
+  onToggleAllSteps?: (milestoneId: string, isCompleted: boolean) => void
 }) {
   const [open, setOpen] = useState(false)
   const total = milestone.steps.length
   const done = milestone.steps.filter((s) => s.is_completed).length
+  const allDone = total > 0 && done === total
   const pct = total > 0 ? Math.round((done / total) * 100) : 0
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white">
       <div className="flex items-center gap-2 p-3">
-        <button onClick={() => setOpen((o) => !o)} className="text-slate-500">
+        <button
+          onClick={() => setOpen((o) => !o)}
+          className="text-slate-500 shrink-0"
+          aria-label={open ? "Tutup step" : "Buka step"}
+        >
           {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        </button>
+        <button
+          onClick={() => (total > 0 && onToggleAllSteps) && onToggleAllSteps(milestone.id, !allDone)}
+          disabled={total === 0 || !onToggleAllSteps}
+          className={cn(
+            "shrink-0",
+            allDone && total > 0 ? "text-slate-900" : "text-slate-300",
+            total > 0 && onToggleAllSteps && "hover:scale-110 transition-transform"
+          )}
+          aria-label={allDone ? "Buka semua step" : "Centang semua step"}
+          title={total === 0 ? "Belum ada step" : allDone ? "Klik untuk buka semua centang" : "Klik untuk centang semua step"}
+        >
+          {allDone && total > 0 ? <CheckCircle2 className="h-5 w-5" /> : <Circle className="h-5 w-5" />}
         </button>
         <span className="shrink-0 flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-[11px] font-bold text-white tabular-nums">
           {index + 1}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-slate-900">
+          <p className={cn("text-sm font-semibold", allDone && total > 0 ? "text-slate-400 line-through" : "text-slate-900")}>
             {index + 1}. {milestone.title}
           </p>
           {milestone.description && (

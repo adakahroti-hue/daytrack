@@ -3,6 +3,7 @@ import { MilestoneItem } from "./MilestoneItem"
 export function RoadmapList({
   milestones,
   onToggleStep,
+  onToggleAllSteps,
   onEditStep,
   onDeleteStep,
   onAddStep,
@@ -11,6 +12,7 @@ export function RoadmapList({
 }: {
   milestones: any[]
   onToggleStep: (id: string, isCompleted: boolean) => void
+  onToggleAllSteps: (milestoneId: string, isCompleted: boolean) => void
   onEditStep: (step: any) => void
   onDeleteStep: (id: string) => void
   onAddStep: (milestoneId: string) => void
@@ -33,6 +35,7 @@ export function RoadmapList({
           milestone={m}
           index={idx}
           onToggleStep={onToggleStep}
+          onToggleAllSteps={onToggleAllSteps}
           onEditStep={onEditStep}
           onDeleteStep={onDeleteStep}
           onAddStep={onAddStep}
