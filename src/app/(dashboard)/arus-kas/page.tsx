@@ -1,6 +1,5 @@
 "use client"
 
-export const dynamic = "force-dynamic"
 
 import { Fragment, useMemo, useState, useEffect } from "react"
 import {
@@ -25,7 +24,9 @@ import { formatRupiah, parseRupiah } from "@/lib/utils"
 import { useArusKasRange, useArusKasAll, useCreateArusKas, useDeleteArusKas, useUpdateArusKas } from "@/hooks/useArusKas"
 import { useRealtime } from "@/hooks/useRealtime"
 import { useHeaderControls, getIbadahRange } from '@/components/layout/HeaderControls'
-import { ArusKasAnalytics } from '@/components/arus-kas/ArusKasAnalytics'
+import nextDynamic from 'next/dynamic'
+import { AnalyticsSkeleton } from '@/components/ui/analytics-skeleton'
+const ArusKasAnalytics = nextDynamic(() => import('@/components/arus-kas/ArusKasAnalytics').then(m => m.ArusKasAnalytics), { ssr: false, loading: () => <AnalyticsSkeleton /> })
 
 const DAY_BADGE_COLORS: Record<string, string> = {
   Senin: "bg-yellow-100 text-yellow-800 border-yellow-200",

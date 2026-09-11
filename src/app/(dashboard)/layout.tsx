@@ -1,7 +1,5 @@
 "use client"
 
-export const dynamic = "force-dynamic"
-
 import { useState, useEffect } from 'react'
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
@@ -46,10 +44,13 @@ export default function DashboardLayout({
       new QueryClient({
         defaultOptions: {
           queries: {
+            // staleTime 5 menit: data dianggap segar → berpindah tab balik-instant dari cache.
+            // Data 'berat' (surah alquran, dsb.) memakai staleTime lebih panjang per-query.
             staleTime: 1000 * 60 * 5,
-            gcTime: 1000 * 60 * 10,
+            gcTime: 1000 * 60 * 30,
             retry: 1,
             refetchOnWindowFocus: false,
+            refetchOnReconnect: true,
           },
         },
       })
