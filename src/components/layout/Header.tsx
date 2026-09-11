@@ -545,7 +545,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             onClick={() => headerAddAction?.()}
             className={cn(
               'flex-shrink-0 h-9 w-9 sm:h-8 sm:w-auto sm:px-3 sm:gap-1 rounded-lg text-white shadow-sm',
-              isCatatan ? 'bg-purple-500 hover:bg-purple-600' : 'bg-amber-500 hover:bg-amber-600'
+              isCatatan ? 'bg-slate-900 hover:bg-slate-800' : 'bg-amber-500 hover:bg-amber-600'
             )}
             aria-label={isCatatan ? 'Tambah Catatan' : 'Tambah Ide'}
           >
