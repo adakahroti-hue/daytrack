@@ -54,7 +54,21 @@ export default function GoalPage() {
     const totalSteps = allSteps.length
     const activeDays = new Set(goal.progressLogs.map((l) => l.date)).size
     const totalDuration = goal.progressLogs.reduce((a, l) => a + (l.duration || 0), 0)
-    const goalProgress = totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0
+    // Progress goal = rata-rata progress tiap milestone (bobot sama per milestone).
+    // - Milestone dengan step: progress = step selesai / total step
+    // - Milestone tanpa step: 100% kalau dicentang manual, selain itu 0%
+    // Jadi 1 milestone saja yang dicentang → goal 100%.
+    const msProgress = goal.milestones.map((m) => {
+      if (m.steps.length > 0) {
+        const done = m.steps.filter((s) => s.is_completed).length
+        // milestone dicentang manual → hitung penuh walau ada step yang belum
+        return m.is_completed ? 1 : done / m.steps.length
+      }
+      return m.is_completed ? 1 : 0
+    })
+    const goalProgress = msProgress.length > 0
+      ? (msProgress.reduce((a, b) => a + b, 0) / msProgress.length) * 100
+      : 0
     return { completedSteps, totalSteps, activeDays, totalDuration, goalProgress }
   }, [goal])
 
