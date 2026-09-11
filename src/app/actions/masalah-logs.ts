@@ -6,7 +6,9 @@ import { z } from "zod"
 const masalahLogSchema = z.object({
   masalah: z.string().min(1, "Masalah wajib diisi"),
   status: z.enum(['belum', 'sudah']).default('belum'),
-  kategori: z.enum(['kebiasaan_berpikir', 'kebiasaan_bertindak', 'kebiasaan_bersikap', 'kebiasaan_berbicara']).optional().nullable(),
+  kategori: z.enum(['kebiasaan_berpikir', 'kebiasaan_bertindak', 'kebiasaan_bersikap', 'kebiasaan_berbicara', ''])
+    .nullish()
+    .transform((v) => (v ? v : null)),
 })
 
 export type MasalahLogFormData = z.infer<typeof masalahLogSchema>
@@ -67,7 +69,7 @@ export async function upsertMasalahLog(formData: MasalahLogFormData) {
   return { data, error: null }
 }
 
-export async function updateMasalahLog(id: string, formData: { masalah?: string; status?: 'belum' | 'sudah'; kategori?: string | null }) {
+export async function updateMasalahLog(id: string, formData: { masalah?: string; status?: 'belum' | 'sudah'; kategori?: RefleksiKategori | null }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")

@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { useMasalahLogAll, useUpsertMasalahLog, useUpdateMasalahLog, useDeleteMasalahLog } from "@/hooks/useMasalahLogs"
+import type { RefleksiKategori } from "@/app/actions/masalah-logs"
 import { useRealtime } from "@/hooks/useRealtime"
 
 // ─── Constants ────────────────────────────────────
@@ -41,6 +42,7 @@ interface MasalahLogEntry {
   user_id: string
   masalah: string
   status: 'belum' | 'sudah'
+  kategori?: string | null
   created_at: string
   updated_at: string
 }
@@ -49,7 +51,21 @@ interface EditState {
   id: string | null // null = tambah baru
   masalah: string
   status: 'belum' | 'sudah'
+  kategori: RefleksiKategori | ''
 }
+
+// Opsi kategori refleksi (kolom baru — dropdown)
+const KATEGORI_OPTIONS: { value: RefleksiKategori; label: string; badge: string }[] = [
+  { value: 'kebiasaan_berpikir', label: 'Kebiasaan Berpikir', badge: 'bg-blue-100 text-blue-700 border-blue-200' },
+  { value: 'kebiasaan_bertindak', label: 'Kebiasaan Bertindak', badge: 'bg-amber-100 text-amber-700 border-amber-200' },
+  { value: 'kebiasaan_bersikap', label: 'Kebiasaan Bersikap', badge: 'bg-purple-100 text-purple-700 border-purple-200' },
+  { value: 'kebiasaan_berbicara', label: 'Kebiasaan Berbicara', badge: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
+]
+
+const kategoriBadge = (k?: string | null) => KATEGORI_OPTIONS.find(o => o.value === k)?.badge ?? 'bg-slate-100 text-slate-600 border-slate-200'
+const kategoriLabel = (k?: string | null) => KATEGORI_OPTIONS.find(o => o.value === k)?.label ?? '—'
+// Normalisasi nilai kategori dari DB/string → union tervalidasi ('' jika tak dikenal)
+const asKategori = (v?: string | null): RefleksiKategori | '' => KATEGORI_OPTIONS.find(o => o.value === v)?.value ?? ''
 
 // ─── Main Component ────────────────────────────────
 
@@ -70,8 +86,8 @@ export default function MasalahPage() {
       (b.created_at || '').localeCompare(a.created_at || ''))
   }, [logs])
 
-  const openAdd = () => setEditState({ id: null, masalah: '', status: 'belum' })
-  const openEdit = (e: MasalahLogEntry) => setEditState({ id: e.id, masalah: e.masalah, status: e.status })
+  const openAdd = () => setEditState({ id: null, masalah: '', status: 'belum', kategori: '' })
+  const openEdit = (e: MasalahLogEntry) => setEditState({ id: e.id, masalah: e.masalah, status: e.status, kategori: asKategori(e.kategori) })
 
   const handleSave = async () => {
     if (!editState) return
@@ -79,12 +95,13 @@ export default function MasalahPage() {
     if (editState.id) {
       await updateMasalahLog.mutateAsync({
         id: editState.id,
-        data: { masalah: editState.masalah.trim(), status: editState.status },
+        data: { masalah: editState.masalah.trim(), status: editState.status, kategori: editState.kategori || null },
       })
     } else {
       await upsertMasalahLog.mutateAsync({
         masalah: editState.masalah.trim(),
         status: editState.status,
+        kategori: editState.kategori || null,
       })
     }
     setEditState(null)
@@ -126,6 +143,9 @@ export default function MasalahPage() {
                   Status
                 </div>
               </th>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[110px] sm:min-w-[130px]', TABLE_BORDER)}>
+                Kategori
+              </th>
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
                   <Wrench className="h-3.5 w-3.5 text-purple-500" />
@@ -137,7 +157,7 @@ export default function MasalahPage() {
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={4} className="text-center py-12 text-slate-400">
+                <td colSpan={5} className="text-center py-12 text-slate-400">
                   <div className="flex flex-col items-center gap-2">
                     <div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-300 border-t-slate-600" />
                     <span className="text-sm">Memuat data...</span>
@@ -146,11 +166,11 @@ export default function MasalahPage() {
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan={4} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td>
+                <td colSpan={5} className="text-center py-12 text-red-500">Gagal memuat data: {error.message}</td>
               </tr>
             ) : entries.length === 0 ? (
               <tr>
-                <td colSpan={4} className="text-center py-12 text-slate-400 text-sm">Belum ada refleksi tercatat.</td>
+                <td colSpan={5} className="text-center py-12 text-slate-400 text-sm">Belum ada refleksi tercatat.</td>
               </tr>
             ) : (
               entries.map((entry, rowIdx) => {
@@ -158,9 +178,16 @@ export default function MasalahPage() {
                   <Fragment key={entry.id}>
                     {/* ── Mobile: kartu ringkas (sm:hidden) ── */}
                     <tr className={cn('sm:hidden border-b', TABLE_BORDER, rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30')}>
-                      <td colSpan={4} className={cn('px-3 py-3', TABLE_BORDER)}>
+                      <td colSpan={5} className={cn('px-3 py-3', TABLE_BORDER)}>
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm text-slate-800 whitespace-normal break-words leading-snug flex-1">{entry.masalah}</p>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-slate-800 whitespace-normal break-words leading-snug">{entry.masalah}</p>
+                            {entry.kategori && (
+                              <span className={cn('mt-1 inline-block px-2 py-0.5 rounded-full text-xs border font-medium whitespace-nowrap', kategoriBadge(entry.kategori))}>
+                                {kategoriLabel(entry.kategori)}
+                              </span>
+                            )}
+                          </div>
                           <div className="flex items-center gap-1 shrink-0">
                             <Button size="icon" aria-label="Edit refleksi" onClick={() => openEdit(entry)}
                               className="h-6 w-6 p-0 bg-slate-600 hover:bg-slate-700 text-white">
@@ -185,6 +212,11 @@ export default function MasalahPage() {
                       <td className={cn('px-2 sm:px-3 py-2 border-r', TABLE_BORDER)}>
                         <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs border font-medium', STATUS_BADGE[entry.status] || 'bg-slate-100 text-slate-600 border-slate-200')}>
                           {STATUS_LABEL[entry.status] || 'Belum'}
+                        </span>
+                      </td>
+                      <td className={cn('px-2 sm:px-3 py-2 border-r', TABLE_BORDER)}>
+                        <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs border font-medium whitespace-nowrap', kategoriBadge(entry.kategori))}>
+                          {kategoriLabel(entry.kategori)}
                         </span>
                       </td>
                       <td className={cn('px-2 sm:px-3 py-2', TABLE_BORDER)}>
@@ -245,6 +277,20 @@ export default function MasalahPage() {
               >
                 <option value="belum">Belum</option>
                 <option value="sudah">Sudah</option>
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="masalah-kategori">Kategori</Label>
+              <select
+                id="masalah-kategori"
+                value={editState?.kategori ?? ''}
+                onChange={(e) => setEditState(prev => prev ? { ...prev, kategori: asKategori(e.target.value) } : prev)}
+                className="h-9 w-full rounded-md border border-slate-200 bg-white text-sm px-2"
+              >
+                <option value="">— Tanpa kategori —</option>
+                {KATEGORI_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
               </select>
             </div>
             <div className="flex items-center justify-between gap-2 pt-1">
