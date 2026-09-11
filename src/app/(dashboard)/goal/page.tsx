@@ -128,7 +128,8 @@ export default function GoalPage() {
   }
 
   return (
-    <div className="mx-auto max-w-none space-y-4 p-4">
+    <div className="mx-auto max-w-none space-y-4">
+      {/* Rev mobile: padding halaman dihapus (main layout sudah p-4) — hilangkan whitespace sisi */}
       <GoalHeader
         goalTitle={goal.title}
         goalProgress={goalProgress}

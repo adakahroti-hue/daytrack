@@ -83,7 +83,8 @@ export default function SwotWorkspacePage() {
   const isBusy = createTopic.isPending || renameTopic.isPending || deleteTopic.isPending
 
   return (
-    <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
+    <div className="max-w-[1440px] mx-auto py-4 sm:py-6 space-y-4">
+      {/* Rev mobile: padding kiri-kanan dihapus — hilangkan whitespace sisi */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5 text-sm font-bold text-slate-800">
           <FolderKanban className="h-4 w-4 text-purple-600" /> Semua Analisis SWOT

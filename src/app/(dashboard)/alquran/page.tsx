@@ -76,6 +76,13 @@ export default function AlquranPage() {
   const bookmark = useAlquranBookmark()
   const [bookmarkPos, setBookmarkPos] = useState<{ surah: number; ayat: number } | null>(null)
 
+  // Rev mobile: nav surah satu baris — auto-center tombol surah aktif saat ganti surah/mode
+  const surahNavRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = surahNavRef.current?.querySelector<HTMLButtonElement>(`[data-surah="${curSurah}"]`)
+    el?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" })
+  }, [curSurah, mode])
+
   useEffect(() => {
     if (bookmark.data) setBookmarkPos(bookmark.data)
   }, [bookmark.data])
@@ -224,7 +231,8 @@ export default function AlquranPage() {
   const chunk = fullAyat.slice(curAyat - 1, curAyat - 1 + PAGE)
 
   return (
-    <div className="space-y-4 p-4 sm:p-6">
+    <div className="space-y-4 sm:p-6">
+      {/* Rev mobile: padding kiri-kanan dihapus di mobile — hilangkan whitespace sisi; desktop tetap */}
       {mode === "pilih" ? (
         selected === null ? (
           <>
@@ -312,14 +320,15 @@ export default function AlquranPage() {
             )}
           </div>
 
-          {/* Navigasi surah cepat */}
-          <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pr-1">
-            {list.slice(0, 30).map((s) => (
+          {/* Navigasi surah cepat — satu baris, scroll horizontal */}
+          <div ref={surahNavRef} className="flex gap-1.5 overflow-x-auto scrollbar-none pb-0.5">
+            {list.map((s) => (
               <button
                 key={s.nomor}
+                data-surah={s.nomor}
                 onClick={() => jumpToSurah(s.nomor)}
                 className={cn(
-                  "px-2 py-1 rounded-md text-xs border",
+                  "px-2 py-1 rounded-md text-xs border shrink-0",
                   curSurah === s.nomor
                     ? "border-slate-900 bg-slate-900 text-white"
                     : "border-slate-200 text-slate-600 hover:bg-slate-50"
@@ -328,7 +337,6 @@ export default function AlquranPage() {
                 {s.nomor}
               </button>
             ))}
-            {list.length > 30 && <span className="text-xs text-slate-400 self-center">…</span>}
           </div>
 
           {loadingAyat ? (

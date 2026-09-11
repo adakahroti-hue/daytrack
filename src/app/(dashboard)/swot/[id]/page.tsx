@@ -217,8 +217,8 @@ export default function SwotDetailPage() {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
-      {/* Tombol kembali */}
+    <div className="max-w-[1440px] mx-auto py-4 sm:py-6 space-y-4">
+      {/* Rev mobile: padding kiri-kanan dihapus (main layout sudah p-4) — hilangkan whitespace sisi */}
       <Link href="/swot" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800">
         <ArrowLeft className="h-4 w-4" /> Semua Analisis SWOT
       </Link>

@@ -277,7 +277,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
       {/* Shortcut tab eksternal — paling kiri (setelah hamburger, sebelum judul) */}
       {showShortcuts && (
-        <div className="hidden sm:flex items-center gap-1 px-1.5 py-1 bg-muted/50 rounded-lg border border-border shrink-0">
+        <div className="flex items-center gap-1 px-1.5 py-1 bg-muted/50 rounded-lg border border-border shrink-0">
           {!isWaktu && (
             <Link href="/jejak-waktu" title="Waktu" aria-label="Waktu" className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 hover:bg-white/60 transition-colors">
               <Timer className="h-4 w-4" />
@@ -417,9 +417,9 @@ export function Header({ onMenuClick }: HeaderProps) {
           </div>
         )}
 
-        {/* Date Navigation — hidden on Hari Ini, Semua, Selesai, Sholat tabs; juga disembunyikan saat filter Kemarin (batch 25) */}
+        {/* Date Navigation — hidden on Hari Ini, Semua, Selesai, Sholat tabs; juga disembunyikan saat filter Kemarin (batch 25); rev mobile: disembunyikan di mobile (dobel dengan toolbar bawah header) */}
         {isOverviewPage && period !== 'yesterday' && (
-        <div className="flex-1 flex items-center justify-start gap-2 min-w-0">
+        <div className="hidden sm:flex flex-1 items-center justify-start gap-2 min-w-0">
           {/* Desktop date navigation */}
           <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border">
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate('prev')} aria-label="Periode sebelumnya">
