@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ChevronDown, ChevronRight, Pencil, Trash2, Plus, CheckCircle2, Circle } from "lucide-react"
+import { ChevronDown, ChevronRight, Pencil, Trash2, Plus, CheckCircle2, Circle, ArrowUp, ArrowDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { StepItem } from "./StepItem"
 
@@ -13,6 +13,9 @@ export function MilestoneItem({
   onEditMilestone,
   onDeleteMilestone,
   onToggleAllSteps,
+  onMove,
+  canMoveUp,
+  canMoveDown,
 }: {
   milestone: {
     id: string
@@ -34,6 +37,9 @@ export function MilestoneItem({
   onEditMilestone: (milestone: any) => void
   onDeleteMilestone: (id: string) => void
   onToggleAllSteps?: (milestoneId: string, isCompleted: boolean) => void
+  onMove?: (milestoneId: string, direction: "up" | "down") => void
+  canMoveUp?: boolean
+  canMoveDown?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const total = milestone.steps.length
@@ -77,6 +83,28 @@ export function MilestoneItem({
         </div>
         <span className="text-xs font-semibold text-slate-700 tabular-nums shrink-0">{pct}%</span>
         <div className="flex items-center gap-1 shrink-0">
+          {onMove && (
+            <>
+              <button
+                onClick={() => onMove(milestone.id, "up")}
+                disabled={!canMoveUp}
+                className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-25 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                aria-label="Pindah ke atas"
+                title="Tukar dengan milestone di atas"
+              >
+                <ArrowUp className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => onMove(milestone.id, "down")}
+                disabled={!canMoveDown}
+                className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-25 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                aria-label="Pindah ke bawah"
+                title="Tukar dengan milestone di bawah"
+              >
+                <ArrowDown className="h-3.5 w-3.5" />
+              </button>
+            </>
+          )}
           <button onClick={() => onEditMilestone(milestone)} className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100">
             <Pencil className="h-3.5 w-3.5" />
           </button>

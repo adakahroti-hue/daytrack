@@ -177,6 +177,25 @@ export default function GoalPage() {
           })}
           onAddStep={(milestoneId) => setStepModal({ open: true, milestoneId, edit: null })}
           onEditMilestone={(m) => setMilestoneModal({ open: true, edit: m })}
+          onMoveMilestone={(id, dir) => {
+            // Tukar order dengan milestone tetangga — optimistic + 2 update paralel
+            const sorted = [...goal.milestones].sort((a, b) => a.order - b.order)
+            const idx = sorted.findIndex((m) => m.id === id)
+            if (idx < 0) return
+            const target = dir === "up" ? idx - 1 : idx + 1
+            if (target < 0 || target >= sorted.length) return
+            const a = sorted[idx]
+            const b = sorted[target]
+            ;[a, b].forEach((m) =>
+              updateMilestone.mutate(
+                { id: m.id, data: { order: m === a ? b.order : a.order } },
+                {
+                  onError: (e: any) =>
+                    import("sonner").then(({ toast }) => toast.error(`Gagal pindah milestone: ${errMsg(e)}`)),
+                }
+              )
+            )
+          }}
           onDeleteMilestone={(id) => deleteMilestone.mutate(id, {
             onError: (e: any) => import("sonner").then(({ toast }) => toast.error(`Gagal hapus milestone: ${errMsg(e)}`)),
           })}

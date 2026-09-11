@@ -9,6 +9,7 @@ export function RoadmapList({
   onAddStep,
   onEditMilestone,
   onDeleteMilestone,
+  onMoveMilestone,
 }: {
   milestones: any[]
   onToggleStep: (id: string, isCompleted: boolean) => void
@@ -18,11 +19,12 @@ export function RoadmapList({
   onAddStep: (milestoneId: string) => void
   onEditMilestone: (milestone: any) => void
   onDeleteMilestone: (id: string) => void
+  onMoveMilestone: (milestoneId: string, direction: "up" | "down") => void
 }) {
   if (milestones.length === 0) {
     return (
       <p className="rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-400">
-        Belum ada milestone. Klik “+ Tambah Step Utama” di kanan atas untuk membuat roadmap.
+        Belum ada milestone. Klik “+ Tambah Milestone” di kanan atas untuk membuat roadmap.
       </p>
     )
   }
@@ -41,6 +43,9 @@ export function RoadmapList({
           onAddStep={onAddStep}
           onEditMilestone={onEditMilestone}
           onDeleteMilestone={onDeleteMilestone}
+          onMove={onMoveMilestone}
+          canMoveUp={idx > 0}
+          canMoveDown={idx < sorted.length - 1}
         />
       ))}
     </div>
