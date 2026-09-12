@@ -781,7 +781,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                 <div className="min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
-                      Waktu Tidur
+                      Tidur
                     </p>
                     <Link href="/tidur" aria-label="Buka tab Tidur" className="p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
                       <ArrowRight className="h-3.5 w-3.5" />
