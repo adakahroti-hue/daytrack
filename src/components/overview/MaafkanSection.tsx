@@ -58,11 +58,12 @@ function RoutineCardShell({ title, href, linkColor, hideIcon, className, childre
 }) {
   return (
     <section className={cn("rounded-xl border border-slate-200 bg-white p-4 sm:p-5", className)}>
-      <div className="flex items-center gap-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{title}</h3>
-        <Link href={href} aria-label={`Buka tab ${title}`} className={cn("ml-auto p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors", linkColor)}>
+      <div className="flex items-center gap-1">
+        {/* Rev: ikon panah di sebelah kiri teks nama section */}
+        <Link href={href} aria-label={`Buka tab ${title}`} className={cn("p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0", linkColor)}>
           <ArrowRight className="h-3.5 w-3.5" />
         </Link>
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{title}</h3>
       </div>
       {children}
     </section>
