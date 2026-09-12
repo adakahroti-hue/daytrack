@@ -62,7 +62,7 @@ function RoutineCard({
   linkColor,
   className,
   hideIcon,
-  arrowLeft,
+  arrowAdjacent,
   children,
 }: {
   tint: string
@@ -73,14 +73,15 @@ function RoutineCard({
   linkColor?: string
   className?: string
   hideIcon?: boolean
-  arrowLeft?: boolean
+  arrowAdjacent?: boolean
   children: React.ReactNode
 }) {
   return (
     <div className={cn('rounded-xl border px-4 py-3 flex flex-col', tint, className)}>
       <div className="flex items-center gap-2">
-        {/* Rev: arrowLeft — ikon panah di sebelah kiri teks nama section */}
-        {arrowLeft && href && (
+        <p className="text-sm font-medium text-slate-700 truncate">{title}</p>
+        {/* Rev: arrowAdjacent — ikon panah persis di sebelah kanan teks nama section */}
+        {arrowAdjacent && href && (
           <Link
             href={href}
             aria-label={`Buka ${title}`}
@@ -89,9 +90,8 @@ function RoutineCard({
             <ArrowRight className="h-4 w-4" />
           </Link>
         )}
-        <p className="text-sm font-medium text-slate-700 truncate">{title}</p>
         <div className="flex items-center gap-1.5 shrink-0 ml-auto">
-          {!arrowLeft && href && (
+          {!arrowAdjacent && href && (
             <Link
               href={href}
               aria-label={`Buka ${title}`}
@@ -388,7 +388,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
     <section>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {/* Keuangan — posisi tukar dengan Refleksi di desktop (rev desktop); order mengikuti grid */}
-        <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700" hideIcon arrowLeft className="order-5">
+        <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700" hideIcon arrowAdjacent className="order-5">
           {/* Mobile: grid 2×2 (Saldo+Pokok atas, Reward+Tabung bawah); Desktop: layout lama */}
           <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 sm:flex sm:items-stretch sm:gap-4">
             {/* Saldo — kiri, besar */}
@@ -704,14 +704,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             <div className="mt-1.5 flex items-end justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="min-w-0">
-                  {/* Rev: ikon panah di sebelah kiri teks; XyPie dihilangkan */}
+                  {/* Rev: ikon panah di sebelah kanan teks; XyPie dihilangkan */}
                   <div className="flex items-center gap-1">
-                    <Link href="/pmo" aria-label="Buka tab PMO" className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
                       Bebas PMO
                     </p>
+                    <Link href="/pmo" aria-label="Buka tab PMO" className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
                   </div>
                   {isWeekly ? (
                     <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{checklist[2].days}/{daysElapsed}</span> berhasil</p>
