@@ -148,8 +148,10 @@ export default function GoalPage() {
       />
 
       <div className="flex flex-wrap items-center justify-end gap-2">
-        <Button size="sm" className="shrink-0 h-8 px-2.5 sm:px-3" onClick={() => setMilestoneModal({ open: true, edit: null })}>
-          <Plus className="h-4 w-4" /> Tambah Milestone
+        {/* Rev mobile: tombol tambah milestone jadi ikon saja */}
+        <Button size="icon" aria-label="Tambah Milestone" title="Tambah Milestone"
+          className="shrink-0 h-8 w-8 sm:h-8 sm:w-8" onClick={() => setMilestoneModal({ open: true, edit: null })}>
+          <Plus className="h-4 w-4" />
         </Button>
       </div>
 
