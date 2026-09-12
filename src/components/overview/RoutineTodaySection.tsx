@@ -457,31 +457,32 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        {/* Keuangan — baris 1 kiri */}
+        {/* Keuangan — baris 1 kiri; rev mobile: susun compact, nilai tak terpotong */}
         <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700" hideIcon className="order-1">
-          <div className="mt-3 flex items-stretch gap-4">
+          {/* Mobile: grid 2×2 (Saldo+Pokok atas, Reward+Tabung bawah); Desktop: layout lama */}
+          <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 sm:flex sm:items-stretch sm:gap-4">
             {/* Saldo — kiri, besar */}
-            <div className="shrink-0 pr-4 border-r border-slate-100 flex flex-col justify-center">
+            <div className="sm:shrink-0 sm:pr-4 sm:border-r border-slate-100 flex flex-col justify-center">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Saldo</p>
-              <p className="mt-0.5 text-lg font-bold text-slate-900 tabular-nums leading-none">{formatRupiah(akSaldo)}</p>
+              <p className="mt-0.5 text-lg font-bold text-slate-900 tabular-nums leading-none break-words">{formatRupiah(akSaldo)}</p>
             </div>
-            {/* 4 nilai compact di kanan — 1 baris */}
-            <div className="grid grid-cols-4 gap-x-3 gap-y-0 flex-1 min-w-0">
+            {/* 4 nilai compact — mobile 3 kolom sisa, desktop 1 baris */}
+            <div className="grid grid-cols-3 gap-x-3 gap-y-2 sm:grid-cols-4 sm:gap-x-3 sm:gap-y-0 sm:flex-1 sm:min-w-0">
               <div className="min-w-0">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 truncate">Pokok</p>
-                <p className="text-sm font-bold text-slate-900 tabular-nums truncate">{formatRupiah(akKebutuhanSisa)}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Pokok</p>
+                <p className="text-sm font-bold text-slate-900 tabular-nums break-words">{formatRupiah(akKebutuhanSisa)}</p>
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 truncate">Reward</p>
-                <p className="text-sm font-bold text-slate-900 tabular-nums truncate">{formatRupiah(akSelfRewardSisa)}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Reward</p>
+                <p className="text-sm font-bold text-slate-900 tabular-nums break-words">{formatRupiah(akSelfRewardSisa)}</p>
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 truncate">Tabung</p>
-                <p className="text-sm font-bold text-slate-900 tabular-nums truncate">{formatRupiah(akTabungSisa)}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Tabung</p>
+                <p className="text-sm font-bold text-slate-900 tabular-nums break-words">{formatRupiah(akTabungSisa)}</p>
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 truncate">Sedekah</p>
-                <p className="text-sm font-bold text-slate-900 tabular-nums truncate">{formatRupiah(akSedekahSisa)}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Sedekah</p>
+                <p className="text-sm font-bold text-slate-900 tabular-nums break-words">{formatRupiah(akSedekahSisa)}</p>
               </div>
             </div>
           </div>
@@ -796,10 +797,19 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                     {tidurDurasiList.slice(-7).map((d) => {
                       const hariNama = format(new Date(d.tgl + 'T00:00:00'), 'EEEE', { locale: id })
                       const hariShort = hariNama.slice(0, 3)
+                      // Rev: ≥7 jam = hijau muda transparan, <7 jam = merah transparan
+                      const isEnough = d.jam >= 7
                       return (
-                        <span key={d.tgl} className="flex flex-col items-center rounded-md bg-slate-100 px-2 py-1" title={hariNama}>
-                          <span className="text-[10px] font-medium text-slate-500 leading-none">{hariShort}</span>
-                          <span className="mt-0.5 text-xs font-semibold tabular-nums text-slate-900 leading-none">{d.jam}j</span>
+                        <span
+                          key={d.tgl}
+                          className={cn(
+                            'flex flex-col items-center rounded-md px-2 py-1',
+                            isEnough ? 'bg-green-100/70' : 'bg-red-100/70'
+                          )}
+                          title={`${hariNama} — ${d.jam} jam${isEnough ? ' (cukup)' : ' (kurang)'}`}
+                        >
+                          <span className={cn('text-[10px] font-medium leading-none', isEnough ? 'text-green-800' : 'text-red-800')}>{hariShort}</span>
+                          <span className={cn('mt-0.5 text-xs font-semibold tabular-nums leading-none', isEnough ? 'text-green-900' : 'text-red-900')}>{d.jam}j</span>
                         </span>
                       )
                     })}

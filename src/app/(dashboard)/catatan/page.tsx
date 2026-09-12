@@ -277,14 +277,14 @@ export default function CatatanPage() {
                 className={cn("rounded-lg border shadow-sm p-2.5 sm:p-3 flex flex-col min-h-[120px] sm:min-h-[140px] cursor-pointer transition-colors hover:brightness-[0.98] focus:outline-none focus:ring-2 focus:ring-purple-300")}>
                 <div className={cn("h-1 w-10 rounded-full mb-2", c.bar)} />
                 <div className="flex items-start justify-between gap-2">
-                  <p className={cn("text-base font-bold break-words leading-snug", c.text)}>{n.judul}</p>
+                  <p className="text-base font-bold break-words leading-snug text-slate-900">{n.judul}</p>
                   {n.label && (
                     <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold", c.badge)}>
                       {n.label}
                     </span>
                   )}
                 </div>
-                <NoteLines text={isiPreview} className={cn("mt-1 text-sm leading-snug flex-1", c.text)} />
+                <NoteLines text={isiPreview} className="mt-1 text-sm leading-snug flex-1 text-slate-900" />
                 {isLong && (
                   <button
                     type="button"
