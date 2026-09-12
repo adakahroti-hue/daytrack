@@ -466,8 +466,8 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Saldo</p>
               <p className="mt-0.5 text-lg font-bold text-slate-900 tabular-nums leading-none break-words">{formatRupiah(akSaldo)}</p>
             </div>
-            {/* 4 nilai compact — mobile 3 kolom sisa, desktop 1 baris */}
-            <div className="grid grid-cols-3 gap-x-3 gap-y-2 sm:grid-cols-4 sm:gap-x-3 sm:gap-y-0 sm:flex-1 sm:min-w-0">
+            {/* 4 nilai — mobile tersusun vertikal, desktop 1 baris */}
+            <div className="grid grid-cols-1 gap-x-3 gap-y-1.5 sm:grid-cols-4 sm:gap-x-3 sm:gap-y-0 sm:flex-1 sm:min-w-0">
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Pokok</p>
                 <p className="text-sm font-bold text-slate-900 tabular-nums break-words">{formatRupiah(akKebutuhanSisa)}</p>
