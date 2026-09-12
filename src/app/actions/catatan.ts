@@ -8,7 +8,7 @@ const catatanSchema = z.object({
   judul: z.string().min(1, "Judul wajib diisi"),
   isi: z.string().min(1, "Isi wajib diisi"),
   warna: z.enum(["yellow", "green", "blue", "pink", "orange"]).default("yellow"),
-  label: z.string().max(50, "Maksimal 50 karakter").optional().default(""),
+  label: z.string().max(200, "Maksimal 200 karakter").optional().default(""),
 })
 
 export type CatatanFormData = z.infer<typeof catatanSchema>

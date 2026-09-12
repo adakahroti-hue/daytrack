@@ -1,9 +1,9 @@
 "use client"
 
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Hash, Smile, Check, X, Trash2, Plus, Pencil, Wrench, Copy } from 'lucide-react'
+import { Hash, Smile, Check, X, Trash2, Pencil, Wrench, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { useAllKesenangan, useCreateKesenangan, useUpdateKesenangan, useDeleteKesenangan } from '@/hooks/useKesenangan'
 import { useRealtime } from '@/hooks/useRealtime'
+import { useHeaderControls } from '@/components/layout/HeaderControls'
 
 // ─── Constants ────────────────────────────────────
 
@@ -70,6 +71,13 @@ export default function KesenanganPage() {
   const openAdd = () => setEditState({ id: null, tanggal: todayStr, kesenangan: '', status: 'belum' })
   const openEdit = (e: KesenanganEntry) => setEditState({ id: e.id, tanggal: e.tanggal, kesenangan: e.kesenangan, status: (e.status === 'sudah' ? 'sudah' : 'belum') })
 
+  // Rev mobile: tombol "Tambah" pindah ke header kanan atas — registrasi handler via context
+  const { setHeaderAddAction } = useHeaderControls()
+  useEffect(() => {
+    setHeaderAddAction(() => openAdd)
+    return () => setHeaderAddAction(null)
+  }, [setHeaderAddAction])
+
   const handleSave = async () => {
     if (!editState) return
     if (!editState.kesenangan.trim()) return
@@ -119,7 +127,8 @@ export default function KesenanganPage() {
     <div className="max-w-[1440px] mx-auto py-4 sm:py-6 space-y-4">
       {/* Rev mobile: padding kiri-kanan dihapus — hilangkan whitespace sisi */}
       {/* Tabel: No | Kesenangan yang Ditunda | Status | Aksi — tanpa kolom tanggal & hari */}
-      <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)] landscape:max-lg:max-h-none rounded-lg border bg-white', TABLE_BORDER)}>
+      {/* Rev mobile: tabel dimunculkan semua sampai ke bawah — tanpa max-height */}
+      <div className={cn('relative overflow-x-auto rounded-lg border bg-white', TABLE_BORDER)}>
         <table className="w-full border-collapse text-xs sm:text-sm">
           <thead className={cn('hidden sm:table-header-group sticky top-0 z-20 bg-white')}>
             <tr className={cn('border-b', TABLE_BORDER)}>
@@ -166,7 +175,7 @@ export default function KesenanganPage() {
             ) : entries.length === 0 ? (
               <tr>
                 <td colSpan={4} className="text-center py-12 text-slate-400 text-sm">
-                  Belum ada kesenangan yang ditunda. Tekan tombol + untuk menambah.
+                  Belum ada kesenangan yang ditunda. Tekan tombol tambah (+) di kanan atas.
                 </td>
               </tr>
             ) : (
@@ -274,15 +283,7 @@ export default function KesenanganPage() {
         </table>
       </div>
 
-      {/* Revisi 8 (batch 6): tombol tambah floating seperti tab Semua */}
-      <Button
-        onClick={openAdd}
-        size="icon"
-        aria-label="Tambah Kesenangan"
-        className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-white shadow-lg"
-      >
-        <Plus className="h-6 w-6" />
-      </Button>
+      {/* Rev mobile: tombol tambah pindah ke header kanan atas — FAB dihapus */}
 
       {/* Dialog tambah/edit kesenangan */}
       <Dialog open={!!editState} onOpenChange={(open) => !open && setEditState(null)}>

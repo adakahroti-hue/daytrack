@@ -605,6 +605,18 @@ export function Header({ onMenuClick }: HeaderProps) {
           </Button>
         )}
 
+        {/* Playlist (Kesenangan) — tombol Tambah di header kanan atas (rev mobile) */}
+        {isKesenangan && (
+          <Button
+            onClick={() => headerAddAction?.()}
+            className='flex-shrink-0 h-9 w-9 sm:h-8 sm:w-auto sm:px-3 sm:gap-1 rounded-lg text-white shadow-sm bg-slate-900 hover:bg-slate-800'
+            aria-label='Tambah Playlist'
+          >
+            <Plus className='h-4 w-4' />
+            <span className='hidden sm:inline text-xs font-semibold'>Tambah</span>
+          </Button>
+        )}
+
         {/* Hari Ini — tombol Pilih Tugas di header kanan atas (rev mobile) */}
         {isHariIni && !headerSelectActive && (
           <Button

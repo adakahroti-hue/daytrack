@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Pencil, Trash2, List, ListOrdered, Copy } from "lucide-react"
+import { Pencil, Trash2, List, ListOrdered, Copy, X, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -45,6 +45,11 @@ const WARNA_OPTIONS: { value: CatatanWarna; label: string }[] = [
   { value: "pink", label: "Pink" },
   { value: "orange", label: "Orange" },
 ]
+
+// Rev mobile: kategori multi — disimpan di kolom label sebagai teks terpisah koma ("Ide, Belajar")
+function parseKats(raw: string | null | undefined): string[] {
+  return (raw || "").split(",").map((t) => t.trim()).filter(Boolean)
+}
 
 function NoteLines({ text, maxLines, className }: { text: string; maxLines?: number; className?: string }) {
   const lines = (text || "").split("\n")
@@ -98,19 +103,23 @@ export default function CatatanPage() {
   const [filterKat, setFilterKat] = useState<string>("semua") // 'semua' | 'lainnya' | <nama kategori>
   const [showAll, setShowAll] = useState(false)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  const [newKat, setNewKat] = useState("")
   const isiRef = useRef<HTMLTextAreaElement>(null)
 
-  // Kategori unik (label) dari seluruh catatan
+  // Kategori unik dari seluruh catatan (multi-kategori per catatan, dipisah koma)
   const categories = Array.from(
-    new Set((notes as any[]).map((n) => (n.label || "").trim()).filter(Boolean))
+    new Set((notes as any[]).flatMap((n) => parseKats(n.label)))
   ).sort((a, b) => a.localeCompare(b))
 
-  // Filter catatan berdasarkan kategori
+  // Daftar kategori yang bisa dipilih di dialog: existing + yang sedang dipilih (termasuk baru diketik)
+  const availableKats = Array.from(new Set([...categories, ...parseKats(editState?.label ?? "")]))
+
+  // Filter catatan berdasarkan kategori (cocokkan per token, bukan string penuh)
   const filteredNotes = (notes as any[]).filter((n) => {
-    const lab = (n.label || "").trim()
+    const labs = parseKats(n.label)
     if (filterKat === "semua") return true
-    if (filterKat === "lainnya") return lab === ""
-    return lab === filterKat
+    if (filterKat === "lainnya") return labs.length === 0
+    return labs.includes(filterKat)
   })
 
   // Batasi maksimal 10 baris (kartu) kecuali showAll aktif
@@ -148,9 +157,33 @@ export default function CatatanPage() {
     })
   }
 
-  const openAdd = () => setEditState({ id: null, judul: "", isi: "", label: "", warna: "yellow" })
-  const openEdit = (n: any) =>
+  const openAdd = () => { setNewKat(""); setEditState({ id: null, judul: "", isi: "", label: "", warna: "yellow" }) }
+  const openEdit = (n: any) => {
+    setNewKat("")
     setEditState({ id: n.id, judul: n.judul, isi: n.isi, label: n.label ?? "", warna: n.warna as CatatanWarna })
+  }
+
+  // Rev mobile: toggle kategori terpilih (multiselect) di dialog tambah/edit
+  const toggleKat = (cat: string) => {
+    setEditState(prev => {
+      if (!prev) return prev
+      const cur = parseKats(prev.label)
+      const next = cur.includes(cat) ? cur.filter(c => c !== cat) : [...cur, cat]
+      return { ...prev, label: next.join(", ") }
+    })
+  }
+  // Rev mobile: buat kategori baru dari input lalu langsung terpilih
+  const addNewKat = () => {
+    const name = newKat.trim().slice(0, 50)
+    if (!name) return
+    setEditState(prev => {
+      if (!prev) return prev
+      const cur = parseKats(prev.label)
+      if (cur.includes(name)) return prev
+      return { ...prev, label: [...cur, name].join(", ") }
+    })
+    setNewKat("")
+  }
 
   const openView = (n: any) =>
     setViewState({ id: n.id, judul: n.judul, isi: n.isi, label: n.label ?? "", warna: n.warna as CatatanWarna })
@@ -166,7 +199,8 @@ export default function CatatanPage() {
   const copyEdit = () => {
     const e = editState
     if (!e) return
-    const text = [e.judul, e.label ? `[${e.label}]` : "", e.isi].filter(Boolean).join("\n\n")
+    // Rev mobile: salin ISI saja — judul & label tidak ikut
+    const text = e.isi
     navigator.clipboard.writeText(text)
       .then(() => import("sonner").then(({ toast }) => toast.success("Catatan disalin")))
       .catch(() => import("sonner").then(({ toast }) => toast.error("Gagal menyalin catatan")))
@@ -278,10 +312,14 @@ export default function CatatanPage() {
                 <div className={cn("h-1 w-10 rounded-full mb-2", c.bar)} />
                 <div className="flex items-start justify-between gap-2">
                   <p className="text-base font-bold break-words leading-snug text-slate-900">{n.judul}</p>
-                  {n.label && (
-                    <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold", c.badge)}>
-                      {n.label}
-                    </span>
+                  {parseKats(n.label).length > 0 && (
+                    <div className="flex flex-wrap gap-1 justify-end shrink-0">
+                      {parseKats(n.label).map((k) => (
+                        <span key={k} className={cn("rounded-full px-2 py-0.5 text-[10px] font-semibold", c.badge)}>
+                          {k}
+                        </span>
+                      ))}
+                    </div>
                   )}
                 </div>
                 <NoteLines text={isiPreview} className="mt-1 text-sm leading-snug flex-1 text-slate-900" />
@@ -303,12 +341,13 @@ export default function CatatanPage() {
                   </button>
                 )}
                 <div className="flex items-center justify-end gap-1 pt-2 mt-auto">
+                  {/* Rev mobile: tombol edit & hapus hitam, ikon putih */}
                   <Button size="icon" aria-label="Edit catatan" onClick={(e) => { e.stopPropagation(); openEdit(n) }}
-                    className="h-8 w-8 sm:h-6 sm:w-6 p-0 bg-white text-slate-600 hover:bg-white/80 shadow-sm">
+                    className="h-8 w-8 sm:h-6 sm:w-6 p-0 bg-slate-900 text-white hover:bg-slate-800 shadow-sm">
                     <Pencil className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
                   </Button>
                   <Button size="icon" aria-label="Hapus catatan" onClick={(e) => { e.stopPropagation(); handleDelete(n.id) }}
-                    className="h-8 w-8 sm:h-6 sm:w-6 p-0 bg-white text-rose-500 hover:bg-white/80 shadow-sm">
+                    className="h-8 w-8 sm:h-6 sm:w-6 p-0 bg-slate-900 text-white hover:bg-slate-800 shadow-sm">
                     <Trash2 className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
                   </Button>
                 </div>
@@ -327,42 +366,53 @@ export default function CatatanPage() {
       )}
 
       <Dialog open={!!viewState} onOpenChange={(open) => !open && setViewState(null)}>
-        <DialogContent className="max-w-[92vw] sm:max-w-lg lg:max-w-4xl">
+        <DialogContent className="max-w-[92vw] sm:max-w-lg lg:max-w-4xl rounded-xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {viewState && (
                 <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", NOTE_COLORS[(viewState.warna as CatatanWarna) || "yellow"].bar)} />
               )}
-              {viewState?.judul}
-              {viewState?.label && (
-                <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold", NOTE_COLORS[(viewState.warna as CatatanWarna) || "yellow"].badge)}>
-                  {viewState.label}
+              <span className="break-words">{viewState?.judul}</span>
+              {viewState && parseKats(viewState.label).length > 0 && (
+                <span className="flex flex-wrap gap-1 shrink-0">
+                  {parseKats(viewState.label).map((k) => (
+                    <span key={k} className={cn("rounded-full px-2 py-0.5 text-[10px] font-semibold", NOTE_COLORS[(viewState.warna as CatatanWarna) || "yellow"].badge)}>
+                      {k}
+                    </span>
+                  ))}
                 </span>
               )}
             </DialogTitle>
           </DialogHeader>
           <NoteLines text={viewState?.isi ?? ""} className="text-sm leading-snug max-h-[60vh] overflow-y-auto text-slate-700" />
-          <div className="flex justify-end gap-2 pt-1">
-            <Button variant="outline" onClick={() => setViewState(null)}>Tutup</Button>
-            <Button variant="outline" onClick={() => {
-              const v = viewState
-              if (!v) return
-              const text = [v.judul, v.label ? `[${v.label}]` : "", v.isi].filter(Boolean).join("\n\n")
-              navigator.clipboard.writeText(text)
-                .then(() => import("sonner").then(({ toast }) => toast.success("Catatan disalin")))
-                .catch(() => import("sonner").then(({ toast }) => toast.error("Gagal menyalin catatan")))
-            }}>Salin</Button>
-            <Button onClick={() => {
+          {/* Rev mobile: Tutup & Edit di kiri, Salin paling kanan — ikon saja */}
+          <div className="flex items-center gap-2 pt-1">
+            <Button variant="outline" size="icon" onClick={() => setViewState(null)} aria-label="Tutup" title="Tutup" className="h-9 w-9 p-0">
+              <X className="h-4 w-4" />
+            </Button>
+            <Button size="icon" onClick={() => {
               const v = viewState
               setViewState(null)
               if (v) openEdit({ id: v.id, judul: v.judul, isi: v.isi, label: v.label, warna: v.warna })
-            }}>Edit</Button>
+            }} aria-label="Edit" title="Edit" className="h-9 w-9 p-0 bg-slate-900 hover:bg-slate-800 text-white">
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" className="ml-auto h-9 w-9 p-0" onClick={() => {
+              const v = viewState
+              if (!v) return
+              const text = v.isi
+              navigator.clipboard.writeText(text)
+                .then(() => import("sonner").then(({ toast }) => toast.success("Catatan disalin")))
+                .catch(() => import("sonner").then(({ toast }) => toast.error("Gagal menyalin catatan")))
+            }} aria-label="Salin" title="Salin">
+              <Copy className="h-4 w-4" />
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
 
       <Dialog open={!!editState} onOpenChange={(open) => !open && setEditState(null)}>
-        <DialogContent className="max-w-[92vw] sm:max-w-lg lg:max-w-5xl">
+        <DialogContent className="max-w-[92vw] sm:max-w-lg lg:max-w-5xl rounded-xl">
           <DialogHeader>
             <DialogTitle>{editState?.id ? "Edit Catatan" : "Tambah Catatan"}</DialogTitle>
           </DialogHeader>
@@ -377,14 +427,38 @@ export default function CatatanPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="catatan-label">Label / Kategori</Label>
-              <Input
-                id="catatan-label"
-                placeholder="mis. Ide, Belajar, Penting"
-                maxLength={50}
-                value={editState?.label ?? ""}
-                onChange={(e) => setEditState(prev => prev ? { ...prev, label: e.target.value } : prev)}
-              />
+              <Label>Kategori</Label>
+              {/* Rev mobile: pilih dari kategori yang sudah ada — multiselect */}
+              {availableKats.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {availableKats.map((cat) => {
+                    const active = parseKats(editState?.label ?? "").includes(cat)
+                    return (
+                      <button key={cat} type="button" onClick={() => toggleKat(cat)}
+                        className={cn(
+                          "rounded-full px-3 py-1 text-xs font-medium border transition-colors",
+                          active ? "bg-purple-600 text-white border-purple-600" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                        )}>
+                        {cat}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+              {/* Rev mobile: buat kategori baru jika belum ada */}
+              <div className="flex gap-1.5">
+                <Input
+                  id="catatan-label"
+                  placeholder="Kategori baru..."
+                  maxLength={50}
+                  value={newKat}
+                  onChange={(e) => setNewKat(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addNewKat() } }}
+                />
+                <Button type="button" variant="outline" size="icon" onClick={addNewKat} className="shrink-0" aria-label="Tambah kategori" title="Tambah kategori">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="catatan-isi">Isi</Label>
