@@ -535,7 +535,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           <div className="mt-3 pt-3 border-t border-slate-100">
             <div className="flex items-center justify-between mb-1.5">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Skor Hoki</p>
-              <span className="text-xs font-bold tabular-nums bg-yellow-200 text-yellow-900 rounded px-1.5 py-0.5">{hokiPct}%</span>
+              <span className="text-xs font-bold tabular-nums bg-yellow-200/70 text-yellow-900 rounded px-1.5 py-0.5">{hokiPct}%</span>
             </div>
             <div className="h-3 w-full overflow-hidden rounded-sm bg-slate-100">
               <div
@@ -843,7 +843,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               </div>
               <div className="text-right">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Posisi Saat Ini</p>
-                <p className="text-sm font-bold text-slate-900 tabular-nums"><span className="bg-yellow-200 rounded px-1.5 py-0.5">{pmoCurrentStreak}</span> <span className="text-xs font-medium text-slate-500">hari</span></p>
+                <p className="text-sm font-bold text-slate-900 tabular-nums"><span className="bg-yellow-200/70 rounded px-1.5 py-0.5">{pmoCurrentStreak}</span> <span className="text-xs font-medium text-slate-500">hari</span></p>
               </div>
             </div>
             {pmoTopAlasan && (
