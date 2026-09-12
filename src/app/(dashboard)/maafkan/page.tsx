@@ -1,8 +1,8 @@
 "use client"
 
-import { Fragment, useMemo, useState } from "react"
+import { Fragment, useEffect, useMemo, useState } from "react"
 import { format } from "date-fns"
-import { Shield, Trash2, Plus, Pencil, Wrench, Hash, Copy, CheckCircle2, Circle } from "lucide-react"
+import { Shield, Trash2, Pencil, Wrench, Hash, Copy, CheckCircle2, Circle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { useMaafkanAll, useUpsertMaafkan, useUpdateMaafkan, useDeleteMaafkan } from "@/hooks/useMaafkan"
 import { useRealtime } from "@/hooks/useRealtime"
+import { useHeaderControls } from "@/components/layout/HeaderControls"
 
 const TABLE_BORDER = "border-slate-900"
 
@@ -46,6 +47,13 @@ export default function MaafkanPage() {
 
   const openAdd = () => setEditState({ id: null, kejadian: "", status: "belum" })
   const openEdit = (e: MaafkanEntry) => setEditState({ id: e.id, kejadian: e.kejadian, status: e.status })
+
+  // Rev mobile: tombol "Tambah Kejadian Maafkan" pindah ke header kanan atas — registrasi handler via context
+  const { setHeaderAddAction } = useHeaderControls()
+  useEffect(() => {
+    setHeaderAddAction(() => openAdd)
+    return () => setHeaderAddAction(null)
+  }, [setHeaderAddAction])
 
   const handleSave = async () => {
     if (!editState) return
@@ -199,15 +207,7 @@ export default function MaafkanPage() {
         </table>
       </div>
 
-      {/* Tombol tambah floating */}
-      <Button
-        onClick={openAdd}
-        size="icon"
-        aria-label="Tambah Kejadian Maafkan"
-        className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-white shadow-lg"
-      >
-        <Plus className="h-6 w-6" />
-      </Button>
+      {/* Tombol tambah maafkan kini ada di header kanan atas (rev mobile) */}
 
       {/* Dialog tambah/edit */}
       <Dialog open={!!editState} onOpenChange={(open) => !open && setEditState(null)}>

@@ -130,7 +130,8 @@ export default function MasalahPage() {
       {/* Rev mobile: padding kiri-kanan mobile dihapus (main layout sudah p-4) */}
 
       {/* Tabel gaya Quran: Tanggal | Hari | Refleksi */}
-      <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-280px)] landscape:max-lg:max-h-none rounded-lg border bg-white', TABLE_BORDER)}>
+      {/* Rev mobile: tabel dimunculkan semua sampai ke bawah — tanpa max-height */}
+      <div className={cn('relative overflow-x-auto rounded-lg border bg-white', TABLE_BORDER)}>
         <table className="w-full border-collapse text-xs sm:text-sm">
           <thead className={cn('hidden sm:table-header-group sticky top-0 z-20 bg-white')}>
             <tr className={cn('border-b', TABLE_BORDER)}>

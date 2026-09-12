@@ -1,8 +1,8 @@
 "use client"
 
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { id } from 'date-fns/locale'
-import { Shield, Trash2, Plus, Pencil, Wrench, Hash, Copy } from 'lucide-react'
+import { Shield, Trash2, Pencil, Wrench, Hash, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { useMentalBlockAll, useUpsertMentalBlock, useUpdateMentalBlock, useDeleteMentalBlock } from "@/hooks/useMentalBlock"
 import { useRealtime } from "@/hooks/useRealtime"
+import { useHeaderControls } from "@/components/layout/HeaderControls"
 
 const TABLE_BORDER = 'border-slate-900'
 
@@ -47,6 +48,13 @@ export default function MentalBlockPage() {
 
   const openAdd = () => setEditState({ id: null, masalah: '' })
   const openEdit = (e: MentalBlockEntry) => setEditState({ id: e.id, masalah: e.masalah })
+
+  // Rev mobile: tombol "Tambah Mental Block" pindah ke header kanan atas — registrasi handler via context
+  const { setHeaderAddAction } = useHeaderControls()
+  useEffect(() => {
+    setHeaderAddAction(() => openAdd)
+    return () => setHeaderAddAction(null)
+  }, [setHeaderAddAction])
 
   const handleSave = async () => {
     if (!editState) return
@@ -91,7 +99,8 @@ export default function MentalBlockPage() {
       {/* Rev mobile: padding kiri-kanan mobile dihapus (main layout sudah p-4) */}
 
       {/* Tabel gaya Quran: Tanggal | Mental Block (tanpa status) */}
-      <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-280px)] landscape:max-lg:max-h-none rounded-lg border bg-white', TABLE_BORDER)}>
+      {/* Rev mobile: tabel dimunculkan semua sampai ke bawah — tanpa max-height */}
+      <div className={cn('relative overflow-x-auto rounded-lg border bg-white', TABLE_BORDER)}>
         <table className="w-full border-collapse text-xs sm:text-sm">
           <thead className={cn('hidden sm:table-header-group sticky top-0 z-20 bg-white')}>
             <tr className={cn('border-b', TABLE_BORDER)}>
@@ -192,15 +201,7 @@ export default function MentalBlockPage() {
         </table>
       </div>
 
-      {/* Tombol tambah floating */}
-      <Button
-        onClick={openAdd}
-        size="icon"
-        aria-label="Tambah Mental Block"
-        className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-white shadow-lg"
-      >
-        <Plus className="h-6 w-6" />
-      </Button>
+      {/* Tombol tambah mental block kini ada di header kanan atas (rev mobile) */}
 
       {/* Dialog tambah/edit mental block */}
       <Dialog open={!!editState} onOpenChange={(open) => !open && setEditState(null)}>

@@ -581,6 +581,30 @@ export function Header({ onMenuClick }: HeaderProps) {
           </Button>
         )}
 
+        {/* Maafkan — tombol Tambah Kejadian di header kanan atas (rev mobile) */}
+        {isMaafkan && (
+          <Button
+            onClick={() => headerAddAction?.()}
+            className='flex-shrink-0 h-9 w-9 sm:h-8 sm:w-auto sm:px-3 sm:gap-1 rounded-lg text-white shadow-sm bg-slate-900 hover:bg-slate-800'
+            aria-label='Tambah Kejadian Maafkan'
+          >
+            <Plus className='h-4 w-4' />
+            <span className='hidden sm:inline text-xs font-semibold'>Tambah</span>
+          </Button>
+        )}
+
+        {/* Mental Block — tombol Tambah Mental Block di header kanan atas (rev mobile) */}
+        {isMentalBlock && (
+          <Button
+            onClick={() => headerAddAction?.()}
+            className='flex-shrink-0 h-9 w-9 sm:h-8 sm:w-auto sm:px-3 sm:gap-1 rounded-lg text-white shadow-sm bg-slate-900 hover:bg-slate-800'
+            aria-label='Tambah Mental Block'
+          >
+            <Plus className='h-4 w-4' />
+            <span className='hidden sm:inline text-xs font-semibold'>Tambah</span>
+          </Button>
+        )}
+
         {/* Hari Ini — tombol Pilih Tugas di header kanan atas (rev mobile) */}
         {isHariIni && !headerSelectActive && (
           <Button
