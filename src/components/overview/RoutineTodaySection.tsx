@@ -494,14 +494,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1">
                 <div className="min-w-0">
-                  {/* Rev: ikon panah di sebelah kiri teks nama section */}
+                  {/* Rev: ikon panah di sebelah kanan teks nama section */}
                   <div className="flex items-center gap-1">
-                    <Link href="/sholat" aria-label="Buka tab Sholat Wajib" className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
                       Sholat 5 Waktu
                     </p>
+                    <Link href="/sholat" aria-label="Buka tab Sholat Wajib" className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
                   </div>
 
                 </div>
@@ -533,14 +533,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1">
                 <div className="min-w-0">
-                  {/* Rev: ikon panah di sebelah kiri teks nama section */}
+                  {/* Rev: ikon panah di sebelah kanan teks nama section */}
                   <div className="flex items-center gap-1">
-                    <Link href="/sholat-sunnah" aria-label="Buka tab Sholat Sunnah" className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
                       Sholat Sunnah
                     </p>
+                    <Link href="/sholat-sunnah" aria-label="Buka tab Sholat Sunnah" className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
                   </div>
 
                 </div>
@@ -572,14 +572,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1">
                 <div className="min-w-0">
-                  {/* Rev: ikon panah di sebelah kiri teks nama section */}
+                  {/* Rev: ikon panah di sebelah kanan teks nama section */}
                   <div className="flex items-center gap-1">
-                    <Link href="/quran" aria-label="Buka tab Quran" className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
                       Baca Quran
                     </p>
+                    <Link href="/quran" aria-label="Buka tab Quran" className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
                   </div>
 
                 </div>
@@ -615,14 +615,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1">
                 <div className="min-w-0">
-                  {/* Rev: ikon panah di sebelah kiri teks nama section */}
+                  {/* Rev: ikon panah di sebelah kanan teks nama section */}
                   <div className="flex items-center gap-1">
-                    <Link href="/minum-air" aria-label="Buka tab Minum Air" className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
                       Minum Air
                     </p>
+                    <Link href="/minum-air" aria-label="Buka tab Minum Air" className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
                   </div>
 
                   {isHarian && gelas >= TARGET_GELAS && (
@@ -660,14 +660,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               <div className="min-w-0 flex items-center gap-3">
 
                 <div className="min-w-0">
-                  {/* Rev: ikon panah di sebelah kiri teks nama section */}
+                  {/* Rev: ikon panah di sebelah kanan teks nama section */}
                   <div className="flex items-center gap-1">
-                    <Link href="/tidur" aria-label="Buka tab Tidur" className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
                       Tidur
                     </p>
+                    <Link href="/tidur" aria-label="Buka tab Tidur" className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
                   </div>
 
                 </div>
