@@ -287,14 +287,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   )
 
 
-  // Insight Sholat 5 Waktu: waktu paling sering terlewat (rev: bagian alasan dihilangkan)
-  const sholatMissedIdx = sholatPerWaktu.indexOf(Math.min(...sholatPerWaktu))
-  const sholatMostMissed = daysElapsed - sholatPerWaktu[sholatMissedIdx]
-
-  // Insight Baca Quran: sesi paling sering terlewat (rev: bagian alasan dihilangkan)
-  const quranMissedIdx = quranPerSesi.indexOf(Math.min(...quranPerSesi))
-  const quranMostMissed = daysElapsed - quranPerSesi[quranMissedIdx]
-
   // Minum Air
   const waterEntries = (ov.water ?? []) as any[]
   const totalMl = (waterEntries as any[]).reduce((sum, e) => sum + (e.jumlah_ml || 0), 0)
@@ -312,11 +304,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const pmoEntries = (ov.pmo ?? []) as any[]
   const pmoAllEntries = (ov.pmo_all ?? []) as any[]
   const tidurEntries = (ov.tidur ?? []) as any[]
-  // Minum Air — insight waktu sering terlewat
-  const waterMissedIdx = waterPerSesi.indexOf(Math.min(...waterPerSesi))
-  const waterMostMissed = daysElapsed - waterPerSesi[waterMissedIdx]
-
-  // Tidur — rata-rata durasi, tidur paling lambat, bangun paling lambat, alasan begadang terpopuler
+  // Tidur — data jam & durasi
   const tidurRows = tidurEntries as any[]
   const jamTidurList = tidurRows.map(e => e.jam_tidur).filter(Boolean).sort() as string[]
   const jamBangunList = tidurRows.map(e => e.jam_bangun).filter(Boolean).sort() as string[]
@@ -499,13 +487,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1">
                 <div className="min-w-0">
-                  <div className="flex items-center justify-between gap-2">
+                  {/* Rev: ikon panah di sebelah kiri teks nama section */}
+                  <div className="flex items-center gap-1">
+                    <Link href="/sholat" aria-label="Buka tab Sholat Wajib" className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
                       Sholat 5 Waktu
                     </p>
-                    <Link href="/sholat" aria-label="Buka tab Sholat Wajib" className="p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
                   </div>
 
                 </div>
@@ -533,27 +522,18 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               </div>
             </div>
           </div>
-          {/* Insight Sholat 5 Waktu */}
-          {sholatMostMissed > 0 && (
-            <div className="mt-3 flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-xs text-slate-500">
-              <span className="flex items-center gap-1 ml-auto">
-                <span className="font-medium text-slate-700">Sering terlewat:</span>
-                <span className="font-semibold text-slate-900">{SHOLAT_5[sholatMissedIdx].label}</span>
-                <span className="text-slate-400">({sholatMostMissed}×)</span>
-              </span>
-            </div>
-          )}
           <div className="mt-4 pt-4 border-t border-slate-100">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1">
                 <div className="min-w-0">
-                  <div className="flex items-center justify-between gap-2">
+                  {/* Rev: ikon panah di sebelah kiri teks nama section */}
+                  <div className="flex items-center gap-1">
+                    <Link href="/sholat-sunnah" aria-label="Buka tab Sholat Sunnah" className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
                       Sholat Sunnah
                     </p>
-                    <Link href="/sholat-sunnah" aria-label="Buka tab Sholat Sunnah" className="p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
                   </div>
 
                 </div>
@@ -585,13 +565,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1">
                 <div className="min-w-0">
-                  <div className="flex items-center justify-between gap-2">
+                  {/* Rev: ikon panah di sebelah kiri teks nama section */}
+                  <div className="flex items-center gap-1">
+                    <Link href="/quran" aria-label="Buka tab Quran" className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
                       Baca Quran
                     </p>
-                    <Link href="/quran" aria-label="Buka tab Quran" className="p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
                   </div>
 
                 </div>
@@ -619,16 +600,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               </div>
             </div>
           </div>
-          {/* Insight Baca Quran */}
-          {quranMostMissed > 0 && (
-            <div className="mt-3 flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-xs text-slate-500">
-              <span className="flex items-center gap-1 ml-auto">
-                <span className="font-medium text-slate-700">Sering terlewat:</span>
-                <span className="font-semibold text-slate-900">{QURAN_SESSIONS[quranMissedIdx].label}</span>
-                <span className="text-slate-400">({quranMostMissed}×)</span>
-              </span>
-            </div>
-          )}
         </RoutineCard>
 
         {/* Kesehatan — dipindah ke paling bawah */}
@@ -637,13 +608,14 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 lg:flex-1">
                 <div className="min-w-0">
-                  <div className="flex items-center justify-between gap-2">
+                  {/* Rev: ikon panah di sebelah kiri teks nama section */}
+                  <div className="flex items-center gap-1">
+                    <Link href="/minum-air" aria-label="Buka tab Minum Air" className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
                       Minum Air
                     </p>
-                    <Link href="/minum-air" aria-label="Buka tab Minum Air" className="p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
                   </div>
 
                   {isHarian && gelas >= TARGET_GELAS && (
@@ -675,29 +647,20 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                 })}
               </div>
             </div>
-            {/* Insight Minum Air */}
-            {waterMostMissed > 0 && (
-              <div className="mt-3 flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-xs text-slate-500">
-                <span className="flex items-center gap-1 ml-auto">
-                  <span className="font-medium text-slate-700">Sering terlewat:</span>
-                  <span className="font-semibold text-slate-900">{WATER_PILL_LABELS[WATER_SESSIONS[waterMissedIdx].key] ?? WATER_SESSIONS[waterMissedIdx].label}</span>
-                  <span className="text-slate-400">({waterMostMissed}×)</span>
-                </span>
-              </div>
-            )}
           </div>
           <div className="mt-4 pt-4 border-t border-slate-100">
             <div className="mt-1.5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0 flex items-center gap-3">
 
                 <div className="min-w-0">
-                  <div className="flex items-center justify-between gap-2">
+                  {/* Rev: ikon panah di sebelah kiri teks nama section */}
+                  <div className="flex items-center gap-1">
+                    <Link href="/tidur" aria-label="Buka tab Tidur" className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 flex items-center gap-1">
                       Tidur
                     </p>
-                    <Link href="/tidur" aria-label="Buka tab Tidur" className="p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
                   </div>
 
                 </div>
