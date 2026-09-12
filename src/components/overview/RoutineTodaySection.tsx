@@ -45,23 +45,6 @@ const WATER_PILL_LABELS: Record<string, string> = {
   setelah_maghrib: 'Maghrib', sebelum_tidur: 'Tidur',
 }
 
-const REASON_LABELS: Record<string, string> = {
-  malas: 'Malas',
-  lupa: 'Lupa',
-  ketiduran: 'Ketiduran',
-  sibuk: 'Sibuk',
-  sakit: 'Sakit',
-  perjalanan: 'Perjalanan',
-  tak_ada_tempat: 'Tak ada tempat',
-  bersama_teman: 'Bersama teman',
-  lainnya: 'Lainnya',
-  'Lambat Makan Pagi': 'Lambat Makan Pagi',
-  'Lambat Makan Malam': 'Lambat Makan Malam',
-  'Kurang Aktivitas': 'Kurang Aktivitas',
-  'Makan Malam Sedikit': 'Makan Malam Sedikit',
-  'Laptopan Lama': 'Laptopan Lama',
-}
-
 const QURAN_PILL_LABELS: Record<string, string> = {
   setelah_subuh: 'Subuh', setelah_dzuhur: 'Dzuhur', setelah_ashar: 'Ashar',
   setelah_maghrib: 'Maghrib', setelah_isya: 'Isya',
@@ -304,35 +287,13 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   )
 
 
-  // Insight Sholat 5 Waktu: waktu paling sering terlewat + alasan paling sering
+  // Insight Sholat 5 Waktu: waktu paling sering terlewat (rev: bagian alasan dihilangkan)
   const sholatMissedIdx = sholatPerWaktu.indexOf(Math.min(...sholatPerWaktu))
   const sholatMostMissed = daysElapsed - sholatPerWaktu[sholatMissedIdx]
-  const sholatReasonCount = new Map<string, number>()
-  ;(prayerRows as any[]).forEach(r => {
-    SHOLAT_5.forEach(s => {
-      if (!r?.[`sholat_${s.key}`] && r?.[`alasan_${s.key}`]) {
-        const k = r[`alasan_${s.key}`] as string
-        sholatReasonCount.set(k, (sholatReasonCount.get(k) || 0) + 1)
-      }
-    })
-  })
-  let sholatTopReason = null as string | null
-  let sholatTopReasonCount = 0
-  sholatReasonCount.forEach((v, k) => { if (v > sholatTopReasonCount) { sholatTopReasonCount = v; sholatTopReason = k } })
 
-  // Insight Baca Quran: sesi paling sering terlewat + alasan paling sering
+  // Insight Baca Quran: sesi paling sering terlewat (rev: bagian alasan dihilangkan)
   const quranMissedIdx = quranPerSesi.indexOf(Math.min(...quranPerSesi))
   const quranMostMissed = daysElapsed - quranPerSesi[quranMissedIdx]
-  const quranReasonCount = new Map<string, number>()
-  ;(quranRows as any[]).forEach(e => {
-    if (e.status !== 'sudah' && e.alasan) {
-      const k = e.alasan as string
-      quranReasonCount.set(k, (quranReasonCount.get(k) || 0) + 1)
-    }
-  })
-  let quranTopReason = null as string | null
-  let quranTopReasonCount = 0
-  quranReasonCount.forEach((v, k) => { if (v > quranTopReasonCount) { quranTopReasonCount = v; quranTopReason = k } })
 
   // Minum Air
   const waterEntries = (ov.water ?? []) as any[]
@@ -362,36 +323,10 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const fmtJam = (v: string | null) => v ? v.slice(0, 5) : null
   const tidurPalingLambat = fmtJam(jamTidurList.length ? jamTidurList[jamTidurList.length - 1] : null)
   const bangunPalingLambat = fmtJam(jamBangunList.length ? jamBangunList[jamBangunList.length - 1] : null)
-  const tidurAlasanCount = new Map<string, number>()
-  tidurRows.forEach(e => { if (e.status === 'begadang' && e.alasan_tidak) { const k = e.alasan_tidak as string; tidurAlasanCount.set(k, (tidurAlasanCount.get(k) || 0) + 1) } })
-  let tidurTopAlasan = null as string | null
-  let tidurTopAlasanCount = 0
-  tidurAlasanCount.forEach((v, k) => { if (v > tidurTopAlasanCount) { tidurTopAlasanCount = v; tidurTopAlasan = k } })
-  // Durasi tidur per hari (untuk card Kesehatan → Waktu Tidur)
+  // Durasi tidur per hari (untuk card Kesehatan → Tidur)
   const tidurDurasiList = tidurRows
     .map((e) => ({ tgl: e.tanggal, jam: typeof e.durasi_jam === 'number' ? e.durasi_jam : 0 }))
     .filter((d) => d.jam > 0)
-
-  // PMO — alasan relapse terpopuler (jika ada)
-  const pmoRows = pmoEntries as any[]
-  const pmoRelapse = pmoRows.filter(e => e.status === 'relapse')
-  const pmoAlasanCount = new Map<string, number>()
-  pmoRelapse.forEach(e => { if (e.alasan) { const k = e.alasan as string; pmoAlasanCount.set(k, (pmoAlasanCount.get(k) || 0) + 1) } })
-  let pmoTopAlasan = null as string | null
-  let pmoTopAlasanCount = 0
-  pmoAlasanCount.forEach((v, k) => { if (v > pmoTopAlasanCount) { pmoTopAlasanCount = v; pmoTopAlasan = k } })
-
-  // Syukur / Doa / Sedekah — alasan tidak melakukannya (terpopuler per masing-masing)
-  const topReasonOf = (entries: any[], getKey: (e: any) => string | null) => {
-    const m = new Map<string, number>()
-    entries.forEach(e => { const k = getKey(e); if (k) m.set(k, (m.get(k) || 0) + 1) })
-    let top: string | null = null; let c = 0
-    m.forEach((v, k) => { if (v > c) { c = v; top = k } })
-    return top ? { reason: top, count: c } : null
-  }
-  const syukurReason = topReasonOf(syukurEntries as any[], e => e.alasan_tidak ?? null)
-  const doaReason = topReasonOf(doaEntries as any[], e => e.alasan ?? null)
-  const sedekahReason = topReasonOf(sedekahEntries as any[], e => e.alasan_tidak ?? null)
 
 
   // Arus Kas — saldo & sisa alokasi kebutuhan (ALL-TIME, TIDAK dipengaruhi filter periode mana pun)
@@ -496,9 +431,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               <XyPie value={checklist[0].days} target={daysElapsed} color="#111827" size={52} percentLabel percentOnSlice />
               <div className="min-w-0">
                 <p className="text-xs font-medium text-slate-700">Bersyukur <span className="text-slate-900 tabular-nums">{checklist[0].days}/{daysElapsed}</span></p>
-                {syukurReason && (
-                  <p className="text-[11px] text-slate-900 leading-tight">Alasan: <span className="text-slate-900">{REASON_LABELS[syukurReason.reason] ?? syukurReason.reason}</span> <span className="text-slate-400">({syukurReason.count}×)</span></p>
-                )}
               </div>
               <Link href="/syukur" aria-label="Buka tab Syukur" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -509,9 +441,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               <XyPie value={checklist[1].days} target={daysElapsed} color="#111827" size={52} percentLabel percentOnSlice />
               <div className="min-w-0">
                 <p className="text-xs font-medium text-slate-700">Doakan <span className="text-slate-900 tabular-nums">{checklist[1].days}/{daysElapsed}</span></p>
-                {doaReason && (
-                  <p className="text-[11px] text-slate-900 leading-tight">Alasan: <span className="text-slate-900">{doaReason.reason}</span> <span className="text-slate-400">({doaReason.count}×)</span></p>
-                )}
               </div>
               <Link href="/doa" aria-label="Buka tab Doa" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -522,9 +451,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               <XyPie value={sedekahCount} target={daysElapsed} color="#111827" size={52} percentLabel percentOnSlice />
               <div className="min-w-0">
                 <p className="text-xs font-medium text-slate-700">Sedekah <span className="text-slate-900 tabular-nums">{sedekahCount}/{daysElapsed}</span></p>
-                {sedekahReason && (
-                  <p className="text-[11px] text-slate-900 leading-tight">Alasan: <span className="text-slate-900">{REASON_LABELS[sedekahReason.reason] ?? sedekahReason.reason}</span> <span className="text-slate-400">({sedekahReason.count}×)</span></p>
-                )}
               </div>
               <Link href="/sedekah" aria-label="Buka tab Sedekah" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -615,13 +541,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                 <span className="font-semibold text-slate-900">{SHOLAT_5[sholatMissedIdx].label}</span>
                 <span className="text-slate-400">({sholatMostMissed}×)</span>
               </span>
-              {sholatTopReason && (
-                <span className="flex items-center gap-1">
-                  <span className="font-medium text-slate-700">Alasan:</span>
-                  <span className="font-semibold text-slate-800">{REASON_LABELS[sholatTopReason] ?? sholatTopReason}</span>
-                  <span className="text-slate-400">({sholatTopReasonCount}×)</span>
-                </span>
-              )}
             </div>
           )}
           <div className="mt-4 pt-4 border-t border-slate-100">
@@ -708,13 +627,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                 <span className="font-semibold text-slate-900">{QURAN_SESSIONS[quranMissedIdx].label}</span>
                 <span className="text-slate-400">({quranMostMissed}×)</span>
               </span>
-              {quranTopReason && (
-                <span className="flex items-center gap-1">
-                  <span className="font-medium text-slate-700">Alasan:</span>
-                  <span className="font-semibold text-slate-800">{REASON_LABELS[quranTopReason] ?? quranTopReason}</span>
-                  <span className="text-slate-400">({quranTopReasonCount}×)</span>
-                </span>
-              )}
             </div>
           )}
         </RoutineCard>
@@ -846,15 +758,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                 <p className="text-sm font-bold text-slate-900 tabular-nums"><span className="bg-yellow-200/70 rounded px-1.5 py-0.5">{pmoCurrentStreak}</span> <span className="text-xs font-medium text-slate-500">hari</span></p>
               </div>
             </div>
-            {pmoTopAlasan && (
-              <div className="mt-2 flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-xs text-slate-500">
-                <span className="flex items-center gap-1 ml-auto">
-                  <span className="font-medium text-slate-700">Alasan relapse:</span>
-                  <span className="font-semibold text-rose-600">{pmoTopAlasan}</span>
-                  <span className="text-slate-400">({pmoTopAlasanCount}×)</span>
-                </span>
-              </div>
-            )}
           </div>
         </RoutineCard>
 
