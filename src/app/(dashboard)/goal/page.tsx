@@ -10,7 +10,7 @@ import { GoalHeader } from "@/components/goal/GoalHeader"
 import { RoadmapList } from "@/components/goal/RoadmapList"
 import { AddMilestoneModal } from "@/components/goal/AddMilestoneModal"
 import { AddStepModal } from "@/components/goal/AddStepModal"
-import { useActiveGoal, useListGoals, useSetActiveGoal, useCreateGoal, useUpdateGoal, useDeleteGoal, useCreateMilestone, useUpdateMilestone, useDeleteMilestone, useCreateStep, useUpdateStep, useToggleStepCompleted, useDeleteStep } from "@/hooks/useGoal"
+import { useActiveGoal, useCreateGoal, useUpdateGoal, useDeleteGoal, useCreateMilestone, useUpdateMilestone, useDeleteMilestone, useCreateStep, useUpdateStep, useToggleStepCompleted, useDeleteStep } from "@/hooks/useGoal"
 import { useHeaderControls } from "@/components/layout/HeaderControls"
 
 function errMsg(e: any) {
@@ -19,8 +19,6 @@ function errMsg(e: any) {
 
 export default function GoalPage() {
   const { data: goal, isLoading, error: goalError } = useActiveGoal()
-  const { data: goals } = useListGoals()
-  const setActiveGoal = useSetActiveGoal()
   const createGoal = useCreateGoal()
   const updateGoal = useUpdateGoal()
   const deleteGoal = useDeleteGoal()
@@ -142,14 +140,6 @@ export default function GoalPage() {
         goalTitle={goal.title}
         goalProgress={goalProgress}
         targetDate={goal.target_date}
-        goals={goals || []}
-        activeGoalId={goal.id}
-        onSelectGoal={(id) =>
-          setActiveGoal.mutate(id, {
-            onError: (e: any) =>
-              import("sonner").then(({ toast }) => toast.error(`Gagal ganti goal: ${errMsg(e)}`)),
-          })
-        }
         onEdit={() => { setGoalName(goal.title); setEditGoalOpen(true) }}
         onDelete={() => setDeleteGoalOpen(true)}
         onNewGoal={() => setCreateGoalOpen(true)}

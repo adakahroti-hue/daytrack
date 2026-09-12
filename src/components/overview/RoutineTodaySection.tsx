@@ -324,9 +324,11 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const tidurPalingLambat = fmtJam(jamTidurList.length ? jamTidurList[jamTidurList.length - 1] : null)
   const bangunPalingLambat = fmtJam(jamBangunList.length ? jamBangunList[jamBangunList.length - 1] : null)
   // Durasi tidur per hari (untuk card Kesehatan → Tidur)
+  // Rev: urutkan per tanggal (Minggu→Sabtu) — konsisten dengan rentang capture
   const tidurDurasiList = tidurRows
     .map((e) => ({ tgl: e.tanggal, jam: typeof e.durasi_jam === 'number' ? e.durasi_jam : 0 }))
     .filter((d) => d.jam > 0)
+    .sort((a, b) => a.tgl.localeCompare(b.tgl))
 
 
   // Arus Kas — saldo & sisa alokasi kebutuhan (ALL-TIME, TIDAK dipengaruhi filter periode mana pun)

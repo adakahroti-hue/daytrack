@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, X, Plus, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, BookMarked, Mosque, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, ScanSearch, Timer } from 'lucide-react'
+import { Menu, X, Plus, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, BookMarked, Mosque, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, Timer } from 'lucide-react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
@@ -199,13 +199,13 @@ export function Header({ onMenuClick }: HeaderProps) {
   const isArusKas = pathname === '/arus-kas'
   const isKeranjang = pathname === '/keranjang'
   const isGoal = pathname === '/goal'
-  const isKeuangan = isArusKas || isKeranjang
+  // Rev: Keranjang (Belanja) keluar dari grup Keuangan — tak lagi ikut toolbar navigasi tanggal
+  const isKeuangan = isArusKas
 
   // Halaman yang menampilkan shortcut tab eksternal di header
   const isWaktu = pathname.startsWith('/jejak-waktu')
   const isBankIde = pathname === '/tugas/bank-ide'
   const isCatatan = pathname === '/catatan'
-  const isSwot = pathname.startsWith('/swot')
   const isAlquran = pathname === '/alquran'
   const showShortcuts =
     isOverviewPage ||
@@ -216,7 +216,6 @@ export function Header({ onMenuClick }: HeaderProps) {
     isWaktu ||
     isBankIde ||
     isCatatan ||
-    isSwot ||
     isAlquran ||
     isKesenangan ||
     isMentalBlock ||
@@ -302,11 +301,6 @@ export function Header({ onMenuClick }: HeaderProps) {
               <StickyNote className="h-4 w-4" />
             </Link>
           )}
-          {!isSwot && (
-            <Link href="/swot" title="SWOT" aria-label="SWOT" className="p-1.5 rounded-md text-slate-500 hover:text-emerald-600 hover:bg-white/60 transition-colors">
-              <ScanSearch className="h-4 w-4" />
-            </Link>
-          )}
           {!isAlquran && (
             <Link href="/alquran" title="Alquran" aria-label="Alquran" className="p-1.5 rounded-md text-slate-500 hover:text-teal-600 hover:bg-white/60 transition-colors">
               <BookOpen className="h-4 w-4" />
@@ -316,7 +310,7 @@ export function Header({ onMenuClick }: HeaderProps) {
       )}
 
       {/* Page title & description — disembunyikan di tab yang punya header/konten sendiri */}
-      {!(isOverviewPage || isGoal || isWaktu || isHariIni || isSemua || isSelesai || isKeuangan || isMasalah || isMentalBlock || isMaafkan || isSholat || isQuran || isDoa || isSyukur || isSedekah || isMinumAir || isPmo || isTidur || isMakan || isKesenangan || isBankIde || isCatatan || isSwot || isAlquran) && (
+      {!(isOverviewPage || isGoal || isWaktu || isHariIni || isSemua || isSelesai || isKeuangan || isMasalah || isMentalBlock || isMaafkan || isSholat || isQuran || isDoa || isSyukur || isSedekah || isMinumAir || isPmo || isTidur || isMakan || isKesenangan || isBankIde || isCatatan || isAlquran) && (
       <div className="flex-1 min-w-0">
         <h1 className="flex items-center gap-2 text-lg font-semibold truncate">
           {(() => {

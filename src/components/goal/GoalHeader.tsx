@@ -5,9 +5,6 @@ export function GoalHeader({
   goalTitle,
   goalProgress,
   targetDate,
-  goals = [],
-  activeGoalId,
-  onSelectGoal,
   onEdit,
   onDelete,
   onNewGoal,
@@ -15,9 +12,6 @@ export function GoalHeader({
   goalTitle: string
   goalProgress: number
   targetDate: string | null
-  goals?: { id: string; title: string; is_active: boolean }[]
-  activeGoalId?: string
-  onSelectGoal?: (id: string) => void
   onEdit?: () => void
   onDelete?: () => void
   onNewGoal?: () => void
@@ -59,26 +53,11 @@ export function GoalHeader({
             </button>
           )}
         </div>
-      </div>
-
-      {/* Dropdown ganti goal (multi-goal) */}
-      {goals.length > 0 && onSelectGoal && (
-        <div className="mt-3">
-          <select
-            value={activeGoalId || ""}
-            onChange={(e) => onSelectGoal(e.target.value)}
-            className="w-full rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-sm text-slate-700 focus:border-slate-400 focus:outline-none"
-          >
-            {goals.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.title}
-              </option>
-            ))}
-          </select>
         </div>
-      )}
 
-      <p className="mt-2 text-lg sm:text-xl font-bold text-slate-900 break-words leading-snug">{goalTitle || "—"}</p>
+        {/* Rev: dropdown ganti goal dihapus */}
+
+        <p className="mt-2 text-lg sm:text-xl font-bold text-slate-900 break-words leading-snug">{goalTitle || "—"}</p>
       {targetDate && (
         <p className="mt-0.5 text-xs text-slate-500">Target: {targetDate}</p>
       )}

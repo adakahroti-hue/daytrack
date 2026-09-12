@@ -20,9 +20,9 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { formatRupiah, parseRupiah } from "@/lib/utils"
 import { useTableLock } from "@/components/ui/table-lock"
-import { useKeranjangRange, useKeranjangAll, useCreateKeranjang, useDeleteKeranjang, useBeliKeranjang, useUpdateKeranjang } from "@/hooks/useKeranjang"
+import { useKeranjangAll, useCreateKeranjang, useDeleteKeranjang, useBeliKeranjang, useUpdateKeranjang } from "@/hooks/useKeranjang"
 import { useRealtime } from "@/hooks/useRealtime"
-import { useHeaderControls, getIbadahRange } from '@/components/layout/HeaderControls'
+
 
 const DAY_BADGE_COLORS: Record<string, string> = {
   Senin: "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -63,29 +63,14 @@ function startOfDaySafe(d: Date): Date {
 
 export default function KeranjangPage() {
   const { effectiveLocked, lockControl } = useTableLock()
-  const { ibadahPeriod: period, ibadahDate: anchorDate } = useHeaderControls()
+  // Rev: Belanja tidak terpengaruh filter waktu & navigasi tanggal — selalu fetch all
   const todayStr = format(new Date(), "yyyy-MM-dd")
-  const [showAll, setShowAll] = useState(false)
 
-  const { rangeStart, rangeEnd } = useMemo(() => {
-    const today = new Date()
-    const { start, end } = getIbadahRange(period, anchorDate)
-    const cappedEnd = end > today ? today : end
-    return { rangeStart: start, rangeEnd: cappedEnd }
-  }, [period, anchorDate])
-
-  const startDate = format(rangeStart, "yyyy-MM-dd")
-  const endDate = format(rangeEnd, "yyyy-MM-dd")
-
-  const { data: rangeData = [], isLoading: isRangeLoading, error: rangeError } = useKeranjangRange(startDate, endDate)
-  const { data: allData = [], isLoading: isAllLoading, error: allError } = useKeranjangAll()
-  const logs = showAll ? allData : rangeData
-  const isLoading = showAll ? isAllLoading : isRangeLoading
-  const error = showAll ? allError : rangeError
+  const { data: allData = [], isLoading: isLoading, error: error } = useKeranjangAll()
+  const logs = allData
   useRealtime({
     table: "keranjang",
-    filter: `tanggal=gte.${startDate},tanggal=lte.${endDate}`,
-    queryKeys: [["keranjang", "range", startDate, endDate], ["keranjang", "all"]],
+    queryKeys: [["keranjang", "all"]],
   })
 
   const createKeranjang = useCreateKeranjang()
@@ -163,36 +148,7 @@ export default function KeranjangPage() {
         <p className="mt-1 text-lg font-bold text-slate-800">{formatRupiah(totalHarga)}</p>
       </div>
 
-      {/* Filter: Semua — tampilkan seluruh data yang pernah diinput */}
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setShowAll(false)}
-          className={cn(
-            "px-3 h-8 rounded-md text-xs font-medium transition-colors",
-            !showAll
-              ? "bg-[#0F172A] text-white shadow-sm"
-              : "bg-muted/50 text-slate-600 hover:text-slate-900 hover:bg-white/60 border border-border"
-          )}
-        >
-          Periode
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowAll(true)}
-          className={cn(
-            "px-3 h-8 rounded-md text-xs font-medium transition-colors",
-            showAll
-              ? "bg-[#0F172A] text-white shadow-sm"
-              : "bg-muted/50 text-slate-600 hover:text-slate-900 hover:bg-white/60 border border-border"
-          )}
-        >
-          Semua
-        </button>
-        {showAll && (
-          <span className="text-xs text-slate-500">Menampilkan semua data yang pernah diinput</span>
-        )}
-      </div>
+      {/* Rev: filter Periode/Semua dihapus — Belanja selalu menampilkan semua data */}
 
       <div className={cn("relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-320px)] landscape:max-lg:max-h-none rounded-lg border bg-white", TABLE_BORDER)}>
         <table className="w-full border-collapse text-xs sm:text-sm">

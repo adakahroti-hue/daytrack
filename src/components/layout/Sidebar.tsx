@@ -54,7 +54,7 @@ import {
   DollarSign,
   ShoppingCart,
   Target,
-  ScanSearch,
+
   Wrench,
   StickyNote,
   Brain,
@@ -163,7 +163,6 @@ const navigation: NavSection[] = [
     items: [
       { title: 'Alquran', href: '/alquran', icon: BookOpen },
       { title: 'Catatan', href: '/catatan', icon: StickyNote },
-      { title: 'SWOT', href: '/swot', icon: ScanSearch },
       { title: 'Playlist', href: '/kesenangan', icon: ListMusic },
     ],
   },

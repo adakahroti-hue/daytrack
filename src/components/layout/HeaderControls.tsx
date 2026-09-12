@@ -79,7 +79,6 @@ function getCategoryFromPath(pathname: string): string {
   if (pathname.startsWith('/tidur') || pathname.startsWith('/minum-air') || pathname.startsWith('/makan')) return 'kesehatan'
   if (pathname.startsWith('/masalah') || pathname.startsWith('/pmo') || pathname.startsWith('/kesenangan') || pathname.startsWith('/mental-block') || pathname.startsWith('/maafkan')) return 'mental'
   if (pathname.startsWith('/goal')) return 'goal'
-  if (pathname.startsWith('/swot')) return 'swot'
   if (pathname.startsWith('/arus-kas') || pathname.startsWith('/keranjang')) return 'keuangan'
   if (pathname.startsWith('/jejak-waktu')) return 'waktu'
   return 'overview'
@@ -107,7 +106,6 @@ function getSubPageFromPath(pathname: string): string | null {
   if (pathname.startsWith('/arus-kas')) return 'arus-kas'
   if (pathname.startsWith('/keranjang')) return 'keranjang'
   if (pathname.startsWith('/goal')) return 'goal'
-  if (pathname.startsWith('/swot')) return 'swot'
   return null
 }
 
@@ -180,7 +178,6 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
       return 'Kesehatan Mental'
     case 'perbaikan': return 'Perbaikan Diri'
     case 'keuangan': return 'Keuangan'
-    case 'swot': return 'Analisis SWOT'
     case 'waktu': return 'Waktu'
     default: return 'Daytrack'
   }
