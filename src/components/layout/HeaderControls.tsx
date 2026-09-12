@@ -60,6 +60,13 @@ interface HeaderControls {
   // Rev mobile: tombol "Tambah" di header kanan (Catatan & Bank Ide) — halaman registrasi handler lewat context
   headerAddAction: (() => void) | null
   setHeaderAddAction: (fn: (() => void) | null) => void
+  // Rev mobile: tombol "Pilih Tugas" (Hari Ini) di header — state + stats dari halaman
+  headerSelectAction: (() => void) | null
+  setHeaderSelectAction: (fn: (() => void) | null) => void
+  headerSelectDisabled: boolean
+  setHeaderSelectDisabled: (v: boolean) => void
+  headerSelectActive: boolean
+  setHeaderSelectActive: (v: boolean) => void
 }
 
 const HeaderControlsContext = createContext<HeaderControls | null>(null)
@@ -287,6 +294,10 @@ export function HeaderControlsProvider({
   const [alquranMode, setAlquranMode] = useState<'pilih' | 'mengaji'>('mengaji')
   // Tombol "Tambah" di header kanan — handler didaftarkan halaman (Catatan/Bank Ide) via context
   const [headerAddAction, setHeaderAddAction] = useState<(() => void) | null>(null)
+  // Tombol "Pilih Tugas" (Hari Ini) di header — handler + state dari halaman via context
+  const [headerSelectAction, setHeaderSelectAction] = useState<(() => void) | null>(null)
+  const [headerSelectDisabled, setHeaderSelectDisabled] = useState(false)
+  const [headerSelectActive, setHeaderSelectActive] = useState(false)
 
   const navigateWaktu = useCallback((dir: 'prev' | 'next') => {
     setWaktuDate((prev) => {
@@ -430,7 +441,13 @@ export function HeaderControlsProvider({
     setAlquranMode,
     headerAddAction,
     setHeaderAddAction,
-  }), [dynamicTitle, dynamicDescription, currentDate, period, setPeriod, selectYesterday, page, setPage, navigate, goToToday, onRefresh, isLoading, isToday, navigateToPeriodStart, category, subPage, setSubPage, tugasView, setTugasView, groupMode, setGroupMode, ibadahPeriod, ibadahDate, setIbadahPeriod, navigateIbadah, arusKasShowAll, setArusKasShowAll, waktuPeriod, setWaktuPeriod, waktuDate, navigateWaktu, goToWaktuToday, alquranMode, headerAddAction])
+    headerSelectAction,
+    setHeaderSelectAction,
+    headerSelectDisabled,
+    setHeaderSelectDisabled,
+    headerSelectActive,
+    setHeaderSelectActive,
+  }), [dynamicTitle, dynamicDescription, currentDate, period, setPeriod, selectYesterday, page, setPage, navigate, goToToday, onRefresh, isLoading, isToday, navigateToPeriodStart, category, subPage, setSubPage, tugasView, setTugasView, groupMode, setGroupMode, ibadahPeriod, ibadahDate, setIbadahPeriod, navigateIbadah, arusKasShowAll, setArusKasShowAll, waktuPeriod, setWaktuPeriod, waktuDate, navigateWaktu, goToWaktuToday, alquranMode, headerAddAction, headerSelectAction, headerSelectDisabled, headerSelectActive])
 
   return (
     <HeaderControlsContext.Provider value={value}>

@@ -72,7 +72,6 @@ export function GoalHeader({
             {goals.map((g) => (
               <option key={g.id} value={g.id}>
                 {g.title}
-                {g.is_active ? " (aktif)" : ""}
               </option>
             ))}
           </select>

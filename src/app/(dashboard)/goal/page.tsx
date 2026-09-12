@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { Plus, Target } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,6 +11,7 @@ import { RoadmapList } from "@/components/goal/RoadmapList"
 import { AddMilestoneModal } from "@/components/goal/AddMilestoneModal"
 import { AddStepModal } from "@/components/goal/AddStepModal"
 import { useActiveGoal, useListGoals, useSetActiveGoal, useCreateGoal, useUpdateGoal, useDeleteGoal, useCreateMilestone, useUpdateMilestone, useDeleteMilestone, useCreateStep, useUpdateStep, useToggleStepCompleted, useDeleteStep } from "@/hooks/useGoal"
+import { useHeaderControls } from "@/components/layout/HeaderControls"
 
 function errMsg(e: any) {
   return e?.message || "unknown error"
@@ -42,6 +43,13 @@ export default function GoalPage() {
   })
   const [createGoalOpen, setCreateGoalOpen] = useState(false)
   const [goalTitle, setGoalTitle] = useState("")
+
+  // Rev mobile: tombol "Tambah Milestone" pindah ke header kanan atas — registrasi handler via context
+  const { setHeaderAddAction } = useHeaderControls()
+  useEffect(() => {
+    setHeaderAddAction(() => () => setMilestoneModal({ open: true, edit: null }))
+    return () => setHeaderAddAction(null)
+  }, [setHeaderAddAction])
 
   // Progress goal = rata-rata progress tiap milestone (bobot sama per milestone).
   // - Milestone dengan step: progress = step selesai / total step
@@ -147,13 +155,7 @@ export default function GoalPage() {
         onNewGoal={() => setCreateGoalOpen(true)}
       />
 
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        {/* Rev mobile: tombol tambah milestone jadi ikon saja */}
-        <Button size="icon" aria-label="Tambah Milestone" title="Tambah Milestone"
-          className="shrink-0 h-8 w-8 sm:h-8 sm:w-8" onClick={() => setMilestoneModal({ open: true, edit: null })}>
-          <Plus className="h-4 w-4" />
-        </Button>
-      </div>
+      {/* Rev mobile: tombol tambah milestone pindah ke header kanan — lakukan lewat context di page */}
 
       <RoadmapList
           milestones={goal.milestones}

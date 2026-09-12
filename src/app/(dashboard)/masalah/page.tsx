@@ -1,8 +1,8 @@
 "use client"
 
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { id } from 'date-fns/locale'
-import { Shield, Trash2, Plus, Pencil, Wrench, CheckCircle2, Hash } from 'lucide-react'
+import { Shield, Trash2, Pencil, Wrench, CheckCircle2, Hash } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils'
 import { useMasalahLogAll, useUpsertMasalahLog, useUpdateMasalahLog, useDeleteMasalahLog } from "@/hooks/useMasalahLogs"
 import type { RefleksiKategori } from "@/app/actions/masalah-logs"
 import { useRealtime } from "@/hooks/useRealtime"
+import { useHeaderControls } from "@/components/layout/HeaderControls"
 
 // ─── Constants ────────────────────────────────────
 
@@ -87,6 +88,13 @@ export default function MasalahPage() {
   }, [logs])
 
   const openAdd = () => setEditState({ id: null, masalah: '', status: 'belum', kategori: '' })
+
+  // Rev mobile: tombol "Tambah Refleksi" pindah ke header kanan atas — registrasi handler via context
+  const { setHeaderAddAction } = useHeaderControls()
+  useEffect(() => {
+    setHeaderAddAction(() => openAdd)
+    return () => setHeaderAddAction(null)
+  }, [setHeaderAddAction])
   const openEdit = (e: MasalahLogEntry) => setEditState({ id: e.id, masalah: e.masalah, status: e.status, kategori: asKategori(e.kategori) })
 
   const handleSave = async () => {
@@ -241,15 +249,7 @@ export default function MasalahPage() {
         </table>
       </div>
 
-      {/* Revisi 8: tombol tambah floating seperti tab Semua */}
-      <Button
-        onClick={openAdd}
-        size="icon"
-        aria-label="Tambah Refleksi"
-        className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-white shadow-lg"
-      >
-        <Plus className="h-6 w-6" />
-      </Button>
+      {/* Tombol tambah refleksi kini ada di header kanan atas (rev mobile) */}
 
       {/* Dialog tambah/edit masalah */}
       <Dialog open={!!editState} onOpenChange={(open) => !open && setEditState(null)}>

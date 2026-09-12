@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, memo } from 'react'
 import { format, isToday, isWithinInterval, startOfWeek, endOfWeek, isBefore, startOfDay, differenceInDays } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Plus, Edit, Trash2, Clock, Calendar, Play, Check, CheckCircle2, MoreHorizontal, Flag, Target, AlertTriangle, Layers } from 'lucide-react'
+import { Edit, Trash2, Clock, Calendar, Play, Check, CheckCircle2, MoreHorizontal, Flag, Target, AlertTriangle, Layers } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -17,7 +17,6 @@ import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskSta
 import { useTasksRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
 import { Suspense } from 'react'
-
 type Task = {
   id: string
   user_id: string
@@ -383,7 +382,13 @@ function SemuaPageClient() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<EditingTask | null>(null)
   // groupMode ditinggikan ke HeaderControls — toggle-nya kini tampil di header (kanan card Terlambat)
-  const { groupMode, setGroupMode } = useHeaderControls()
+  const { groupMode, setGroupMode, setHeaderAddAction } = useHeaderControls()
+
+  // Rev mobile: tombol "Tambah Tugas" pindah ke header kanan atas — registrasi handler via context
+  useEffect(() => {
+    setHeaderAddAction(() => () => { setEditingTask(null); setIsFormOpen(true) })
+    return () => setHeaderAddAction(null)
+  }, [setHeaderAddAction])
   const [isMounted, setIsMounted] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [selectionMode, setSelectionMode] = useState(false)
@@ -783,15 +788,7 @@ function SemuaPageClient() {
         )}
       </div>
 
-      {/* Floating Action Button - Fixed bottom right */}
-      <Button
-        onClick={() => { setEditingTask(null); setIsFormOpen(true) }}
-        className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95"
-        aria-label="Tambah tugas baru"
-        size="icon"
-      >
-        <Plus className="h-6 w-6" />
-      </Button>
+      {/* Tombol tambah tugas kini ada di header kanan atas (rev mobile) */}
 
       {/* Add/Edit Task Dialog */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>

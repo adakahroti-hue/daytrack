@@ -171,6 +171,9 @@ export function Header({ onMenuClick }: HeaderProps) {
     alquranMode,
     setAlquranMode,
     headerAddAction,
+    headerSelectAction,
+    headerSelectDisabled,
+    headerSelectActive,
   } = useHeaderControls()
 
   // Show period toggle only on Overview page
@@ -551,6 +554,55 @@ export function Header({ onMenuClick }: HeaderProps) {
           >
             <Plus className='h-4 w-4' />
             <span className='hidden sm:inline text-xs font-semibold'>{isCatatan ? 'Tambah Catatan' : 'Tambah Ide'}</span>
+          </Button>
+        )}
+
+        {/* Goal — tombol Tambah Milestone di header kanan atas (rev mobile) */}
+        {isGoal && (
+          <Button
+            onClick={() => headerAddAction?.()}
+            className='flex-shrink-0 h-9 w-9 sm:h-8 sm:w-auto sm:px-3 sm:gap-1 rounded-lg text-white shadow-sm bg-slate-900 hover:bg-slate-800'
+            aria-label='Tambah Milestone'
+          >
+            <Plus className='h-4 w-4' />
+            <span className='hidden sm:inline text-xs font-semibold'>Tambah Milestone</span>
+          </Button>
+        )}
+
+        {/* Refleksi — tombol Tambah Refleksi di header kanan atas (rev mobile) */}
+        {isMasalah && (
+          <Button
+            onClick={() => headerAddAction?.()}
+            className='flex-shrink-0 h-9 w-9 sm:h-8 sm:w-auto sm:px-3 sm:gap-1 rounded-lg text-white shadow-sm bg-slate-900 hover:bg-slate-800'
+            aria-label='Tambah Refleksi'
+          >
+            <Plus className='h-4 w-4' />
+            <span className='hidden sm:inline text-xs font-semibold'>Tambah Refleksi</span>
+          </Button>
+        )}
+
+        {/* Hari Ini — tombol Pilih Tugas di header kanan atas (rev mobile) */}
+        {isHariIni && !headerSelectActive && (
+          <Button
+            variant="outline"
+            onClick={() => headerSelectAction?.()}
+            disabled={headerSelectDisabled}
+            className='flex-shrink-0 h-9 sm:h-8 sm:px-3 rounded-lg text-xs font-semibold'
+            aria-label='Pilih Tugas'
+          >
+            Pilih Tugas
+          </Button>
+        )}
+
+        {/* Semua — tombol Tambah Tugas di header kanan atas (rev mobile) */}
+        {isSemua && (
+          <Button
+            onClick={() => headerAddAction?.()}
+            className='flex-shrink-0 h-9 w-9 sm:h-8 sm:w-auto sm:px-3 sm:gap-1 rounded-lg text-white shadow-sm bg-slate-900 hover:bg-slate-800'
+            aria-label='Tambah Tugas'
+          >
+            <Plus className='h-4 w-4' />
+            <span className='hidden sm:inline text-xs font-semibold'>Tambah Tugas</span>
           </Button>
         )}
 

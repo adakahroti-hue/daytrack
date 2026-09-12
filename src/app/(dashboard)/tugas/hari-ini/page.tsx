@@ -14,6 +14,7 @@ import { cn, getEstimasiText, getMissionStatusColor, getMissionPriorityColor, ge
 import { TaskForm } from '@/components/tasks/TaskForm'
 import { TaskGroupRibbon, TaskGroupDialog } from '@/components/tasks/task-group'
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus, usePauseTask, useResumeTask, useBulkDeleteTasks, useReorderTaskGroup } from '@/hooks/useTasks'
+import { useHeaderControls } from '@/components/layout/HeaderControls'
 import { useTasksRealtime } from '@/hooks/useRealtime'
 import { Suspense } from 'react'
 
@@ -500,6 +501,22 @@ function HariIniPageClient() {
     return { activeMissions, completedMissions, totalToday, hasAnyTasks, hasActiveTasks }
   }, [todayTasks])
 
+  // Rev mobile: tombol "Pilih Tugas" pindah ke header kanan atas — sinkron state lewat context
+  const {
+    setHeaderSelectAction,
+    setHeaderSelectDisabled,
+    setHeaderSelectActive,
+  } = useHeaderControls()
+  useEffect(() => {
+    setHeaderSelectAction(() => () => setSelectionMode(true))
+    setHeaderSelectDisabled(stats.totalToday === 0)
+    setHeaderSelectActive(selectionMode)
+    return () => {
+      setHeaderSelectAction(null)
+      setHeaderSelectActive(false)
+    }
+  }, [setHeaderSelectAction, setHeaderSelectDisabled, setHeaderSelectActive, stats.totalToday, selectionMode])
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -555,13 +572,7 @@ function HariIniPageClient() {
                 Batal
               </Button>
             </>
-          ) : (
-            <Button variant="outline" size="sm" onClick={() => setSelectionMode(true)}
-              disabled={stats.totalToday === 0}
-              className="h-8 text-[12px]">
-              Pilih Tugas
-            </Button>
-          )}
+          ) : null}
         </div>
       </div>
 
