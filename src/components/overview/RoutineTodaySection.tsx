@@ -457,8 +457,8 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        {/* Keuangan — baris 1 kiri; rev mobile: susun compact, nilai tak terpotong */}
-        <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700" hideIcon className="order-1">
+        {/* Keuangan — posisi tukar dengan Refleksi di desktop (rev desktop); order mengikuti grid */}
+        <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700" hideIcon className="order-5">
           {/* Mobile: grid 2×2 (Saldo+Pokok atas, Reward+Tabung bawah); Desktop: layout lama */}
           <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 sm:flex sm:items-stretch sm:gap-4">
             {/* Saldo — kiri, besar */}
@@ -548,7 +548,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         </RoutineCard>
 
         {/* Refleksi — list semua (tak dipengaruhi filter) */}
-        <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-slate-700" title="Refleksi" href="/masalah" linkColor="text-slate-700 hover:text-slate-900" className="col-span-1 order-5" hideIcon>
+        <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-slate-700" title="Refleksi" href="/masalah" linkColor="text-slate-700 hover:text-slate-900" className="col-span-1 order-1" hideIcon>
             {refleksiList.length > 0 ? (
               <ul className="space-y-1.5 max-h-[7.5rem] overflow-y-auto pr-1">
                 {refleksiList.map((r) => (
