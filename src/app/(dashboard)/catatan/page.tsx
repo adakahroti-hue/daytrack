@@ -11,7 +11,6 @@ import { cn } from "@/lib/utils"
 import { useCatatanAll, useCreateCatatan, useUpdateCatatan, useDeleteCatatan } from "@/hooks/useCatatan"
 import { useRealtime } from "@/hooks/useRealtime"
 import { useHeaderControls } from "@/components/layout/HeaderControls"
-import { useIsDesktop } from "@/hooks/useMediaQuery"
 
 type CatatanWarna = "yellow" | "green" | "blue" | "pink" | "orange"
 
@@ -100,7 +99,6 @@ export default function CatatanPage() {
   const [showAll, setShowAll] = useState(false)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const isiRef = useRef<HTMLTextAreaElement>(null)
-  const isDesktop = useIsDesktop()
 
   // Kategori unik (label) dari seluruh catatan
   const categories = Array.from(
@@ -306,11 +304,11 @@ export default function CatatanPage() {
                 )}
                 <div className="flex items-center justify-end gap-1 pt-2 mt-auto">
                   <Button size="icon" aria-label="Edit catatan" onClick={(e) => { e.stopPropagation(); openEdit(n) }}
-                    className={cn("h-8 w-8 sm:h-6 sm:w-6 p-0", isDesktop ? "bg-slate-100 text-slate-600 hover:bg-slate-200" : "text-slate-500 hover:text-slate-700")}>
+                    className="h-8 w-8 sm:h-6 sm:w-6 p-0 bg-white text-slate-600 hover:bg-white/80 shadow-sm">
                     <Pencil className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
                   </Button>
                   <Button size="icon" aria-label="Hapus catatan" onClick={(e) => { e.stopPropagation(); handleDelete(n.id) }}
-                    className={cn("h-8 w-8 sm:h-6 sm:w-6 p-0", isDesktop ? "bg-rose-100 text-rose-600 hover:bg-rose-200" : "text-rose-500 hover:text-rose-600")}>
+                    className="h-8 w-8 sm:h-6 sm:w-6 p-0 bg-white text-rose-500 hover:bg-white/80 shadow-sm">
                     <Trash2 className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
                   </Button>
                 </div>
