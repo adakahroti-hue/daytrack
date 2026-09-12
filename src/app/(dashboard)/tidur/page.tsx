@@ -145,7 +145,7 @@ export default function TidurPage() {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto py-6 space-y-4">
+    <div className="max-w-[1440px] mx-auto py-6 lg:pt-2 space-y-4">
       {/* Rev mobile: padding kiri-kanan mobile dihapus (main layout sudah p-4) */}
       {/* Tabel gaya Quran: Tanggal | Hari | Status */}
       <div className={cn('relative overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)] landscape:max-lg:max-h-none rounded-lg border bg-white', TABLE_BORDER)}>

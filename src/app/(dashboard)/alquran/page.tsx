@@ -231,7 +231,7 @@ export default function AlquranPage() {
   const chunk = fullAyat.slice(curAyat - 1, curAyat - 1 + PAGE)
 
   return (
-    <div className="space-y-4 sm:p-6">
+    <div className="space-y-4 sm:p-6 lg:pt-2">
       {/* Rev mobile: padding kiri-kanan dihapus di mobile — hilangkan whitespace sisi; desktop tetap */}
       {mode === "pilih" ? (
         selected === null ? (

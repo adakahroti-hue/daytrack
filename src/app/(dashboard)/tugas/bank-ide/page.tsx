@@ -110,7 +110,7 @@ function BankIdePageClient() {
   }
 
   return (
-    <div className="space-y-6 max-w-[1440px] mx-auto py-6 pb-24">
+    <div className="space-y-6 max-w-[1440px] mx-auto py-6 pb-24 lg:pt-2">
       {/* Rev mobile: padding kiri-kanan mobile dihapus (main layout sudah p-4) */}
       {ideas.length === 0 ? (
         <div className="py-16 text-center">

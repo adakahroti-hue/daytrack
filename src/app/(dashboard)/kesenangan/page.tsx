@@ -124,7 +124,7 @@ export default function KesenanganPage() {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto py-4 sm:py-6 space-y-4">
+    <div className="max-w-[1440px] mx-auto py-4 sm:py-6 lg:pt-2 space-y-4">
       {/* Rev mobile: padding kiri-kanan dihapus — hilangkan whitespace sisi */}
       {/* Tabel: No | Kesenangan yang Ditunda | Status | Aksi — tanpa kolom tanggal & hari */}
       {/* Rev mobile: tabel dimunculkan semua sampai ke bawah — tanpa max-height */}

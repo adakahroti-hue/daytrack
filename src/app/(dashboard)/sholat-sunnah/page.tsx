@@ -487,7 +487,7 @@ export default function SholatSunnahPage() {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto py-6 space-y-4">
+    <div className="max-w-[1440px] mx-auto py-6 lg:pt-2 space-y-4">
       {/* Rev mobile: padding kiri-kanan mobile dihapus (main layout sudah p-4) */}
       <div
         ref={tableContainerRef}
