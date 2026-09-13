@@ -209,22 +209,31 @@ export default function CatatanPage() {
   const handleSave = async () => {
     if (!editState) return
     if (!editState.judul.trim() || !editState.isi.trim()) return
+    // Fix: kategori baru yang diketik tapi belum diklik "+" jangan hilang —
+    // gabungkan otomatis ke label saat simpan
+    const pendingKat = newKat.trim().slice(0, 50)
+    let label = editState.label
+    if (pendingKat) {
+      const cur = parseKats(label)
+      if (!cur.includes(pendingKat)) label = [...cur, pendingKat].join(", ")
+    }
     setIsBusy(true)
     try {
       if (editState.id) {
         await updateCatatan.mutateAsync({
           id: editState.id,
-          data: { judul: editState.judul.trim(), isi: editState.isi.trim(), label: editState.label.trim(), warna: editState.warna },
+          data: { judul: editState.judul.trim(), isi: editState.isi.trim(), label: label.trim(), warna: editState.warna },
         })
       } else {
         await createCatatan.mutateAsync({
           judul: editState.judul.trim(),
           isi: editState.isi.trim(),
-          label: editState.label.trim(),
+          label: label.trim(),
           warna: editState.warna,
         })
       }
       setEditState(null)
+      setNewKat("")
     } finally {
       setIsBusy(false)
     }
