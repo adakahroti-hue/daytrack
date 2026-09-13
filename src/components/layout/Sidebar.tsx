@@ -34,7 +34,7 @@ import {
   Moon,
   GlassWater,
   Shield,
-  Lightbulb,
+
   Sparkles,
   ChevronDown,
   Menu,
@@ -107,6 +107,7 @@ const navigation: NavSection[] = [
     title: 'Tugas',
     icon: Calendar,
     items: [
+      { title: 'Waktu', href: '/jejak-waktu', icon: Timer },
       { title: 'Hari Ini', href: '/tugas/hari-ini', icon: Clock },
       { title: 'Semua', href: '/tugas/semua', icon: CalendarDays },
     ],
@@ -116,7 +117,7 @@ const navigation: NavSection[] = [
     icon: Wallet,
     items: [
       { title: 'Arus Kas', href: '/arus-kas', icon: DollarSign },
-      { title: 'Belanja', href: '/keranjang', icon: ShoppingCart },
+      { title: 'Wishlist', href: '/keranjang', icon: ShoppingCart },
     ],
   },
   {
@@ -164,16 +165,6 @@ const navigation: NavSection[] = [
       { title: 'Catatan', href: '/catatan', icon: StickyNote },
       { title: 'Playlist', href: '/kesenangan', icon: ListMusic },
     ],
-  },
-  {
-    title: 'Waktu',
-    icon: Timer,
-    href: '/jejak-waktu',
-  },
-  {
-    title: 'Bank Ide',
-    icon: Lightbulb,
-    href: '/tugas/bank-ide',
   },
 ]
 

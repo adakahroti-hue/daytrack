@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, X, Plus, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, BookMarked, Mosque, Heart, Moon, GlassWater, Shield, Smile, Lightbulb, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, Timer } from 'lucide-react'
+import { Menu, X, Plus, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, BookMarked, Mosque, Heart, Moon, GlassWater, Shield, Smile, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, Timer } from 'lucide-react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
@@ -79,7 +79,6 @@ const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   '/overview': LayoutDashboard,
   '/tugas/hari-ini': Clock,
   '/tugas/semua': CalendarDays,
-  '/tugas/bank-ide': Lightbulb,
   '/sholat': Mosque,
   '/quran': BookOpen,
   '/doa': Heart,
@@ -181,7 +180,6 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   // Halaman yang menampilkan shortcut tab eksternal di header
   const isWaktu = pathname.startsWith('/jejak-waktu')
-  const isBankIde = pathname === '/tugas/bank-ide'
   const isCatatan = pathname === '/catatan'
   const isAlquran = pathname === '/alquran'
   const showShortcuts =
@@ -190,7 +188,6 @@ export function Header({ onMenuClick }: HeaderProps) {
     isSemua ||
     isGoal ||
     isWaktu ||
-    isBankIde ||
     isCatatan ||
     isAlquran ||
     isKesenangan ||
@@ -262,11 +259,6 @@ export function Header({ onMenuClick }: HeaderProps) {
               <Timer className="h-4 w-4" />
             </Link>
           )}
-          {!isBankIde && (
-            <Link href="/tugas/bank-ide" title="Bank Ide" aria-label="Bank Ide" className="p-1.5 rounded-md text-slate-500 hover:text-yellow-600 hover:bg-white/60 transition-colors">
-              <Lightbulb className="h-4 w-4" />
-            </Link>
-          )}
           {!isKesenangan && (
             <Link href="/kesenangan" title="Playlist" aria-label="Playlist" className="p-1.5 rounded-md text-slate-500 hover:text-purple-600 hover:bg-white/60 transition-colors">
               <ListMusic className="h-4 w-4" />
@@ -282,11 +274,17 @@ export function Header({ onMenuClick }: HeaderProps) {
               <BookOpen className="h-4 w-4" />
             </Link>
           )}
+          {/* Rev: shortcut Mental Block — setelah Alquran */}
+          {!isMentalBlock && (
+            <Link href="/mental-block" title="Mental Block" aria-label="Mental Block" className="p-1.5 rounded-md text-slate-500 hover:text-rose-600 hover:bg-white/60 transition-colors">
+              <Brain className="h-4 w-4" />
+            </Link>
+          )}
         </div>
       )}
 
       {/* Page title & description — disembunyikan di tab yang punya header/konten sendiri */}
-      {!(isOverviewPage || isGoal || isWaktu || isHariIni || isSemua || isKeuangan || isMasalah || isMentalBlock || isMaafkan || isSholat || isQuran || isDoa || isSyukur || isSedekah || isMinumAir || isPmo || isTidur || isMakan || isKesenangan || isBankIde || isCatatan || isAlquran) && (
+      {!(isOverviewPage || isGoal || isWaktu || isHariIni || isSemua || isKeuangan || isMasalah || isMentalBlock || isMaafkan || isSholat || isQuran || isDoa || isSyukur || isSedekah || isMinumAir || isPmo || isTidur || isMakan || isKesenangan || isCatatan || isAlquran) && (
       <div className="flex-1 min-w-0">
         <h1 className="flex items-center gap-2 text-lg font-semibold truncate">
           {(() => {
@@ -509,18 +507,14 @@ export function Header({ onMenuClick }: HeaderProps) {
           </div>
         )}
 
-        {/* Catatan & Bank Ide — tombol Tambah pindah ke header kanan atas (rev mobile), warna cerah */}
-        {(isCatatan || isBankIde) && (
+        {/* Catatan — tombol Tambah: ikon bulat hitam + saja (rev) */}
+        {isCatatan && (
           <Button
             onClick={() => headerAddAction?.()}
-            className={cn(
-              'flex-shrink-0 h-9 w-9 sm:h-8 sm:w-auto sm:px-3 sm:gap-1 rounded-lg text-white shadow-sm',
-              isCatatan ? 'bg-slate-900 hover:bg-slate-800' : 'bg-amber-500 hover:bg-amber-600'
-            )}
-            aria-label={isCatatan ? 'Tambah Catatan' : 'Tambah Ide'}
+            className='flex-shrink-0 h-9 w-9 rounded-full text-white shadow-sm bg-slate-900 hover:bg-slate-800'
+            aria-label='Tambah Catatan'
           >
             <Plus className='h-4 w-4' />
-            <span className='hidden sm:inline text-xs font-semibold'>{isCatatan ? 'Tambah Catatan' : 'Tambah Ide'}</span>
           </Button>
         )}
 
@@ -535,51 +529,47 @@ export function Header({ onMenuClick }: HeaderProps) {
           </Button>
         )}
 
-        {/* Refleksi — tombol Tambah Refleksi di header kanan atas (rev mobile) */}
+        {/* Refleksi — tombol Tambah: ikon bulat hitam + saja (rev) */}
         {isMasalah && (
           <Button
             onClick={() => headerAddAction?.()}
-            className='flex-shrink-0 h-9 w-9 sm:h-8 sm:w-auto sm:px-3 sm:gap-1 rounded-lg text-white shadow-sm bg-slate-900 hover:bg-slate-800'
+            className='flex-shrink-0 h-9 w-9 rounded-full text-white shadow-sm bg-slate-900 hover:bg-slate-800'
             aria-label='Tambah Refleksi'
           >
             <Plus className='h-4 w-4' />
-            <span className='hidden sm:inline text-xs font-semibold'>Tambah Refleksi</span>
           </Button>
         )}
 
-        {/* Maafkan — tombol Tambah Kejadian di header kanan atas (rev mobile) */}
+        {/* Maafkan — tombol Tambah: ikon bulat hitam + saja (rev) */}
         {isMaafkan && (
           <Button
             onClick={() => headerAddAction?.()}
-            className='flex-shrink-0 h-9 w-9 sm:h-8 sm:w-auto sm:px-3 sm:gap-1 rounded-lg text-white shadow-sm bg-slate-900 hover:bg-slate-800'
+            className='flex-shrink-0 h-9 w-9 rounded-full text-white shadow-sm bg-slate-900 hover:bg-slate-800'
             aria-label='Tambah Kejadian Maafkan'
           >
             <Plus className='h-4 w-4' />
-            <span className='hidden sm:inline text-xs font-semibold'>Tambah</span>
           </Button>
         )}
 
-        {/* Mental Block — tombol Tambah Mental Block di header kanan atas (rev mobile) */}
+        {/* Mental Block — tombol Tambah: ikon bulat hitam + saja (rev) */}
         {isMentalBlock && (
           <Button
             onClick={() => headerAddAction?.()}
-            className='flex-shrink-0 h-9 w-9 sm:h-8 sm:w-auto sm:px-3 sm:gap-1 rounded-lg text-white shadow-sm bg-slate-900 hover:bg-slate-800'
+            className='flex-shrink-0 h-9 w-9 rounded-full text-white shadow-sm bg-slate-900 hover:bg-slate-800'
             aria-label='Tambah Mental Block'
           >
             <Plus className='h-4 w-4' />
-            <span className='hidden sm:inline text-xs font-semibold'>Tambah</span>
           </Button>
         )}
 
-        {/* Playlist (Kesenangan) — tombol Tambah di header kanan atas (rev mobile) */}
+        {/* Playlist (Kesenangan) — tombol Tambah: ikon bulat hitam + saja (rev) */}
         {isKesenangan && (
           <Button
             onClick={() => headerAddAction?.()}
-            className='flex-shrink-0 h-9 w-9 sm:h-8 sm:w-auto sm:px-3 sm:gap-1 rounded-lg text-white shadow-sm bg-slate-900 hover:bg-slate-800'
+            className='flex-shrink-0 h-9 w-9 rounded-full text-white shadow-sm bg-slate-900 hover:bg-slate-800'
             aria-label='Tambah Playlist'
           >
             <Plus className='h-4 w-4' />
-            <span className='hidden sm:inline text-xs font-semibold'>Tambah</span>
           </Button>
         )}
 
