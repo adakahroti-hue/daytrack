@@ -8,6 +8,7 @@ import {
   deleteGoal,
   createMilestone,
   updateMilestone,
+  reorderMilestones,
   deleteMilestone,
   createStep,
   updateStep,
@@ -126,6 +127,33 @@ export function useUpdateMilestone() {
     mutationFn: ({ id, data }: { id: string; data: { title?: string; description?: string; order?: number; is_completed?: boolean } }) =>
       updateMilestone(id, data),
     onMutate: ({ id, data }) => optimisticGoal(qc, (g) => patchMilestoneIn(g, id, data)),
+    onError: (_e, _v, ctx: any) => ctx?.(),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["goal"] }),
+  })
+}
+
+/* ── Reorder: geser milestone via renumber sekaligus (1 panggilan server) ── */
+export function useReorderMilestones() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (orderedIds: string[]) => reorderMilestones(orderedIds),
+    // Optimistic: urutkan ulang cache sesuai posisi baru SEKETIKA saat klik
+    onMutate: (orderedIds) => {
+      const key = ["goal", "active"]
+      const prev = qc.getQueryData<any>(key)
+      if (prev) {
+        const byId = new Map((prev.milestones ?? []).map((m: any) => [m.id, m]))
+        const next = orderedIds.map((id, i) => {
+          const m = byId.get(id)
+          return m ? { ...m, order: i } : m
+        }).filter(Boolean)
+        qc.setQueryData(key, { ...prev, milestones: next })
+      }
+      return () => {
+        if (prev) qc.setQueryData(key, prev)
+        else qc.removeQueries({ queryKey: key })
+      }
+    },
     onError: (_e, _v, ctx: any) => ctx?.(),
     onSettled: () => qc.invalidateQueries({ queryKey: ["goal"] }),
   })

@@ -10,7 +10,7 @@ import { GoalHeader } from "@/components/goal/GoalHeader"
 import { RoadmapList } from "@/components/goal/RoadmapList"
 import { AddMilestoneModal } from "@/components/goal/AddMilestoneModal"
 import { AddStepModal } from "@/components/goal/AddStepModal"
-import { useActiveGoal, useCreateGoal, useUpdateGoal, useDeleteGoal, useCreateMilestone, useUpdateMilestone, useDeleteMilestone, useCreateStep, useUpdateStep, useToggleStepCompleted, useDeleteStep } from "@/hooks/useGoal"
+import { useActiveGoal, useCreateGoal, useUpdateGoal, useDeleteGoal, useCreateMilestone, useUpdateMilestone, useReorderMilestones, useDeleteMilestone, useCreateStep, useUpdateStep, useToggleStepCompleted, useDeleteStep } from "@/hooks/useGoal"
 import { useHeaderControls } from "@/components/layout/HeaderControls"
 
 function errMsg(e: any) {
@@ -24,6 +24,7 @@ export default function GoalPage() {
   const deleteGoal = useDeleteGoal()
   const createMilestone = useCreateMilestone()
   const updateMilestone = useUpdateMilestone()
+  const reorderMilestones = useReorderMilestones()
   const deleteMilestone = useDeleteMilestone()
   const createStep = useCreateStep()
   const updateStep = useUpdateStep()
@@ -175,22 +176,20 @@ export default function GoalPage() {
           )}
           onEditMilestone={(m) => setMilestoneModal({ open: true, edit: m })}
           onMoveMilestone={(id, dir) => {
-            // Tukar order dengan milestone tetangga — optimistic + 2 update paralel
+            // Fix lambat: renumber lokal lalu 1 panggilan reorderMilestones (bukan 2 update bertukar order)
             const sorted = [...goal.milestones].sort((a, b) => a.order - b.order)
             const idx = sorted.findIndex((m) => m.id === id)
             if (idx < 0) return
             const target = dir === "up" ? idx - 1 : idx + 1
             if (target < 0 || target >= sorted.length) return
-            const a = sorted[idx]
-            const b = sorted[target]
-            ;[a, b].forEach((m) =>
-              updateMilestone.mutate(
-                { id: m.id, data: { order: m === a ? b.order : a.order } },
-                {
-                  onError: (e: any) =>
-                    import("sonner").then(({ toast }) => toast.error(`Gagal pindah milestone: ${errMsg(e)}`)),
-                }
-              )
+            const next = [...sorted]
+            ;[next[idx], next[target]] = [next[target], next[idx]]
+            reorderMilestones.mutate(
+              next.map((m) => m.id),
+              {
+                onError: (e: any) =>
+                  import("sonner").then(({ toast }) => toast.error(`Gagal pindah milestone: ${errMsg(e)}`)),
+              }
             )
           }}
           onDeleteMilestone={(id) => deleteMilestone.mutate(id, {

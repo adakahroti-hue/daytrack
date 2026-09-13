@@ -290,14 +290,60 @@ export async function createMilestone(formData: { goal_id: string; title: string
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
   const validated = milestoneSchema.parse(formData)
-  const { data: existingCount } = await supabase
+  // Fix: order = max+1 (bukan count) — count bisa bentrok kalau ada milestone yang dihapus
+  const { data: existing } = await supabase
     .from("goal_milestone")
-    .select("id")
+    .select("order")
     .eq("goal_id", validated.goal_id)
-  const order = (existingCount?.length || 0)
+    .order("order", { ascending: false })
+    .limit(1)
+  const order = existing && existing.length > 0 ? (existing[0].order as number) + 1 : 0
   const { error } = await supabase
     .from("goal_milestone")
     .insert({ goal_id: validated.goal_id, title: validated.title, description: validated.description || "", order })
+  if (error) throw new Error(error.message)
+  revalidatePath("/goal")
+  return { error: null }
+}
+
+/* ── Reorder milestone: geser 1 panggilan server, renumber 0..n-1 sekaligus ── */
+export async function reorderMilestones(orderedIds: string[]) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+  if (!Array.isArray(orderedIds) || orderedIds.length === 0) return { error: null }
+
+  // Ambil goal milik milestone pertama (verifikasi kepemilikan) + semua id goal ini
+  const { data: first } = await supabase
+    .from("goal_milestone")
+    .select("goal_id")
+    .eq("id", orderedIds[0])
+    .single()
+  if (!first) throw new Error("Milestone tidak ditemukan")
+  const goalId = first.goal_id as string
+  const { data: goal } = await supabase
+    .from("goal")
+    .select("id")
+    .eq("id", goalId)
+    .eq("user_id", user.id)
+    .single()
+  if (!goal) throw new Error("Goal tidak ditemukan")
+
+  // Verifikasi orderedIds = persis himpunan id milestone goal ini
+  const { data: all } = await supabase
+    .from("goal_milestone")
+    .select("id")
+    .eq("goal_id", goalId)
+  const dbIds = new Set((all ?? []).map((m: any) => m.id))
+  if (orderedIds.length !== dbIds.size || orderedIds.some((id) => !dbIds.has(id))) {
+    throw new Error("Daftar milestone tidak sinkron — muat ulang lalu coba lagi")
+  }
+
+  // Renumber sekaligus: tiap id dapat order sesuai posisi di array
+  const updates = orderedIds.map((id, i) => ({ id, order: i }))
+  const { error } = await supabase
+    .from("goal_milestone")
+    .upsert(updates, { onConflict: "id" })
   if (error) throw new Error(error.message)
   revalidatePath("/goal")
   return { error: null }
