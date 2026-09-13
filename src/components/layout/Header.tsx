@@ -259,6 +259,12 @@ export function Header({ onMenuClick }: HeaderProps) {
               <Timer className="h-4 w-4" />
             </Link>
           )}
+          {/* Rev: shortcut Goal — di sebelah kanan shortcut Waktu */}
+          {!isGoal && (
+            <Link href="/goal" title="Goal" aria-label="Goal" className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 hover:bg-white/60 transition-colors">
+              <Target className="h-4 w-4" />
+            </Link>
+          )}
           {!isKesenangan && (
             <Link href="/kesenangan" title="Playlist" aria-label="Playlist" className="p-1.5 rounded-md text-slate-500 hover:text-purple-600 hover:bg-white/60 transition-colors">
               <ListMusic className="h-4 w-4" />
