@@ -189,9 +189,10 @@ export default function KesenanganPage() {
                         <div className="space-y-2">
                           <div className="flex items-start justify-between gap-2">
                             <p className="text-sm text-slate-800 whitespace-normal break-words leading-snug flex-1">{entry.kesenangan}</p>
-                            <Button size="icon" aria-label="Salin teks kesenangan" onClick={() => handleCopy(entry)}
-                              className={cn('h-6 w-6 p-0 shrink-0', copiedId === entry.id ? 'bg-purple-100 text-purple-700 border border-purple-200' : 'bg-purple-600 hover:bg-purple-700 text-white')}>
-                              {copiedId === entry.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                            {/* Rev: tukar posisi — Hapus di baris atas (sebelah teks) */}
+                            <Button size="icon" aria-label="Hapus kesenangan" onClick={() => handleDeleteEntry(entry.id)}
+                              className="h-6 w-6 p-0 shrink-0 bg-red-600 hover:bg-red-700 text-white">
+                              <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
                           <div className="flex items-center justify-between gap-2 pt-0.5">
@@ -205,13 +206,14 @@ export default function KesenanganPage() {
                               </button>
                             </div>
                             <div className="flex items-center gap-1 shrink-0">
+                              {/* Rev: tukar posisi — Salin & Edit di baris bawah */}
                               <Button size="icon" aria-label="Edit kesenangan" onClick={() => openEdit(entry)}
                                 className="h-6 w-6 p-0 bg-slate-600 hover:bg-slate-700 text-white">
                                 <Pencil className="h-3 w-3" />
                               </Button>
-                              <Button size="icon" aria-label="Hapus kesenangan" onClick={() => handleDeleteEntry(entry.id)}
-                                className="h-6 w-6 p-0 bg-red-600 hover:bg-red-700 text-white">
-                                <Trash2 className="h-3 w-3" />
+                              <Button size="icon" aria-label="Salin teks kesenangan" onClick={() => handleCopy(entry)}
+                                className={cn('h-6 w-6 p-0 shrink-0', copiedId === entry.id ? 'bg-purple-100 text-purple-700 border border-purple-200' : 'bg-purple-600 hover:bg-purple-700 text-white')}>
+                                {copiedId === entry.id ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                               </Button>
                             </div>
                           </div>

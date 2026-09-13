@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, X, Plus, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, BookMarked, Mosque, Heart, Moon, GlassWater, Shield, Smile, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, Timer, Search } from 'lucide-react'
+import { Menu, X, Plus, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, BookMarked, Mosque, Heart, Moon, GlassWater, Shield, Smile, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, Timer, Search, ListChecks } from 'lucide-react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
@@ -568,28 +568,37 @@ export function Header({ onMenuClick }: HeaderProps) {
           </Button>
         )}
 
-        {/* Hari Ini — tombol Pilih Tugas di header kanan atas (rev mobile) */}
+        {/* Hari Ini — tombol Pilih Tugas: ikon saja, bulat hitam (rev mobile) */}
         {isHariIni && !headerSelectActive && (
           <Button
-            variant="outline"
             onClick={() => headerSelectAction?.()}
             disabled={headerSelectDisabled}
-            className='flex-shrink-0 h-9 sm:h-8 sm:px-3 rounded-lg text-xs font-semibold'
+            className='flex-shrink-0 h-9 w-9 rounded-full text-white shadow-sm bg-slate-900 hover:bg-slate-800'
             aria-label='Pilih Tugas'
           >
-            Pilih Tugas
+            <ListChecks className='h-4 w-4' />
           </Button>
         )}
 
-        {/* Semua — tombol Tambah Tugas di header kanan atas (rev mobile) */}
+        {/* Semua — tombol Tambah Tugas: ikon bulat hitam saja (rev mobile) */}
         {isSemua && (
           <Button
             onClick={() => headerAddAction?.()}
-            className='flex-shrink-0 h-9 w-9 sm:h-8 sm:w-auto sm:px-3 sm:gap-1 rounded-lg text-white shadow-sm bg-slate-900 hover:bg-slate-800'
+            className='flex-shrink-0 h-9 w-9 rounded-full text-white shadow-sm bg-slate-900 hover:bg-slate-800'
             aria-label='Tambah Tugas'
           >
             <Plus className='h-4 w-4' />
-            <span className='hidden sm:inline text-xs font-semibold'>Tambah Tugas</span>
+          </Button>
+        )}
+
+        {/* Wishlist (Keranjang) — tombol Tambah: ikon bulat hitam saja (rev) */}
+        {isKeranjang && (
+          <Button
+            onClick={() => headerAddAction?.()}
+            className='flex-shrink-0 h-9 w-9 rounded-full text-white shadow-sm bg-slate-900 hover:bg-slate-800'
+            aria-label='Tambah Wishlist'
+          >
+            <Plus className='h-4 w-4' />
           </Button>
         )}
 
@@ -597,15 +606,16 @@ export function Header({ onMenuClick }: HeaderProps) {
         {isAlquran && (
           <div className="flex flex-shrink-0">
             <div className="flex items-center gap-1 px-2 py-1 bg-muted/50 rounded-lg border border-border">
+              {/* Rev: urutan mode kiri→kanan: Explore, Mengaji, Pilih Surah */}
               <Button
-                variant={alquranMode === 'pilih' ? 'default' : 'ghost'}
+                variant={alquranMode === 'explore' ? 'default' : 'ghost'}
                 size="sm"
                 className="h-8 px-2 gap-1 justify-center"
-                onClick={() => setAlquranMode('pilih')}
-                aria-label="Pilih Surah"
+                onClick={() => setAlquranMode('explore')}
+                aria-label="Explore Alquran"
               >
-                <BookOpen className="h-3.5 w-3.5 flex-shrink-0" />
-                <span className="hidden sm:inline truncate">Pilih Surah</span>
+                <Search className="h-3.5 w-3.5 flex-shrink-0" />
+                <span className="hidden sm:inline truncate">Explore</span>
               </Button>
               <Button
                 variant={alquranMode === 'mengaji' ? 'default' : 'ghost'}
@@ -618,14 +628,14 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <span className="hidden sm:inline truncate">Mode Mengaji</span>
               </Button>
               <Button
-                variant={alquranMode === 'explore' ? 'default' : 'ghost'}
+                variant={alquranMode === 'pilih' ? 'default' : 'ghost'}
                 size="sm"
                 className="h-8 px-2 gap-1 justify-center"
-                onClick={() => setAlquranMode('explore')}
-                aria-label="Explore Alquran"
+                onClick={() => setAlquranMode('pilih')}
+                aria-label="Pilih Surah"
               >
-                <Search className="h-3.5 w-3.5 flex-shrink-0" />
-                <span className="hidden sm:inline truncate">Explore</span>
+                <BookOpen className="h-3.5 w-3.5 flex-shrink-0" />
+                <span className="hidden sm:inline truncate">Pilih Surah</span>
               </Button>
             </div>
           </div>

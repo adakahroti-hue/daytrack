@@ -1,7 +1,7 @@
 "use client"
 
 
-import { Fragment, useMemo, useState } from "react"
+import { Fragment, useEffect, useMemo, useRef, useState } from "react"
 import {
   format,
   startOfWeek,
@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { formatRupiah, parseRupiah } from "@/lib/utils"
 import { useTableLock } from "@/components/ui/table-lock"
+import { useHeaderControls } from "@/components/layout/HeaderControls"
 import { useKeranjangAll, useCreateKeranjang, useDeleteKeranjang, useBeliKeranjang, useUpdateKeranjang } from "@/hooks/useKeranjang"
 import { useRealtime } from "@/hooks/useRealtime"
 
@@ -66,6 +67,14 @@ export default function KeranjangPage() {
   // Rev: Belanja tidak terpengaruh filter waktu & navigasi tanggal — selalu fetch all
   const todayStr = format(new Date(), "yyyy-MM-dd")
 
+  // Rev: tombol "Tambah Wishlist" pindah ke header kanan atas — registrasi handler via context
+  const { setHeaderAddAction } = useHeaderControls()
+  const openAddRef = useRef<() => void>(() => {})
+  useEffect(() => {
+    setHeaderAddAction(() => () => openAddRef.current())
+    return () => setHeaderAddAction(null)
+  }, [setHeaderAddAction])
+
   const { data: allData = [], isLoading: isLoading, error: error } = useKeranjangAll()
   const logs = allData
   useRealtime({
@@ -100,6 +109,8 @@ export default function KeranjangPage() {
     setHargaInput("")
     setEditState({ id: null, tanggal: todayStr, nama_barang: "", harga: 0, dompet: "kebutuhan" })
   }
+  // Rev: tombol Tambah pindah ke header — handler diikat ke ref agar selalu segar
+  openAddRef.current = openAdd
 
   const openEdit = (entry: KeranjangEntry) => {
     setHargaInput(entry.harga > 0 ? formatRupiah(entry.harga) : "")
@@ -289,9 +300,7 @@ export default function KeranjangPage() {
       </div>
       <div className="hidden sm:block">{lockControl}</div>
 
-      <Button onClick={openAdd} size="icon" aria-label="Tambah Keranjang" className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-white shadow-lg">
-        <Plus className="h-6 w-6" />
-      </Button>
+      {/* Rev: tombol Tambah Wishlist pindah ke header kanan atas — FAB dihapus */}
 
       <Dialog open={!!editState} onOpenChange={(open) => !open && setEditState(null)}>
         <DialogContent className="max-w-[92vw] sm:max-w-md">

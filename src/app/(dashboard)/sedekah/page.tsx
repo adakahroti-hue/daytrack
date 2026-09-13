@@ -201,17 +201,17 @@ export default function SedekahPage() {
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0 flex-1">
                               <span className="text-sm font-semibold text-slate-800">{dateDisplay}</span>
-                              <span className={cn('ml-2 shrink-0 inline-block px-1.5 py-0.5 rounded-full text-[11px] border font-medium', DAY_BADGE_COLORS[dayName] || 'bg-slate-100 text-slate-700 border-slate-200')}>{dayName}</span>
+                              <span className={cn('ml-1.5 shrink-0 inline-block px-1.5 py-0.5 rounded-full text-[11px] border font-medium', DAY_BADGE_COLORS[dayName] || 'bg-slate-100 text-slate-700 border-slate-200')}>{dayName}</span>
                               {isDone ? (
-                                <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2 py-0.5 text-[11px] font-medium border border-green-200">
+                                <span className="ml-1.5 inline-flex items-center gap-1 rounded-full bg-green-100 text-green-700 px-2 py-0.5 text-[11px] font-medium border border-green-200">
                                   <Check className="h-3 w-3" /> Sudah
                                 </span>
                               ) : isMissed ? (
-                                <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-red-50 text-red-600 px-2 py-0.5 text-[11px] font-medium border border-red-200">
+                                <span className="ml-1.5 inline-flex items-center gap-1 rounded-full bg-red-50 text-red-600 px-2 py-0.5 text-[11px] font-medium border border-red-200">
                                   <X className="h-3 w-3" /> Tidak
                                 </span>
                               ) : (
-                                <span className="ml-2 text-slate-400 text-[11px]">-</span>
+                                <span className="ml-1.5 text-slate-400 text-[11px]">-</span>
                               )}
                               {isMissed && entry?.alasan_tidak && (
                                 <div className="mt-1 text-[11px] text-slate-500">{ALASAN_LABELS[entry.alasan_tidak] ?? entry.alasan_tidak}</div>
