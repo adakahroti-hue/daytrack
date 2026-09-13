@@ -254,15 +254,15 @@ export function Header({ onMenuClick }: HeaderProps) {
       {/* Shortcut tab eksternal — paling kiri (setelah hamburger, sebelum judul) */}
       {showShortcuts && (
         <div className="flex items-center gap-1 px-1.5 py-1 bg-muted/50 rounded-lg border border-border shrink-0">
-          {!isWaktu && (
-            <Link href="/jejak-waktu" title="Waktu" aria-label="Waktu" className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 hover:bg-white/60 transition-colors">
-              <Timer className="h-4 w-4" />
-            </Link>
-          )}
-          {/* Rev: shortcut Goal — di sebelah kanan shortcut Waktu */}
+          {/* Rev: shortcut Goal & Waktu — posisi ditukar (Goal dulu, lalu Waktu) */}
           {!isGoal && (
             <Link href="/goal" title="Goal" aria-label="Goal" className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 hover:bg-white/60 transition-colors">
               <Target className="h-4 w-4" />
+            </Link>
+          )}
+          {!isWaktu && (
+            <Link href="/jejak-waktu" title="Waktu" aria-label="Waktu" className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 hover:bg-white/60 transition-colors">
+              <Timer className="h-4 w-4" />
             </Link>
           )}
           {!isKesenangan && (

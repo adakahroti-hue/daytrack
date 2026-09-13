@@ -1,6 +1,7 @@
 import { useState } from "react"
-import { ChevronDown, ChevronRight, Pencil, Trash2, Plus, CheckCircle2, Circle, ArrowUp, ArrowDown } from "lucide-react"
+import { ChevronDown, ChevronRight, Pencil, Trash2, Plus, ArrowUp, ArrowDown, MoreVertical, Circle, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { StepItem } from "./StepItem"
 
 export function MilestoneItem({
@@ -62,6 +63,7 @@ export function MilestoneItem({
         >
           {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         </button>
+        {/* Rev: nomor = sekaligus tanda centang (satu bulatan saja) */}
         <button
           onClick={() => {
             if (!checked && onToggleAllSteps && total > 0 && !stepsAllDone) {
@@ -71,17 +73,14 @@ export function MilestoneItem({
             onToggleMilestone?.(milestone.id, !checked)
           }}
           className={cn(
-            "shrink-0 hover:scale-110 transition-transform",
-            checked ? "text-slate-900" : "text-slate-300"
+            "shrink-0 flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold transition-colors",
+            checked ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
           )}
           aria-label={checked ? "Buka centang milestone" : "Tandai milestone selesai"}
           title={checked ? "Klik untuk buka centang" : "Klik untuk tandai selesai"}
         >
-          {checked ? <CheckCircle2 className="h-5 w-5" /> : <Circle className="h-5 w-5" />}
+          {checked ? <Check className="h-3.5 w-3.5" /> : index + 1}
         </button>
-        <span className="shrink-0 flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-[11px] font-bold text-white tabular-nums">
-          {index + 1}
-        </span>
         <div className="min-w-0 flex-1">
           <p className={cn("text-sm font-semibold break-words leading-snug", checked ? "text-slate-400 line-through" : "text-slate-900")}>
             {milestone.title}
@@ -90,41 +89,48 @@ export function MilestoneItem({
             <p className="text-xs text-slate-500 line-clamp-1">{milestone.description}</p>
           )}
         </div>
-        <span className="text-xs font-semibold text-slate-700 tabular-nums shrink-0">{pct}%</span>
-        <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
-          {onMove && (
-            <>
+        {/* Rev: aksi (geser/edit/hapus) lewat menu titik tiga — kanan atas card */}
+        <div className="flex items-center gap-0.5 shrink-0">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
               <button
-                onClick={() => onMove(milestone.id, "up")}
+                className="p-1.5 sm:p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                aria-label="Menu milestone"
+              >
+                <MoreVertical className="h-4 w-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem
                 disabled={!canMoveUp}
-                className="p-1.5 sm:p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-25 disabled:hover:bg-transparent disabled:cursor-not-allowed"
-                aria-label="Pindah ke atas"
-                title="Tukar dengan milestone di atas"
+                onClick={() => onMove?.(milestone.id, "up")}
               >
-                <ArrowUp className="h-3.5 w-3.5" />
-              </button>
-              <button
-                onClick={() => onMove(milestone.id, "down")}
+                <ArrowUp className="h-3.5 w-3.5 mr-2" /> Naik ke atas
+              </DropdownMenuItem>
+              <DropdownMenuItem
                 disabled={!canMoveDown}
-                className="p-1.5 sm:p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-25 disabled:hover:bg-transparent disabled:cursor-not-allowed"
-                aria-label="Pindah ke bawah"
-                title="Tukar dengan milestone di bawah"
+                onClick={() => onMove?.(milestone.id, "down")}
               >
-                <ArrowDown className="h-3.5 w-3.5" />
-              </button>
-            </>
-          )}
-          <button onClick={() => onEditMilestone(milestone)} aria-label="Edit milestone" className="p-1.5 sm:p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100">
-            <Pencil className="h-3.5 w-3.5" />
-          </button>
-          <button onClick={() => onDeleteMilestone(milestone.id)} aria-label="Hapus milestone" className="p-1.5 sm:p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-slate-100">
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
+                <ArrowDown className="h-3.5 w-3.5 mr-2" /> Turun ke bawah
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => onEditMilestone(milestone)}>
+                <Pencil className="h-3.5 w-3.5 mr-2" /> Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onDeleteMilestone(milestone.id)} className="text-rose-600 focus:text-rose-600">
+                <Trash2 className="h-3.5 w-3.5 mr-2" /> Hapus
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
+      {/* Rev: persentase sebaris dengan bar progress */}
       <div className="px-2.5 pb-2 sm:px-3 sm:pb-2">
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-          <div className="h-full rounded-full bg-slate-900 transition-all duration-700" style={{ width: `${pct}%` }} />
+        <div className="flex items-center gap-2">
+          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+            <div className="h-full rounded-full bg-slate-900 transition-all duration-700" style={{ width: `${pct}%` }} />
+          </div>
+          <span className="text-xs font-semibold text-slate-700 tabular-nums shrink-0">{pct}%</span>
         </div>
       </div>
       {open && (
