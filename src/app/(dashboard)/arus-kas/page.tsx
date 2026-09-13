@@ -330,13 +330,14 @@ export default function ArusKasPage() {
     <div className="max-w-[1440px] mx-auto py-4 sm:py-6 lg:pt-2 space-y-4">
       {/* Rev mobile: padding kiri-kanan mobile dihapus (main layout sudah p-4) */}
       {/* Saldo + Alokasi Uang Masuk sebaris */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 items-stretch">
+      {/* Rev mobile: card alokasi sebaris (grid-cols-4), teks tak terpotong */}
+      <div className="grid grid-cols-4 sm:grid-cols-3 lg:grid-cols-7 gap-2 sm:gap-3 items-stretch">
         {alokasi.map((item) => (
-          <div key={item.label} className={cn("rounded-xl border bg-white p-4", TABLE_BORDER)}>
-            <p className={cn("text-xs font-semibold uppercase tracking-wide flex items-center gap-1", item.text)}>
-              {item.label} <span className="text-[10px] font-medium tabular-nums">({item.persen}%)</span>
+          <div key={item.label} className={cn("rounded-xl border bg-white p-2 sm:p-4", TABLE_BORDER)}>
+            <p className={cn("text-[10px] sm:text-xs font-semibold uppercase tracking-wide flex items-center gap-0.5 sm:gap-1 break-words", item.text)}>
+              {item.label} <span className="text-[9px] sm:text-[10px] font-medium tabular-nums">({item.persen}%)</span>
             </p>
-            <p className="mt-1 text-lg font-bold text-slate-800 tabular-nums">{formatRupiah(item.nilai)}</p>
+            <p className="mt-1 text-[11px] sm:text-lg font-bold text-slate-800 tabular-nums break-words">{formatRupiah(item.nilai)}</p>
           </div>
         ))}
         {/* Card Paylater (total utang paylater di periode) */}
@@ -375,10 +376,11 @@ export default function ArusKasPage() {
       </div>
 
       {/* Filter */}
-      <div className="flex flex-wrap items-center gap-2">
+      {/* Rev mobile: 3 tombol filter sebaris satu baris di mobile */}
+      <div className="flex flex-nowrap items-center gap-2 overflow-x-auto scrollbar-none">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1.5">
+            <Button variant="outline" size="sm" className="gap-1.5 shrink-0">
               <ArrowUpRight className="h-3.5 w-3.5 text-green-600" />
               {filterKategori === "semua" ? "Semua Kategori" : filterKategori === "uang_masuk" ? "Uang Masuk" : "Uang Keluar"}
             </Button>
@@ -391,7 +393,7 @@ export default function ArusKasPage() {
         </DropdownMenu>
 
         {/* Centang semua + hapus terpilih */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Button
             variant="outline"
             size="sm"
@@ -418,7 +420,7 @@ export default function ArusKasPage() {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1.5">
+            <Button variant="outline" size="sm" className="gap-1.5 shrink-0">
               <Wallet className="h-3.5 w-3.5 text-indigo-500" />
               {filterDompet === "semua" ? "Semua Dompet" : DOMPET_OPTIONS.find(d => d.value === filterDompet)?.label}
             </Button>
@@ -483,22 +485,20 @@ export default function ArusKasPage() {
                 const isMasuk = entry.kategori === "uang_masuk"
                 return (
                   <Fragment key={entry.id}>
-                    {/* ── Mobile: kartu ringkas (sm:hidden) ── */}
+                    {/* ── Mobile: kartu ringkas (sm:hidden) — centang + nama + nominal sebaris ── */}
                     <tr className={cn("sm:hidden border-b", TABLE_BORDER, rowIdx % 2 === 0 ? "bg-white" : "bg-slate-50/30")}>
-                      <td className={cn("px-2 py-2 align-top", TABLE_BORDER)}>
-                        <button type="button" onClick={() => toggleSelectOne(entry.id)} aria-label="Centang" className="inline-flex items-center justify-center pt-0.5">
-                          {selectedIds.has(entry.id) ? <CheckSquare className="h-4 w-4 text-slate-700" /> : <Square className="h-4 w-4 text-slate-400" />}
-                        </button>
-                      </td>
-                      <td colSpan={8} className={cn("px-2.5 py-2.5", TABLE_BORDER)}>
+                      <td colSpan={9} className={cn("px-2.5 py-2.5", TABLE_BORDER)}>
                         <div className="space-y-1.5">
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="min-w-0" />
+                          {/* Rev mobile: centang + nama + nominal dalam satu baris */}
+                          <div className="flex items-center gap-2">
+                            <button type="button" onClick={() => toggleSelectOne(entry.id)} aria-label="Centang" className="shrink-0 inline-flex items-center justify-center">
+                              {selectedIds.has(entry.id) ? <CheckSquare className="h-4 w-4 text-slate-700" /> : <Square className="h-4 w-4 text-slate-400" />}
+                            </button>
+                            <p className="min-w-0 flex-1 text-[13px] text-slate-800 whitespace-normal break-words leading-tight">{entry.alasan || "-"}</p>
                             <span className={cn("font-bold tabular-nums text-sm shrink-0", isMasuk ? "text-green-700" : "text-red-600")}>
                               {isMasuk ? "+" : "−"}{formatRupiah(entry.nominal).replace("Rp ", "")}
                             </span>
                           </div>
-                          <p className="text-[13px] text-slate-800 whitespace-normal break-words leading-tight">{entry.alasan || "-"}</p>
                           {!isMasuk && (entry.dompet || entry.klasifikasi) && (
                             <p className="text-[11px] text-slate-500">
                               {entry.dompet && <>Dompet: {DOMPET_OPTIONS.find(d => d.value === entry.dompet)?.label}</>}

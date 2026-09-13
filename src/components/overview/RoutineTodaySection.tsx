@@ -391,15 +391,15 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {/* Keuangan — posisi tukar dengan Refleksi di desktop (rev desktop); order mengikuti grid */}
         <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700" hideIcon arrowAdjacent className="order-5">
-          {/* Mobile: grid 2×2 (Saldo+Pokok atas, Reward+Tabung bawah); Desktop: layout lama */}
+          {/* Rev mobile: grid 2×2 (Saldo+Pokok atas, Reward+Tabung bawah); Desktop: layout lama */}
           <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 sm:flex sm:items-stretch sm:gap-4">
             {/* Saldo — kiri, besar */}
             <div className="sm:shrink-0 sm:pr-4 sm:border-r border-slate-100 flex flex-col justify-center">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Saldo</p>
               <p className="mt-0.5 text-lg font-bold text-slate-900 tabular-nums leading-none break-words">{formatRupiah(akSaldo)}</p>
             </div>
-            {/* 4 nilai — mobile tersusun vertikal, desktop 1 baris */}
-            <div className="grid grid-cols-1 gap-x-3 gap-y-1.5 sm:grid-cols-4 sm:gap-x-3 sm:gap-y-0 sm:flex-1 sm:min-w-0">
+            {/* Rev mobile: 4 nilai sebaris satu baris, tanpa teks terpotong */}
+            <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-4 sm:gap-x-3 sm:gap-y-0 sm:flex-1 sm:min-w-0">
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Pokok</p>
                 <p className="text-sm font-bold text-slate-900 tabular-nums break-words">{formatRupiah(akKebutuhanSisa)}</p>
@@ -424,9 +424,10 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-purple-500" title="Hoki" hideIcon className="order-2">
           <div className="mt-3 px-2 sm:px-3 py-1 grid grid-cols-3 gap-2 sm:gap-3">
             {/* Bersyukur */}
-            <div className="relative flex items-center gap-2 text-left">
+            {/* Rev mobile: pie di atas teks (mobile saja) */}
+            <div className="relative text-left flex flex-col items-center gap-1.5 sm:flex-row sm:items-center sm:gap-2">
               <XyPie value={checklist[0].days} target={daysElapsed} color="#111827" size={52} percentLabel percentOnSlice />
-              <div className="min-w-0">
+              <div className="min-w-0 text-center sm:text-left">
                 <p className="text-xs font-medium text-slate-700">Bersyukur <span className="text-slate-900 tabular-nums">{checklist[0].days}/{daysElapsed}</span></p>
               </div>
               <Link href="/syukur" aria-label="Buka tab Syukur" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
@@ -434,9 +435,9 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               </Link>
             </div>
             {/* Doakan */}
-            <div className="relative flex items-center gap-2 text-left border-l border-slate-100 pl-3 sm:pl-4">
+            <div className="relative text-left flex flex-col items-center gap-1.5 sm:flex-row sm:items-center sm:gap-2 sm:border-l sm:border-slate-100 sm:pl-3 sm:pl-4">
               <XyPie value={checklist[1].days} target={daysElapsed} color="#111827" size={52} percentLabel percentOnSlice />
-              <div className="min-w-0">
+              <div className="min-w-0 text-center sm:text-left">
                 <p className="text-xs font-medium text-slate-700">Doakan <span className="text-slate-900 tabular-nums">{checklist[1].days}/{daysElapsed}</span></p>
               </div>
               <Link href="/doa" aria-label="Buka tab Doa" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
@@ -444,9 +445,9 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
               </Link>
             </div>
             {/* Sedekah */}
-            <div className="relative flex items-center gap-2 text-left border-l border-slate-100 pl-3 sm:pl-4">
+            <div className="relative text-left flex flex-col items-center gap-1.5 sm:flex-row sm:items-center sm:gap-2 sm:border-l sm:border-slate-100 sm:pl-3 sm:pl-4">
               <XyPie value={sedekahCount} target={daysElapsed} color="#111827" size={52} percentLabel percentOnSlice />
-              <div className="min-w-0">
+              <div className="min-w-0 text-center sm:text-left">
                 <p className="text-xs font-medium text-slate-700">Sedekah <span className="text-slate-900 tabular-nums">{sedekahCount}/{daysElapsed}</span></p>
               </div>
               <Link href="/sedekah" aria-label="Buka tab Sedekah" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
