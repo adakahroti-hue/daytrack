@@ -471,7 +471,7 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
         </RoutineCard>
 
         {/* Refleksi — list semua (tak dipengaruhi filter) */}
-        <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-slate-700" title="Refleksi" href="/masalah" linkColor="text-slate-700 hover:text-slate-900" className="col-span-1 order-1" hideIcon>
+        <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-slate-700" title="Refleksi" href="/masalah" linkColor="text-slate-700 hover:text-slate-900" className="col-span-1 order-1" hideIcon arrowAdjacent>
             {refleksiList.length > 0 ? (
               <ul className="space-y-1.5 max-h-[7.5rem] overflow-y-auto pr-1">
                 {refleksiList.map((r) => (
