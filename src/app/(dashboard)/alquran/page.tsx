@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useMemo } from "react"
 import { BookOpen, ArrowLeft, Search, BookMarked, ChevronRight, ChevronLeft, Bookmark, ChevronDown, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAlquranBookmark } from "@/hooks/useAlquranBookmark"
@@ -65,6 +65,13 @@ export default function AlquranPage() {
   const [query, setQuery] = useState("")
 
   const { alquranMode: mode, setAlquranMode: setMode } = useHeaderControls()
+
+  // Mode explore state
+  const [exploreQuery, setExploreQuery] = useState("")
+  const [exploreIndex, setExploreIndex] = useState<{ surah: number; namaLatin: string; ayat: number; teksIndonesia: string; teksArab: string }[] | null>(null)
+  const [exploreProgress, setExploreProgress] = useState(0)
+  const [exploreLoading, setExploreLoading] = useState(false)
+  const [exploreTarget, setExploreTarget] = useState<{ surah: number; ayat: number } | null>(null)
 
   // Mode mengaji state
   const [curSurah, setCurSurah] = useState(1)
@@ -228,12 +235,138 @@ export default function AlquranPage() {
       s.nomor.toString() === query
   )
 
+  // ── MODE EXPLORE ──────────────────────────────────────────────
+  // Preload semua terjemahan ayat (114 surah) sekali per sesi, lalu indeks di memori.
+  // Fetch pakai API proxy /api/alquran/[surah] (revalidate 24 jam di server).
+  const exploreLoaded = useRef(false)
+  const exploreAbort = useRef(false)
+  useEffect(() => {
+    if (mode !== "explore" || exploreLoaded.current || loadingList || !list.length) return
+    // Sesi sama: indeks sudah ada — jangan muat ulang
+    if (exploreIndex) return
+    exploreLoaded.current = true
+    exploreAbort.current = false
+    setExploreLoading(true)
+    setExploreProgress(0)
+
+    const idx: { surah: number; namaLatin: string; ayat: number; teksIndonesia: string; teksArab: string }[] = []
+    const CONCURRENCY = 8
+    let done = 0
+
+    const fetchSurah = async (nomor: number) => {
+      const cached = cacheGet<SurahDetail>(`alquran-detail-v1-${nomor}`)
+      if (cached?.ayat?.length) {
+        for (const a of cached.ayat) {
+          idx.push({ surah: nomor, namaLatin: cached.namaLatin, ayat: a.nomorAyat, teksIndonesia: a.teksIndonesia, teksArab: a.teksArab })
+        }
+      } else {
+        const j = await fetch(`/api/alquran/${nomor}`).then((r) => r.json()).catch(() => null)
+        if (j?.data) {
+          cacheSet(`alquran-detail-v1-${nomor}`, j.data)
+          for (const a of j.data.ayat || []) {
+            idx.push({ surah: nomor, namaLatin: j.data.namaLatin, ayat: a.nomorAyat, teksIndonesia: a.teksIndonesia, teksArab: a.teksArab })
+          }
+        }
+      }
+      done++
+      setExploreProgress(Math.round((done / TOTAL_SURAH) * 100))
+    }
+
+    const run = async () => {
+      const queue = Array.from({ length: TOTAL_SURAH }, (_, i) => i + 1)
+      let cursor = 0
+      const workers = Array.from({ length: CONCURRENCY }, async () => {
+        while (cursor < queue.length && !exploreAbort.current) {
+          const n = queue[cursor++]
+          await fetchSurah(n)
+        }
+      })
+      await Promise.all(workers)
+      if (!exploreAbort.current) {
+        idx.sort((a, b) => a.surah - b.surah || a.ayat - b.ayat)
+        setExploreIndex(idx)
+      }
+      setExploreLoading(false)
+    }
+    run()
+    return () => { exploreAbort.current = true }
+  }, [mode, loadingList, list.length, exploreIndex])
+
+  const exploreResults = useMemo(() => {
+    if (!exploreIndex) return []
+    const q = exploreQuery.trim().toLowerCase()
+    if (q.length < 3) return []
+    return exploreIndex
+      .filter((e) => e.teksIndonesia.toLowerCase().includes(q))
+      .slice(0, 100)
+  }, [exploreIndex, exploreQuery])
+
+  // Buka hasil explore: muat surah via mode mengaji di posisi ayat itu
+  const openExploreResult = async (surah: number, ayat: number) => {
+    setExploreTarget({ surah, ayat })
+    setMode("mengaji")
+    await loadSurahFull(surah, ayat)
+  }
+
   const chunk = fullAyat.slice(curAyat - 1, curAyat - 1 + PAGE)
 
   return (
     <div className="space-y-4 sm:p-6 lg:pt-2">
       {/* Rev mobile: padding kiri-kanan dihapus di mobile — hilangkan whitespace sisi; desktop tetap */}
-      {mode === "pilih" ? (
+      {mode === "explore" ? (
+        // ── MODE EXPLORE: cari ayat berdasarkan kata kunci terjemahan ──
+        <div className="space-y-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <input
+              value={exploreQuery}
+              onChange={(e) => setExploreQuery(e.target.value)}
+              placeholder="Ketik kata kunci (misal: sabar, rezeki, ampunan)…"
+              className="w-full rounded-lg border border-slate-300 pl-9 pr-3 py-2.5 text-sm outline-none focus:border-slate-500"
+            />
+          </div>
+
+          {exploreLoading ? (
+            <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-600">Menyiapkan indeks Alquran…</span>
+                <span className="text-xs font-semibold text-slate-900 tabular-nums">{exploreProgress}%</span>
+              </div>
+              <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                <div className="h-full rounded-full bg-slate-900 transition-all" style={{ width: `${exploreProgress}%` }} />
+              </div>
+              <p className="text-xs text-slate-400">Dilakukan sekali per sesi — berikutnya instan.</p>
+            </div>
+          ) : exploreQuery.trim().length < 3 ? (
+            <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">
+              Ketik minimal 3 huruf untuk mencari ayat berdasarkan kata kunci terjemahan Indonesia.
+            </div>
+          ) : exploreResults.length === 0 ? (
+            <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+              Tidak ada ayat yang cocok untuk “{exploreQuery}”.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-xs text-slate-500">{exploreResults.length} ayat ditemukan{exploreResults.length === 100 ? " (dibatasi 100)" : ""}</p>
+              {exploreResults.map((e, i) => (
+                <button
+                  key={`${e.surah}-${e.ayat}-${i}`}
+                  onClick={() => openExploreResult(e.surah, e.ayat)}
+                  className="w-full text-left rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm hover:border-slate-400 transition-colors"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-slate-900">
+                      {e.namaLatin} · Ayat {e.ayat}
+                    </span>
+                    <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">Surah {e.surah}</span>
+                  </div>
+                  <p className="mt-1.5 text-sm text-slate-700 leading-relaxed line-clamp-3">{e.teksIndonesia}</p>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : mode === "pilih" ? (
         selected === null ? (
           <>
             <div className="relative">

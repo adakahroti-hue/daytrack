@@ -55,8 +55,8 @@ interface HeaderControls {
   waktuDate: Date
   navigateWaktu: (dir: 'prev' | 'next') => void
   goToWaktuToday: () => void
-  alquranMode: 'pilih' | 'mengaji'
-  setAlquranMode: (m: 'pilih' | 'mengaji') => void
+  alquranMode: 'pilih' | 'mengaji' | 'explore'
+  setAlquranMode: (m: 'pilih' | 'mengaji' | 'explore') => void
   // Rev mobile: tombol "Tambah" di header kanan (Catatan & Bank Ide) — halaman registrasi handler lewat context
   headerAddAction: (() => void) | null
   setHeaderAddAction: (fn: (() => void) | null) => void
@@ -285,7 +285,7 @@ export function HeaderControlsProvider({
   const [waktuPeriod, setWaktuPeriod] = useState<'harian' | 'kemarin' | 'shot' | 'mingguan' | 'bulanan' | 'tahunan'>('harian')
   const [waktuDate, setWaktuDate] = useState<Date>(new Date())
   // Alquran: mode Pilih Surah / Mode Mengaji — dikelola di header
-  const [alquranMode, setAlquranMode] = useState<'pilih' | 'mengaji'>('mengaji')
+  const [alquranMode, setAlquranMode] = useState<'pilih' | 'mengaji' | 'explore'>('mengaji')
   // Tombol "Tambah" di header kanan — handler didaftarkan halaman (Catatan/Bank Ide) via context
   const [headerAddAction, setHeaderAddAction] = useState<(() => void) | null>(null)
   // Tombol "Pilih Tugas" (Hari Ini) di header — handler + state dari halaman via context

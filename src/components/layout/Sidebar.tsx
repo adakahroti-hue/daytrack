@@ -99,15 +99,9 @@ const navigation: NavSection[] = [
     href: '/overview',
   },
   {
-    title: 'Goal',
-    icon: Target,
-    href: '/goal',
-  },
-  {
     title: 'Tugas',
     icon: Calendar,
     items: [
-      { title: 'Waktu', href: '/jejak-waktu', icon: Timer },
       { title: 'Hari Ini', href: '/tugas/hari-ini', icon: Clock },
       { title: 'Semua', href: '/tugas/semua', icon: CalendarDays },
     ],
@@ -161,6 +155,8 @@ const navigation: NavSection[] = [
     title: 'Alat',
     icon: Wrench,
     items: [
+      { title: 'Goal', href: '/goal', icon: Target },
+      { title: 'Waktu', href: '/jejak-waktu', icon: Timer },
       { title: 'Alquran', href: '/alquran', icon: BookOpen },
       { title: 'Catatan', href: '/catatan', icon: StickyNote },
       { title: 'Playlist', href: '/kesenangan', icon: ListMusic },

@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, X, Plus, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, BookMarked, Mosque, Heart, Moon, GlassWater, Shield, Smile, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, Timer } from 'lucide-react'
+import { Menu, X, Plus, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, BookMarked, Mosque, Heart, Moon, GlassWater, Shield, Smile, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, Timer, Search } from 'lucide-react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
@@ -627,6 +627,16 @@ export function Header({ onMenuClick }: HeaderProps) {
               >
                 <BookMarked className="h-3.5 w-3.5 flex-shrink-0" />
                 <span className="hidden sm:inline truncate">Mode Mengaji</span>
+              </Button>
+              <Button
+                variant={alquranMode === 'explore' ? 'default' : 'ghost'}
+                size="sm"
+                className="h-8 px-2 gap-1 justify-center"
+                onClick={() => setAlquranMode('explore')}
+                aria-label="Explore Alquran"
+              >
+                <Search className="h-3.5 w-3.5 flex-shrink-0" />
+                <span className="hidden sm:inline truncate">Explore</span>
               </Button>
             </div>
           </div>
