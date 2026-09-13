@@ -109,7 +109,6 @@ const navigation: NavSection[] = [
     items: [
       { title: 'Hari Ini', href: '/tugas/hari-ini', icon: Clock },
       { title: 'Semua', href: '/tugas/semua', icon: CalendarDays },
-      { title: 'Selesai', href: '/tugas/selesai', icon: CheckCircle2 },
     ],
   },
   {
@@ -203,7 +202,6 @@ export function Sidebar({
   const taskCounts: Record<string, number> = {
     '/tugas/hari-ini': tc.hari_ini,
     '/tugas/semua': tc.semua,
-    '/tugas/selesai': tc.selesai,
   }
 
   const toggleSection = (title: string) => {

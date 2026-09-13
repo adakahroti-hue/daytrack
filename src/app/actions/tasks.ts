@@ -107,7 +107,6 @@ export async function bulkDeleteTasks(ids: string[]) {
 
   revalidatePath("/tugas/hari-ini")
   revalidatePath("/tugas/semua")
-  revalidatePath("/tugas/selesai")
   revalidatePath("/overview")
 
   return { error: null }
@@ -129,7 +128,6 @@ export async function bulkResetTasks(ids: string[]) {
 
   revalidatePath("/tugas/hari-ini")
   revalidatePath("/tugas/semua")
-  revalidatePath("/tugas/selesai")
   revalidatePath("/overview")
 
   return { error: null }
@@ -154,7 +152,6 @@ export async function bulkUpdateTaskDate(ids: string[], tanggal: string) {
 
   revalidatePath("/tugas/hari-ini")
   revalidatePath("/tugas/semua")
-  revalidatePath("/tugas/selesai")
   revalidatePath("/overview")
 
   return { error: null }

@@ -72,29 +72,7 @@ function SemuaOverdueCount() {
 }
 
 
-// Inline stats for Selesai tab - Total Selesai & Total Waktu
-function SelesaiHeaderStats() {
-  const { data: allTasks = [] } = useTasks()
-  
-  const totalSelesai = allTasks.filter((t: any) => t.status === 'selesai').length
-  const totalEstimatedMinutes = allTasks
-    .filter((t: any) => t.status === 'selesai')
-    .reduce((sum: number, t: any) => sum + t.estimasi_menit, 0)
 
-  return (
-    <div className="hidden md:flex items-center gap-2">
-      <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-green-50 border border-green-200 rounded-lg">
-        <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
-        <span className="text-xs font-semibold text-green-700">{totalSelesai}</span>
-        <span className="text-[10px] text-green-600/70">Selesai</span>
-      </div>
-      <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg">
-        <Clock className="h-3.5 w-3.5 text-slate-500" />
-        <span className="text-xs font-semibold text-slate-700">{getEstimasiText(totalEstimatedMinutes)}</span>
-      </div>
-    </div>
-  )
-}
 
 // Ikon per tab — mengikuti icon sidebar (revisi 7). PMO memakai Shield (revisi batch 27)
 const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -102,7 +80,6 @@ const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   '/tugas/hari-ini': Clock,
   '/tugas/semua': CalendarDays,
   '/tugas/bank-ide': Lightbulb,
-  '/tugas/selesai': CheckCircle2,
   '/sholat': Mosque,
   '/quran': BookOpen,
   '/doa': Heart,
@@ -181,7 +158,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   // Show stats only on Hari Ini and Semua tabs
   const isHariIni = pathname === '/tugas/hari-ini'
   const isSemua = pathname === '/tugas/semua'
-  const isSelesai = pathname === '/tugas/selesai'
+
   const isSholat = pathname === '/sholat' || pathname === '/sholat-sunnah'
   const isQuran = pathname === '/quran'
   const isMinumAir = pathname === '/minum-air'
@@ -211,7 +188,6 @@ export function Header({ onMenuClick }: HeaderProps) {
     isOverviewPage ||
     isHariIni ||
     isSemua ||
-    isSelesai ||
     isGoal ||
     isWaktu ||
     isBankIde ||
@@ -310,7 +286,7 @@ export function Header({ onMenuClick }: HeaderProps) {
       )}
 
       {/* Page title & description — disembunyikan di tab yang punya header/konten sendiri */}
-      {!(isOverviewPage || isGoal || isWaktu || isHariIni || isSemua || isSelesai || isKeuangan || isMasalah || isMentalBlock || isMaafkan || isSholat || isQuran || isDoa || isSyukur || isSedekah || isMinumAir || isPmo || isTidur || isMakan || isKesenangan || isBankIde || isCatatan || isAlquran) && (
+      {!(isOverviewPage || isGoal || isWaktu || isHariIni || isSemua || isKeuangan || isMasalah || isMentalBlock || isMaafkan || isSholat || isQuran || isDoa || isSyukur || isSedekah || isMinumAir || isPmo || isTidur || isMakan || isKesenangan || isBankIde || isCatatan || isAlquran) && (
       <div className="flex-1 min-w-0">
         <h1 className="flex items-center gap-2 text-lg font-semibold truncate">
           {(() => {
@@ -359,9 +335,6 @@ export function Header({ onMenuClick }: HeaderProps) {
             ))}
           </div>
         )}
-
-        {/* Selesai Stats — only on tugas/selesai */}
-        {isSelesai && <SelesaiHeaderStats />}
 
         {/* Revisi: tombol show/hide filter tanggal — kanan atas header (mobile saja) */}
         {(isOverviewPage || isTableTab) && (

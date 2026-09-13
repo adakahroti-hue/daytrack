@@ -89,7 +89,7 @@ function getSubPageFromPath(pathname: string): string | null {
   if (pathname.startsWith('/tugas/hari-ini')) return 'hari-ini'
   if (pathname.startsWith('/tugas/semua')) return 'semua'
   if (pathname.startsWith('/tugas/bank-ide')) return 'bank-ide'
-  if (pathname.startsWith('/tugas/selesai')) return 'selesai'
+
   if (pathname.startsWith('/sholat-sunnah')) return 'sholat-sunnah'
   if (pathname.startsWith('/sholat')) return 'sholat'
   if (pathname.startsWith('/quran')) return 'quran'
