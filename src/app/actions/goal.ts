@@ -339,12 +339,16 @@ export async function reorderMilestones(orderedIds: string[]) {
     throw new Error("Daftar milestone tidak sinkron — muat ulang lalu coba lagi")
   }
 
-  // Renumber sekaligus: tiap id dapat order sesuai posisi di array
-  const updates = orderedIds.map((id, i) => ({ id, order: i }))
-  const { error } = await supabase
-    .from("goal_milestone")
-    .upsert(updates, { onConflict: "id" })
-  if (error) throw new Error(error.message)
+  // Renumber: PATCH per milestone (bukan upsert — upsert parsial melanggar NOT NULL goal_id).
+  // Tidak ada unique constraint di kolom order, jadi PATCH berurutan aman tanpa bentrok.
+  for (let i = 0; i < orderedIds.length; i++) {
+    const { error } = await supabase
+      .from("goal_milestone")
+      .update({ order: i })
+      .eq("id", orderedIds[i])
+      .eq("goal_id", goalId)
+    if (error) throw new Error(error.message)
+  }
   revalidatePath("/goal")
   return { error: null }
 }
