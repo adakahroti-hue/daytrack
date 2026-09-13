@@ -59,7 +59,7 @@ import {
   StickyNote,
   Brain,
   Utensils,
-  HeartHandshake,
+
   HeartPulse,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -119,7 +119,6 @@ const navigation: NavSection[] = [
     icon: Shield,
     items: [
       { title: 'Refleksi', href: '/masalah', icon: PersonStanding },
-      { title: 'Maafkan', href: '/maafkan', icon: HeartHandshake },
       { title: 'Mental Block', href: '/mental-block', icon: Brain },
     ],
   },

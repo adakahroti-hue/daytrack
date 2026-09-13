@@ -77,7 +77,7 @@ function getCategoryFromPath(pathname: string): string {
   if (pathname.startsWith('/tugas')) return 'tugas'
   if (pathname.startsWith('/sholat') || pathname.startsWith('/quran') || pathname.startsWith('/doa') || pathname.startsWith('/syukur') || pathname.startsWith('/sedekah')) return 'ibadah'
   if (pathname.startsWith('/tidur') || pathname.startsWith('/minum-air') || pathname.startsWith('/makan')) return 'kesehatan'
-  if (pathname.startsWith('/masalah') || pathname.startsWith('/pmo') || pathname.startsWith('/kesenangan') || pathname.startsWith('/mental-block') || pathname.startsWith('/maafkan')) return 'mental'
+  if (pathname.startsWith('/masalah') || pathname.startsWith('/pmo') || pathname.startsWith('/kesenangan') || pathname.startsWith('/mental-block')) return 'mental'
   if (pathname.startsWith('/goal')) return 'goal'
   if (pathname.startsWith('/arus-kas') || pathname.startsWith('/keranjang')) return 'keuangan'
   if (pathname.startsWith('/jejak-waktu')) return 'waktu'
@@ -99,7 +99,6 @@ function getSubPageFromPath(pathname: string): string | null {
   if (pathname.startsWith('/minum-air')) return 'minum-air'
   if (pathname.startsWith('/masalah')) return 'masalah'
   if (pathname.startsWith('/mental-block')) return 'mental-block'
-  if (pathname.startsWith('/maafkan')) return 'maafkan'
   if (pathname.startsWith('/pmo')) return 'pmo'
   if (pathname.startsWith('/kesenangan')) return 'kesenangan'
   if (pathname.startsWith('/arus-kas')) return 'arus-kas'
@@ -140,7 +139,6 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
     switch (subPage) {
       case 'masalah': return 'Refleksi'
       case 'mental-block': return 'Mental Block'
-      case 'maafkan': return 'Maafkan'
       case 'pmo': return 'PMO'
     }
   }
@@ -213,7 +211,6 @@ function getCategoryDescription(category: string, period: Period, subPage: strin
     switch (subPage) {
       case 'masalah': return 'Catat tantangan dan solusi'
       case 'mental-block': return 'Catat mental block yang menghambatmu'
-      case 'maafkan': return 'Catat event trigger yang ingin kamu maafkan'
       case 'pmo': return 'Pantau progres PMO'
     }
   }

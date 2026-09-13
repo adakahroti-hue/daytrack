@@ -170,7 +170,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const isMasalah = pathname === '/masalah'
   const isKesenangan = pathname === '/kesenangan'
   const isMentalBlock = pathname === '/mental-block'
-  const isMaafkan = pathname === '/maafkan'
+
   // Tab keuangan (Arus Kas & Keranjang) ikut pakai toolbar navigasi tanggal + toggle periode ibadah-style di header
   const isArusKas = pathname === '/arus-kas'
   const isKeranjang = pathname === '/keranjang'
@@ -192,7 +192,7 @@ export function Header({ onMenuClick }: HeaderProps) {
     isAlquran ||
     isKesenangan ||
     isMentalBlock ||
-    isMaafkan ||
+
     isMasalah ||
     isSholat ||
     isQuran ||
@@ -290,7 +290,7 @@ export function Header({ onMenuClick }: HeaderProps) {
       )}
 
       {/* Page title & description — disembunyikan di tab yang punya header/konten sendiri */}
-      {!(isOverviewPage || isGoal || isWaktu || isHariIni || isSemua || isKeuangan || isMasalah || isMentalBlock || isMaafkan || isSholat || isQuran || isDoa || isSyukur || isSedekah || isMinumAir || isPmo || isTidur || isMakan || isKesenangan || isCatatan || isAlquran) && (
+      {!(isOverviewPage || isGoal || isWaktu || isHariIni || isSemua || isKeuangan || isMasalah || isMentalBlock || isSholat || isQuran || isDoa || isSyukur || isSedekah || isMinumAir || isPmo || isTidur || isMakan || isKesenangan || isCatatan || isAlquran) && (
       <div className="flex-1 min-w-0">
         <h1 className="flex items-center gap-2 text-lg font-semibold truncate">
           {(() => {
@@ -541,17 +541,6 @@ export function Header({ onMenuClick }: HeaderProps) {
             onClick={() => headerAddAction?.()}
             className='flex-shrink-0 h-9 w-9 rounded-full text-white shadow-sm bg-slate-900 hover:bg-slate-800'
             aria-label='Tambah Refleksi'
-          >
-            <Plus className='h-4 w-4' />
-          </Button>
-        )}
-
-        {/* Maafkan — tombol Tambah: ikon bulat hitam + saja (rev) */}
-        {isMaafkan && (
-          <Button
-            onClick={() => headerAddAction?.()}
-            className='flex-shrink-0 h-9 w-9 rounded-full text-white shadow-sm bg-slate-900 hover:bg-slate-800'
-            aria-label='Tambah Kejadian Maafkan'
           >
             <Plus className='h-4 w-4' />
           </Button>

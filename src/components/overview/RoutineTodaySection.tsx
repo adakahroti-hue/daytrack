@@ -7,7 +7,6 @@ import { id } from 'date-fns/locale'
 import { cn, formatRupiah } from '@/lib/utils'
 import { useOverviewData } from "@/hooks/useOverviewData"
 import { PERIOD_LABEL, type OverviewPeriod } from './FocusTodaySection'
-import { MaafkanSection } from './MaafkanSection'
 
 // ─── Revisi batch 18: section "Rutinitas" untuk tab Overview (tema hitam-putih) ───
 
@@ -487,9 +486,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
             )}
         </RoutineCard>
 
-
-        {/* Maafkan — list semua (tak dipengaruhi filter), sebaris dengan Refleksi */}
-        <MaafkanSection className="order-6" />
 
         {/* Ibadah — baris 2 (setelah Keuangan & Hoki) */}
         <RoutineCard tint="bg-white border-slate-200" icon={Mosque} iconColor="text-emerald-500" title="Ibadah" hideIcon className="order-3">
