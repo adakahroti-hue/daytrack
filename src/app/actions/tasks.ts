@@ -181,7 +181,7 @@ export async function toggleTaskStatus(id: string, status: "proses" | "belum" | 
 
   const now = new Date().toISOString()
 
-  let updateData: {
+  const updateData: {
     status: string
     started_at?: string | null
     completed_at?: string | null

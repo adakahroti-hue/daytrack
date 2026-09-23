@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query'
-import { Toaster } from 'sonner'
+import { QueryClient, QueryClientProvider, useQueryClient, MutationCache } from '@tanstack/react-query'
+import { Toaster, toast } from 'sonner'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
 import { HeaderControlsProvider } from '@/components/layout/HeaderControls'
@@ -42,6 +42,25 @@ export default function DashboardLayout({
   const [queryClient] = useState(
     () =>
       new QueryClient({
+        // Feedback error global: SEMUA mutation yang gagal kasih toast,
+        // tanpa perlu onError manual di tiap hook/halaman.
+        // - onError: server action melempar Error (throw) → pesan Error.message.
+        // - onSettled: sebagian action tidak throw, tapi return { error } (gaya tasks.ts)
+        //   → pesan aslinya di situ. Sukses selalu { error: null } jadi aman dicek.
+        mutationCache: new MutationCache({
+          onError: (error, _vars, _ctx, mutation) => {
+            const msg = error instanceof Error ? error.message : 'Terjadi kesalahan'
+            const label = (mutation.options.mutationKey?.[0] as string) ?? 'mutation'
+            console.error(`[${label}] gagal:`, error)
+            toast.error(msg)
+          },
+          onSettled: (data) => {
+            if (data && typeof data === 'object' && 'error' in data) {
+              const err = (data as { error: unknown }).error
+              if (typeof err === 'string' && err.length > 0) toast.error(err)
+            }
+          },
+        }),
         defaultOptions: {
           queries: {
             // staleTime 5 menit: data dianggap segar → berpindah tab balik-instant dari cache.

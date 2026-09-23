@@ -1,8 +1,8 @@
 "use client"
 
-import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { RefreshCw, AlertTriangle } from 'lucide-react'
+import { useMounted } from '@/hooks/useMounted'
 
 export default function GlobalError({
   error,
@@ -11,11 +11,7 @@ export default function GlobalError({
   error: Error & { digest?: string }
   reset: () => void
 }) {
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  const mounted = useMounted()
 
   if (!mounted) {
     return <html lang="id"><body /></html>

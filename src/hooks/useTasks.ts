@@ -42,30 +42,10 @@ export function useCreateTask() {
   return useMutation({
     mutationFn: (data: TaskFormData) => createTask(data),
     onSuccess: (res) => {
-      // res.error berisi pesan asli dari Supabase (tidak disensor oleh Next.js)
-      if (res.error) {
-        try {
-          import("sonner").then(({ toast }) => {
-            toast.error(`Gagal menyimpan tugas: ${res.error}`)
-          })
-        } catch {
-          alert(`Gagal menyimpan tugas: ${res.error}`)
-        }
-        return
-      }
+      // res.error (pesan asli dari Supabase) di-toast oleh MutationCache global
+      if (res.error) return
       // Sukses — refresh list tugas
       queryClient.invalidateQueries({ queryKey: ["tugas"] })
-    },
-    onError: (error) => {
-      // Fallback kalau mutation gagal total (network dll)
-      console.error("[createTask] gagal:", error)
-      try {
-        import("sonner").then(({ toast }) => {
-          toast.error(`Gagal menyimpan tugas: ${(error as Error)?.message || "unknown error"}`)
-        })
-      } catch {
-        alert(`Gagal menyimpan tugas: ${(error as Error)?.message || "unknown error"}`)
-      }
     },
   })
 }

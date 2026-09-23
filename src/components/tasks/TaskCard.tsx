@@ -34,6 +34,14 @@ export type TaskCardTask = {
 // TaskCard hanya untuk tabel tugas (status: belum/proses/selesai).
 // Ide sudah pindah ke tabel bank_ide (lihat src/components/bank-ide/IdeaCard.tsx).
 
+// Komponen di module scope — kalau didefinisikan di dalam render, React
+//anggap tipe baru tiap render → memo() jadi percuma.
+function PrimaryButtonIcon({ isPending, isInProgress }: { isPending: boolean; isInProgress: boolean }) {
+  if (isPending) return <Play className="h-3.5 w-3.5" />
+  if (isInProgress) return <Check className="h-3.5 w-3.5" />
+  return <CheckCircle2 className="h-3.5 w-3.5" />
+}
+
 function TaskCardComponent({
   task,
   onEdit,
@@ -67,11 +75,6 @@ function TaskCardComponent({
 
   const primaryButtonText = isPending ? 'Mulai' : 'Selesai'
   const primaryButtonDisabled = isCompleted
-  const PrimaryButtonIcon = () => {
-    if (isPending) return <Play className="h-3.5 w-3.5" />
-    if (isInProgress) return <Check className="h-3.5 w-3.5" />
-    return <CheckCircle2 className="h-3.5 w-3.5" />
-  }
 
   const taskDate = task.tanggal ? new Date(task.tanggal) : null
   const today = startOfDay(new Date())
@@ -235,7 +238,7 @@ function TaskCardComponent({
             aria-label={primaryButtonText}
           >
             <span className="flex items-center gap-1.5">
-              <PrimaryButtonIcon />
+              <PrimaryButtonIcon isPending={isPending} isInProgress={isInProgress} />
               <span className="hidden sm:inline">{primaryButtonText}</span>
               <span className="sm:hidden">{isPending ? 'Mulai' : 'Selesai'}</span>
             </span>

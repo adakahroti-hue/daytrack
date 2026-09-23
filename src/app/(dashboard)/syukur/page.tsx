@@ -339,7 +339,7 @@ export default function SyukurPage() {
                             </DropdownMenuContent>
                           </DropdownMenu>
                         ) : (
-                          <span className="text-slate-400">Pilih "Tidak" dulu</span>
+                          <span className="text-slate-400">Pilih &quot;Tidak&quot; dulu</span>
                         )}
                       </td>
                     </tr>

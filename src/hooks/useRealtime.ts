@@ -125,7 +125,7 @@ export function useRealtime({
         onDelete?.(payload)
         break
     }
-  }, [table, queryClient, queryKeys, onInsert, onUpdate, onDelete])
+  }, [queryClient, queryKeys, onInsert, onUpdate, onDelete])
 
   useEffect(() => {
     const supabase = supabaseRef.current

@@ -1,6 +1,6 @@
 "use client"
 
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { Hash, Smile, Check, X, Trash2, Pencil, Wrench, Copy } from 'lucide-react'
@@ -68,7 +68,10 @@ export default function KesenanganPage() {
       a.tanggal.localeCompare(b.tanggal) || (a.created_at || '').localeCompare(b.created_at || ''))
   }, [logs])
 
-  const openAdd = () => setEditState({ id: null, tanggal: todayStr, kesenangan: '', status: 'belum' })
+  const openAdd = useCallback(
+    () => setEditState({ id: null, tanggal: todayStr, kesenangan: '', status: 'belum' }),
+    [todayStr]
+  )
   const openEdit = (e: KesenanganEntry) => setEditState({ id: e.id, tanggal: e.tanggal, kesenangan: e.kesenangan, status: (e.status === 'sudah' ? 'sudah' : 'belum') })
 
   // Rev mobile: tombol "Tambah" pindah ke header kanan atas — registrasi handler via context
@@ -76,7 +79,7 @@ export default function KesenanganPage() {
   useEffect(() => {
     setHeaderAddAction(() => openAdd)
     return () => setHeaderAddAction(null)
-  }, [setHeaderAddAction])
+  }, [setHeaderAddAction, openAdd])
 
   const handleSave = async () => {
     if (!editState) return

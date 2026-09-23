@@ -109,8 +109,10 @@ export default function KeranjangPage() {
     setHargaInput("")
     setEditState({ id: null, tanggal: todayStr, nama_barang: "", harga: 0, dompet: "kebutuhan" })
   }
-  // Rev: tombol Tambah pindah ke header — handler diikat ke ref agar selalu segar
-  openAddRef.current = openAdd
+  // Rev: tombol "Tambah" pindah ke header — handler diikat ke ref agar selalu segar
+  useEffect(() => {
+    openAddRef.current = openAdd
+  })
 
   const openEdit = (entry: KeranjangEntry) => {
     setHargaInput(entry.harga > 0 ? formatRupiah(entry.harga) : "")

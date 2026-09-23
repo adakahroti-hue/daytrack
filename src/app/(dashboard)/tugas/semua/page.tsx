@@ -16,6 +16,7 @@ import { TaskGroupRibbon, TaskGroupDialog } from '@/components/tasks/task-group'
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus, useBulkUpdateTaskDate, useBulkDeleteTasks } from '@/hooks/useTasks'
 import { useTasksRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
+import { useMounted } from '@/hooks/useMounted'
 import { Suspense } from 'react'
 type Task = {
   id: string
@@ -100,6 +101,13 @@ const PRIORITY_CARD_COLORS: Record<string, string> = {
 
 // TaskCard Component - Clean, consistent height, neutral by default
 // ============================================
+// Module scope supaya tipenya stabil antar render (memo tetap efektif).
+function PrimaryButtonIcon({ isPending, isInProgress }: { isPending: boolean; isInProgress: boolean }) {
+  if (isPending) return <Play className="h-3.5 w-3.5" />
+  if (isInProgress) return <Check className="h-3.5 w-3.5" />
+  return <CheckCircle2 className="h-3.5 w-3.5" />
+}
+
 const TaskCard = memo(({
   task,
   onEdit,
@@ -133,12 +141,6 @@ const TaskCard = memo(({
 
   const primaryButtonText = isPending ? 'Mulai' : isInProgress ? 'Selesai' : 'Selesai'
   const primaryButtonDisabled = isCompleted
-
-  const PrimaryButtonIcon = () => {
-    if (isPending) return <Play className="h-3.5 w-3.5" />
-    if (isInProgress) return <Check className="h-3.5 w-3.5" />
-    return <CheckCircle2 className="h-3.5 w-3.5" />
-  }
 
   const taskDate = task.tanggal ? new Date(task.tanggal) : null
   const today = startOfDay(new Date())
@@ -311,7 +313,7 @@ const TaskCard = memo(({
             aria-label={primaryButtonText}
           >
             <span className="flex items-center gap-1.5">
-              <PrimaryButtonIcon />
+              <PrimaryButtonIcon isPending={isPending} isInProgress={isInProgress} />
               <span className="hidden sm:inline">{primaryButtonText}</span>
               <span className="sm:hidden">{isPending ? 'Mulai' : 'Selesai'}</span>
             </span>
@@ -321,6 +323,7 @@ const TaskCard = memo(({
     </Card>
   )
 })
+TaskCard.displayName = 'TaskCard'
 
 // ============================================
 // StatsCard - Consistent stat card
@@ -378,6 +381,18 @@ function StatsInline({ todayTasks }: { todayTasks: Task[] }) {
 // ============================================
 // Main Component
 // ============================================
+// Static skeleton loader (module scope — tidak dibuat ulang tiap render)
+function SkeletonLoader() {
+  return (
+    <div className="space-y-4 w-full max-w-xs mx-auto">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="h-20 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse" />
+      ))}
+      <p className="text-xs text-slate-500 font-mono text-center">Memuat tugas...</p>
+    </div>
+  )
+}
+
 function SemuaPageClient() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<EditingTask | null>(null)
@@ -389,16 +404,12 @@ function SemuaPageClient() {
     setHeaderAddAction(() => () => { setEditingTask(null); setIsFormOpen(true) })
     return () => setHeaderAddAction(null)
   }, [setHeaderAddAction])
-  const [isMounted, setIsMounted] = useState(false)
+  const isMounted = useMounted()
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [selectionMode, setSelectionMode] = useState(false)
   const [bulkDate, setBulkDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   // Revisi batch 12: penanda paket (parent/child/single)
   const [groupTask, setGroupTask] = useState<Task | null>(null)
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
 
   // Revisi: setiap tab Semua dibuka, filter default kembali ke Prioritas
   useEffect(() => {
@@ -617,19 +628,6 @@ function SemuaPageClient() {
   // Empty state: totalTasks === 0 → belum ada tugas sama sekali;
   // filteredTasks kosong padahal ada tugas → semuanya sudah selesai
   const isCompletelyEmpty = totalTasks === 0
-
-  // Loading progress bar component
-  // Static skeleton loader — no setInterval, no CPU waste
-  function SkeletonLoader() {
-    return (
-      <div className="space-y-4 w-full max-w-xs mx-auto">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="h-20 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse" />
-        ))}
-        <p className="text-xs text-slate-500 font-mono text-center">Memuat tugas...</p>
-      </div>
-    )
-  }
 
   // Render loading/error/mounted states CONDITIONALLY, but hooks already called
   if (!isMounted) {

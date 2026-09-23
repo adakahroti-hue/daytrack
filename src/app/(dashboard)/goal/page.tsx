@@ -13,10 +13,6 @@ import { AddStepModal } from "@/components/goal/AddStepModal"
 import { useActiveGoal, useCreateGoal, useUpdateGoal, useDeleteGoal, useCreateMilestone, useUpdateMilestone, useReorderMilestones, useDeleteMilestone, useCreateStep, useUpdateStep, useToggleStepCompleted, useDeleteStep } from "@/hooks/useGoal"
 import { useHeaderControls } from "@/components/layout/HeaderControls"
 
-function errMsg(e: any) {
-  return e?.message || "unknown error"
-}
-
 export default function GoalPage() {
   const { data: goal, isLoading, error: goalError } = useActiveGoal()
   const createGoal = useCreateGoal()
@@ -87,12 +83,7 @@ export default function GoalPage() {
               onClick={() => {
                 createGoal.mutate(
                   { title: goalTitle.trim() },
-                  {
-                    onSuccess: () => { setGoalTitle(""); setCreateGoalOpen(false) },
-                    onError: (e: any) => {
-                      import("sonner").then(({ toast }) => toast.error(`Gagal simpan goal: ${e?.message || "unknown error"}`))
-                    },
-                  }
+                  { onSuccess: () => { setGoalTitle(""); setCreateGoalOpen(false) } }
                 )
               }}
             >
@@ -150,30 +141,17 @@ export default function GoalPage() {
 
       <RoadmapList
           milestones={goal.milestones}
-          onToggleStep={(id, c) => toggleStep.mutate(
-            { id, isCompleted: c },
-            { onError: (e: any) => import("sonner").then(({ toast }) => toast.error(`Gagal update step: ${errMsg(e)}`)) }
-          )}
+          onToggleStep={(id, c) => toggleStep.mutate({ id, isCompleted: c })}
           onToggleAllSteps={(milestoneId, c) => {
             const m = goal.milestones.find((m) => m.id === milestoneId)
             if (!m) return
             const targets = m.steps.filter((s) => s.is_completed !== c)
-            targets.forEach((s) =>
-              toggleStep.mutate(
-                { id: s.id, isCompleted: c },
-                { onError: (e: any) => import("sonner").then(({ toast }) => toast.error(`Gagal update step: ${errMsg(e)}`)) }
-              )
-            )
+            targets.forEach((s) => toggleStep.mutate({ id: s.id, isCompleted: c }))
           }}
           onEditStep={(step) => setStepModal({ open: true, milestoneId: step.milestone_id, edit: step })}
-          onDeleteStep={(id) => deleteStep.mutate(id, {
-            onError: (e: any) => import("sonner").then(({ toast }) => toast.error(`Gagal hapus step: ${errMsg(e)}`)),
-          })}
+          onDeleteStep={(id) => deleteStep.mutate(id)}
           onAddStep={(milestoneId) => setStepModal({ open: true, milestoneId, edit: null })}
-          onToggleMilestone={(id, c) => updateMilestone.mutate(
-            { id, data: { is_completed: c } },
-            { onError: (e: any) => import("sonner").then(({ toast }) => toast.error(`Gagal update milestone: ${errMsg(e)}`)) }
-          )}
+          onToggleMilestone={(id, c) => updateMilestone.mutate({ id, data: { is_completed: c } })}
           onEditMilestone={(m) => setMilestoneModal({ open: true, edit: m })}
           onMoveMilestone={(id, dir) => {
             // Fix lambat: renumber lokal lalu 1 panggilan reorderMilestones (bukan 2 update bertukar order)
@@ -184,17 +162,9 @@ export default function GoalPage() {
             if (target < 0 || target >= sorted.length) return
             const next = [...sorted]
             ;[next[idx], next[target]] = [next[target], next[idx]]
-            reorderMilestones.mutate(
-              next.map((m) => m.id),
-              {
-                onError: (e: any) =>
-                  import("sonner").then(({ toast }) => toast.error(`Gagal pindah milestone: ${errMsg(e)}`)),
-              }
-            )
+            reorderMilestones.mutate(next.map((m) => m.id))
           }}
-          onDeleteMilestone={(id) => deleteMilestone.mutate(id, {
-            onError: (e: any) => import("sonner").then(({ toast }) => toast.error(`Gagal hapus milestone: ${errMsg(e)}`)),
-          })}
+          onDeleteMilestone={(id) => deleteMilestone.mutate(id)}
         />
 
       <AddMilestoneModal
@@ -205,18 +175,12 @@ export default function GoalPage() {
           if (milestoneModal.edit) {
             updateMilestone.mutate(
               { id: milestoneModal.edit.id, data },
-              {
-                onSuccess: () => setMilestoneModal({ open: false, edit: null }),
-                onError: (e: any) => import("sonner").then(({ toast }) => toast.error(`Gagal simpan milestone: ${errMsg(e)}`)),
-              }
+              { onSuccess: () => setMilestoneModal({ open: false, edit: null }) }
             )
           } else {
             createMilestone.mutate(
               { goal_id: goal.id, ...data },
-              {
-                onSuccess: () => setMilestoneModal({ open: false, edit: null }),
-                onError: (e: any) => import("sonner").then(({ toast }) => toast.error(`Gagal buat milestone: ${errMsg(e)}`)),
-              }
+              { onSuccess: () => setMilestoneModal({ open: false, edit: null }) }
             )
           }
         }}
@@ -230,18 +194,12 @@ export default function GoalPage() {
           if (stepModal.edit) {
             updateStep.mutate(
               { id: stepModal.edit.id, data },
-              {
-                onSuccess: () => setStepModal({ open: false, milestoneId: null, edit: null }),
-                onError: (e: any) => import("sonner").then(({ toast }) => toast.error(`Gagal simpan step: ${errMsg(e)}`)),
-              }
+              { onSuccess: () => setStepModal({ open: false, milestoneId: null, edit: null }) }
             )
           } else if (stepModal.milestoneId) {
             createStep.mutate(
               { milestone_id: stepModal.milestoneId, ...data },
-              {
-                onSuccess: () => setStepModal({ open: false, milestoneId: null, edit: null }),
-                onError: (e: any) => import("sonner").then(({ toast }) => toast.error(`Gagal buat step: ${errMsg(e)}`)),
-              }
+              { onSuccess: () => setStepModal({ open: false, milestoneId: null, edit: null }) }
             )
           }
         }}
@@ -265,10 +223,7 @@ export default function GoalPage() {
                 onClick={() => {
                   updateGoal.mutate(
                     { id: goal.id, data: { title: goalName.trim() } },
-                    {
-                      onSuccess: () => setEditGoalOpen(false),
-                      onError: (e: any) => import("sonner").then(({ toast }) => toast.error(`Gagal simpan nama goal: ${errMsg(e)}`)),
-                    }
+                    { onSuccess: () => setEditGoalOpen(false) }
                   )
                 }}
               >
@@ -296,10 +251,7 @@ export default function GoalPage() {
               onClick={() => {
                 deleteGoal.mutate(
                   goal.id,
-                  {
-                    onSuccess: () => { setDeleteGoalOpen(false) },
-                    onError: (e: any) => import("sonner").then(({ toast }) => toast.error(`Gagal hapus goal: ${errMsg(e)}`)),
-                  }
+                  { onSuccess: () => { setDeleteGoalOpen(false) } }
                 )
               }}
             >

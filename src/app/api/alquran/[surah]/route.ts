@@ -23,7 +23,7 @@ export async function GET(
     const surahData = surahJson.data
 
     // Gabungkan tafsir ke tiap ayat (jika endpoint tafsir tersedia)
-    let tafsirMap: Record<number, string> = {}
+    const tafsirMap: Record<number, string> = {}
     if (tafsirRes.ok) {
       const tafsirJson = await tafsirRes.json()
       const list = tafsirJson.data?.tafsir || []

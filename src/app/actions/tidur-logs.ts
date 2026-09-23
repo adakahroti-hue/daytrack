@@ -31,7 +31,7 @@ function calculateDuration(jamTidur: string | null, jamBangun: string | null): n
   if (!jamTidur || !jamBangun) return null
   const [tidurH, tidurM] = jamTidur.split(':').map(Number)
   const [bangunH, bangunM] = jamBangun.split(':').map(Number)
-  let tidurMinutes = tidurH * 60 + tidurM
+  const tidurMinutes = tidurH * 60 + tidurM
   let bangunMinutes = bangunH * 60 + bangunM
   if (bangunMinutes <= tidurMinutes) bangunMinutes += 24 * 60
   return Math.round((bangunMinutes - tidurMinutes) / 60 * 10) / 10

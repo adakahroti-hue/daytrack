@@ -2,7 +2,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
+  const response = NextResponse.next({
     request: {
       headers: request.headers,
     },
@@ -30,8 +30,13 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Protected routes
-  const protectedPaths = ['/overview', '/sholat', '/quran', '/doa', '/syukur', '/tidur', '/masalah', '/minum-air', '/pmo', '/kesenangan', '/saran-perbaikan', '/tugas']
+  // Protected routes — semua halaman dashboard (kecuali auth & root)
+  const protectedPaths = [
+    '/overview', '/sholat', '/quran', '/doa', '/syukur', '/tidur', '/masalah',
+    '/minum-air', '/pmo', '/kesenangan', '/tugas', '/alquran', '/goal',
+    '/catatan', '/arus-kas', '/makan', '/sedekah', '/sholat-sunnah',
+    '/mental-block', '/jejak-waktu', '/keranjang',
+  ]
   const isProtectedPath = protectedPaths.some(path => request.nextUrl.pathname.startsWith(path))
 
   if (isProtectedPath && !user) {

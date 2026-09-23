@@ -38,6 +38,14 @@ type Task = {
   group_order?: number | null
 }
 
+// (module scope) PrimaryButtonIcon — didefinisikan di sini agar tipenya
+// stabil antar render; definisi di dalam render membuat memo() tak berguna.
+function PrimaryButtonIcon({ isPending, isInProgress }: { isPending: boolean; isInProgress: boolean }) {
+  if (isPending) return <Play className="h-3.5 w-3.5" />
+  if (isInProgress) return <Check className="h-3.5 w-3.5" />
+  return <CheckCircle2 className="h-3.5 w-3.5" />
+}
+
 type TaskFormData = {
   nama: string
   tanggal?: string
@@ -129,12 +137,6 @@ const TaskCard = memo(({
 
   const primaryButtonText = isPending ? 'Ambil Misi' : isInProgress ? 'Tandai Selesai' : 'Misi Selesai'
   const primaryButtonDisabled = isCompleted
-
-  const PrimaryButtonIcon = () => {
-    if (isPending) return <Play className="h-3.5 w-3.5" />
-    if (isInProgress) return <Check className="h-3.5 w-3.5" />
-    return <CheckCircle2 className="h-3.5 w-3.5" />
-  }
 
   const statusBadgeClass = cn(
     'text-xs font-medium px-2.5 py-1 rounded-lg border',
@@ -327,7 +329,7 @@ const TaskCard = memo(({
               aria-label={primaryButtonText}
             >
               <span className="flex items-center gap-1.5">
-                <PrimaryButtonIcon />
+                <PrimaryButtonIcon isPending={isPending} isInProgress={isInProgress} />
                 <span className="hidden sm:inline">{primaryButtonText}</span>
                 <span className="sm:hidden">{isPending ? 'Ambil' : 'Selesai'}</span>
               </span>

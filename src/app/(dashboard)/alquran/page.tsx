@@ -133,11 +133,15 @@ export default function AlquranPage() {
     setSelected(nomor)
     setLoadingDetail(true)
     setDetail(null)
-    const res = await fetch(`/api/alquran/${nomor}`)
-    const json = await res.json()
-    setDetail(json.data)
-    if (json.data) cacheSet(cacheKey, json.data)
-    setLoadingDetail(false)
+    try {
+      const res = await fetch(`/api/alquran/${nomor}`)
+      const json = await res.json()
+      setDetail(json.data)
+      if (json.data) cacheSet(cacheKey, json.data)
+    } finally {
+      // selalu reset walau fetch gagal — kalau tidak, spinner mutus selamanya
+      setLoadingDetail(false)
+    }
   }
 
   const loadSurahFull = async (surah: number, startAyat = 1) => {
@@ -153,13 +157,17 @@ export default function AlquranPage() {
       return
     }
     setLoadingAyat(true)
-    const surahRes = await fetch(`/api/alquran/${surah}`).then((r) => r.json())
-    setSurahMeta(surahRes.data)
-    setFullAyat(surahRes.data.ayat || [])
-    if (surahRes.data) cacheSet(cacheKey, surahRes.data)
-    setCurSurah(surah)
-    setCurAyat(startAyat)
-    setLoadingAyat(false)
+    try {
+      const surahRes = await fetch(`/api/alquran/${surah}`).then((r) => r.json())
+      setSurahMeta(surahRes.data)
+      setFullAyat(surahRes.data.ayat || [])
+      if (surahRes.data) cacheSet(cacheKey, surahRes.data)
+      setCurSurah(surah)
+      setCurAyat(startAyat)
+    } finally {
+      // selalu reset walau fetch gagal — kalau tidak, spinner mutus selamanya
+      setLoadingAyat(false)
+    }
   }
 
   const startMengaji = async () => {
@@ -273,20 +281,26 @@ export default function AlquranPage() {
     }
 
     const run = async () => {
-      const queue = Array.from({ length: TOTAL_SURAH }, (_, i) => i + 1)
-      let cursor = 0
-      const workers = Array.from({ length: CONCURRENCY }, async () => {
-        while (cursor < queue.length && !exploreAbort.current) {
-          const n = queue[cursor++]
-          await fetchSurah(n)
+      try {
+        const queue = Array.from({ length: TOTAL_SURAH }, (_, i) => i + 1)
+        let cursor = 0
+        const workers = Array.from({ length: CONCURRENCY }, async () => {
+          while (cursor < queue.length && !exploreAbort.current) {
+            const n = queue[cursor++]
+            await fetchSurah(n)
+          }
+        })
+        await Promise.all(workers)
+        if (!exploreAbort.current) {
+          idx.sort((a, b) => a.surah - b.surah || a.ayat - b.ayat)
+          setExploreIndex(idx)
         }
-      })
-      await Promise.all(workers)
-      if (!exploreAbort.current) {
-        idx.sort((a, b) => a.surah - b.surah || a.ayat - b.ayat)
-        setExploreIndex(idx)
+      } catch (e) {
+        console.error("[explore] gagal memuat indeks:", e)
+      } finally {
+        // selalu reset walau gagal — kalau tidak, loading bar nyangkut
+        setExploreLoading(false)
       }
-      setExploreLoading(false)
     }
     run()
     return () => { exploreAbort.current = true }

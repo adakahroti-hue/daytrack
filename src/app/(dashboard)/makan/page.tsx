@@ -59,7 +59,7 @@ function diffJam(start: string | null, end: string | null): number | null {
   if (!start || !end) return null
   const [sh, sm] = start.split(':').map(Number)
   const [eh, em] = end.split(':').map(Number)
-  let s = sh * 60 + sm
+  const s = sh * 60 + sm
   let e = eh * 60 + em
   if (e <= s) e += 24 * 60 // menyeberang tengah malam
   return Math.round(((e - s) / 60) * 10) / 10
