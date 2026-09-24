@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,9 +17,14 @@ export function AddStepModal({
 }) {
   const [title, setTitle] = useState("")
 
-  useEffect(() => {
+  // Sinkronkan input saat modal dibuka/ditutup atau `initial` berubah memakai
+  // pola resmi React "adjust state during render": bandingkan dengan prev state,
+  // lalu setState guarded — tanpa cascade render dari setState di dalam effect.
+  const [prev, setPrev] = useState({ open, initial })
+  if (prev.open !== open || prev.initial !== initial) {
+    setPrev({ open, initial })
     setTitle(initial?.title || "")
-  }, [open, initial])
+  }
 
   const submit = () => {
     if (!title.trim()) return

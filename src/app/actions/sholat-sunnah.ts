@@ -102,7 +102,7 @@ export async function toggleSholatSunnah(tanggal: string, prayerTime: typeof SUN
     .eq("tanggal", tanggal)
     .single()
 
-  const update: any = { [column]: value }
+  const update: Record<string, unknown> = { [column]: value }
   if (value) {
     update[reasonColumn] = null
   } else {

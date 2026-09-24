@@ -12,6 +12,7 @@ import { AddMilestoneModal } from "@/components/goal/AddMilestoneModal"
 import { AddStepModal } from "@/components/goal/AddStepModal"
 import { useActiveGoal, useCreateGoal, useUpdateGoal, useDeleteGoal, useCreateMilestone, useUpdateMilestone, useReorderMilestones, useDeleteMilestone, useCreateStep, useUpdateStep, useToggleStepCompleted, useDeleteStep } from "@/hooks/useGoal"
 import { useHeaderControls } from "@/components/layout/HeaderControls"
+import type { GoalMilestone, GoalStep } from "@/app/actions/goal"
 
 export default function GoalPage() {
   const { data: goal, isLoading, error: goalError } = useActiveGoal()
@@ -30,8 +31,8 @@ export default function GoalPage() {
   const [editGoalOpen, setEditGoalOpen] = useState(false)
   const [deleteGoalOpen, setDeleteGoalOpen] = useState(false)
   const [goalName, setGoalName] = useState("")
-  const [milestoneModal, setMilestoneModal] = useState<{ open: boolean; edit: any }>({ open: false, edit: null })
-  const [stepModal, setStepModal] = useState<{ open: boolean; milestoneId: string | null; edit: any }>({
+  const [milestoneModal, setMilestoneModal] = useState<{ open: boolean; edit: GoalMilestone | null }>({ open: false, edit: null })
+  const [stepModal, setStepModal] = useState<{ open: boolean; milestoneId: string | null; edit: GoalStep | null }>({
     open: false,
     milestoneId: null,
     edit: null,

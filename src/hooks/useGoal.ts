@@ -16,13 +16,14 @@ import {
   deleteStep,
   addProgressLog,
 } from "@/app/actions/goal"
+import type { GoalData, GoalMilestone, GoalStep } from "@/app/actions/goal"
 
 // ── Optimistic helpers ──────────────────────────────────────────────
 // Semua mutation goal memakai optimistic update: cache ["goal","active"]
 // diubah SEKETIKA saat klik (UI terasa instan), server menyusul di belakang.
 // Kalau gagal → rollback + refetch agar kondisinya sinkron dengan server.
 
-type Patch = (g: any) => any
+type Patch = (g: GoalData) => GoalData
 
 /** Patch optimistis cache goal aktif; rollback otomatis saat error. */
 function optimisticGoal(
@@ -30,7 +31,7 @@ function optimisticGoal(
   patch: Patch,
 ) {
   const key = ["goal", "active"]
-  const prev = qc.getQueryData<any>(key)
+  const prev = qc.getQueryData<GoalData>(key)
   if (prev) qc.setQueryData(key, patch(prev))
   return () => {
     if (prev) qc.setQueryData(key, prev)
@@ -39,22 +40,22 @@ function optimisticGoal(
 }
 
 /** Patch step by id di dalam struktur goal aktif. */
-function patchStepIn(goalData: any, stepId: string, data: Partial<any>): any {
+function patchStepIn(goalData: GoalData, stepId: string, data: Partial<GoalStep>): GoalData {
   return {
     ...goalData,
-    milestones: goalData.milestones.map((m: any) =>
-      m.steps.some((s: any) => s.id === stepId)
-        ? { ...m, steps: m.steps.map((s: any) => (s.id === stepId ? { ...s, ...data } : s)) }
+    milestones: goalData.milestones.map((m) =>
+      m.steps.some((s) => s.id === stepId)
+        ? { ...m, steps: m.steps.map((s) => (s.id === stepId ? { ...s, ...data } : s)) }
         : m
     ),
   }
 }
 
 /** Patch milestone by id. */
-function patchMilestoneIn(goalData: any, msId: string, data: Partial<any>): any {
+function patchMilestoneIn(goalData: GoalData, msId: string, data: Partial<GoalMilestone>): GoalData {
   return {
     ...goalData,
-    milestones: goalData.milestones.map((m: any) => (m.id === msId ? { ...m, ...data } : m)),
+    milestones: goalData.milestones.map((m) => (m.id === msId ? { ...m, ...data } : m)),
   }
 }
 
@@ -100,7 +101,7 @@ export function useUpdateGoal() {
     mutationFn: ({ id, data }: { id: string; data: { title?: string; target_date?: string | null } }) =>
       updateGoal(id, data),
     onMutate: ({ id, data }) => optimisticGoal(qc, (g) => (g.id === id ? { ...g, ...data } : g)),
-    onError: (_e, _v, ctx: any) => ctx?.(),
+    onError: (_e, _v, ctx) => ctx?.(),
     onSettled: () => qc.invalidateQueries({ queryKey: ["goal"] }),
   })
 }
@@ -127,7 +128,7 @@ export function useUpdateMilestone() {
     mutationFn: ({ id, data }: { id: string; data: { title?: string; description?: string; order?: number; is_completed?: boolean } }) =>
       updateMilestone(id, data),
     onMutate: ({ id, data }) => optimisticGoal(qc, (g) => patchMilestoneIn(g, id, data)),
-    onError: (_e, _v, ctx: any) => ctx?.(),
+    onError: (_e, _v, ctx) => ctx?.(),
     onSettled: () => qc.invalidateQueries({ queryKey: ["goal"] }),
   })
 }
@@ -140,13 +141,13 @@ export function useReorderMilestones() {
     // Optimistic: urutkan ulang cache sesuai posisi baru SEKETIKA saat klik
     onMutate: (orderedIds) => {
       const key = ["goal", "active"]
-      const prev = qc.getQueryData<any>(key)
+      const prev = qc.getQueryData<GoalData>(key)
       if (prev) {
-        const byId = new Map((prev.milestones ?? []).map((m: any) => [m.id, m]))
+        const byId = new Map<string, GoalMilestone>((prev.milestones ?? []).map((m) => [m.id, m] as const))
         const next = orderedIds.map((id, i) => {
           const m = byId.get(id)
           return m ? { ...m, order: i } : m
-        }).filter(Boolean)
+        }).filter((m): m is GoalMilestone => m !== undefined)
         qc.setQueryData(key, { ...prev, milestones: next })
       }
       return () => {
@@ -154,7 +155,7 @@ export function useReorderMilestones() {
         else qc.removeQueries({ queryKey: key })
       }
     },
-    onError: (_e, _v, ctx: any) => ctx?.(),
+    onError: (_e, _v, ctx) => ctx?.(),
     onSettled: () => qc.invalidateQueries({ queryKey: ["goal"] }),
   })
 }
@@ -165,9 +166,9 @@ export function useDeleteMilestone() {
     mutationFn: (id: string) => deleteMilestone(id),
     onMutate: (id: string) => optimisticGoal(qc, (g) => ({
       ...g,
-      milestones: g.milestones.filter((m: any) => m.id !== id),
+      milestones: g.milestones.filter((m) => m.id !== id),
     })),
-    onError: (_e, _v, ctx: any) => ctx?.(),
+    onError: (_e, _v, ctx) => ctx?.(),
     onSettled: () => qc.invalidateQueries({ queryKey: ["goal"] }),
   })
 }
@@ -191,7 +192,7 @@ export function useUpdateStep() {
       data: { title?: string; target_date?: string | null; order?: number; is_completed?: boolean }
     }) => updateStep(id, data),
     onMutate: ({ id, data }) => optimisticGoal(qc, (g) => patchStepIn(g, id, data)),
-    onError: (_e, _v, ctx: any) => ctx?.(),
+    onError: (_e, _v, ctx) => ctx?.(),
     onSettled: () => qc.invalidateQueries({ queryKey: ["goal"] }),
   })
 }
@@ -201,7 +202,7 @@ export function useToggleStepCompleted() {
   return useMutation({
     mutationFn: ({ id, isCompleted }: { id: string; isCompleted: boolean }) => toggleStepCompleted(id, isCompleted),
     onMutate: ({ id, isCompleted }) => optimisticGoal(qc, (g) => patchStepIn(g, id, { is_completed: isCompleted })),
-    onError: (_e, _v, ctx: any) => ctx?.(),
+    onError: (_e, _v, ctx) => ctx?.(),
     onSettled: () => {
       // TANPA invalidate untuk is_completed murni — patch sudah akurat.
       // invalidate akan memicu refetch 4-query; cukup segarkan di background tipis.
@@ -217,12 +218,12 @@ export function useDeleteStep() {
     mutationFn: (id: string) => deleteStep(id),
     onMutate: (id: string) => optimisticGoal(qc, (g) => ({
       ...g,
-      milestones: g.milestones.map((m: any) => ({
+      milestones: g.milestones.map((m) => ({
         ...m,
-        steps: m.steps.filter((s: any) => s.id !== id),
+        steps: m.steps.filter((s) => s.id !== id),
       })),
     })),
-    onError: (_e, _v, ctx: any) => ctx?.(),
+    onError: (_e, _v, ctx) => ctx?.(),
     onSettled: () => qc.invalidateQueries({ queryKey: ["goal"] }),
   })
 }

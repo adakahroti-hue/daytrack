@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from "next/server"
 
 // Proxy ke equran.id — data Alquran resmi (teks Arab, terjemahan) + tafsir per ayat.
 // Di-fetch server-side supaya tidak kena CORS & bisa di-cache.
+// Ayat dari equran.id — field yang dipakai route ini saat menyisipkan tafsir.
+interface Ayat {
+  nomorAyat: number
+  teksArab: string
+  teksLatin: string
+  teksIndonesia: string
+}
+
 export const revalidate = 86400 // cache 1 hari
 
 export async function GET(
@@ -31,7 +39,7 @@ export async function GET(
     }
 
     if (Array.isArray(surahData.ayat)) {
-      surahData.ayat = surahData.ayat.map((a: any) => ({
+      surahData.ayat = surahData.ayat.map((a: Ayat) => ({
         ...a,
         tafsir: tafsirMap[a.nomorAyat] ? [{ ayat: a.nomorAyat, teks: tafsirMap[a.nomorAyat] }] : [],
       }))

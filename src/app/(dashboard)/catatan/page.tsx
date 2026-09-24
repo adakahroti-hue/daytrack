@@ -73,6 +73,15 @@ function NoteLines({ text, maxLines, className }: { text: string; maxLines?: num
   )
 }
 
+// Row catatan dari getCatatanAll — field yang dipakai halaman ini.
+interface Note {
+  id: string
+  judul: string
+  isi: string
+  label?: string | null
+  warna: string
+}
+
 interface EditState {
   id: string | null
   judul: string
@@ -108,14 +117,14 @@ export default function CatatanPage() {
 
   // Kategori unik dari seluruh catatan (multi-kategori per catatan, dipisah koma)
   const categories = Array.from(
-    new Set((notes as any[]).flatMap((n) => parseKats(n.label)))
+    new Set((notes as Note[]).flatMap((n) => parseKats(n.label)))
   ).sort((a, b) => a.localeCompare(b))
 
   // Daftar kategori yang bisa dipilih di dialog: existing + yang sedang dipilih (termasuk baru diketik)
   const availableKats = Array.from(new Set([...categories, ...parseKats(editState?.label ?? "")]))
 
   // Filter catatan berdasarkan kategori (cocokkan per token, bukan string penuh)
-  const filteredNotes = (notes as any[]).filter((n) => {
+  const filteredNotes = (notes as Note[]).filter((n) => {
     const labs = parseKats(n.label)
     if (filterKat === "semua") return true
     if (filterKat === "lainnya") return labs.length === 0
@@ -158,7 +167,7 @@ export default function CatatanPage() {
   }
 
   const openAdd = () => { setNewKat(""); setEditState({ id: null, judul: "", isi: "", label: "", warna: "yellow" }) }
-  const openEdit = (n: any) => {
+  const openEdit = (n: Note) => {
     setNewKat("")
     setEditState({ id: n.id, judul: n.judul, isi: n.isi, label: n.label ?? "", warna: n.warna as CatatanWarna })
   }
@@ -185,7 +194,7 @@ export default function CatatanPage() {
     setNewKat("")
   }
 
-  const openView = (n: any) =>
+  const openView = (n: Note) =>
     setViewState({ id: n.id, judul: n.judul, isi: n.isi, label: n.label ?? "", warna: n.warna as CatatanWarna })
 
   // Rev mobile: tombol "Tambah Catatan" pindah ke header kanan atas — registrasi handler via context

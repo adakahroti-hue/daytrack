@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Kode vendor pihak ketiga (minified) — jangan di-lint:
+    "**/vendor/**",
+    "extensions/**",
   ]),
 ]);
 

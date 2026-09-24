@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, ReactNode, useCallback, useMemo, useEffect } from 'react'
+import { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react'
 import { format, isSameDay, subDays, addDays, subWeeks, addWeeks, subMonths, addMonths, addYears, subYears, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfDay, startOfYear, endOfYear, addDays as addDaysFn } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
@@ -304,8 +304,12 @@ export function HeaderControlsProvider({
 
   const goToWaktuToday = useCallback(() => setWaktuDate(new Date()), [])
 
-  // Update category and sub-page when pathname changes
-  useEffect(() => {
+  // Update category and sub-page when pathname changes — "adjust state during
+  // render" (pola resmi React): bandingkan pathname terhadap nilai sebelumnya,
+  // bukan setState sinkron di dalam effect.
+  const [prevPathname, setPrevPathname] = useState<string | null>(null)
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname)
     if (pathname) {
       setCategory(getCategoryFromPath(pathname))
       const sp = getSubPageFromPath(pathname)
@@ -315,7 +319,7 @@ export function HeaderControlsProvider({
       else if (sp === 'hari-ini') setTugasView('hari-ini')
       else if (sp === 'selesai') setTugasView('selesai')
     }
-  }, [pathname])
+  }
 
   const isToday = isSameDay(currentDate, new Date())
 

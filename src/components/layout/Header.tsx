@@ -9,7 +9,7 @@ import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useHeaderControls, formatDateForPeriod, formatIndonesianDate, formatIbadahShotLabel, GROUP_MODES } from './HeaderControls'
-import { useTasks } from '@/hooks/useTasks'
+import { useTasks, type TaskRow } from '@/hooks/useTasks'
 import { useOverdueCount } from '@/hooks/useOverdueCount'
 import { usePmoLogRange } from '@/hooks/usePmoLogs'
 import { getEstimasiText } from '@/lib/utils'
@@ -24,8 +24,8 @@ function HariIniHeaderStats() {
   const { data: todayTasks = [] } = useTasks(today)
 
   const totalEstimatedMinutes = todayTasks
-    .filter((t: any) => t.status !== 'selesai')
-    .reduce((sum: number, t: any) => sum + t.estimasi_menit, 0)
+    .filter((t: TaskRow) => t.status !== 'selesai')
+    .reduce((sum: number, t: TaskRow) => sum + t.estimasi_menit, 0)
 
   return (
     <div className="hidden md:flex items-center gap-2">
@@ -42,8 +42,8 @@ function HariIniMissionSentence() {
   const today = format(new Date(), 'yyyy-MM-dd')
   const { data: todayTasks = [] } = useTasks(today)
 
-  const completedMissions = todayTasks.filter((t: any) => t.status === 'selesai').length
-  const remainingMissions = todayTasks.filter((t: any) => t.status === 'belum' || t.status === 'proses').length
+  const completedMissions = todayTasks.filter((t: TaskRow) => t.status === 'selesai').length
+  const remainingMissions = todayTasks.filter((t: TaskRow) => t.status === 'belum' || t.status === 'proses').length
 
   return (
     <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg">
@@ -92,11 +92,18 @@ const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   '/goal': Target,
 }
 
+// Row tabel pmo (dari getPmoLogRange) — field yang dipakai rekor streak di header.
+interface PmoLogRow {
+  id: string
+  tanggal: string
+  status: string
+}
+
 // Revisi batch 19: rekor terbaik PMO — dipindah dari halaman ke header, di kiri navigasi tanggal
 function PmoHeaderStats() {
   const { data: allLogs = [] } = usePmoLogRange('2000-01-01', format(new Date(), 'yyyy-MM-dd'))
   const bestStreak = useMemo(() => {
-    const sorted = [...(allLogs as any[])].sort((a: any, b: any) => a.tanggal.localeCompare(b.tanggal))
+    const sorted = [...(allLogs as PmoLogRow[])].sort((a, b) => a.tanggal.localeCompare(b.tanggal))
     let cur = 0
     let best = 0
     for (const e of sorted) {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Layers } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -94,30 +94,41 @@ export function TaskGroupDialog({
     if (!usedOrders.has(n)) freeOrders.push(n)
   }
 
-  // Reset state setiap kali dialog dibuka untuk tugas tertentu
-  useEffect(() => {
-    if (!open || !task) return
-    if (task.group_id && task.group_order === 1) {
-      setRole('parent')
-      setParentGroupId(task.group_id)
-      setOrder(1)
-    } else if (task.group_id && task.group_order) {
-      setRole('child')
-      setParentGroupId(task.group_id)
-      setOrder(task.group_order)
-    } else {
-      setRole('single')
-      setParentGroupId('')
-      setOrder(2)
+  // Reset state setiap kali dialog dibuka untuk tugas tertentu —
+  // "adjust state during render" (pola resmi React): bandingkan kunci reset
+  // (open + id tugas) terhadap nilai sebelumnya, bukan setState di effect.
+  const resetKey = open && task ? task.id : null
+  const [prevResetKey, setPrevResetKey] = useState<string | null>(null)
+  if (resetKey !== prevResetKey) {
+    setPrevResetKey(resetKey)
+    if (open && task) {
+      if (task.group_id && task.group_order === 1) {
+        setRole('parent')
+        setParentGroupId(task.group_id)
+        setOrder(1)
+      } else if (task.group_id && task.group_order) {
+        setRole('child')
+        setParentGroupId(task.group_id)
+        setOrder(task.group_order)
+      } else {
+        setRole('single')
+        setParentGroupId('')
+        setOrder(2)
+      }
     }
-  }, [open, task?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  }
 
-  // Jika nomor yang tersimpan ternyata sudah dipakai (konflik), geser ke yang kosong
-  useEffect(() => {
+  // Jika nomor yang tersimpan ternyata sudah dipakai (konflik), geser ke yang kosong.
+  // Disesuaikan saat render dengan kunci role + paket terpilih — setara dengan
+  // dependensi effect lama [role, parentGroupId].
+  const adjustKey = `${role}\u0000${parentGroupId}`
+  const [prevAdjustKey, setPrevAdjustKey] = useState(`single\u0000`)
+  if (adjustKey !== prevAdjustKey) {
+    setPrevAdjustKey(adjustKey)
     if (role === 'child' && parentGroupId && usedOrders.has(order)) {
       if (freeOrders.length > 0) setOrder(freeOrders[0])
     }
-  }, [role, parentGroupId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }
 
   const handleSave = () => {
     if (role === 'single') {

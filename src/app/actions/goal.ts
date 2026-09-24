@@ -6,6 +6,30 @@ import { z } from "zod"
 
 const GOAL_SELECT = "id, user_id, title, target_date, is_active, created_at, updated_at"
 
+/* Tipe lokal untuk baris query (repo tanpa generated Database types) */
+interface GoalRow {
+  id: string
+  user_id: string
+  title: string
+  target_date: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+interface MilestoneRow {
+  id: string
+  goal_id: string
+  title: string
+  description: string
+  order: number
+  is_completed?: boolean
+  created_at: string
+  updated_at: string
+}
+
+type SupabaseServer = Awaited<ReturnType<typeof createClient>>
+
 /* ── Tipe data ── */
 export interface GoalStep {
   id: string
@@ -62,7 +86,7 @@ export async function getActiveGoal(): Promise<GoalData | null> {
   if (!user) throw new Error("Unauthorized")
 
   // 1) Goal aktif milik user (is_active=true); kalau tidak ada, ambil yang terbaru
-  let goalRow: any = null
+  let goalRow: GoalRow | null = null
   const { data: activeRow, error: activeErr } = await supabase
     .from("goal")
     .select("id, user_id, title, target_date, is_active, created_at, updated_at")
@@ -101,7 +125,7 @@ export async function getActiveGoal(): Promise<GoalData | null> {
       .eq("goal_id", goalRow.id),
   ])
   // Toleran DB lama (kolom is_completed belum ada → 42703): retry tanpa kolom itu
-  let milestonesRaw = milestonesRes.data || []
+  let milestonesRaw: MilestoneRow[] = milestonesRes.data || []
   if (milestonesRes.error && /42703|column .* does not exist/i.test(milestonesRes.error.message)) {
     const { data: fallback, error: fbErr } = await supabase
       .from("goal_milestone")
@@ -109,7 +133,7 @@ export async function getActiveGoal(): Promise<GoalData | null> {
       .eq("goal_id", goalRow.id)
       .order("order", { ascending: true })
     if (fbErr) throw new Error(fbErr.message)
-    milestonesRaw = (fallback || []).map((m: any) => ({ ...m, is_completed: false }))
+    milestonesRaw = (fallback || []).map((m: MilestoneRow) => ({ ...m, is_completed: false }))
   } else if (milestonesRes.error) {
     throw new Error(milestonesRes.error.message)
   }
@@ -118,8 +142,8 @@ export async function getActiveGoal(): Promise<GoalData | null> {
 
   // 3) Steps — difilter by milestone_ids (HINDARI cross-table filter .eq("goal_milestone.goal_id")
   //    yang rawan gagal kalau Supabase tak mendeteksi relasi FK otomatis → throw & crash).
-  const milestoneIds = milestonesRaw.map((m: any) => m.id)
-  let stepsRaw: any[] = []
+  const milestoneIds = milestonesRaw.map((m) => m.id)
+  let stepsRaw: GoalStep[] = []
   if (milestoneIds.length > 0) {
     const { data, error: sErr } = await supabase
       .from("goal_step")
@@ -136,7 +160,7 @@ export async function getActiveGoal(): Promise<GoalData | null> {
     ;(stepsByMilestone[s.milestone_id] ||= []).push(s as GoalStep)
   }
 
-  const milestones: GoalMilestone[] = milestonesRaw.map((m: any) => ({
+  const milestones: GoalMilestone[] = milestonesRaw.map((m) => ({
     id: m.id,
     goal_id: m.goal_id,
     title: m.title,
@@ -206,7 +230,7 @@ export async function updateGoal(id: string, formData: { title?: string; target_
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const updateData: any = {}
+  const updateData: Record<string, unknown> = {}
   if (formData.title !== undefined) updateData.title = formData.title
   if (formData.target_date !== undefined) updateData.target_date = formData.target_date || null
   const { error } = await supabase.from("goal").update(updateData).eq("id", id).eq("user_id", user.id)
@@ -334,7 +358,7 @@ export async function reorderMilestones(orderedIds: string[]) {
     .from("goal_milestone")
     .select("id")
     .eq("goal_id", goalId)
-  const dbIds = new Set((all ?? []).map((m: any) => m.id))
+  const dbIds = new Set((all ?? []).map((m: { id: string }) => m.id))
   if (orderedIds.length !== dbIds.size || orderedIds.some((id) => !dbIds.has(id))) {
     throw new Error("Daftar milestone tidak sinkron — muat ulang lalu coba lagi")
   }
@@ -357,7 +381,7 @@ export async function updateMilestone(id: string, formData: { title?: string; de
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const updateData: any = {}
+  const updateData: Record<string, unknown> = {}
   if (formData.title !== undefined) updateData.title = formData.title
   if (formData.description !== undefined) updateData.description = formData.description
   if (formData.order !== undefined) updateData.order = formData.order
@@ -371,7 +395,7 @@ export async function updateMilestone(id: string, formData: { title?: string; de
   if (error) {
     // Toleran DB lama: kalau kolom is_completed belum ada (42703), ulangi tanpa itu
     if (formData.is_completed !== undefined && /42703|column .* does not exist/i.test(error.message)) {
-      const retry: any = { ...updateData }
+      const retry: Record<string, unknown> = { ...updateData }
       delete retry.is_completed
       const { error: retryErr } = await supabase
         .from("goal_milestone")
@@ -400,7 +424,7 @@ export async function deleteMilestone(id: string) {
   return { error: null }
 }
 
-async function getGoalIdForMilestone(supabase: any, milestoneId: string, userId: string): Promise<string | null> {
+async function getGoalIdForMilestone(supabase: SupabaseServer, milestoneId: string, userId: string): Promise<string | null> {
   const { data } = await supabase
     .from("goal_milestone")
     .select("goal_id")
@@ -440,7 +464,7 @@ export async function updateStep(id: string, formData: { title?: string; target_
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const updateData: any = {}
+  const updateData: Record<string, unknown> = {}
   if (formData.title !== undefined) updateData.title = formData.title
   if (formData.target_date !== undefined) updateData.target_date = formData.target_date || null
   if (formData.order !== undefined) updateData.order = formData.order

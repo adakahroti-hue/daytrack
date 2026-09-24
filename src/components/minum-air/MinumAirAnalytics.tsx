@@ -7,6 +7,7 @@ import {
   Cell,
   PieChart,
   Pie,
+  type LabelProps,
 } from 'recharts'
 import { Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -46,8 +47,18 @@ const PASTEL_DONUT_COLORS = [
 
 const RADIAN = Math.PI / 180
 
-const renderDonutLabel = (props: any) => {
-  const { cx, cy, midAngle, innerRadius, outerRadius, payload, percent } = props
+type DonutLabelProps = LabelProps & {
+  cx: number
+  cy: number
+  midAngle: number
+  innerRadius: number
+  outerRadius: number
+  percent?: number
+  payload?: { labelValue?: string; percent?: number }
+}
+
+const renderDonutLabel = (props: LabelProps) => {
+  const { cx, cy, midAngle, innerRadius, outerRadius, payload, percent } = props as DonutLabelProps
   const radius = innerRadius + (outerRadius - innerRadius) / 2
   const x = cx + radius * Math.cos(-midAngle * RADIAN)
   const y = cy + radius * Math.sin(-midAngle * RADIAN)
@@ -115,7 +126,12 @@ function TooltipShell({ children }: { children: React.ReactNode }) {
   )
 }
 
-function MissedTooltip({ active, payload }: any) {
+interface MissedTooltipProps {
+  active?: boolean
+  payload?: Array<{ payload: { name: string; total: number; missed: number; percent: number } }>
+}
+
+function MissedTooltip({ active, payload }: MissedTooltipProps) {
   if (!active || !payload?.length) return null
   const d = payload[0].payload
   return (
@@ -129,7 +145,12 @@ function MissedTooltip({ active, payload }: any) {
   )
 }
 
-function ReasonTooltip({ active, payload }: any) {
+interface ReasonTooltipProps {
+  active?: boolean
+  payload?: Array<{ payload: { name: string; count: number; percent: number } }>
+}
+
+function ReasonTooltip({ active, payload }: ReasonTooltipProps) {
   if (!active || !payload?.length) return null
   const d = payload[0].payload
   return (

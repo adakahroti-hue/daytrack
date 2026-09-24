@@ -1,10 +1,33 @@
 "use client"
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient, type QueryKey } from "@tanstack/react-query"
 import { createTask, updateTask, deleteTask, toggleTaskStatus, bulkDeleteTasks, bulkResetTasks, bulkUpdateTaskDate, pauseTask, resumeTask, reorderTaskGroup } from "@/app/actions/tasks"
 import { createClient } from "@/lib/supabase/client"
 import { getTaskActiveSeconds } from "@/lib/utils"
 import { TaskFormData } from "@/app/actions/tasks"
+
+// Row tabel `tugas` (tanpa generated Database types) — dipakai untuk optimis-update
+// dan konsumsi data useTasks agar tidak lagi `any`.
+export interface TaskRow {
+  id: string
+  user_id: string
+  nama: string
+  tanggal: string
+  estimasi_menit: number
+  prioritas: 'p1' | 'p2' | 'p3' | 'p4'
+  status: 'belum' | 'proses' | 'selesai'
+  catatan?: string | null
+  created_at: string
+  updated_at: string
+  started_at: string | null
+  completed_at: string | null
+  accumulated_seconds?: number | null
+  is_paused?: boolean | null
+  last_resumed_at?: string | null
+  terlewat_tanggal?: string | null
+  group_id?: string | null
+  group_order?: number | null
+}
 
 // Baca langsung browser -> Supabase (RLS membatasi ke user sendiri).
 // Jauh lebih cepat dari server action: satu round-trip, tanpa getUser() + serialisasi action.
@@ -20,7 +43,7 @@ async function fetchTasksDirect(date?: string, status?: string, limit?: number) 
   if (status) query = query.eq("status", status)
   const { data, error } = await query
   if (error) throw new Error(error.message)
-  return data || []
+  return (data || []) as TaskRow[]
 }
 
 export function useTasks(date?: string, status?: string) {
@@ -57,16 +80,16 @@ export function useUpdateTask() {
     mutationFn: ({ id, data }: { id: string; data: Partial<TaskFormData> }) => updateTask(id, data),
     onMutate: async ({ id, data }) => {
       await queryClient.cancelQueries({ queryKey: ["tugas"] })
-      const previousTasks = queryClient.getQueriesData({ queryKey: ["tugas"] })
-      queryClient.setQueriesData({ queryKey: ["tugas"] }, (old: any) => {
+      const previousTasks: [QueryKey, unknown][] = queryClient.getQueriesData({ queryKey: ["tugas"] })
+      queryClient.setQueriesData({ queryKey: ["tugas"] }, (old: TaskRow[] | undefined) => {
         if (!old) return old
-        return old.map((task: any) => task.id === id ? { ...task, ...data, updated_at: new Date().toISOString() } : task)
+        return old.map((task): TaskRow => task.id === id ? { ...task, ...data, updated_at: new Date().toISOString() } : task)
       })
       return { previousTasks }
     },
     onError: (_err, _vars, context) => {
       if (context?.previousTasks) {
-        context.previousTasks.forEach(([key, data]: any) => queryClient.setQueryData(key, data))
+        context.previousTasks.forEach(([key, data]) => queryClient.setQueryData(key, data))
       }
     },
     onSettled: () => {
@@ -83,16 +106,16 @@ export function useDeleteTask() {
     mutationFn: (id: string) => deleteTask(id),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ["tugas"] })
-      const previousTasks = queryClient.getQueriesData({ queryKey: ["tugas"] })
-      queryClient.setQueriesData({ queryKey: ["tugas"] }, (old: any) => {
+      const previousTasks: [QueryKey, unknown][] = queryClient.getQueriesData({ queryKey: ["tugas"] })
+      queryClient.setQueriesData({ queryKey: ["tugas"] }, (old: TaskRow[] | undefined) => {
         if (!old) return old
-        return old.filter((task: any) => task.id !== id)
+        return old.filter((task) => task.id !== id)
       })
       return { previousTasks }
     },
     onError: (_err, _vars, context) => {
       if (context?.previousTasks) {
-        context.previousTasks.forEach(([key, data]: any) => queryClient.setQueryData(key, data))
+        context.previousTasks.forEach(([key, data]) => queryClient.setQueryData(key, data))
       }
     },
     onSettled: () => {
@@ -108,13 +131,13 @@ export function useToggleTaskStatus() {
     mutationFn: ({ id, status }: { id: string; status: "proses" | "belum" | "selesai" }) => toggleTaskStatus(id, status),
     onMutate: async ({ id, status }) => {
       await queryClient.cancelQueries({ queryKey: ["tugas"] })
-      const previousTasks = queryClient.getQueriesData({ queryKey: ["tugas"] })
+      const previousTasks: [QueryKey, unknown][] = queryClient.getQueriesData({ queryKey: ["tugas"] })
       const now = new Date().toISOString()
-      queryClient.setQueriesData({ queryKey: ["tugas"] }, (old: any) => {
+      queryClient.setQueriesData({ queryKey: ["tugas"] }, (old: TaskRow[] | undefined) => {
         if (!old) return old
-        return old.map((task: any) => {
+        return old.map((task): TaskRow => {
           if (task.id !== id) return task
-          const updated: any = { ...task, status, updated_at: now }
+          const updated: TaskRow = { ...task, status, updated_at: now }
           if (status === 'proses') {
             // Mulai: reset timer aktif, catat waktu mulai (sama dengan server action)
             updated.started_at = now
@@ -142,7 +165,7 @@ export function useToggleTaskStatus() {
     },
     onError: (_err, _vars, context) => {
       if (context?.previousTasks) {
-        context.previousTasks.forEach(([key, data]: any) => queryClient.setQueryData(key, data))
+        context.previousTasks.forEach(([key, data]) => queryClient.setQueryData(key, data))
       }
     },
     onSettled: () => {
@@ -158,11 +181,11 @@ export function usePauseTask() {
     mutationFn: (id: string) => pauseTask(id),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ["tugas"] })
-      const previousTasks = queryClient.getQueriesData({ queryKey: ["tugas"] })
+      const previousTasks: [QueryKey, unknown][] = queryClient.getQueriesData({ queryKey: ["tugas"] })
       const now = new Date().toISOString()
-      queryClient.setQueriesData({ queryKey: ["tugas"] }, (old: any) => {
+      queryClient.setQueriesData({ queryKey: ["tugas"] }, (old: TaskRow[] | undefined) => {
         if (!old) return old
-        return old.map((task: any) => {
+        return old.map((task) => {
           if (task.id !== id) return task
           return { ...task, is_paused: true, accumulated_seconds: getTaskActiveSeconds(task), last_resumed_at: null, updated_at: now }
         })
@@ -171,7 +194,7 @@ export function usePauseTask() {
     },
     onError: (_err, _vars, context) => {
       if (context?.previousTasks) {
-        context.previousTasks.forEach(([key, data]: any) => queryClient.setQueryData(key, data))
+        context.previousTasks.forEach(([key, data]) => queryClient.setQueryData(key, data))
       }
     },
     onSettled: () => {
@@ -187,11 +210,11 @@ export function useResumeTask() {
     mutationFn: (id: string) => resumeTask(id),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ["tugas"] })
-      const previousTasks = queryClient.getQueriesData({ queryKey: ["tugas"] })
+      const previousTasks: [QueryKey, unknown][] = queryClient.getQueriesData({ queryKey: ["tugas"] })
       const now = new Date().toISOString()
-      queryClient.setQueriesData({ queryKey: ["tugas"] }, (old: any) => {
+      queryClient.setQueriesData({ queryKey: ["tugas"] }, (old: TaskRow[] | undefined) => {
         if (!old) return old
-        return old.map((task: any) => {
+        return old.map((task) => {
           if (task.id !== id) return task
           return { ...task, is_paused: false, last_resumed_at: now, updated_at: now }
         })
@@ -200,7 +223,7 @@ export function useResumeTask() {
     },
     onError: (_err, _vars, context) => {
       if (context?.previousTasks) {
-        context.previousTasks.forEach(([key, data]: any) => queryClient.setQueryData(key, data))
+        context.previousTasks.forEach(([key, data]) => queryClient.setQueryData(key, data))
       }
     },
     onSettled: () => {
@@ -279,15 +302,15 @@ export function useReorderTaskGroup() {
     mutationFn: ({ upId, downId }: { upId: string; downId: string }) => reorderTaskGroup(upId, downId),
     onMutate: async ({ upId, downId }) => {
       await queryClient.cancelQueries({ queryKey: ["tugas"] })
-      const previousTasks = queryClient.getQueriesData({ queryKey: ["tugas"] })
-      queryClient.setQueriesData({ queryKey: ["tugas"] }, (old: any) => {
+      const previousTasks: [QueryKey, unknown][] = queryClient.getQueriesData({ queryKey: ["tugas"] })
+      queryClient.setQueriesData({ queryKey: ["tugas"] }, (old: TaskRow[] | undefined) => {
         if (!old) return old
-        const a = old.find((t: any) => t.id === upId)
-        const b = old.find((t: any) => t.id === downId)
+        const a = old.find((t) => t.id === upId)
+        const b = old.find((t) => t.id === downId)
         if (!a || !b || a.group_order == null || b.group_order == null) return old
         const oa = a.group_order
         const ob = b.group_order
-        return old.map((t: any) => {
+        return old.map((t) => {
           if (t.id === upId) return { ...t, group_order: ob }
           if (t.id === downId) return { ...t, group_order: oa }
           return t
@@ -297,7 +320,7 @@ export function useReorderTaskGroup() {
     },
     onError: (_err, _vars, context) => {
       if (context?.previousTasks) {
-        context.previousTasks.forEach(([key, data]: any) => queryClient.setQueryData(key, data))
+        context.previousTasks.forEach(([key, data]) => queryClient.setQueryData(key, data))
       }
     },
     onSettled: () => {

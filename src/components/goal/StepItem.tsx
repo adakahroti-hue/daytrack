@@ -1,4 +1,5 @@
 import { CheckCircle2, Circle, Pencil, Trash2 } from "lucide-react"
+import type { GoalStep } from "@/app/actions/goal"
 import { cn } from "@/lib/utils"
 
 export function StepItem({
@@ -8,15 +9,10 @@ export function StepItem({
   onEdit,
   onDelete,
 }: {
-  step: {
-    id: string
-    title: string
-    is_completed: boolean
-    target_date: string | null
-  }
+  step: GoalStep
   label?: string
   onToggle: (id: string, isCompleted: boolean) => void
-  onEdit: (step: any) => void
+  onEdit: (step: GoalStep) => void
   onDelete: (id: string) => void
 }) {
   return (

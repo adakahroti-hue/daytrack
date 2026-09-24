@@ -86,7 +86,7 @@ export async function updateKeranjang(id: string, formData: { nama_barang?: stri
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
-  const updateData: Record<string, any> = {}
+  const updateData: Record<string, unknown> = {}
   if (formData.tanggal !== undefined) updateData.tanggal = formData.tanggal
   if (formData.nama_barang !== undefined) updateData.nama_barang = formData.nama_barang
   if (formData.harga !== undefined) updateData.harga = formData.harga

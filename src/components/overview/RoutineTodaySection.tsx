@@ -5,7 +5,7 @@ import { Check, Minus, Mosque, BookOpen, GlassWater, Sparkles, Shield, Moon, Arr
 import { format, differenceInCalendarDays } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { cn, formatRupiah } from '@/lib/utils'
-import { useOverviewData } from "@/hooks/useOverviewData"
+import { useOverviewData, type OverviewData } from "@/hooks/useOverviewData"
 import { PERIOD_LABEL, type OverviewPeriod } from './FocusTodaySection'
 
 // ─── Revisi batch 18: section "Rutinitas" untuk tab Overview (tema hitam-putih) ───
@@ -270,53 +270,53 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   )
 
   // 1 RPC menggantikan ~12 query paralel (sholat, quran, sunnah, air, syukur, doa, sedekah, pmo, tidur, arus kas, masalah)
-  const { data: ov = {} as Record<string, any[]> } = useOverviewData(startStr, endStr)
+  const { data } = useOverviewData(startStr, endStr)
+  const ov: Partial<OverviewData> = data ?? {}
   const numColor = (reached: boolean) =>
     reached ? 'text-emerald-600' : isKemarin ? 'text-slate-900' : 'text-slate-900'
   const numColorSoft = (reached: boolean) =>
     reached ? 'text-emerald-600/70' : isKemarin ? 'text-slate-900/70' : 'text-slate-500'
 
   // Sholat 5 waktu
-  const prayerRows = (ov.prayer ?? []) as any[]
+  const prayerRows = ov.prayer ?? []
   const sholatPerWaktu = SHOLAT_5.map(s =>
-    (prayerRows as any[]).filter(row => !!row?.[`sholat_${s.key}`]).length
+    prayerRows.filter(row => !!row?.[`sholat_${s.key}`]).length
   )
 
 
   // Baca Quran
-  const quranEntries = (ov.quran ?? []) as any[]
-  const quranRows = quranEntries as any[]
+  const quranRows = ov.quran ?? []
   const quranPerSesi = QURAN_SESSIONS.map(s =>
     quranRows.filter(e => e.waktu_baca === s.key && e.status === 'sudah').length
   )
 
 
   // Sholat Sunnah (Dhuha + Tahajud)
-  const sunnahRows = (ov.sunnah ?? []) as any[]
+  const sunnahRows = ov.sunnah ?? []
   const sunnahPerWaktu = SUNNAH_TIMES.map(s =>
-    (sunnahRows as any[]).filter(row => !!row?.[`sholat_${s.key}`]).length
+    sunnahRows.filter(row => !!row?.[`sholat_${s.key}`]).length
   )
 
 
   // Minum Air
-  const waterEntries = (ov.water ?? []) as any[]
-  const totalMl = (waterEntries as any[]).reduce((sum, e) => sum + (e.jumlah_ml || 0), 0)
+  const waterEntries = ov.water ?? []
+  const totalMl = waterEntries.reduce((sum, e) => sum + (e.jumlah_ml || 0), 0)
   const gelas = Math.round(totalMl / ML_PER_GELAS)
 
   const waterPerSesi = WATER_SESSIONS.map(s =>
-    (waterEntries as any[]).filter(e => e.waktu_minum === s.key && e.status === 'sudah').length
+    waterEntries.filter(e => e.waktu_minum === s.key && e.status === 'sudah').length
   )
 
   // Checklist
-  const syukurEntries = (ov.syukur ?? []) as any[]
-  const doaEntries = (ov.doa ?? []) as any[]
-  const sedekahEntries = (ov.sedekah ?? []) as any[]
-  const sedekahCount = (sedekahEntries as any[]).filter(e => e.status === 'sudah').length
-  const pmoEntries = (ov.pmo ?? []) as any[]
-  const pmoAllEntries = (ov.pmo_all ?? []) as any[]
-  const tidurEntries = (ov.tidur ?? []) as any[]
+  const syukurEntries = ov.syukur ?? []
+  const doaEntries = ov.doa ?? []
+  const sedekahEntries = ov.sedekah ?? []
+  const sedekahCount = sedekahEntries.filter(e => e.status === 'sudah').length
+  const pmoEntries = ov.pmo ?? []
+  const pmoAllEntries = ov.pmo_all ?? []
+  const tidurEntries = ov.tidur ?? []
   // Tidur — data jam & durasi
-  const tidurRows = tidurEntries as any[]
+  const tidurRows = tidurEntries
   const jamTidurList = tidurRows.map(e => e.jam_tidur).filter(Boolean).sort() as string[]
   const jamBangunList = tidurRows.map(e => e.jam_bangun).filter(Boolean).sort() as string[]
   const fmtJam = (v: string | null) => v ? v.slice(0, 5) : null
@@ -331,8 +331,8 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
 
 
   // Arus Kas — saldo & sisa alokasi kebutuhan (ALL-TIME, TIDAK dipengaruhi filter periode mana pun)
-  const arusKasEntries = (ov.arus_kas ?? []) as any[]
-  const arusKas = (arusKasEntries as any[]) || []
+  const arusKasEntries = ov.arus_kas ?? []
+  const arusKas = arusKasEntries || []
   const akMasuk = arusKas.filter(e => e.kategori === 'uang_masuk').reduce((s, e) => s + (e.nominal || 0), 0)
   const akKeluar = arusKas.filter(e => e.kategori === 'uang_keluar').reduce((s, e) => s + (e.nominal || 0), 0)
   const akSaldo = akMasuk - akKeluar
@@ -344,17 +344,17 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const akTabungSisa = Math.max(0, Math.round((akMasuk * 10) / 100) - akPakaiTabung)
   const akPakaiSedekah = arusKas.filter(e => e.kategori === 'uang_keluar' && e.dompet === 'sedekah').reduce((s, e) => s + (e.nominal || 0), 0)
   const akSedekahSisa = Math.max(0, Math.round((akMasuk * 10) / 100) - akPakaiSedekah)
-  const countDays = (entries: any[], match: (e: any) => boolean) =>
+  const countDays = <T extends { tanggal?: string }>(entries: T[], match: (e: T) => boolean) =>
     new Set(entries.filter(match).map(e => e.tanggal)).size
   const checklist = [
-    { label: 'Bersyukur', days: countDays(syukurEntries as any[], e => e.status === 'sudah') },
-    { label: 'Mendoakan orang lain', days: countDays(doaEntries as any[], e => e.status === 'sudah') },
-    { label: 'Bebas PMO', days: countDays(pmoEntries as any[], e => e.status === 'berhasil') },
-    { label: 'Tidur tepat waktu', days: countDays(tidurEntries as any[], e => e.status === 'tepat') },
+    { label: 'Bersyukur', days: countDays(syukurEntries, e => e.status === 'sudah') },
+    { label: 'Mendoakan orang lain', days: countDays(doaEntries, e => e.status === 'sudah') },
+    { label: 'Bebas PMO', days: countDays(pmoEntries, e => e.status === 'berhasil') },
+    { label: 'Tidur tepat waktu', days: countDays(tidurEntries, e => e.status === 'tepat') },
   ]
   // Posisi saat ini = streak berjalan (hari berhasil beruntun terakhir)
   const pmoCurrentStreak = (() => {
-    const sorted = [...(pmoAllEntries as any[])].sort((a: any, b: any) => (a.tanggal || '').localeCompare(b.tanggal || ''))
+    const sorted = [...pmoAllEntries].sort((a, b) => (a.tanggal || '').localeCompare(b.tanggal || ''))
     let cur = 0
     for (let i = sorted.length - 1; i >= 0; i--) {
       if (sorted[i].status === 'berhasil') cur += 1
@@ -375,8 +375,8 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const label = PERIOD_LABEL[period]
 
   // Refleksi (journal) — 3 poin terbaru dari SELURUH data (sumber: tab Refleksi /masalah, tidak dibatasi periode)
-  const refleksiEntries = (ov.masalah ?? []) as any[]
-  const refleksiList = (refleksiEntries as any[])
+  const refleksiEntries = ov.masalah ?? []
+  const refleksiList = refleksiEntries
     .filter(e => e.masalah)
     .sort((a, b) => {
       const da = a.created_at ? new Date(a.created_at).getTime() : 0

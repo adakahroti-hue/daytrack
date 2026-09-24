@@ -187,7 +187,7 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
     const menuWidth = 240
     const menuMaxHeight = 460
 
-    let top = rect.bottom + 4
+    const top = rect.bottom + 4
     let left = rect.left
 
     if (left + menuWidth > window.innerWidth) {
@@ -198,7 +198,8 @@ const DropdownMenuContent = forwardRef<HTMLDivElement, {
     const availableBelow = window.innerHeight - top - 8
     const maxHeight = Math.max(160, Math.min(menuMaxHeight, availableBelow))
 
-    setPosition({ top, left, maxHeight })
+    // Terapkan posisi via callback (microtask) — hindari setState sinkron di effect
+    queueMicrotask(() => setPosition({ top, left, maxHeight }))
   }, [tanggal, sholatKey])
 
   useEffect(() => {

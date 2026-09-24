@@ -1,7 +1,7 @@
 "use client"
 
 
-import { Fragment, useMemo, useState, useEffect } from "react"
+import { Fragment, useMemo, useState } from "react"
 import {
   format,
   startOfWeek,
@@ -184,8 +184,13 @@ export default function ArusKasPage() {
   // Filter "Semua": abaikan periode, tampilkan SELURUH catatan arus kas.
   const [showAll, setShowAll] = useState(false)
 
-  // sinkronkan dengan toggle header
-  useEffect(() => { setShowAll(arusKasShowAll) }, [arusKasShowAll])
+  // sinkronkan dengan toggle header — "adjust state during render" (pola resmi React),
+  // bukan setState sinkron di dalam effect.
+  const [prevArusKasShowAll, setPrevArusKasShowAll] = useState<boolean | null>(null)
+  if (arusKasShowAll !== prevArusKasShowAll) {
+    setPrevArusKasShowAll(arusKasShowAll)
+    setShowAll(arusKasShowAll)
+  }
   const toggleShowAll = () => setArusKasShowAll(!arusKasShowAll)
 
   const rangeQuery = useArusKasRange(startDate, endDate)
@@ -599,7 +604,7 @@ export default function ArusKasPage() {
       </div>
 
       {/* Diagram lingkaran: uang keluar per dompet & sumber uang masuk */}
-      <ArusKasAnalytics logs={logs as any[]} />
+      <ArusKasAnalytics logs={logs as ArusKasEntry[]} />
 
       <Button onClick={openAdd} size="icon" aria-label="Tambah Arus Kas" className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-white shadow-lg">
         <Plus className="h-6 w-6" />

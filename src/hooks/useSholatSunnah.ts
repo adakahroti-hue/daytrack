@@ -9,6 +9,14 @@ import {
 } from "@/app/actions/sholat-sunnah"
 import type { SholatSunnahFormData } from "@/app/actions/sholat-sunnah"
 
+// Row tabel sholat_sunnah — hanya field yang dipakai optimis-update kualitas.
+interface SholatSunnahRow {
+  id?: string
+  tanggal?: string
+  status?: string
+  [key: string]: unknown
+}
+
 export function useSholatSunnah(tanggal: string) {
   return useQuery({
     queryKey: ["sholat_sunnah", tanggal],
@@ -86,7 +94,7 @@ export function useUpdateSholatSunnahQuality() {
       quality: number
     }) => updateSholatSunnahQuality(tanggal, prayerTime, quality),
     onSuccess: (data, variables) => {
-      queryClient.setQueryData(["sholat_sunnah", variables.tanggal], (old: any) => {
+      queryClient.setQueryData(["sholat_sunnah", variables.tanggal], (old: SholatSunnahRow | undefined) => {
         if (!old) return old
         return {
           ...old,

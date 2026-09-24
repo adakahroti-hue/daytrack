@@ -17,6 +17,15 @@ type Item = {
   status: "running" | "completed"
 }
 
+// Pesan error dari kegagalan mutation — perilaku sama dengan `e?.message || fallback`.
+function errMessage(e: unknown): string | undefined {
+  if (typeof e === 'object' && e !== null && 'message' in e) {
+    const m = e.message
+    if (typeof m === 'string' && m) return m
+  }
+  return undefined
+}
+
 function formatElapsed(ms: number): string {
   const totalSec = Math.max(0, Math.floor(ms / 1000))
   const h = Math.floor(totalSec / 3600)
@@ -257,24 +266,24 @@ export default function WaktuPage() {
     try {
       await start.mutateAsync({ name: trimmed })
       setName("")
-    } catch (e: any) {
-      setError(e?.message || "Gagal memulai aktivitas.")
+    } catch (e) {
+      setError(errMessage(e) || "Gagal memulai aktivitas.")
     }
   }
 
   const handleComplete = async (id: string) => {
     try {
       await complete.mutateAsync(id)
-    } catch (e: any) {
-      setError(e?.message || "Gagal menyelesaikan aktivitas.")
+    } catch (e) {
+      setError(errMessage(e) || "Gagal menyelesaikan aktivitas.")
     }
   }
 
   const handleDelete = async (id: string) => {
     try {
       await remove.mutateAsync(id)
-    } catch (e: any) {
-      setError(e?.message || "Gagal menghapus aktivitas.")
+    } catch (e) {
+      setError(errMessage(e) || "Gagal menghapus aktivitas.")
     }
   }
 

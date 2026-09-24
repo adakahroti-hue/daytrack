@@ -8,6 +8,14 @@ import {
   updatePrayerQuality
 } from "@/app/actions/prayer-logs"
 import type { PrayerLogFormData } from "@/app/actions/prayer-logs"
+// Row tabel sholat_wajib — hanya field yang dipakai optimis-update kualitas.
+interface SholatWajibRow {
+  id?: string
+  tanggal?: string
+  status?: string
+  [key: string]: unknown
+}
+
 export function usePrayerLog(tanggal: string) {
   return useQuery({
     queryKey: ["sholat", tanggal],
@@ -88,7 +96,7 @@ export function useUpdatePrayerQuality() {
     }) => updatePrayerQuality(tanggal, prayerTime, quality),
     onSuccess: (data, variables) => {
       // Optimistically update the cache so the UI responds instantly
-      queryClient.setQueryData(["sholat", variables.tanggal], (old: any) => {
+      queryClient.setQueryData(["sholat", variables.tanggal], (old: SholatWajibRow | undefined) => {
         if (!old) return old
         return {
           ...old,

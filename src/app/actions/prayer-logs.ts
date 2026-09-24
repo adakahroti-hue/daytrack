@@ -126,7 +126,7 @@ export async function togglePrayer(tanggal: string, prayerTime: typeof PRAYER_TI
     .eq("tanggal", tanggal)
     .single()
 
-  const updates: any = { [column]: value }
+  const updates: Record<string, unknown> = { [column]: value }
   if (value) {
     updates[reasonColumn] = null
   } else {

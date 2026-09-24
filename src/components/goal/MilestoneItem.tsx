@@ -1,7 +1,8 @@
 import { useState } from "react"
-import { ChevronDown, ChevronRight, Pencil, Trash2, Plus, ArrowUp, ArrowDown, MoreVertical, Circle, Check } from "lucide-react"
+import { ChevronDown, ChevronRight, Pencil, Trash2, Plus, ArrowUp, ArrowDown, MoreVertical, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
+import type { GoalMilestone, GoalStep } from "@/app/actions/goal"
 import { StepItem } from "./StepItem"
 
 export function MilestoneItem({
@@ -19,25 +20,13 @@ export function MilestoneItem({
   canMoveUp,
   canMoveDown,
 }: {
-  milestone: {
-    id: string
-    title: string
-    description: string
-    order: number
-    is_completed?: boolean
-    steps: {
-      id: string
-      title: string
-      is_completed: boolean
-      target_date: string | null
-    }[]
-  }
+  milestone: GoalMilestone
   index: number
   onToggleStep: (id: string, isCompleted: boolean) => void
-  onEditStep: (step: any) => void
+  onEditStep: (step: GoalStep) => void
   onDeleteStep: (id: string) => void
   onAddStep: (milestoneId: string) => void
-  onEditMilestone: (milestone: any) => void
+  onEditMilestone: (milestone: GoalMilestone) => void
   onDeleteMilestone: (id: string) => void
   onToggleAllSteps?: (milestoneId: string, isCompleted: boolean) => void
   onToggleMilestone?: (milestoneId: string, isCompleted: boolean) => void

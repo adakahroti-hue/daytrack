@@ -9,7 +9,7 @@ const startSchema = z.object({
 })
 
 // Auto-stop timer yang masih running (ubah jadi completed + hitung durasi)
-async function autoStopRunning(supabase: any, userId: string) {
+async function autoStopRunning(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
   const { data: running } = await supabase
     .from("jejak_waktu")
     .select("id, started_at")

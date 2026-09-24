@@ -125,7 +125,7 @@ export async function getMasalahLogAll() {
       .select("id, user_id, masalah, status, created_at, updated_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
-    data = (res.data || []).map((r: any) => ({ ...r, kategori: null }))
+    data = (res.data || []).map((r) => ({ ...r, kategori: null }))
     error = res.error
   }
   if (error) throw new Error(error.message)

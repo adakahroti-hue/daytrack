@@ -110,7 +110,8 @@ export default function TidurPage() {
       tanggal,
       status,
       jam_tidur: entry?.jam_tidur || undefined,
-      ...(status === 'tepat' ? { alasan_tidak: null as any } : {}),
+      // Null dipertahankan persis seperti semula (runtime tidak diubah); cast hanya agar cocok dengan tipe TidurLogFormData.
+      ...(status === 'tepat' ? { alasan_tidak: null as unknown as string } : {}),
     })
   }
 

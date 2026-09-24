@@ -7,6 +7,7 @@ import {
   Cell,
   PieChart,
   Pie,
+  type LabelProps,
 } from 'recharts'
 import { cn } from '@/lib/utils'
 import { formatRupiah } from '@/lib/utils'
@@ -61,8 +62,18 @@ const PASTEL_DONUT_COLORS = [
 
 const RADIAN = Math.PI / 180
 
-const renderDonutLabel = (props: any) => {
-  const { cx, cy, midAngle, innerRadius, outerRadius, payload, percent } = props
+type DonutLabelProps = LabelProps & {
+  cx: number
+  cy: number
+  midAngle: number
+  innerRadius: number
+  outerRadius: number
+  percent?: number
+  payload?: { labelValue?: string; percent?: number }
+}
+
+const renderDonutLabel = (props: LabelProps) => {
+  const { cx, cy, midAngle, innerRadius, outerRadius, payload, percent } = props as DonutLabelProps
   const radius = innerRadius + (outerRadius - innerRadius) / 2
   const x = cx + radius * Math.cos(-midAngle * RADIAN)
   const y = cy + radius * Math.sin(-midAngle * RADIAN)
@@ -108,7 +119,12 @@ function TooltipShell({ children }: { children: React.ReactNode }) {
   )
 }
 
-function PieTooltip({ active, payload }: any) {
+interface PieTooltipProps {
+  active?: boolean
+  payload?: Array<{ payload: { name: string; value: number; percent: number } }>
+}
+
+function PieTooltip({ active, payload }: PieTooltipProps) {
   if (!active || !payload?.length) return null
   const d = payload[0].payload
   return (

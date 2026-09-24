@@ -1,3 +1,4 @@
+import type { GoalMilestone, GoalStep } from "@/app/actions/goal"
 import { MilestoneItem } from "./MilestoneItem"
 
 export function RoadmapList({
@@ -12,14 +13,14 @@ export function RoadmapList({
   onDeleteMilestone,
   onMoveMilestone,
 }: {
-  milestones: any[]
+  milestones: GoalMilestone[]
   onToggleStep: (id: string, isCompleted: boolean) => void
   onToggleAllSteps: (milestoneId: string, isCompleted: boolean) => void
   onToggleMilestone: (milestoneId: string, isCompleted: boolean) => void
-  onEditStep: (step: any) => void
+  onEditStep: (step: GoalStep) => void
   onDeleteStep: (id: string) => void
   onAddStep: (milestoneId: string) => void
-  onEditMilestone: (milestone: any) => void
+  onEditMilestone: (milestone: GoalMilestone) => void
   onDeleteMilestone: (id: string) => void
   onMoveMilestone: (milestoneId: string, direction: "up" | "down") => void
 }) {

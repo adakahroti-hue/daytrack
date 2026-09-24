@@ -45,7 +45,7 @@ export async function upsertMakanLog(formData: MakanLogFormData) {
     .eq("tanggal", validated.tanggal)
     .maybeSingle()
 
-  const insertData: Record<string, any> = {
+  const insertData: Record<string, unknown> = {
     user_id: user.id,
     tanggal: validated.tanggal,
   }

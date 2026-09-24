@@ -57,7 +57,7 @@ export async function upsertTidurLog(formData: TidurLogFormData) {
     .eq("tanggal", validated.tanggal)
     .single()
 
-  const insertData: Record<string, any> = {
+  const insertData: Record<string, unknown> = {
     user_id: user.id,
     tanggal: validated.tanggal,
     status: validated.status,

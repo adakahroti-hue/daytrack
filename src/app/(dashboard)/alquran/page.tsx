@@ -90,27 +90,22 @@ export default function AlquranPage() {
     el?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" })
   }, [curSurah, mode])
 
-  useEffect(() => {
+  // Sinkronkan posisi bookmark dari query — "adjust state during render"
+  // (bandingkan nilai sebelumnya, bukan setState sinkron di effect).
+  const [prevBookmarkData, setPrevBookmarkData] = useState(bookmark.data)
+  if (bookmark.data !== prevBookmarkData) {
+    setPrevBookmarkData(bookmark.data)
     if (bookmark.data) setBookmarkPos(bookmark.data)
-  }, [bookmark.data])
-
-  // Default: begitu halaman terbuka, langsung muat posisi terakhir baca (bookmark).
-  // Kalau belum ada bookmark, mulai dari Al-Fatihah ayat 1.
-  const autoLoaded = useRef(false)
-  useEffect(() => {
-    if (autoLoaded.current) return
-    // bookmark.data === undefined masih loading; null = benar-benar tidak ada
-    if (bookmark.isLoading) return
-    autoLoaded.current = true
-    const b = bookmark.data || { surah: 1, ayat: 1 }
-    loadSurahFull(b.surah, b.ayat)
-  }, [bookmark.isLoading, bookmark.data])
+  }
 
   useEffect(() => {
     const cached = cacheGet<SurahMeta[]>(LIST_CACHE_KEY)
     if (cached?.length) {
-      setList(cached)
-      setLoadingList(false)
+      // Terapkan cache via callback (microtask) — hindari setState sinkron di effect
+      queueMicrotask(() => {
+        setList(cached)
+        setLoadingList(false)
+      })
       return
     }
     fetch("https://equran.id/api/v2/surat")
@@ -169,6 +164,23 @@ export default function AlquranPage() {
       setLoadingAyat(false)
     }
   }
+
+  // Default: begitu halaman terbuka, langsung muat posisi terakhir baca (bookmark).
+  // Kalau belum ada bookmark, mulai dari Al-Fatihah ayat 1.
+  // (Deklarasi dipindah ke bawah loadSurahFull agar tidak diakses sebelum deklarasi.)
+  const autoLoaded = useRef(false)
+  useEffect(() => {
+    if (autoLoaded.current) return
+    // bookmark.data === undefined masih loading; null = benar-benar tidak ada
+    if (bookmark.isLoading) return
+    autoLoaded.current = true
+    const b = bookmark.data || { surah: 1, ayat: 1 }
+    // Muat surah via callback (microtask) — setState di dalam loadSurahFull
+    // (mis. saat cache hangat) tidak sinkron dengan body effect.
+    queueMicrotask(() => {
+      loadSurahFull(b.surah, b.ayat)
+    })
+  }, [bookmark.isLoading, bookmark.data])
 
   const startMengaji = async () => {
     const b = bookmarkPos || { surah: 1, ayat: 1 }
@@ -254,8 +266,6 @@ export default function AlquranPage() {
     if (exploreIndex) return
     exploreLoaded.current = true
     exploreAbort.current = false
-    setExploreLoading(true)
-    setExploreProgress(0)
 
     const idx: { surah: number; namaLatin: string; ayat: number; teksIndonesia: string; teksArab: string }[] = []
     const CONCURRENCY = 8
@@ -302,7 +312,14 @@ export default function AlquranPage() {
         setExploreLoading(false)
       }
     }
-    run()
+    // Mulai proses via callback (microtask) — setState loading diterapkan
+    // setelah effect body, bukan sinkron di dalamnya.
+    queueMicrotask(() => {
+      if (exploreAbort.current) return
+      setExploreLoading(true)
+      setExploreProgress(0)
+      run()
+    })
     return () => { exploreAbort.current = true }
   }, [mode, loadingList, list.length, exploreIndex])
 

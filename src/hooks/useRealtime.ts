@@ -5,12 +5,19 @@ import { createClient } from '@/lib/supabase/client'
 import { useQueryClient } from '@tanstack/react-query'
 import { RealtimeChannel } from '@supabase/supabase-js'
 
+// Payload baku perubahan row dari Supabase Realtime (postgres_changes).
+export interface RealtimePayload {
+  eventType: 'INSERT' | 'UPDATE' | 'DELETE'
+  new: Record<string, unknown>
+  old: Record<string, unknown>
+}
+
 interface RealtimeOptions {
   table: string
   filter?: string
-  onInsert?: (payload: any) => void
-  onUpdate?: (payload: any) => void
-  onDelete?: (payload: any) => void
+  onInsert?: (payload: RealtimePayload) => void
+  onUpdate?: (payload: RealtimePayload) => void
+  onDelete?: (payload: RealtimePayload) => void
   queryKeys?: string[][]
 }
 
@@ -18,9 +25,9 @@ interface RealtimeOptions {
 interface ChannelEntry {
   channel: RealtimeChannel
   count: number
-  handlers: Map<string, (payload: any) => void>
+  handlers: Map<string, (payload: RealtimePayload) => void>
   subscribed: boolean
-  combinedHandler?: (payload: any) => void
+  combinedHandler?: (payload: RealtimePayload) => void
 }
 
 const channelRegistry = new Map<string, ChannelEntry>()
@@ -68,7 +75,7 @@ function releaseChannelEntry(table: string, filter: string | undefined, handlerI
 function subscribeChannel(entry: ChannelEntry, supabase: ReturnType<typeof createClient>) {
   if (!entry.subscribed) {
     // Create combined handler that calls all registered handlers
-    entry.combinedHandler = (payload: any) => {
+    entry.combinedHandler = (payload: RealtimePayload) => {
       entry.handlers.forEach(handler => {
         try {
           handler(payload)
@@ -108,7 +115,7 @@ export function useRealtime({
   const handlerIdRef = useRef<string>('')
   const entryRef = useRef<ChannelEntry | null>(null)
 
-  const handleRealtimeEvent = useCallback((payload: any) => {
+  const handleRealtimeEvent = useCallback((payload: RealtimePayload) => {
     
     queryKeys.forEach(key => {
       queryClient.invalidateQueries({ queryKey: key })
@@ -140,7 +147,7 @@ export function useRealtime({
 
     // Set up combined handler and subscribe only once
     if (!entry.subscribed) {
-      entry.combinedHandler = (payload: any) => {
+      entry.combinedHandler = (payload: RealtimePayload) => {
         entry.handlers.forEach(handler => {
           try {
             handler(payload)
