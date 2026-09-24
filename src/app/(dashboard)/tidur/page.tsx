@@ -110,8 +110,8 @@ export default function TidurPage() {
       tanggal,
       status,
       jam_tidur: entry?.jam_tidur || undefined,
-      // Null dipertahankan persis seperti semula (runtime tidak diubah); cast hanya agar cocok dengan tipe TidurLogFormData.
-      ...(status === 'tepat' ? { alasan_tidak: null as unknown as string } : {}),
+      // 'tepat' mengirim null agar alasan begadang lama ikut terhapus di DB
+      ...(status === 'tepat' ? { alasan_tidak: null } : {}),
     })
   }
 

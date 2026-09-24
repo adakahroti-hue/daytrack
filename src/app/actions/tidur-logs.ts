@@ -9,7 +9,8 @@ const tidurLogSchema = z.object({
   status: z.enum(["tepat", "begadang"]).default("tepat"),
   jam_tidur: z.string().optional(),
   jam_bangun: z.string().optional(),
-  alasan_tidak: z.string().optional(),
+  // nullish: 'tepat' mengirim alasan_tidak=null untuk menghapus alasan begadang lama
+  alasan_tidak: z.string().nullish(),
 })
 
 export type TidurLogFormData = z.infer<typeof tidurLogSchema>
