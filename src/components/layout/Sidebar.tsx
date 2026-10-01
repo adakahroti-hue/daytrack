@@ -326,20 +326,19 @@ function SidebarContent({
             </TooltipContent>
           </Tooltip>
         )}
-      </div>
-
-        {/* Mobile close button */}
+        {/* Rev mobile: tombol tutup sebaris dengan teks "Daytrack" (dulu baris sendiri → space kosong) */}
         {showMobileClose && onCloseMobile && (
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 flex-shrink-0"
+            className="h-8 w-8 flex-shrink-0"
             onClick={onCloseMobile}
             aria-label="Tutup menu"
           >
             <X className="h-5 w-5" />
           </Button>
         )}
+      </div>
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2">
