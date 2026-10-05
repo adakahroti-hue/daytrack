@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useMemo } from "react"
 import { Pencil, Trash2, List, ListOrdered, Copy, X, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -12,39 +12,100 @@ import { useCatatanAll, useCreateCatatan, useUpdateCatatan, useDeleteCatatan } f
 import { useRealtime } from "@/hooks/useRealtime"
 import { useHeaderControls } from "@/components/layout/HeaderControls"
 
-type CatatanWarna = "yellow" | "green" | "blue" | "pink" | "orange"
-
-// Rev: tombol warna kini memakai warna aslinya (sel = warna penuh, unsel = versi muda)
-const NOTE_COLORS: Record<CatatanWarna, { card: string; bar: string; text: string; badge: string; sel: string; unsel: string }> = {
-  yellow: {
-    card: "bg-amber-50 border-amber-200", bar: "bg-amber-400", text: "text-amber-900", badge: "bg-amber-400 text-amber-950",
-    sel: "bg-amber-400 border-amber-400 text-amber-950", unsel: "bg-amber-50 border-amber-200 text-amber-800 hover:bg-amber-100",
-  },
-  green: {
-    card: "bg-emerald-50 border-emerald-200", bar: "bg-emerald-400", text: "text-emerald-900", badge: "bg-emerald-400 text-emerald-950",
-    sel: "bg-emerald-400 border-emerald-400 text-emerald-950", unsel: "bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100",
-  },
-  blue: {
-    card: "bg-sky-50 border-sky-200", bar: "bg-sky-400", text: "text-sky-900", badge: "bg-sky-400 text-sky-950",
-    sel: "bg-sky-400 border-sky-400 text-sky-950", unsel: "bg-sky-50 border-sky-200 text-sky-800 hover:bg-sky-100",
-  },
-  pink: {
-    card: "bg-pink-50 border-pink-200", bar: "bg-pink-400", text: "text-pink-900", badge: "bg-pink-400 text-pink-950",
-    sel: "bg-pink-400 border-pink-400 text-pink-950", unsel: "bg-pink-50 border-pink-200 text-pink-800 hover:bg-pink-100",
-  },
-  orange: {
-    card: "bg-orange-50 border-orange-200", bar: "bg-orange-400", text: "text-orange-900", badge: "bg-orange-400 text-orange-950",
-    sel: "bg-orange-400 border-orange-400 text-orange-950", unsel: "bg-orange-50 border-orange-200 text-orange-800 hover:bg-orange-100",
-  },
+// Palet 12 warna cerah (hindari hitam/navy). Dipakai untuk assign otomatis ke kategori.
+type CategoryColor = {
+  key: string
+  bar: string
+  badge: string
+  card: string
+  hover: string
+  pillBase: string
+  pillHover: string
 }
 
-const WARNA_OPTIONS: { value: CatatanWarna; label: string }[] = [
-  { value: "yellow", label: "Kuning" },
-  { value: "green", label: "Hijau" },
-  { value: "blue", label: "Biru" },
-  { value: "pink", label: "Pink" },
-  { value: "orange", label: "Orange" },
-]
+const CATEGORY_PALETTE: CategoryColor[] = [
+  { key: "amber",   bar: "bg-amber-400",   badge: "bg-amber-400 text-amber-950",   card: "bg-amber-50 border-amber-200",   hover: "hover:bg-amber-100",   pillBase: "bg-amber-50 border-amber-200 text-amber-800", pillHover: "hover:bg-amber-100" },
+  { key: "emerald", bar: "bg-emerald-400", badge: "bg-emerald-400 text-emerald-950", card: "bg-emerald-50 border-emerald-200", hover: "hover:bg-emerald-100", pillBase: "bg-emerald-50 border-emerald-200 text-emerald-800", pillHover: "hover:bg-emerald-100" },
+  { key: "sky",     bar: "bg-sky-400",     badge: "bg-sky-400 text-sky-950",       card: "bg-sky-50 border-sky-200",       hover: "hover:bg-sky-100",     pillBase: "bg-sky-50 border-sky-200 text-sky-800",       pillHover: "hover:bg-sky-100" },
+  { key: "pink",    bar: "bg-pink-400",    badge: "bg-pink-400 text-pink-950",     card: "bg-pink-50 border-pink-200",     hover: "hover:bg-pink-100",    pillBase: "bg-pink-50 border-pink-200 text-pink-800",     pillHover: "hover:bg-pink-100" },
+  { key: "orange",  bar: "bg-orange-400",  badge: "bg-orange-400 text-orange-950",  card: "bg-orange-50 border-orange-200",  hover: "hover:bg-orange-100",  pillBase: "bg-orange-50 border-orange-200 text-orange-800",  pillHover: "hover:bg-orange-100" },
+  { key: "violet",  bar: "bg-violet-400",  badge: "bg-violet-400 text-violet-950",  card: "bg-violet-50 border-violet-200",  hover: "hover:bg-violet-100",  pillBase: "bg-violet-50 border-violet-200 text-violet-800",  pillHover: "hover:bg-violet-100" },
+  { key: "teal",    bar: "bg-teal-400",    badge: "bg-teal-400 text-teal-950",      card: "bg-teal-50 border-teal-200",      hover: "hover:bg-teal-100",      pillBase: "bg-teal-50 border-teal-200 text-teal-800",      pillHover: "hover:bg-teal-100" },
+  { key: "rose",    bar: "bg-rose-400",    badge: "bg-rose-400 text-rose-950",      card: "bg-rose-50 border-rose-200",      hover: "hover:bg-rose-100",      pillBase: "bg-rose-50 border-rose-200 text-rose-800",      pillHover: "hover:bg-rose-100" },
+  { key: "indigo",  bar: "bg-indigo-400",  badge: "bg-indigo-400 text-indigo-950",  card: "bg-indigo-50 border-indigo-200",  hover: "hover:bg-indigo-100",  pillBase: "bg-indigo-50 border-indigo-200 text-indigo-800",  pillHover: "hover:bg-indigo-100" },
+  { key: "lime",    bar: "bg-lime-400",    badge: "bg-lime-400 text-lime-950",      card: "bg-lime-50 border-lime-200",      hover: "hover:bg-lime-100",      pillBase: "bg-lime-50 border-lime-200 text-lime-800",      pillHover: "hover:bg-lime-100" },
+  { key: "cyan",    bar: "bg-cyan-400",    badge: "bg-cyan-400 text-cyan-950",      card: "bg-cyan-50 border-cyan-200",      hover: "hover:bg-cyan-100",      pillBase: "bg-cyan-50 border-cyan-200 text-cyan-800",      pillHover: "hover:bg-cyan-100" },
+  { key: "red",     bar: "bg-red-400",     badge: "bg-red-400 text-red-950",        card: "bg-red-50 border-red-200",        hover: "hover:bg-red-100",       pillBase: "bg-red-50 border-red-200 text-red-800",       pillHover: "hover:bg-red-100" },
+] as const
+
+// Kunci localStorage untuk mapping kategori → index palet
+const CAT_COLOR_STORAGE_KEY = "daytrack:catatan:categoryColors"
+
+// Default warna untuk catatan TANPA kategori (hitam/slate-900)
+const NO_CATEGORY_COLOR = {
+  bar: "bg-slate-900",
+  badge: "bg-slate-900 text-white",
+  card: "bg-slate-50 border-slate-200",
+  hover: "hover:bg-slate-100",
+  pillBase: "bg-white text-slate-600 border-slate-200",
+  pillHover: "hover:bg-slate-100",
+} as const
+
+// Helper: ambil mapping dari localStorage (client-only)
+function getStoredCategoryColors(): Record<string, number> {
+  if (typeof window === "undefined") return {}
+  try {
+    const raw = localStorage.getItem(CAT_COLOR_STORAGE_KEY)
+    return raw ? JSON.parse(raw) : {}
+  } catch { return {} }
+}
+
+// Helper: simpan mapping ke localStorage
+function setStoredCategoryColors(map: Record<string, number>) {
+  if (typeof window === "undefined") return
+  try { localStorage.setItem(CAT_COLOR_STORAGE_KEY, JSON.stringify(map)) } catch {}
+}
+
+// Helper: dapatkan warna untuk kategori (assign otomatis jika belum ada)
+function getColorForCategory(category: string, allCategories: string[]): CategoryColor | typeof NO_CATEGORY_COLOR {
+  if (!category) return NO_CATEGORY_COLOR
+  const stored = getStoredCategoryColors()
+  let idx = stored[category]
+  if (idx === undefined) {
+    // Assign index berikutnya yang belum dipakai
+    const used = new Set(Object.values(stored))
+    idx = allCategories.indexOf(category) % CATEGORY_PALETTE.length
+    while (used.has(idx)) idx = (idx + 1) % CATEGORY_PALETTE.length
+    stored[category] = idx
+    setStoredCategoryColors(stored)
+  }
+  return CATEGORY_PALETTE[idx % CATEGORY_PALETTE.length]
+}
+
+// Row catatan dari getCatatanAll — field yang dipakai halaman ini.
+interface Note {
+  id: string
+  judul: string
+  isi: string
+  label?: string | null
+  warna: string // legacy field, dipakai fallback kalau category-color belum ter-set
+}
+
+interface EditState {
+  id: string | null
+  judul: string
+  isi: string
+  label: string
+  // warna tidak lagi di state — dihitung dari kategori pertama
+}
+
+interface ViewState {
+  id: string
+  judul: string
+  isi: string
+  label: string
+  // warna dihitung dari kategori pertama
+}
 
 // Rev mobile: kategori multi — disimpan di kolom label sebagai teks terpisah koma ("Ide, Belajar")
 function parseKats(raw: string | null | undefined): string[] {
@@ -87,7 +148,7 @@ interface EditState {
   judul: string
   isi: string
   label: string
-  warna: CatatanWarna
+  // warna tidak lagi di state — dihitung dari kategori pertama
 }
 
 interface ViewState {
@@ -95,7 +156,7 @@ interface ViewState {
   judul: string
   isi: string
   label: string
-  warna: CatatanWarna
+  // warna dihitung dari kategori pertama
 }
 
 export default function CatatanPage() {
@@ -119,6 +180,13 @@ export default function CatatanPage() {
   const categories = Array.from(
     new Set((notes as Note[]).flatMap((n) => parseKats(n.label)))
   ).sort((a, b) => a.localeCompare(b))
+
+  // Warna per kategori (memo agar stabil antar render)
+  const categoryColors = useMemo(() => {
+    const map: Record<string, CategoryColor | typeof NO_CATEGORY_COLOR> = {}
+    categories.forEach(cat => { map[cat] = getColorForCategory(cat, categories) })
+    return map
+  }, [categories])
 
   // Daftar kategori yang bisa dipilih di dialog: existing + yang sedang dipilih (termasuk baru diketik)
   const availableKats = Array.from(new Set([...categories, ...parseKats(editState?.label ?? "")]))
@@ -166,10 +234,15 @@ export default function CatatanPage() {
     })
   }
 
-  const openAdd = () => { setNewKat(""); setEditState({ id: null, judul: "", isi: "", label: "", warna: "yellow" }) }
+  const openAdd = () => { setNewKat(""); setEditState({ id: null, judul: "", isi: "", label: "" }) }
   const openEdit = (n: Note) => {
     setNewKat("")
-    setEditState({ id: n.id, judul: n.judul, isi: n.isi, label: n.label ?? "", warna: n.warna as CatatanWarna })
+    const { warna, ...rest } = n
+    setEditState({ id: rest.id, judul: rest.judul, isi: rest.isi, label: rest.label ?? "" })
+  }
+  const openEditFromView = (v: ViewState) => {
+    setNewKat("")
+    setEditState({ id: v.id, judul: v.judul, isi: v.isi, label: v.label })
   }
 
   // Rev mobile: toggle kategori terpilih (multiselect) di dialog tambah/edit
@@ -195,7 +268,7 @@ export default function CatatanPage() {
   }
 
   const openView = (n: Note) =>
-    setViewState({ id: n.id, judul: n.judul, isi: n.isi, label: n.label ?? "", warna: n.warna as CatatanWarna })
+    setViewState({ id: n.id, judul: n.judul, isi: n.isi, label: n.label ?? "" })
 
   // Rev mobile: tombol "Tambah Catatan" pindah ke header kanan atas — registrasi handler via context
   const { setHeaderAddAction } = useHeaderControls()
@@ -226,19 +299,24 @@ export default function CatatanPage() {
       const cur = parseKats(label)
       if (!cur.includes(pendingKat)) label = [...cur, pendingKat].join(", ")
     }
+    // Warna dari kategori pertama (atau fallback ke field lama)
+    const cats = parseKats(label)
+    const firstCat = cats[0]
+    const colorObj = firstCat ? categoryColors[firstCat] : NO_CATEGORY_COLOR
+    const warnaFromCat = firstCat && "key" in colorObj ? colorObj.key : "slate"
     setIsBusy(true)
     try {
       if (editState.id) {
         await updateCatatan.mutateAsync({
           id: editState.id,
-          data: { judul: editState.judul.trim(), isi: editState.isi.trim(), label: label.trim(), warna: editState.warna },
+          data: { judul: editState.judul.trim(), isi: editState.isi.trim(), label: label.trim(), warna: warnaFromCat },
         })
       } else {
         await createCatatan.mutateAsync({
           judul: editState.judul.trim(),
           isi: editState.isi.trim(),
           label: label.trim(),
-          warna: editState.warna,
+          warna: warnaFromCat,
         })
       }
       setEditState(null)
@@ -272,29 +350,34 @@ export default function CatatanPage() {
             >
               Semua
             </button>
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => { setFilterKat(cat); setShowAll(false) }}
-                className={cn(
-                  "rounded-full px-3 py-1 text-xs font-medium border transition-colors shrink-0 whitespace-nowrap",
-                  filterKat === cat
-                    ? "bg-purple-600 text-white border-purple-600"
-                    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-                )}
-              >
-                {cat}
-              </button>
-            ))}
+            {categories.map((cat) => {
+              const color = categoryColors[cat]
+              const isActive = filterKat === cat
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => { setFilterKat(cat); setShowAll(false) }}
+                  className={cn(
+                    "rounded-full px-3 py-1 text-xs font-medium border transition-colors shrink-0 whitespace-nowrap",
+                    isActive
+                      ? `${color.bar} text-white border-transparent`
+                      : `${color.pillBase ?? "bg-white text-slate-600 border-slate-200"} ${color.pillHover ?? "hover:bg-slate-50"}`
+                  )}
+                  style={{ backgroundColor: isActive ? undefined : undefined }} // className handles it
+                >
+                  {cat}
+                </button>
+              )
+            })}
             <button
               type="button"
               onClick={() => { setFilterKat("lainnya"); setShowAll(false) }}
               className={cn(
                 "rounded-full px-3 py-1 text-xs font-medium border transition-colors shrink-0 whitespace-nowrap",
                 filterKat === "lainnya"
-                  ? "bg-purple-600 text-white border-purple-600"
-                  : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                  ? NO_CATEGORY_COLOR.bar + " text-white border-transparent"
+                  : NO_CATEGORY_COLOR.pillBase + " " + NO_CATEGORY_COLOR.pillHover
               )}
             >
               Lainnya
@@ -313,7 +396,9 @@ export default function CatatanPage() {
         <>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-3">
           {visibleNotes.map((n) => {
-            const c = NOTE_COLORS[(n.warna as CatatanWarna) || "yellow"]
+            const cats = parseKats(n.label)
+            const firstCat = cats[0]
+            const c = firstCat ? categoryColors[firstCat] : NO_CATEGORY_COLOR
             const isiLines = (n.isi || "").split("\n")
             const isExpanded = expanded.has(n.id)
             // Preview maksimal 10 baris; jika lebih, tampilkan tombol Selengkapnya per kartu
@@ -332,11 +417,14 @@ export default function CatatanPage() {
                   <p className="text-base font-bold break-words leading-snug text-slate-900">{n.judul}</p>
                   {parseKats(n.label).length > 0 && (
                     <div className="flex flex-wrap gap-1 justify-end shrink-0">
-                      {parseKats(n.label).map((k) => (
-                        <span key={k} className={cn("rounded-full px-2 py-0.5 text-[10px] font-semibold", c.badge)}>
-                          {k}
-                        </span>
-                      ))}
+                      {parseKats(n.label).map((k) => {
+                        const catColor = categoryColors[k] ?? NO_CATEGORY_COLOR
+                        return (
+                          <span key={k} className={cn("rounded-full px-2 py-0.5 text-[10px] font-semibold", catColor.badge)}>
+                            {k}
+                          </span>
+                        )
+                      })}
                     </div>
                   )}
                 </div>
@@ -387,14 +475,14 @@ export default function CatatanPage() {
         <DialogContent className="max-w-[92vw] sm:max-w-lg lg:max-w-4xl rounded-xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              {viewState && (
-                <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", NOTE_COLORS[(viewState.warna as CatatanWarna) || "yellow"].bar)} />
+              {viewState && parseKats(viewState.label).length > 0 && (
+                <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", categoryColors[parseKats(viewState.label)[0]]?.bar ?? NO_CATEGORY_COLOR.bar)} />
               )}
               <span className="break-words">{viewState?.judul}</span>
               {viewState && parseKats(viewState.label).length > 0 && (
                 <span className="flex flex-wrap gap-1 shrink-0">
                   {parseKats(viewState.label).map((k) => (
-                    <span key={k} className={cn("rounded-full px-2 py-0.5 text-[10px] font-semibold", NOTE_COLORS[(viewState.warna as CatatanWarna) || "yellow"].badge)}>
+                    <span key={k} className={cn("rounded-full px-2 py-0.5 text-[10px] font-semibold", categoryColors[k]?.badge ?? NO_CATEGORY_COLOR.badge)}>
                       {k}
                     </span>
                   ))}
@@ -411,7 +499,7 @@ export default function CatatanPage() {
             <Button size="icon" onClick={() => {
               const v = viewState
               setViewState(null)
-              if (v) openEdit({ id: v.id, judul: v.judul, isi: v.isi, label: v.label, warna: v.warna })
+              if (v) openEditFromView(v)
             }} aria-label="Edit" title="Edit" className="h-9 w-9 p-0 bg-slate-900 hover:bg-slate-800 text-white">
               <Pencil className="h-4 w-4" />
             </Button>
@@ -504,21 +592,6 @@ export default function CatatanPage() {
                 value={editState?.isi ?? ""}
                 onChange={(e) => setEditState(prev => prev ? { ...prev, isi: e.target.value } : prev)}
               />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Warna</Label>
-              <div className="grid grid-cols-5 gap-2">
-                {WARNA_OPTIONS.map(opt => (
-                  <button key={opt.value} type="button"
-                    onClick={() => setEditState(prev => prev ? { ...prev, warna: opt.value } : prev)}
-                    className={cn("rounded-lg border px-1 py-2 text-[11px] transition-colors",
-                      editState?.warna === opt.value
-                        ? cn(NOTE_COLORS[opt.value].sel, "font-semibold")
-                        : NOTE_COLORS[opt.value].unsel)}>
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
             </div>
             <div className="flex justify-end gap-2 pt-1">
               <Button variant="outline" onClick={() => setEditState(null)}>Batal</Button>

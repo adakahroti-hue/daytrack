@@ -25,7 +25,7 @@ export function useCreateCatatan() {
 export function useUpdateCatatan() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { judul?: string; isi?: string; warna?: "yellow" | "green" | "blue" | "pink" | "orange"; label?: string } }) =>
+    mutationFn: ({ id, data }: { id: string; data: { judul?: string; isi?: string; warna?: string; label?: string } }) =>
       updateCatatan(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["catatan"] }),
   })

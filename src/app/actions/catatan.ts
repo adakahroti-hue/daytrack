@@ -7,7 +7,7 @@ import { z } from "zod"
 const catatanSchema = z.object({
   judul: z.string().min(1, "Judul wajib diisi"),
   isi: z.string().min(1, "Isi wajib diisi"),
-  warna: z.enum(["yellow", "green", "blue", "pink", "orange"]).default("yellow"),
+  warna: z.string().default("slate"),
   label: z.string().max(200, "Maksimal 200 karakter").optional().default(""),
 })
 
@@ -19,7 +19,7 @@ export interface CatatanEntry {
   judul: string
   isi: string
   label: string
-  warna: "yellow" | "green" | "blue" | "pink" | "orange"
+  warna: string
   created_at: string
   updated_at: string
 }
@@ -46,7 +46,7 @@ export async function createCatatan(formData: CatatanFormData) {
   return { data, error: null }
 }
 
-export async function updateCatatan(id: string, formData: { judul?: string; isi?: string; warna?: "yellow" | "green" | "blue" | "pink" | "orange"; label?: string }) {
+export async function updateCatatan(id: string, formData: { judul?: string; isi?: string; warna?: string; label?: string }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
