@@ -72,14 +72,22 @@ function getColorForCategory(category: string, allCategories: string[]): Categor
   const stored = getStoredCategoryColors()
   let idx = stored[category]
   if (idx === undefined) {
-    // Assign index berikutnya yang belum dipakai
+    // Kategori BARU (belum ada di daftar catatan) → indexOf = -1; pakai 0 sebagai basis.
+    const pos = Math.max(0, allCategories.indexOf(category))
+    idx = pos % CATEGORY_PALETTE.length
+    // Cari slot warna yang belum terpakai — TAPI berhenti setelah 1 putaran penuh
+    // supaya tidak infinite loop saat semua 12 warna sudah terpakai (kategori ke-13+
+    // boleh berbagi warna dengan kategori lama).
     const used = new Set(Object.values(stored))
-    idx = allCategories.indexOf(category) % CATEGORY_PALETTE.length
-    while (used.has(idx)) idx = (idx + 1) % CATEGORY_PALETTE.length
+    if (used.size < CATEGORY_PALETTE.length) {
+      for (let i = 0; i < CATEGORY_PALETTE.length && used.has(idx); i++) {
+        idx = (idx + 1) % CATEGORY_PALETTE.length
+      }
+    }
     stored[category] = idx
     setStoredCategoryColors(stored)
   }
-  return CATEGORY_PALETTE[idx % CATEGORY_PALETTE.length]
+  return CATEGORY_PALETTE[idx % CATEGORY_PALETTE.length] ?? CATEGORY_PALETTE[0]
 }
 
 // Row catatan dari getCatatanAll — field yang dipakai halaman ini.
@@ -299,11 +307,14 @@ export default function CatatanPage() {
       const cur = parseKats(label)
       if (!cur.includes(pendingKat)) label = [...cur, pendingKat].join(", ")
     }
-    // Warna dari kategori pertama (atau fallback ke field lama)
+    // Warna dari kategori pertama.
+    // PENTING: pakai getColorForCategory langsung (bukan categoryColors[firstCat]) —
+    // kategori BARU belum ada di map `categoryColors` (map hanya berisi kategori dari
+    // catatan tersimpan), jadi lookup-nya undefined → crash `"key" in undefined`.
     const cats = parseKats(label)
     const firstCat = cats[0]
-    const colorObj = firstCat ? categoryColors[firstCat] : NO_CATEGORY_COLOR
-    const warnaFromCat = firstCat && "key" in colorObj ? colorObj.key : "slate"
+    const colorObj = getColorForCategory(firstCat ?? "", [...categories, ...(firstCat ? [firstCat] : [])])
+    const warnaFromCat = "key" in colorObj ? colorObj.key : "slate"
     setIsBusy(true)
     try {
       if (editState.id) {
@@ -351,7 +362,7 @@ export default function CatatanPage() {
               Semua
             </button>
             {categories.map((cat) => {
-              const color = categoryColors[cat]
+              const color = categoryColors[cat] ?? NO_CATEGORY_COLOR
               const isActive = filterKat === cat
               return (
                 <button
@@ -398,7 +409,7 @@ export default function CatatanPage() {
           {visibleNotes.map((n) => {
             const cats = parseKats(n.label)
             const firstCat = cats[0]
-            const c = firstCat ? categoryColors[firstCat] : NO_CATEGORY_COLOR
+            const c = (firstCat ? categoryColors[firstCat] : NO_CATEGORY_COLOR) ?? NO_CATEGORY_COLOR
             const isiLines = (n.isi || "").split("\n")
             const isExpanded = expanded.has(n.id)
             // Preview maksimal 10 baris; jika lebih, tampilkan tombol Selengkapnya per kartu
