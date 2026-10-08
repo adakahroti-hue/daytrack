@@ -41,6 +41,22 @@ const CATEGORY_PALETTE: CategoryColor[] = [
 // Kunci localStorage untuk mapping kategori → index palet
 const CAT_COLOR_STORAGE_KEY = "daytrack:catatan:categoryColors"
 
+// Kolom DB `catatan.warna` masih punya CHECK constraint lama yang HANYA mengizinkan
+// 5 nilai: yellow/green/blue/pink/orange (migration 20260816000003). Warna tampilan
+// sekarang dihitung dari kategori (localStorage), BUKAN dari kolom ini — tapi insert/update
+// tetap divalidasi constraint. Jadi petakan key palet → nilai legacy yang valid, agar
+// simpan tidak gagal (error 23514). Kalau nanti constraint dihapus via SQL Editor,
+// mapping ini tetap aman (nilainya subset yang valid).
+const DB_WARNA_VALID = ["yellow", "green", "blue", "pink", "orange"] as const
+const PALETTE_KEY_TO_DB: Record<string, (typeof DB_WARNA_VALID)[number]> = {
+  amber: "yellow", emerald: "green", sky: "blue", pink: "pink", orange: "orange",
+  violet: "blue", teal: "green", rose: "pink", indigo: "blue", lime: "green",
+  cyan: "blue", red: "orange",
+}
+function toDbWarna(key: string): (typeof DB_WARNA_VALID)[number] {
+  return PALETTE_KEY_TO_DB[key] ?? "yellow"
+}
+
 // Default warna untuk catatan TANPA kategori (hitam/slate-900)
 const NO_CATEGORY_COLOR = {
   bar: "bg-slate-900",
@@ -314,7 +330,10 @@ export default function CatatanPage() {
     const cats = parseKats(label)
     const firstCat = cats[0]
     const colorObj = getColorForCategory(firstCat ?? "", [...categories, ...(firstCat ? [firstCat] : [])])
-    const warnaFromCat = "key" in colorObj ? colorObj.key : "slate"
+    const paletteKey = "key" in colorObj ? colorObj.key : ""
+    // Kolom DB `warna` masih dibatasi CHECK constraint 5 nilai — kirim nilai legacy valid
+    // (tampilan warna sebenarnya dihitung dari kategori, kolom ini sekadar pengisi NOT NULL).
+    const warnaFromCat = toDbWarna(paletteKey)
     setIsBusy(true)
     try {
       if (editState.id) {
