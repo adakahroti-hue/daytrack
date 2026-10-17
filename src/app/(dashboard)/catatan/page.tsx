@@ -220,6 +220,7 @@ export default function CatatanPage() {
   const [showAll, setShowAll] = useState(false)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [newKat, setNewKat] = useState("")
+  const [searchQuery, setSearchQuery] = useState("")
   const isiRef = useRef<HTMLTextAreaElement>(null)
 
   // Kategori unik dari seluruh catatan (multi-kategori per catatan, dipisah koma)
@@ -238,11 +239,22 @@ export default function CatatanPage() {
   const availableKats = Array.from(new Set([...categories, ...parseKats(editState?.label ?? "")]))
 
   // Filter catatan berdasarkan kategori (cocokkan per token, bukan string penuh)
+  // tambahan: match searchQuery ke judul atau isi (case-insensitive)
   const filteredNotes = (notes as Note[]).filter((n) => {
     const labs = parseKats(n.label)
-    if (filterKat === "semua") return true
-    if (filterKat === "lainnya") return labs.length === 0
-    return labs.includes(filterKat)
+    // Kategori filter
+    const katMatch =
+      filterKat === "semua"
+        ? true
+        : filterKat === "lainnya"
+        ? labs.length === 0
+        : labs.includes(filterKat)
+    // Search teks lewat judul + isi (case-insensitive, token per-token)
+    const textMatch =
+      !searchQuery ||
+      (n.judul.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (n.isi ?? "").toLowerCase().includes(searchQuery.toLowerCase()))
+    return katMatch && textMatch
   })
 
   // Batasi maksimal 10 baris (kartu) kecuali showAll aktif
@@ -410,6 +422,15 @@ export default function CatatanPage() {
     <div className="max-w-[1440px] mx-auto py-4 sm:py-6 lg:pt-2 space-y-4">
       {/* Rev mobile: padding kiri-kanan mobile dihapus (main layout sudah p-4) */}
       {/* Rev mobile: judul "Catatan" dihapus — deretan kategori jadi baris pertama; tombol tambah pindah ke header */}
+      {/* Rev: Input search di header, fokus langsung bisa ditulis */}
+      <div className="flex items-center gap-2 mb-4">
+        <Input
+          placeholder="Judul atau isi..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="h-10 sm:h-12 rounded-md border-slate-300 px-3 text-sm flex-1 focus:outline-none focus:ring-2 focus:ring-purple-300"
+        />
+      </div>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         {notes.length > 0 && (
           <div className="flex items-center gap-1.5 flex-1 min-w-0 overflow-x-auto scrollbar-none -mx-1 px-1 pb-1 sm:mx-0 sm:px-0 sm:pb-0 sm:flex-wrap sm:overflow-visible">
