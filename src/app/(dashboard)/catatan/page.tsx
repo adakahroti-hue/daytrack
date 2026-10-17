@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useRef, useEffect, useMemo } from "react"
-import { Pencil, Trash2, List, ListOrdered, Copy, X, Plus } from "lucide-react"
+import { useState, useRef, useEffect, useMemo, type ReactNode } from "react"
+import { Pencil, Trash2, List, ListOrdered, Copy, X, Plus, Bold, Italic } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -24,18 +24,18 @@ type CategoryColor = {
 }
 
 const CATEGORY_PALETTE: CategoryColor[] = [
-  { key: "amber",   bar: "bg-amber-400",   badge: "bg-amber-400 text-amber-950",   card: "bg-amber-50 border-amber-200",   hover: "hover:bg-amber-100",   pillBase: "bg-amber-50 border-amber-200 text-amber-800", pillHover: "hover:bg-amber-100" },
-  { key: "emerald", bar: "bg-emerald-400", badge: "bg-emerald-400 text-emerald-950", card: "bg-emerald-50 border-emerald-200", hover: "hover:bg-emerald-100", pillBase: "bg-emerald-50 border-emerald-200 text-emerald-800", pillHover: "hover:bg-emerald-100" },
-  { key: "sky",     bar: "bg-sky-400",     badge: "bg-sky-400 text-sky-950",       card: "bg-sky-50 border-sky-200",       hover: "hover:bg-sky-100",     pillBase: "bg-sky-50 border-sky-200 text-sky-800",       pillHover: "hover:bg-sky-100" },
-  { key: "pink",    bar: "bg-pink-400",    badge: "bg-pink-400 text-pink-950",     card: "bg-pink-50 border-pink-200",     hover: "hover:bg-pink-100",    pillBase: "bg-pink-50 border-pink-200 text-pink-800",     pillHover: "hover:bg-pink-100" },
-  { key: "orange",  bar: "bg-orange-400",  badge: "bg-orange-400 text-orange-950",  card: "bg-orange-50 border-orange-200",  hover: "hover:bg-orange-100",  pillBase: "bg-orange-50 border-orange-200 text-orange-800",  pillHover: "hover:bg-orange-100" },
-  { key: "violet",  bar: "bg-violet-400",  badge: "bg-violet-400 text-violet-950",  card: "bg-violet-50 border-violet-200",  hover: "hover:bg-violet-100",  pillBase: "bg-violet-50 border-violet-200 text-violet-800",  pillHover: "hover:bg-violet-100" },
-  { key: "teal",    bar: "bg-teal-400",    badge: "bg-teal-400 text-teal-950",      card: "bg-teal-50 border-teal-200",      hover: "hover:bg-teal-100",      pillBase: "bg-teal-50 border-teal-200 text-teal-800",      pillHover: "hover:bg-teal-100" },
-  { key: "rose",    bar: "bg-rose-400",    badge: "bg-rose-400 text-rose-950",      card: "bg-rose-50 border-rose-200",      hover: "hover:bg-rose-100",      pillBase: "bg-rose-50 border-rose-200 text-rose-800",      pillHover: "hover:bg-rose-100" },
-  { key: "indigo",  bar: "bg-indigo-400",  badge: "bg-indigo-400 text-indigo-950",  card: "bg-indigo-50 border-indigo-200",  hover: "hover:bg-indigo-100",  pillBase: "bg-indigo-50 border-indigo-200 text-indigo-800",  pillHover: "hover:bg-indigo-100" },
-  { key: "lime",    bar: "bg-lime-400",    badge: "bg-lime-400 text-lime-950",      card: "bg-lime-50 border-lime-200",      hover: "hover:bg-lime-100",      pillBase: "bg-lime-50 border-lime-200 text-lime-800",      pillHover: "hover:bg-lime-100" },
-  { key: "cyan",    bar: "bg-cyan-400",    badge: "bg-cyan-400 text-cyan-950",      card: "bg-cyan-50 border-cyan-200",      hover: "hover:bg-cyan-100",      pillBase: "bg-cyan-50 border-cyan-200 text-cyan-800",      pillHover: "hover:bg-cyan-100" },
-  { key: "red",     bar: "bg-red-400",     badge: "bg-red-400 text-red-950",        card: "bg-red-50 border-red-200",        hover: "hover:bg-red-100",       pillBase: "bg-red-50 border-red-200 text-red-800",       pillHover: "hover:bg-red-100" },
+  { key: "amber",   bar: "bg-amber-400",   badge: "bg-amber-400 text-white",   card: "bg-amber-50 border-amber-200",   hover: "hover:bg-amber-100",   pillBase: "bg-amber-50 border-amber-200 text-amber-800", pillHover: "hover:bg-amber-100" },
+  { key: "emerald", bar: "bg-emerald-400", badge: "bg-emerald-400 text-white", card: "bg-emerald-50 border-emerald-200", hover: "hover:bg-emerald-100", pillBase: "bg-emerald-50 border-emerald-200 text-emerald-800", pillHover: "hover:bg-emerald-100" },
+  { key: "sky",     bar: "bg-sky-400",     badge: "bg-sky-400 text-white",     card: "bg-sky-50 border-sky-200",       hover: "hover:bg-sky-100",     pillBase: "bg-sky-50 border-sky-200 text-sky-800",       pillHover: "hover:bg-sky-100" },
+  { key: "pink",    bar: "bg-pink-400",    badge: "bg-pink-400 text-white",    card: "bg-pink-50 border-pink-200",     hover: "hover:bg-pink-100",    pillBase: "bg-pink-50 border-pink-200 text-pink-800",    pillHover: "hover:bg-pink-100" },
+  { key: "orange",  bar: "bg-orange-400",  badge: "bg-orange-400 text-white",  card: "bg-orange-50 border-orange-200", hover: "hover:bg-orange-100",  pillBase: "bg-orange-50 border-orange-200 text-orange-800", pillHover: "hover:bg-orange-100" },
+  { key: "violet",  bar: "bg-violet-400",  badge: "bg-violet-400 text-white",  card: "bg-violet-50 border-violet-200", hover: "hover:bg-violet-100",  pillBase: "bg-violet-50 border-violet-200 text-violet-800", pillHover: "hover:bg-violet-100" },
+  { key: "teal",    bar: "bg-teal-400",    badge: "bg-teal-400 text-white",    card: "bg-teal-50 border-teal-200",     hover: "hover:bg-teal-100",    pillBase: "bg-teal-50 border-teal-200 text-teal-800",     pillHover: "hover:bg-teal-100" },
+  { key: "rose",    bar: "bg-rose-400",    badge: "bg-rose-400 text-white",    card: "bg-rose-50 border-rose-200",     hover: "hover:bg-rose-100",    pillBase: "bg-rose-50 border-rose-200 text-rose-800",     pillHover: "hover:bg-rose-100" },
+  { key: "indigo",  bar: "bg-indigo-400",  badge: "bg-indigo-400 text-white",  card: "bg-indigo-50 border-indigo-200", hover: "hover:bg-indigo-100",  pillBase: "bg-indigo-50 border-indigo-200 text-indigo-800", pillHover: "hover:bg-indigo-100" },
+  { key: "lime",    bar: "bg-lime-400",    badge: "bg-lime-400 text-white",    card: "bg-lime-50 border-lime-200",     hover: "hover:bg-lime-100",    pillBase: "bg-lime-50 border-lime-200 text-lime-800",     pillHover: "hover:bg-lime-100" },
+  { key: "cyan",    bar: "bg-cyan-400",    badge: "bg-cyan-400 text-white",    card: "bg-cyan-50 border-cyan-200",     hover: "hover:bg-cyan-100",    pillBase: "bg-cyan-50 border-cyan-200 text-cyan-800",     pillHover: "hover:bg-cyan-100" },
+  { key: "red",     bar: "bg-red-400",     badge: "bg-red-400 text-white",     card: "bg-red-50 border-red-200",       hover: "hover:bg-red-100",     pillBase: "bg-red-50 border-red-200 text-red-800",       pillHover: "hover:bg-red-100" },
 ] as const
 
 // Kunci localStorage untuk mapping kategori → index palet
@@ -136,6 +136,28 @@ function parseKats(raw: string | null | undefined): string[] {
   return (raw || "").split(",").map((t) => t.trim()).filter(Boolean)
 }
 
+// Render inline formatting **bold** dan *italic* — marker ditambahkan tombol Bold/Italic di toolbar Isi.
+// Tanpa ini, marker akan tampil mentah di kartu & dialog view.
+function renderInline(ln: string, keyPrefix: number): ReactNode[] {
+  const parts: ReactNode[] = []
+  const re = /\*\*([^*]+)\*\*|\*([^*]+)\*/g
+  let last = 0
+  let i = 0
+  let m: RegExpExecArray | null
+  while ((m = re.exec(ln)) !== null) {
+    if (m.index > last) parts.push(ln.slice(last, m.index))
+    parts.push(
+      m[1] !== undefined
+        ? <strong key={`${keyPrefix}-${i}`} className="font-bold">{m[1]}</strong>
+        : <em key={`${keyPrefix}-${i}`} className="italic">{m[2]}</em>
+    )
+    last = m.index + m[0].length
+    i += 1
+  }
+  if (last < ln.length) parts.push(ln.slice(last))
+  return parts
+}
+
 function NoteLines({ text, maxLines, className }: { text: string; maxLines?: number; className?: string }) {
   const lines = (text || "").split("\n")
   const shown = maxLines ? lines.slice(0, maxLines) : lines
@@ -150,7 +172,7 @@ function NoteLines({ text, maxLines, className }: { text: string; maxLines?: num
           : undefined
         return (
           <div key={i} style={style} className="whitespace-pre-wrap break-words">
-            {ln || " "}
+            {ln ? renderInline(ln, i) : " "}
           </div>
         )
       })}
@@ -255,6 +277,29 @@ export default function CatatanPage() {
       const np = pos + prefix.length
       el.focus()
       el.setSelectionRange(np, np)
+    })
+  }
+
+  // Sisipkan penanda bold/italic mengelilingi teks terpilih.
+  // Toggle: kalau seleksi SUDAH dibungkus marker yang sama, penanda dilepas (jadi batal).
+  const wrapSelection = (kind: "bold" | "italic") => {
+    const el = isiRef.current
+    if (!el || !editState) return
+    const marker = kind === "bold" ? "**" : "*"
+    const value = editState.isi
+    const start = el.selectionStart ?? value.length
+    const end = el.selectionEnd ?? value.length
+    const sel = value.slice(start, end)
+    const isWrapped = sel.startsWith(marker) && sel.endsWith(marker) && sel.length >= marker.length * 2
+    const inner = isWrapped ? sel.slice(marker.length, -marker.length) : marker + sel + marker
+    const newValue = value.slice(0, start) + inner + value.slice(end)
+    setEditState(prev => prev ? { ...prev, isi: newValue } : prev)
+    // Seleksi kembali isi di antara marker (atau kursor di tengah marker kalau seleksi kosong)
+    const ns = start + (isWrapped ? 0 : marker.length)
+    const ne = start + inner.length - (isWrapped ? 0 : marker.length)
+    requestAnimationFrame(() => {
+      el.focus()
+      el.setSelectionRange(ns, ne)
     })
   }
 
@@ -502,7 +547,7 @@ export default function CatatanPage() {
       )}
 
       <Dialog open={!!viewState} onOpenChange={(open) => !open && setViewState(null)}>
-        <DialogContent className="max-w-[92vw] sm:max-w-lg lg:max-w-4xl rounded-xl">
+        <DialogContent className="max-w-[calc(100vw-16px)] sm:max-w-[calc(100vw-32px)] rounded-xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {viewState && parseKats(viewState.label).length > 0 && (
@@ -548,7 +593,7 @@ export default function CatatanPage() {
       </Dialog>
 
       <Dialog open={!!editState} onOpenChange={(open) => !open && setEditState(null)}>
-        <DialogContent className="max-w-[92vw] sm:max-w-lg lg:max-w-5xl rounded-xl">
+        <DialogContent className="max-w-[calc(100vw-16px)] sm:max-w-[calc(100vw-32px)] rounded-xl">
           <DialogHeader>
             <DialogTitle>{editState?.id ? "Edit Catatan" : "Tambah Catatan"}</DialogTitle>
           </DialogHeader>
@@ -600,6 +645,14 @@ export default function CatatanPage() {
               <Label htmlFor="catatan-isi">Isi</Label>
               {/* Rev: tombol Salin jadi ikon saja — kanan atas, sebaris dengan Bullet/Number, di luar field isi */}
               <div className="flex items-center gap-1.5 mb-1.5">
+                <Button type="button" variant="outline" size="sm" onClick={() => wrapSelection("bold")}
+                  className="h-7 gap-1 text-[11px] px-2" aria-label="Tebal" title="Tebal (bold)">
+                  <Bold className="h-3.5 w-3.5" /> Bold
+                </Button>
+                <Button type="button" variant="outline" size="sm" onClick={() => wrapSelection("italic")}
+                  className="h-7 gap-1 text-[11px] px-2" aria-label="Miring" title="Miring (italic)">
+                  <Italic className="h-3.5 w-3.5" /> Italic
+                </Button>
                 <Button type="button" variant="outline" size="sm" onClick={() => insertPrefix("bullet")}
                   className="h-7 gap-1 text-[11px] px-2" aria-label="Tambah bullet">
                   <List className="h-3.5 w-3.5" /> Bullet
