@@ -567,8 +567,7 @@ export default function CatatanPage() {
         </>
       )}
 
-      <Dialog open={!!viewState} onOpenChange={(open) => !open && setViewState(null)}>
-        <DialogContent className="max-w-[calc(100vw-16px)] sm:max-w-[calc(100vw-32px)] rounded-xl">
+      <Dialog open={!!viewState} onOpenChange={(open) => !open && setViewState(null)}>\n        <DialogContent className="max-w-[calc(100vw-16px)] sm:max-w-[calc(100vw-32px)] rounded-xl h-[calc(100vh-60px)] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {viewState && parseKats(viewState.label).length > 0 && (
@@ -614,7 +613,7 @@ export default function CatatanPage() {
       </Dialog>
 
       <Dialog open={!!editState} onOpenChange={(open) => !open && setEditState(null)}>
-        <DialogContent className="max-w-[calc(100vw-16px)] sm:max-w-[calc(100vw-32px)] rounded-xl">
+        <DialogContent className="max-w-[calc(100vw-16px)] sm:max-w-[calc(100vw-32px)] rounded-xl h-[calc(100vh-60px)] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editState?.id ? "Edit Catatan" : "Tambah Catatan"}</DialogTitle>
           </DialogHeader>
