@@ -72,6 +72,7 @@ function PriorityColumn({
   onToggleSelect,
   onSetGroup,
   onSetJenjang,
+  hideDateDuration,
 }: {
   title: string
   subtitle: string
@@ -87,6 +88,7 @@ function PriorityColumn({
   onToggleSelect?: (id: string) => void
   onSetGroup: (task: TaskCardTask) => void
   onSetJenjang: (task: TaskCardTask) => void
+  hideDateDuration?: boolean
 }) {
   return (
     <section className="min-w-0">
@@ -136,6 +138,7 @@ function PriorityColumn({
               onToggleSelect={onToggleSelect}
               onSetGroup={onSetGroup}
               onSetJenjang={onSetJenjang}
+              hideDateDuration={hideDateDuration}
             />
           ))}
         </div>
@@ -233,6 +236,7 @@ function PrioritasPageClient() {
   const shared = {
     selectionMode: false,
     selectedIds: EMPTY_SET,
+    hideDateDuration: true, // tab Prioritas: tanpa tanggal & durasi
     onEdit: handleEdit,
     onDelete: handleDelete,
     onStatusChange: handleStatusChange,

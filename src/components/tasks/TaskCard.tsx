@@ -54,6 +54,7 @@ function TaskCardComponent({
   onToggleSelect,
   onSetGroup,
   onSetJenjang,
+  hideDateDuration,
 }: {
   task: TaskCardTask
   onEdit: (task: TaskCardTask) => void
@@ -64,6 +65,8 @@ function TaskCardComponent({
   onToggleSelect?: (id: string) => void
   onSetGroup?: (task: TaskCardTask) => void
   onSetJenjang?: (task: TaskCardTask) => void
+  /** Sembunyikan baris tanggal & durasi (tab Prioritas=jalan, lainnya tampil) */
+  hideDateDuration?: boolean
 }) {
   const isCompleted = task.status === 'selesai'
   const isInProgress = task.status === 'proses'
@@ -185,6 +188,7 @@ function TaskCardComponent({
           </div>
         )}
 
+        {!hideDateDuration && (
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
             <div className="flex items-center gap-1.5">
@@ -205,7 +209,7 @@ function TaskCardComponent({
             )}
           </div>
 
-          {task.status === 'selesai' && task.started_at && task.completed_at && (
+          {!hideDateDuration && task.status === 'selesai' && task.started_at && task.completed_at && (
             <div className="space-y-1 pl-6 border-l border-border/50">
               <div className="flex items-center gap-1 text-sm text-slate-700 dark:text-slate-300">
                 <Clock className="h-3.5 w-3.5" />
@@ -227,13 +231,14 @@ function TaskCardComponent({
             </div>
           )}
 
-          {task.status === 'proses' && task.started_at && (
+          {!hideDateDuration && task.status === 'proses' && task.started_at && (
             <div className="flex items-center gap-1 text-sm text-amber-700 dark:text-amber-300 animate-pulse pl-6 border-l border-amber-400/50">
               <Clock className="h-3.5 w-3.5" />
               <span>Sedang: {getLiveDurationText(task.started_at)}</span>
             </div>
           )}
         </div>
+        )}
 
         {/* Bottom Row: Status Badge + Primary Action - Fixed at bottom */}
         <div className="flex items-center justify-between pt-2 border-t border-border/50">
