@@ -588,16 +588,16 @@ export default function CatatanPage() {
             </DialogTitle>
           </DialogHeader>
           <NoteLines text={viewState?.isi ?? ""} className="text-sm leading-snug max-h-[60vh] overflow-y-auto text-slate-700" />
-          {/* Rev: tombol Close di footer dihapus — hanya X kanan atas bawaan dialog */}
+          {/* Rev: Edit disebelah kiri Salin — bersebelahan di kiri (tanpa ml-auto) */}
           <div className="flex items-center gap-2 pt-1">
-            <Button size="icon" onClick={() => {
+            <Button variant="outline" size="icon" onClick={() => {
               const v = viewState
               setViewState(null)
               if (v) openEditFromView(v)
             }} aria-label="Edit" title="Edit" className="h-9 w-9 p-0 bg-slate-900 hover:bg-slate-800 text-white">
               <Pencil className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="icon" className="ml-auto h-9 w-9 p-0" onClick={() => {
+            <Button variant="outline" size="icon" className="h-9 w-9 p-0" onClick={() => {
               const v = viewState
               if (!v) return
               const text = v.isi
