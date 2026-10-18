@@ -102,14 +102,16 @@ function PriorityColumn({
         <span className="text-xs font-bold tabular-nums px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shrink-0">
           {tasks.length} tugas
         </span>
-        {/* Tombol Tambah KHUSUS kolom ini — tugas baru langsung masuk kolom ini */}
+        {/* Tombol Tambah KHUSUS kolom ini (ikon saja) — tugas baru langsung masuk kolom ini */}
         {onAdd && (
           <Button
-            size="sm"
-            className="h-8 shrink-0 bg-slate-900 hover:bg-slate-800 text-white"
+            size="icon"
+            className="h-8 w-8 shrink-0 bg-slate-900 hover:bg-slate-800 text-white rounded-full"
             onClick={onAdd}
+            aria-label={`Tambah tugas ${title}`}
+            title="Tambah tugas"
           >
-            <Plus className="h-3.5 w-3.5" /> Tambah
+            <Plus className="h-4 w-4" />
           </Button>
         )}
       </div>
