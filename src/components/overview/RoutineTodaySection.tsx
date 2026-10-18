@@ -469,21 +469,19 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
           </div>
         </RoutineCard>
 
-        {/* Refleksi — list semua (tak dipengaruhi filter) */}
+        {/* Refleksi — list semua (tak dipengaruhi filter); disembunyikan saat tak ada data sama sekali */}
+        {refleksiList.length > 0 && (
         <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-slate-700" title="Refleksi" href="/masalah" linkColor="text-slate-700 hover:text-slate-900" className="col-span-1 order-1" hideIcon arrowAdjacent>
-            {refleksiList.length > 0 ? (
-              <ul className="space-y-1.5 max-h-[7.5rem] overflow-y-auto pr-1">
-                {refleksiList.map((r) => (
-                  <li key={r.id} className="flex items-start gap-2 text-sm text-slate-600 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-slate-800 shrink-0" />
-                    <span className="line-clamp-2 min-w-0">{r.masalah}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-1 text-sm text-slate-500">Belum ada refleksi pada periode ini.</p>
-            )}
+            <ul className="space-y-1.5 max-h-[7.5rem] overflow-y-auto pr-1">
+              {refleksiList.map((r) => (
+                <li key={r.id} className="flex items-start gap-2 text-sm text-slate-600 px-3 py-2 rounded-lg border border-slate-100 bg-slate-50/50">
+                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-slate-800 shrink-0" />
+                  <span className="line-clamp-2 min-w-0">{r.masalah}</span>
+                </li>
+              ))}
+            </ul>
         </RoutineCard>
+        )}
 
 
         {/* Ibadah — baris 2 (setelah Keuangan & Hoki) */}
