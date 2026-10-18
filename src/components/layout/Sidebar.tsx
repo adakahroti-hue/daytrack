@@ -59,9 +59,10 @@ import {
   StickyNote,
   Brain,
   Utensils,
-
-  HeartPulse,
-} from 'lucide-react'
+    AlarmClockCheck,
+    HeartPulse,
+    Flag,
+  } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useTaskCounts } from '@/hooks/useTaskCounts'
 
@@ -104,6 +105,7 @@ const navigation: NavSection[] = [
     items: [
       { title: 'Hari Ini', href: '/tugas/hari-ini', icon: Clock },
       { title: 'Semua', href: '/tugas/semua', icon: CalendarDays },
+      { title: 'Prioritas', href: '/tugas/prioritas', icon: Flag },
     ],
   },
   {

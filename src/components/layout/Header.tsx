@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, X, Plus, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, BookMarked, Mosque, Heart, Moon, GlassWater, Shield, Smile, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, Timer, Search, ListChecks } from 'lucide-react'
+import { Menu, X, Plus, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, BookMarked, Mosque, Heart, Moon, GlassWater, Shield, Smile, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, Timer, Search, ListChecks, Flag } from 'lucide-react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
@@ -79,6 +79,7 @@ const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   '/overview': LayoutDashboard,
   '/tugas/hari-ini': Clock,
   '/tugas/semua': CalendarDays,
+  '/tugas/prioritas': Flag,
   '/sholat': Mosque,
   '/quran': BookOpen,
   '/doa': Heart,
@@ -166,6 +167,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   // Show stats only on Hari Ini and Semua tabs
   const isHariIni = pathname === '/tugas/hari-ini'
   const isSemua = pathname === '/tugas/semua'
+  const isPrioritas = pathname === '/tugas/prioritas'
 
   const isSholat = pathname === '/sholat' || pathname === '/sholat-sunnah'
   const isQuran = pathname === '/quran'
@@ -601,8 +603,8 @@ export function Header({ onMenuClick }: HeaderProps) {
           </Button>
         )}
 
-        {/* Semua — tombol Tambah Tugas: ikon bulat hitam saja (rev mobile) */}
-        {isSemua && (
+        {/* Semua & Prioritas — tombol Tambah Tugas: ikon bulat hitam saja (rev mobile) */}
+        {(isSemua || isPrioritas) && (
           <Button
             onClick={() => headerAddAction?.()}
             className='flex-shrink-0 h-9 w-9 rounded-full text-white shadow-sm bg-slate-900 hover:bg-slate-800'

@@ -23,6 +23,8 @@ const taskSchema = z.object({
   estimasi_menit: z.number().int().min(0),
   prioritas: z.enum(['p1', 'p2', 'p3', 'p4']),
   status: z.enum(['belum', 'proses', 'selesai']),
+  // Tab Prioritas: kelompok tugas — primer (inti) vs sekunder (pendukung)
+  jenjang: z.enum(['primer', 'sekunder']),
 })
 
 type TaskFormData = z.infer<typeof taskSchema>
@@ -38,6 +40,11 @@ const STATUS_OPTIONS = [
   { value: 'belum', label: 'Belum' },
   { value: 'proses', label: 'Proses' },
   { value: 'selesai', label: 'Selesai' },
+]
+
+const JENJANG_OPTIONS = [
+  { value: 'primer', label: 'Primer' },
+  { value: 'sekunder', label: 'Sekunder' },
 ]
 
 interface TaskFormProps {
@@ -63,6 +70,7 @@ export function TaskForm({ initialData, onSubmit, onCancel, hideDate }: TaskForm
       estimasi_menit: 0,
       prioritas: 'p2',
       status: 'belum',
+      jenjang: 'primer',
       ...initialData,
     },
   })
@@ -151,7 +159,7 @@ export function TaskForm({ initialData, onSubmit, onCancel, hideDate }: TaskForm
         <input type="hidden" {...register('estimasi_menit', { valueAsNumber: true })} />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <div className="space-y-2">
           <Label htmlFor="prioritas">Prioritas</Label>
           <Controller
@@ -164,6 +172,29 @@ export function TaskForm({ initialData, onSubmit, onCancel, hideDate }: TaskForm
                 </SelectTrigger>
                 <SelectContent>
                   {PRIORITAS_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+        </div>
+
+        {/* Tab Prioritas: kelompok tugas — menuju kolom kiri (primer) / kanan (sekunder) */}
+        <div className="space-y-2">
+          <Label htmlFor="jenjang">Jenjang</Label>
+          <Controller
+            control={control}
+            name="jenjang"
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih jenjang" />
+                </SelectTrigger>
+                <SelectContent>
+                  {JENJANG_OPTIONS.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
                       {opt.label}
                     </SelectItem>

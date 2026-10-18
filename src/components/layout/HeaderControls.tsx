@@ -91,6 +91,7 @@ function getCategoryFromPath(pathname: string): string {
 function getSubPageFromPath(pathname: string): string | null {
   if (pathname.startsWith('/tugas/hari-ini')) return 'hari-ini'
   if (pathname.startsWith('/tugas/semua')) return 'semua'
+  if (pathname.startsWith('/tugas/prioritas')) return 'prioritas'
 
   if (pathname.startsWith('/sholat-sunnah')) return 'sholat-sunnah'
   if (pathname.startsWith('/sholat')) return 'sholat'
@@ -111,6 +112,8 @@ function getSubPageFromPath(pathname: string): string | null {
 }
 
 function getCategoryTitle(category: string, period: Period, subPage: string | null, tugasView?: 'hari-ini' | 'semua' | 'selesai'): string {
+  if (category === 'tugas' && subPage === 'prioritas') return 'Prioritas'
+
   // Special handling for Tugas category - use internal view state
   if (category === 'tugas' && tugasView) {
     switch (tugasView) {
@@ -183,6 +186,8 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
 }
 
 function getCategoryDescription(category: string, period: Period, subPage: string | null, tugasView?: 'hari-ini' | 'semua' | 'selesai'): string {
+  if (category === 'tugas' && subPage === 'prioritas') return 'Tugas primer (inti) dan sekunder (pendukung) dalam dua kolom'
+
   // Special handling for Tugas category - use internal view state
   if (category === 'tugas' && tugasView) {
     switch (tugasView) {

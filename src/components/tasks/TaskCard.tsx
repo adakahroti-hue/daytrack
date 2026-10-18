@@ -3,7 +3,7 @@
 import { memo } from 'react'
 import { format, isBefore, startOfDay, differenceInDays } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Play, Check, CheckCircle2, MoreHorizontal, Edit, Trash2, Layers, Clock, Calendar, AlertTriangle } from 'lucide-react'
+import { Play, Check, CheckCircle2, MoreHorizontal, Edit, Trash2, Layers, Clock, Calendar, AlertTriangle, ArrowLeft, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -27,6 +27,8 @@ export type TaskCardTask = {
   started_at: string | null
   completed_at: string | null
   terlewat_tanggal?: string | null
+  // Tab Prioritas: kelompok tugas — primer (inti) vs sekunder (pendukung)
+  jenjang?: 'primer' | 'sekunder' | null
   group_id?: string | null
   group_order?: number | null
 }
@@ -51,6 +53,7 @@ function TaskCardComponent({
   selected,
   onToggleSelect,
   onSetGroup,
+  onSetJenjang,
 }: {
   task: TaskCardTask
   onEdit: (task: TaskCardTask) => void
@@ -60,6 +63,7 @@ function TaskCardComponent({
   selected?: boolean
   onToggleSelect?: (id: string) => void
   onSetGroup?: (task: TaskCardTask) => void
+  onSetJenjang?: (task: TaskCardTask) => void
 }) {
   const isCompleted = task.status === 'selesai'
   const isInProgress = task.status === 'proses'
@@ -150,6 +154,18 @@ function TaskCardComponent({
               >
                 <Layers className="h-4 w-4" />Penanda Paket
               </DropdownMenuItem>
+              {/* Tab Prioritas: pindah tugas antar kolom (Primer <-> Sekunder) */}
+              {onSetJenjang && (
+                <DropdownMenuItem
+                  onClick={() => onSetJenjang(task)}
+                  className="flex items-center gap-2"
+                  inset={false}
+                >
+                  {task.jenjang === 'sekunder'
+                    ? <><ArrowLeft className="h-4 w-4" />Jadikan Primer</>
+                    : <><ArrowRight className="h-4 w-4" />Jadikan Sekunder</>}
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => onDelete(task.id)}

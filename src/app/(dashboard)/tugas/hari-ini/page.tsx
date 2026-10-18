@@ -26,6 +26,7 @@ type Task = {
   estimasi_menit: number
   prioritas: 'p1' | 'p2' | 'p3' | 'p4'
   status: 'belum' | 'proses' | 'selesai'
+  jenjang?: 'primer' | 'sekunder' | null
   started_at: string | null
   completed_at: string | null
   created_at: string
@@ -52,6 +53,7 @@ type TaskFormData = {
   estimasi_menit: number
   prioritas: 'p1' | 'p2' | 'p3' | 'p4'
   status: 'belum' | 'proses' | 'selesai'
+  jenjang: 'primer' | 'sekunder'
 }
 
 type EditingTask = TaskFormData & { id: string }
@@ -401,6 +403,7 @@ function HariIniPageClient() {
       estimasi_menit: task.estimasi_menit,
       prioritas: task.prioritas,
       status: task.status,
+      jenjang: task.jenjang ?? 'primer',
     })
     setIsFormOpen(true)
   }
