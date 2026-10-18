@@ -64,6 +64,9 @@ function PriorityColumn({
   accent,
   tasks,
   onAdd,
+  cardColor,
+  currentJenjang,
+  dnd,
   selectionMode,
   selectedIds,
   onEdit,
@@ -80,6 +83,16 @@ function PriorityColumn({
   accent: string
   tasks: PriorityTask[]
   onAdd?: () => void
+  cardColor?: string
+  currentJenjang: 'primer' | 'sekunder'
+  dnd: {
+    draggingId: string | null
+    dragOver: 'primer' | 'sekunder' | null
+    setDragOver: (v: 'primer' | 'sekunder' | null | ((prev: 'primer' | 'sekunder' | null) => 'primer' | 'sekunder' | null)) => void
+    onDropTask: (id: string, target: 'primer' | 'sekunder') => void
+    onDragEnd: () => void
+    startDrag: (id: string, e: React.DragEvent) => void
+  }
   selectionMode: boolean
   selectedIds: Set<string>
   onEdit: (task: TaskCardTask) => void
@@ -91,7 +104,16 @@ function PriorityColumn({
   hideDateDuration?: boolean
 }) {
   return (
-    <section className="min-w-0">
+    <section
+      className={cn(
+        'min-w-0 rounded-xl p-2 -m-2 transition-colors',
+        dnd.dragOver === currentJenjang &&
+          'bg-yellow-100/70 ring-2 ring-yellow-400 ring-dashed dark:bg-yellow-950/30'
+      )}
+      onDragOver={(e) => { e.preventDefault(); dnd.setDragOver(currentJenjang) }}
+      onDragLeave={() => dnd.setDragOver((prev) => prev === currentJenjang ? null : prev)}
+      onDrop={(e) => { e.preventDefault(); const id = e.dataTransfer.getData('text/plain'); if (id) dnd.onDropTask(id, currentJenjang); dnd.setDragOver(null) }}
+    >
       {/* Header kolom */}
       <div className="flex items-center gap-2.5 pb-3 mb-4 border-b border-slate-200/60 dark:border-slate-700/60">
         <span className={cn('p-2 rounded-lg shrink-0', accent)}>
@@ -127,19 +149,27 @@ function PriorityColumn({
       ) : (
         <div className="space-y-3">
           {tasks.map((task) => (
-            <TaskCard
+            <div
               key={task.id}
-              task={task}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onStatusChange={onStatusChange}
-              selectionMode={selectionMode}
-              selected={selectedIds.has(task.id)}
-              onToggleSelect={onToggleSelect}
-              onSetGroup={onSetGroup}
-              onSetJenjang={onSetJenjang}
-              hideDateDuration={hideDateDuration}
-            />
+              draggable
+              onDragStart={(e) => dnd.startDrag(task.id, e)}
+              onDragEnd={dnd.onDragEnd}
+              className={cn('cursor-grab active:cursor-grabbing', dnd.draggingId === task.id && 'opacity-40')}
+            >
+              <TaskCard
+                task={task}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onStatusChange={onStatusChange}
+                selectionMode={selectionMode}
+                selected={selectedIds.has(task.id)}
+                onToggleSelect={onToggleSelect}
+                onSetGroup={onSetGroup}
+                onSetJenjang={onSetJenjang}
+                hideDateDuration={hideDateDuration}
+                cardColor={cardColor}
+              />
+            </div>
           ))}
         </div>
       )}
@@ -152,6 +182,9 @@ function PrioritasPageClient() {
   const [editingTask, setEditingTask] = useState<EditingTask | null>(null)
   // Jenjang target saat menambah: 'primer' (kolom kiri) | 'sekunder' (kolom kanan)
   const [addJenjang, setAddJenjang] = useState<'primer' | 'sekunder'>('primer')
+  // Drag & drop antar kolom (Primer <-> Sekunder)
+  const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [dragOver, setDragOver] = useState<'primer' | 'sekunder' | null>(null)
   const [groupTask, setGroupTask] = useState<PriorityTask | null>(null)
   const { setHeaderAddAction } = useHeaderControls()
   const isMounted = useMounted()
@@ -207,10 +240,28 @@ function PrioritasPageClient() {
     toggleTaskStatus.mutate({ id, status })
   }
 
-  // Pindah tugas antar kolom (Primer <-> Sekunder) — update kolom jenjang saja
+  // Pindah tugas antar kolom (Primer <-> Sekunder)
   const handleSetJenjang = (task: TaskCardTask) => {
     const next = ((task as PriorityTask).jenjang ?? 'primer') === 'primer' ? 'sekunder' : 'primer'
     updateTask.mutate({ id: task.id, data: { jenjang: next } })
+  }
+
+  const dnd = {
+    draggingId,
+    dragOver,
+    setDragOver,
+    onDropTask: (id: string, target: 'primer' | 'sekunder') => {
+      const t = (allTasks as PriorityTask[]).find((x) => x.id === id)
+      if (!t) return
+      const current = t.jenjang ?? 'primer'
+      if (target !== current) updateTask.mutate({ id, data: { jenjang: target } })
+    },
+    onDragEnd: () => { setDraggingId(null); setDragOver(null) },
+    startDrag: (id: string, e: React.DragEvent) => {
+      setDraggingId(id)
+      e.dataTransfer.setData('text/plain', id)
+      e.dataTransfer.effectAllowed = 'move'
+    },
   }
 
 
@@ -291,6 +342,8 @@ function PrioritasPageClient() {
           accent="bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400"
           tasks={primerTasks}
           onAdd={() => { setEditingTask(null); setAddJenjang('primer'); setQuickNama(''); setIsFormOpen(true) }}
+          currentJenjang="primer"
+          dnd={dnd}
           {...shared}
         />
         <PriorityColumn
@@ -300,6 +353,9 @@ function PrioritasPageClient() {
           accent="bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400"
           tasks={sekunderTasks}
           onAdd={() => { setEditingTask(null); setAddJenjang('sekunder'); setQuickNama(''); setIsFormOpen(true) }}
+          currentJenjang="sekunder"
+          dnd={dnd}
+          cardColor="bg-yellow-50 border-yellow-300 hover:border-yellow-400 dark:bg-yellow-950/40 dark:border-yellow-800"
           {...shared}
         />
       </div>

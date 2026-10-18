@@ -55,6 +55,7 @@ function TaskCardComponent({
   onSetGroup,
   onSetJenjang,
   hideDateDuration,
+  cardColor,
 }: {
   task: TaskCardTask
   onEdit: (task: TaskCardTask) => void
@@ -67,6 +68,8 @@ function TaskCardComponent({
   onSetJenjang?: (task: TaskCardTask) => void
   /** Sembunyikan baris tanggal & durasi (tab Prioritas=jalan, lainnya tampil) */
   hideDateDuration?: boolean
+  /** Override warna latar card (mis. kolom Sekunder= kuning) — menimpa warna per-prioritas */
+  cardColor?: string
 }) {
   const isCompleted = task.status === 'selesai'
   const isInProgress = task.status === 'proses'
@@ -107,7 +110,9 @@ function TaskCardComponent({
               'rounded-xl transition-colors duration-200',
               isInProgress
                 ? 'bg-blue-50 border-blue-300 hover:border-blue-400 dark:bg-blue-950/40 dark:border-blue-800'
-                : PRIORITY_CARD_COLORS[task.prioritas]
+                : cardColor
+                  ? cardColor
+                  : PRIORITY_CARD_COLORS[task.prioritas]
             ),
         CARD_HOVER,
         isCompleted && 'opacity-60',
