@@ -185,7 +185,7 @@ export function FocusTodayCard({ startStr, endStr, period }: { startStr: string;
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-slate-700">Tugas{period === 'shot' ? '' : ` ${label}`}</p>
         <Link
-          href="/tugas/hari-ini"
+          href="/tugas/prioritas"
           aria-label="Lihat tugas"
           className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
         >
