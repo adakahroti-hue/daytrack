@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from 'react'
-import { Check, Target, Flag } from 'lucide-react'
+import { Target, Flag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -38,6 +38,8 @@ type EditingTask = TaskFormData & { id: string }
 
 const PRIORITY_ORDER: PriorityTask['prioritas'][] = ['p1', 'p2', 'p3', 'p4']
 const STATUS_ORDER: PriorityTask['status'][] = ['belum', 'proses', 'selesai']
+// Referensi Set kosong tetap (fitur pilih tugas sudah dihapus — hanya dipertahankan agar tipe kartu cocok)
+const EMPTY_SET: Set<string> = new Set()
 
 // Urut: prioritas tinggi dulu → anggota paket (parent dulu) → status → terbaru
 function byPrioritySort(a: PriorityTask, b: PriorityTask) {
@@ -78,7 +80,7 @@ function PriorityColumn({
   onEdit: (task: TaskCardTask) => void
   onDelete: (id: string) => void
   onStatusChange: (id: string, status: TaskCardStatus) => void
-  onToggleSelect: (id: string) => void
+  onToggleSelect?: (id: string) => void
   onSetGroup: (task: TaskCardTask) => void
   onSetJenjang: (task: TaskCardTask) => void
 }) {
@@ -132,8 +134,7 @@ function PrioritasPageClient() {
   const [groupTask, setGroupTask] = useState<PriorityTask | null>(null)
   const { setHeaderAddAction } = useHeaderControls()
   const isMounted = useMounted()
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [selectionMode, setSelectionMode] = useState(false)
+
 
   // Tombol tambah di header kanan atas (sama seperti tab Semua)
   useEffect(() => {
@@ -191,14 +192,7 @@ function PrioritasPageClient() {
     updateTask.mutate({ id: task.id, data: { jenjang: next } })
   }
 
-  const toggleSelect = (id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
+
 
   const handleSubmit = (data: TaskFormData) => {
     const taskData = {
@@ -216,12 +210,12 @@ function PrioritasPageClient() {
   }
 
   const shared = {
-    selectionMode,
-    selectedIds,
+    selectionMode: false,
+    selectedIds: EMPTY_SET,
     onEdit: handleEdit,
     onDelete: handleDelete,
     onStatusChange: handleStatusChange,
-    onToggleSelect: toggleSelect,
+    onToggleSelect: undefined,
     onSetGroup: (t: TaskCardTask) => setGroupTask(t as PriorityTask),
     onSetJenjang: handleSetJenjang,
   }
@@ -261,29 +255,7 @@ function PrioritasPageClient() {
 
   return (
     <div className="space-y-4 max-w-[1440px] mx-auto py-6 pb-24">
-      {/* Toolbar: mode pilih untuk hapus massal */}
-      <div className="sticky top-2 z-20 flex flex-wrap items-center gap-2">
-        <Button variant="outline" size="sm" className="h-8" onClick={() => setSelectionMode((v) => !v)}>
-          <Check className="h-3.5 w-3.5" /> {selectionMode ? 'Selesai Pilih' : 'Pilih Tugas'}
-        </Button>
-        {selectionMode && selectedIds.size > 0 && (
-          <Button
-            size="sm"
-            variant="destructive"
-            className="h-8"
-            onClick={() => {
-              if (confirm(`Yakin ingin menghapus ${selectedIds.size} tugas yang dipilih?`)) {
-                const ids = Array.from(selectedIds)
-                setSelectedIds(new Set())
-                setSelectionMode(false)
-                deleteMany(ids)
-              }
-            }}
-          >
-            Hapus ({selectedIds.size})
-          </Button>
-        )}
-      </div>
+      {/* Fitur "Pilih Tugas" dihapus dari tab Prioritas (permintaan Aldy) — hapus massal tidak ada lagi */}
 
       {/* Dua kolom: Primer (kiri) | Sekunder (kanan) — menumpuk di mobile */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
@@ -347,9 +319,7 @@ function PrioritasPageClient() {
     </div>
   )
 
-  function deleteMany(ids: string[]) {
-    ids.forEach((id) => deleteTask.mutate(id))
-  }
+
 }
 
 export default function PrioritasPage() {
