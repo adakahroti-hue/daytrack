@@ -34,7 +34,7 @@ export interface TaskRow {
 async function fetchTasksDirect(date?: string, status?: string, limit?: number) {
   const supabase = createClient()
   // select("*"): aman sebelum migrasi & otomatis memuat kolom baru (terlewat_tanggal)
-  let query = supabase.from("tugas").select("*")
+  let query = supabase.from("tugas_prioritas").select("*")
   if (date) {
     query = query.eq("tanggal", date).order("created_at", { ascending: true })
   } else {
@@ -248,7 +248,7 @@ export function useTasksByGroup(groupId?: string | null) {
       if (!groupId) return []
       const supabase = createClient()
       const { data, error } = await supabase
-        .from("tugas")
+        .from("tugas_prioritas")
         .select("*")
         .eq("group_id", groupId)
         .order("group_order", { ascending: true })

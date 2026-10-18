@@ -64,7 +64,6 @@ import {
     Flag,
   } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { useTaskCounts } from '@/hooks/useTaskCounts'
 
 interface SidebarProps {
   mobileOpen: boolean
@@ -182,14 +181,6 @@ export function Sidebar({
   const [isLoading, setIsLoading] = useState(false)
   const [collapsedSections, setCollapsedSections] = useState<string[]>([])
 
-  // Rev 8: hitung jumlah tugas per tab untuk badge di sidebar
-  // Pakai RPC get_task_counts (1 query ringan) — tidak download 1000 row di layout
-  const { data: tc = { hari_ini: 0, semua: 0, selesai: 0 } } = useTaskCounts()
-  const taskCounts: Record<string, number> = {
-    '/tugas/hari-ini': tc.hari_ini,
-    '/tugas/semua': tc.semua,
-  }
-
   const toggleSection = (title: string) => {
     setCollapsedSections(prev =>
       prev.includes(title) ? prev.filter(t => t !== title) : [...prev, title]
@@ -224,7 +215,6 @@ export function Sidebar({
             onToggleDesktop={onToggleDesktop}
             onSignOut={handleSignOut}
             isLoading={isLoading}
-            taskCounts={taskCounts}
             showMobileClose
             onCloseMobile={onCloseMobile}
           />
@@ -247,7 +237,6 @@ export function Sidebar({
           onToggleDesktop={onToggleDesktop}
           onSignOut={handleSignOut}
           isLoading={isLoading}
-          taskCounts={taskCounts}
         />
       </aside>
     </TooltipProvider>
@@ -264,7 +253,6 @@ function SidebarContent({
   onToggleDesktop,
   onSignOut,
   isLoading,
-  taskCounts,
   showMobileClose = false,
   onCloseMobile,
 }: {
@@ -276,7 +264,6 @@ function SidebarContent({
   onToggleDesktop: () => void
   onSignOut: () => void
   isLoading: boolean
-  taskCounts: Record<string, number>
   showMobileClose?: boolean
   onCloseMobile?: () => void
 }) {

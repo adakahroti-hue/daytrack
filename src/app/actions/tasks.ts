@@ -30,15 +30,14 @@ export async function createTask(formData: TaskFormData) {
   // Zod tanpa field jenjang di sini → form yang mengirim `jenjang` otomatis
   // di-strip, jadi insert tabel `tugas` selalu bersih.
   const { data, error } = await supabase
-    .from("tugas")
+    .from("tugas_prioritas")
     .insert({ ...validated, user_id: user.id })
     .select()
     .single()
 
   if (error) return { data: null, error: error.message as string }
 
-  revalidatePath("/tugas/hari-ini")
-  revalidatePath("/tugas/semua")
+  revalidatePath("/tugas/prioritas")
   revalidatePath("/overview")
 
   return { data, error: null }
@@ -53,7 +52,7 @@ export async function updateTask(id: string, formData: Partial<TaskFormData>) {
   const validated = taskSchema.partial().parse(formData)
 
   const { data, error } = await supabase
-    .from("tugas")
+    .from("tugas_prioritas")
     .update(validated)
     .eq("id", id)
     .eq("user_id", user.id)
@@ -62,8 +61,7 @@ export async function updateTask(id: string, formData: Partial<TaskFormData>) {
 
   if (error) return { data: null, error: error.message as string }
 
-  revalidatePath("/tugas/hari-ini")
-  revalidatePath("/tugas/semua")
+  revalidatePath("/tugas/prioritas")
   revalidatePath("/overview")
 
   return { data, error: null }
@@ -76,15 +74,14 @@ export async function deleteTask(id: string) {
   if (!user) throw new Error("Unauthorized")
 
   const { error } = await supabase
-    .from("tugas")
+    .from("tugas_prioritas")
     .delete()
     .eq("id", id)
     .eq("user_id", user.id)
 
   if (error) throw new Error(error.message)
 
-  revalidatePath("/tugas/hari-ini")
-  revalidatePath("/tugas/semua")
+  revalidatePath("/tugas/prioritas")
   revalidatePath("/overview")
 
   return { error: null }
@@ -97,15 +94,14 @@ export async function bulkDeleteTasks(ids: string[]) {
   if (!user) throw new Error("Unauthorized")
 
   const { error } = await supabase
-    .from("tugas")
+    .from("tugas_prioritas")
     .delete()
     .in("id", ids)
     .eq("user_id", user.id)
 
   if (error) throw new Error(error.message)
 
-  revalidatePath("/tugas/hari-ini")
-  revalidatePath("/tugas/semua")
+  revalidatePath("/tugas/prioritas")
   revalidatePath("/overview")
 
   return { error: null }
@@ -118,15 +114,14 @@ export async function bulkResetTasks(ids: string[]) {
   if (!user) throw new Error("Unauthorized")
 
   const { error } = await supabase
-    .from("tugas")
+    .from("tugas_prioritas")
     .update({ status: 'belum', started_at: null, completed_at: null, accumulated_seconds: 0, is_paused: false, last_resumed_at: null })
     .in("id", ids)
     .eq("user_id", user.id)
 
   if (error) throw new Error(error.message)
 
-  revalidatePath("/tugas/hari-ini")
-  revalidatePath("/tugas/semua")
+  revalidatePath("/tugas/prioritas")
   revalidatePath("/overview")
 
   return { error: null }
@@ -142,15 +137,14 @@ export async function bulkUpdateTaskDate(ids: string[], tanggal: string) {
   if (!ids || ids.length === 0) return { error: null }
 
   const { error } = await supabase
-    .from("tugas")
+    .from("tugas_prioritas")
     .update({ tanggal })
     .in("id", ids)
     .eq("user_id", user.id)
 
   if (error) throw new Error(error.message)
 
-  revalidatePath("/tugas/hari-ini")
-  revalidatePath("/tugas/semua")
+  revalidatePath("/tugas/prioritas")
   revalidatePath("/overview")
 
   return { error: null }
@@ -203,7 +197,7 @@ export async function toggleTaskStatus(id: string, status: "proses" | "belum" | 
     updateData.last_resumed_at = null
     // Ambil data lama dulu agar accumulated_seconds akurat
     const { data: existing } = await supabase
-      .from("tugas")
+      .from("tugas_prioritas")
       .select("accumulated_seconds, is_paused, last_resumed_at, group_id, group_order")
       .eq("id", id)
       .eq("user_id", user.id)
@@ -219,7 +213,7 @@ export async function toggleTaskStatus(id: string, status: "proses" | "belum" | 
   }
 
   const { data, error } = await supabase
-    .from("tugas")
+    .from("tugas_prioritas")
     .update(updateData)
     .eq("id", id)
     .eq("user_id", user.id)
@@ -228,8 +222,7 @@ export async function toggleTaskStatus(id: string, status: "proses" | "belum" | 
 
   if (error) throw new Error(error.message)
 
-  revalidatePath("/tugas/hari-ini")
-  revalidatePath("/tugas/semua")
+  revalidatePath("/tugas/prioritas")
   revalidatePath("/overview")
 
   return { data, error: null }
@@ -246,7 +239,7 @@ export async function pauseTask(id: string) {
   if (!user) throw new Error("Unauthorized")
 
   const { data: existing, error: fetchError } = await supabase
-    .from("tugas")
+    .from("tugas_prioritas")
     .select("status, accumulated_seconds, is_paused, last_resumed_at, group_id, group_order")
     .eq("id", id)
     .eq("user_id", user.id)
@@ -260,7 +253,7 @@ export async function pauseTask(id: string) {
   const accumulated = computeActiveSeconds(existing)
 
   const { data, error } = await supabase
-    .from("tugas")
+    .from("tugas_prioritas")
     .update({ is_paused: true, accumulated_seconds: accumulated, last_resumed_at: null })
     .eq("id", id)
     .eq("user_id", user.id)
@@ -269,8 +262,7 @@ export async function pauseTask(id: string) {
 
   if (error) throw new Error(error.message)
 
-  revalidatePath("/tugas/hari-ini")
-  revalidatePath("/tugas/semua")
+  revalidatePath("/tugas/prioritas")
   revalidatePath("/overview")
 
   return { data, error: null }
@@ -286,7 +278,7 @@ export async function resumeTask(id: string) {
   if (!user) throw new Error("Unauthorized")
 
   const { data: existing, error: fetchError } = await supabase
-    .from("tugas")
+    .from("tugas_prioritas")
     .select("status, is_paused")
     .eq("id", id)
     .eq("user_id", user.id)
@@ -300,7 +292,7 @@ export async function resumeTask(id: string) {
   const now = new Date().toISOString()
 
   const { data, error } = await supabase
-    .from("tugas")
+    .from("tugas_prioritas")
     .update({ is_paused: false, last_resumed_at: now })
     .eq("id", id)
     .eq("user_id", user.id)
@@ -309,8 +301,7 @@ export async function resumeTask(id: string) {
 
   if (error) throw new Error(error.message)
 
-  revalidatePath("/tugas/hari-ini")
-  revalidatePath("/tugas/semua")
+  revalidatePath("/tugas/prioritas")
   revalidatePath("/overview")
 
   return { data, error: null }
@@ -325,7 +316,7 @@ export async function reorderTaskGroup(upId: string, downId: string) {
 
   // Ambil group_order kedua task (harus 1 paket yang sama milik user)
   const { data: pair, error: fetchErr } = await supabase
-    .from("tugas")
+    .from("tugas_prioritas")
     .select("id, group_id, group_order")
     .in("id", [upId, downId])
     .eq("user_id", user.id)
@@ -340,13 +331,12 @@ export async function reorderTaskGroup(upId: string, downId: string) {
   // Swap group_order
   const oa = a.group_order
   const ob = b.group_order
-  const { error: e1 } = await supabase.from("tugas").update({ group_order: ob }).eq("id", upId).eq("user_id", user.id)
+  const { error: e1 } = await supabase.from("tugas_prioritas").update({ group_order: ob }).eq("id", upId).eq("user_id", user.id)
   if (e1) throw new Error(e1.message)
-  const { error: e2 } = await supabase.from("tugas").update({ group_order: oa }).eq("id", downId).eq("user_id", user.id)
+  const { error: e2 } = await supabase.from("tugas_prioritas").update({ group_order: oa }).eq("id", downId).eq("user_id", user.id)
   if (e2) throw new Error(e2.message)
 
-  revalidatePath("/tugas/hari-ini")
-  revalidatePath("/tugas/semua")
+  revalidatePath("/tugas/prioritas")
   revalidatePath("/overview")
   return { error: null }
 }
@@ -360,7 +350,7 @@ export async function rescheduleMissedTasks(today: string) {
   if (!user) throw new Error("Unauthorized")
 
   const { data: missed, error } = await supabase
-    .from("tugas")
+    .from("tugas_prioritas")
     .select("id, tanggal")
     .eq("user_id", user.id)
     .neq("status", "selesai")
@@ -373,7 +363,7 @@ export async function rescheduleMissedTasks(today: string) {
   const results = await Promise.all(
     missed.map((t) =>
       supabase
-        .from("tugas")
+        .from("tugas_prioritas")
         .update({ tanggal: today, terlewat_tanggal: t.tanggal })
         .eq("id", t.id)
         .eq("user_id", user.id)
@@ -392,7 +382,7 @@ export async function getTasks(date?: string, status?: string, limit?: number) {
   if (!user) throw new Error("Unauthorized")
 
   let query = supabase
-    .from("tugas")
+    .from("tugas_prioritas")
     .select(TASK_SELECT)
     .eq("user_id", user.id)
 
@@ -428,7 +418,7 @@ export async function getTaskById(id: string) {
   if (!user) throw new Error("Unauthorized")
 
   const { data, error } = await supabase
-    .from("tugas")
+    .from("tugas_prioritas")
     .select(TASK_SELECT)
     .eq("id", id)
     .eq("user_id", user.id)
