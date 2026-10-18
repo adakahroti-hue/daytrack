@@ -67,6 +67,9 @@ interface HeaderControls {
   setHeaderSelectDisabled: (v: boolean) => void
   headerSelectActive: boolean
   setHeaderSelectActive: (v: boolean) => void
+  // Rev: field pencarian di header (desktop) — state lewat context agar halaman (mis. Catatan) bisa baca nilainya
+  headerSearchQuery: string
+  setHeaderSearchQuery: (v: string) => void
 }
 
 const HeaderControlsContext = createContext<HeaderControls | null>(null)
@@ -289,6 +292,8 @@ export function HeaderControlsProvider({
   const [headerSelectAction, setHeaderSelectAction] = useState<(() => void) | null>(null)
   const [headerSelectDisabled, setHeaderSelectDisabled] = useState(false)
   const [headerSelectActive, setHeaderSelectActive] = useState(false)
+  // Pencarian header (Catatan) — nilai lewat context supaya input di Header & filter di halaman satu sumber data
+  const [headerSearchQuery, setHeaderSearchQuery] = useState('')
 
   const navigateWaktu = useCallback((dir: 'prev' | 'next') => {
     setWaktuDate((prev) => {
@@ -441,6 +446,8 @@ export function HeaderControlsProvider({
     setHeaderSelectDisabled,
     headerSelectActive,
     setHeaderSelectActive,
+    headerSearchQuery,
+    setHeaderSearchQuery,
   }), [dynamicTitle, dynamicDescription, currentDate, period, setPeriod, selectYesterday, page, setPage, navigate, goToToday, onRefresh, isLoading, isToday, navigateToPeriodStart, category, subPage, setSubPage, tugasView, setTugasView, groupMode, setGroupMode, ibadahPeriod, ibadahDate, setIbadahPeriod, navigateIbadah, arusKasShowAll, setArusKasShowAll, waktuPeriod, setWaktuPeriod, waktuDate, navigateWaktu, goToWaktuToday, alquranMode, headerAddAction, headerSelectAction, headerSelectDisabled, headerSelectActive])
 
   return (

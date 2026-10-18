@@ -157,6 +157,8 @@ export function Header({ onMenuClick }: HeaderProps) {
     headerSelectAction,
     headerSelectDisabled,
     headerSelectActive,
+    headerSearchQuery,
+    setHeaderSearchQuery,
   } = useHeaderControls()
 
   // Show period toggle only on Overview page
@@ -317,6 +319,18 @@ export function Header({ onMenuClick }: HeaderProps) {
             <HariIniMissionSentence />
           </div>
         </div>
+      )}
+
+      {/* Catatan — field pencarian desktop: isi sisa space, sebelah kiri tombol Tambah (kanan) */}
+      {isCatatan && (
+        <input
+          type='search'
+          value={headerSearchQuery}
+          onChange={(e) => setHeaderSearchQuery(e.target.value)}
+          placeholder='Cari judul atau isi...'
+          className='hidden sm:block flex-1 min-w-0 h-9 px-3 text-sm rounded-md border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-purple-300'
+          aria-label='Pencarian catatan'
+        />
       )}
 
       {/* Right side controls — ml-auto agar selalu mentok ke ujung kanan (terutama saat judul disembunyikan) */}

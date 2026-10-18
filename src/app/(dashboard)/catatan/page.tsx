@@ -220,8 +220,9 @@ export default function CatatanPage() {
   const [showAll, setShowAll] = useState(false)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [newKat, setNewKat] = useState("")
-  const [searchQuery, setSearchQuery] = useState("")
   const isiRef = useRef<HTMLTextAreaElement>(null)
+  // Pencarian lewat context header — state bersama antara input (Header/desktop) & input konten (mobile)
+  const { setHeaderAddAction, headerSearchQuery, setHeaderSearchQuery } = useHeaderControls()
 
   // Kategori unik dari seluruh catatan (multi-kategori per catatan, dipisah koma)
   const categories = Array.from(
@@ -251,9 +252,9 @@ export default function CatatanPage() {
         : labs.includes(filterKat)
     // Search teks lewat judul + isi (case-insensitive, token per-token)
     const textMatch =
-      !searchQuery ||
-      (n.judul.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (n.isi ?? "").toLowerCase().includes(searchQuery.toLowerCase()))
+      !headerSearchQuery.trim() ||
+      (n.judul.toLowerCase().includes(headerSearchQuery.toLowerCase()) ||
+        (n.isi ?? "").toLowerCase().includes(headerSearchQuery.toLowerCase()))
     return katMatch && textMatch
   })
 
@@ -352,7 +353,6 @@ export default function CatatanPage() {
     setViewState({ id: n.id, judul: n.judul, isi: n.isi, label: n.label ?? "" })
 
   // Rev mobile: tombol "Tambah Catatan" pindah ke header kanan atas — registrasi handler via context
-  const { setHeaderAddAction } = useHeaderControls()
   useEffect(() => {
     setHeaderAddAction(() => openAdd)
     return () => setHeaderAddAction(null)
@@ -423,11 +423,12 @@ export default function CatatanPage() {
       {/* Rev mobile: padding kiri-kanan mobile dihapus (main layout sudah p-4) */}
       {/* Rev mobile: judul "Catatan" dihapus — deretan kategori jadi baris pertama; tombol tambah pindah ke header */}
       {/* Rev: Input search di header, fokus langsung bisa ditulis */}
-      <div className="flex items-center gap-2 mb-4">
+      {/* Desktop: pencarian pindah ke header (sebelah kiri tombol Tambah) — input hanya untuk mobile */}
+      <div className="flex items-center gap-2 mb-4 sm:hidden">
         <Input
           placeholder="Judul atau isi..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          value={headerSearchQuery}
+          onChange={(e) => setHeaderSearchQuery(e.target.value)}
           className="h-10 sm:h-12 rounded-md border-slate-300 px-3 text-sm flex-1 focus:outline-none focus:ring-2 focus:ring-purple-300"
         />
       </div>
