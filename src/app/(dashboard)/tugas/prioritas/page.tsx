@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useMemo } from 'react'
-import { format, isBefore, startOfDay } from 'date-fns'
 import { Check, Target, Flag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -10,12 +9,20 @@ import { cn, CARD_BASE } from '@/lib/utils'
 import { TaskForm } from '@/components/tasks/TaskForm'
 import { TaskGroupDialog } from '@/components/tasks/task-group'
 import { TaskCard, type TaskCardTask, type TaskCardStatus } from '@/components/tasks/TaskCard'
-import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskStatus } from '@/hooks/useTasks'
-import { useTasksRealtime } from '@/hooks/useRealtime'
+import {
+  useTugasPrioritas,
+  useCreateTugasPrioritas,
+  useUpdateTugasPrioritas,
+  useDeleteTugasPrioritas,
+  useToggleTugasPrioritasStatus,
+  type TugasPrioritasRow,
+} from '@/hooks/useTugasPrioritas'
+import { useTugasPrioritasRealtime } from '@/hooks/useRealtime'
 import { useHeaderControls } from '@/components/layout/HeaderControls'
 import { useMounted } from '@/hooks/useMounted'
 
-type PriorityTask = TaskCardTask & { jenjang: 'primer' | 'sekunder' }
+// Row tabel TERPISAH `tugas_prioritas` — cocok dengan tipe kartu TaskCard
+type PriorityTask = TugasPrioritasRow
 
 type TaskFormData = {
   nama: string
@@ -23,7 +30,8 @@ type TaskFormData = {
   estimasi_menit: number
   prioritas: 'p1' | 'p2' | 'p3' | 'p4'
   status: 'belum' | 'proses' | 'selesai'
-  jenjang: 'primer' | 'sekunder'
+  // opsional di form (default 'primer' saat submit)
+  jenjang?: 'primer' | 'sekunder'
 }
 
 type EditingTask = TaskFormData & { id: string }
@@ -31,7 +39,7 @@ type EditingTask = TaskFormData & { id: string }
 const PRIORITY_ORDER: PriorityTask['prioritas'][] = ['p1', 'p2', 'p3', 'p4']
 const STATUS_ORDER: PriorityTask['status'][] = ['belum', 'proses', 'selesai']
 
-// Urut: prioritas tinggi dulu → status (belum dulu) → terbaru
+// Urut: prioritas tinggi dulu → anggota paket (parent dulu) → status → terbaru
 function byPrioritySort(a: PriorityTask, b: PriorityTask) {
   const p = PRIORITY_ORDER.indexOf(a.prioritas) - PRIORITY_ORDER.indexOf(b.prioritas)
   if (p !== 0) return p
@@ -133,22 +141,21 @@ function PrioritasPageClient() {
     return () => setHeaderAddAction(null)
   }, [setHeaderAddAction])
 
-  const { data: allTasks = [], isLoading, error } = useTasks(undefined)
-  useTasksRealtime([['tugas']])
+  const { data: allTasks = [], isLoading, error } = useTugasPrioritas()
+  useTugasPrioritasRealtime([['tugas_prioritas']])
 
-  const createTask = useCreateTask()
-  const updateTask = useUpdateTask()
-  const deleteTask = useDeleteTask()
-  const toggleTaskStatus = useToggleTaskStatus()
+  const createTask = useCreateTugasPrioritas()
+  const updateTask = useUpdateTugasPrioritas()
+  const deleteTask = useDeleteTugasPrioritas()
+  const toggleTaskStatus = useToggleTugasPrioritasStatus()
 
-  // Tugas aktif yang BELUM selesai (kolom jadi bersih; tugas selesai ada di tab Semua)
+  // Kolom: jenjang = primer (kiri) / sekunder (kanan); hanya tugas aktif (belum/proses)
   const activeTasks = useMemo(
     () => (allTasks as PriorityTask[]).filter((t) => t.status !== 'selesai'),
     [allTasks]
   )
-
   const primerTasks = useMemo(
-    () => activeTasks.filter((t) => (t.jenjang ?? 'primer') === 'primer').sort(byPrioritySort),
+    () => activeTasks.filter((t) => t.jenjang === 'primer').sort(byPrioritySort),
     [activeTasks]
   )
   const sekunderTasks = useMemo(
@@ -157,14 +164,15 @@ function PrioritasPageClient() {
   )
 
   const handleEdit = (task: TaskCardTask) => {
+    const t = task as PriorityTask
     setEditingTask({
-      id: task.id,
-      nama: task.nama,
-      tanggal: task.tanggal ?? undefined,
-      estimasi_menit: task.estimasi_menit,
-      prioritas: task.prioritas,
-      status: task.status,
-      jenjang: task.jenjang ?? 'primer',
+      id: t.id,
+      nama: t.nama,
+      tanggal: t.tanggal ?? undefined,
+      estimasi_menit: t.estimasi_menit,
+      prioritas: t.prioritas,
+      status: t.status,
+      jenjang: t.jenjang ?? 'primer',
     })
     setIsFormOpen(true)
   }
@@ -177,9 +185,9 @@ function PrioritasPageClient() {
     toggleTaskStatus.mutate({ id, status })
   }
 
-  // Pindah tugas antar kolom (Primer <-> Sekunder)
+  // Pindah tugas antar kolom (Primer <-> Sekunder) — update kolom jenjang saja
   const handleSetJenjang = (task: TaskCardTask) => {
-    const next = (task.jenjang ?? 'primer') === 'primer' ? 'sekunder' : 'primer'
+    const next = ((task as PriorityTask).jenjang ?? 'primer') === 'primer' ? 'sekunder' : 'primer'
     updateTask.mutate({ id: task.id, data: { jenjang: next } })
   }
 
@@ -195,6 +203,7 @@ function PrioritasPageClient() {
   const handleSubmit = (data: TaskFormData) => {
     const taskData = {
       ...data,
+      jenjang: data.jenjang ?? 'primer',
       tanggal: data.tanggal && data.tanggal.length > 0 ? data.tanggal : undefined,
     }
     if (editingTask) {
@@ -230,11 +239,20 @@ function PrioritasPageClient() {
   }
 
   if (error) {
+    // Umumnya "tabel tugas_prioritas belum ada" → arahkan jalankan migrasi
     return (
       <div className="space-y-6">
         <Card className={CARD_BASE}>
-          <CardContent className="py-12 text-center">
-            <p className="text-destructive">Gagal memuat tugas: {error.message}</p>
+          <CardContent className="py-12 text-center space-y-3">
+            <p className="text-destructive font-medium">Gagal memuat tugas prioritas</p>
+            <p className="text-sm text-slate-500 max-w-md mx-auto">
+              {error.message}
+            </p>
+            <p className="text-xs text-slate-400">
+              Biasanya karena migrasi database belum dijalankan:
+              <br />
+              <code className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">supabase/migrations/20261018000002_create_tugas_prioritas.sql</code>
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -243,7 +261,7 @@ function PrioritasPageClient() {
 
   return (
     <div className="space-y-4 max-w-[1440px] mx-auto py-6 pb-24">
-      {/* Toolbar: Pilih Tugas (untuk hapus massal) */}
+      {/* Toolbar: mode pilih untuk hapus massal */}
       <div className="sticky top-2 z-20 flex flex-wrap items-center gap-2">
         <Button variant="outline" size="sm" className="h-8" onClick={() => setSelectionMode((v) => !v)}>
           <Check className="h-3.5 w-3.5" /> {selectionMode ? 'Selesai Pilih' : 'Pilih Tugas'}
@@ -255,11 +273,10 @@ function PrioritasPageClient() {
             className="h-8"
             onClick={() => {
               if (confirm(`Yakin ingin menghapus ${selectedIds.size} tugas yang dipilih?`)) {
-                // nonaktifkan dulu agar tidak dobel
                 const ids = Array.from(selectedIds)
                 setSelectedIds(new Set())
                 setSelectionMode(false)
-                ids.forEach((id) => deleteTask.mutate(id))
+                deleteMany(ids)
               }
             }}
           >
@@ -288,16 +305,16 @@ function PrioritasPageClient() {
         />
       </div>
 
-      {/* Empty state global: belum ada tugas sama sekali */}
+      {/* Empty state global */}
       {allTasks.length === 0 && (
         <div className="py-14 text-center">
           <Target className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-muted-foreground text-lg">Belum ada tugas</p>
+          <p className="text-muted-foreground text-lg">Belum ada tugas prioritas</p>
           <p className="text-sm text-muted-foreground mt-1">Tambahkan tugas pertama — pilih jenjangnya di form</p>
         </div>
       )}
 
-      {/* Add/Edit Task Dialog */}
+      {/* Add/Edit dialog */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -307,6 +324,7 @@ function PrioritasPageClient() {
             initialData={editingTask}
             onSubmit={handleSubmit}
             onCancel={() => { setIsFormOpen(false); setEditingTask(null) }}
+            showJenjang
           />
         </DialogContent>
       </Dialog>
@@ -316,7 +334,7 @@ function PrioritasPageClient() {
         open={!!groupTask}
         onOpenChange={(open) => !open && setGroupTask(null)}
         task={groupTask}
-        allTasks={allTasks}
+        allTasks={allTasks as unknown as TaskCardTask[]}
         isSaving={updateTask.isPending}
         onSave={(data) => {
           if (!groupTask) return
@@ -328,6 +346,10 @@ function PrioritasPageClient() {
       />
     </div>
   )
+
+  function deleteMany(ids: string[]) {
+    ids.forEach((id) => deleteTask.mutate(id))
+  }
 }
 
 export default function PrioritasPage() {

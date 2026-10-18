@@ -31,7 +31,6 @@ type Task = {
   started_at: string | null
   completed_at: string | null
   terlewat_tanggal?: string | null
-  jenjang?: 'primer' | 'sekunder' | null
   group_id?: string | null
   group_order?: number | null
 }
@@ -42,7 +41,6 @@ type TaskFormData = {
   estimasi_menit: number
   prioritas: 'p1' | 'p2' | 'p3' | 'p4'
   status: 'belum' | 'proses' | 'selesai'
-  jenjang: 'primer' | 'sekunder'
 }
 
 type EditingTask = TaskFormData & { id: string }
@@ -439,7 +437,7 @@ function SemuaPageClient() {
       estimasi_menit: task.estimasi_menit,
       prioritas: task.prioritas,
       status: task.status,
-      jenjang: task.jenjang ?? 'primer',
+
     }
     setEditingTask(formData)
     setIsFormOpen(true)

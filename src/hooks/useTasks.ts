@@ -16,8 +16,6 @@ export interface TaskRow {
   estimasi_menit: number
   prioritas: 'p1' | 'p2' | 'p3' | 'p4'
   status: 'belum' | 'proses' | 'selesai'
-  // Tab Prioritas: primer (inti) vs sekunder (pendukung) — kolom `jenjang`
-  jenjang: 'primer' | 'sekunder'
   catatan?: string | null
   created_at: string
   updated_at: string

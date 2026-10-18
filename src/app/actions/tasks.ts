@@ -13,13 +13,11 @@ const taskSchema = z.object({
   // Revisi batch 12: penanda paket (parent/child/single)
   group_id: z.string().uuid().nullable().optional(),
   group_order: z.number().int().nullable().optional(),
-  // Tab Prioritas: primer (inti) vs sekunder (pendukung)
-  jenjang: z.enum(["primer", "sekunder"]).default("primer"),
 })
 
 export type TaskFormData = z.infer<typeof taskSchema>
 
-const TASK_SELECT = "id, user_id, nama, tanggal, estimasi_menit, prioritas, status, jenjang, created_at, updated_at, started_at, completed_at, accumulated_seconds, is_paused, last_resumed_at, group_id, group_order"
+const TASK_SELECT = "id, user_id, nama, tanggal, estimasi_menit, prioritas, status, created_at, updated_at, started_at, completed_at, accumulated_seconds, is_paused, last_resumed_at, group_id, group_order"
 
 export async function createTask(formData: TaskFormData) {
   const supabase = await createClient()
@@ -28,23 +26,15 @@ export async function createTask(formData: TaskFormData) {
   if (!user) return { data: null, error: "Unauthorized" as string }
 
   const validated = taskSchema.parse(formData)
-
-  const { jenjang, ...rest } = validated
-  const base = { ...rest, user_id: user.id }
-
-  let { data, error } = await supabase
+  // Catatan: kolom `jenjang` hanya ada di tabel tugas_prioritas (tab Prioritas).
+  // Zod tanpa field jenjang di sini → form yang mengirim `jenjang` otomatis
+  // di-strip, jadi insert tabel `tugas` selalu bersih.
+  const { data, error } = await supabase
     .from("tugas")
-    .insert({ ...base, jenjang })
+    .insert({ ...validated, user_id: user.id })
     .select()
     .single()
 
-  // Jalur aman: kolom `jenjang` (migrasi 20261018000001) belum dijalankan di
-  // Supabase → retry tanpa kolom itu agar tambah tugas TETAP jalan di semua tab.
-  if (error && error.code === "42703") {
-    const retry = await supabase.from("tugas").insert(base).select().single()
-    data = retry.data
-    error = retry.error
-  }
   if (error) return { data: null, error: error.message as string }
 
   revalidatePath("/tugas/hari-ini")
@@ -62,7 +52,7 @@ export async function updateTask(id: string, formData: Partial<TaskFormData>) {
 
   const validated = taskSchema.partial().parse(formData)
 
-  let { data, error } = await supabase
+  const { data, error } = await supabase
     .from("tugas")
     .update(validated)
     .eq("id", id)
@@ -70,19 +60,6 @@ export async function updateTask(id: string, formData: Partial<TaskFormData>) {
     .select()
     .single()
 
-  // Jalur aman: kolom `jenjang` belum ada di DB → update ulang tanpa field itu
-  if (error && error.code === "42703" && "jenjang" in validated) {
-    const { jenjang: _drop, ...rest } = validated
-    const retry = await supabase
-      .from("tugas")
-      .update(rest)
-      .eq("id", id)
-      .eq("user_id", user.id)
-      .select()
-      .single()
-    data = retry.data
-    error = retry.error
-  }
   if (error) return { data: null, error: error.message as string }
 
   revalidatePath("/tugas/hari-ini")

@@ -261,6 +261,14 @@ export function useKesenanganRealtime(queryKeys: string[][] = [['playlist']]) {
   })
 }
 
+// Tab Prioritas — tabel TERPISAH dari `tugas` (jangan disatukan dengan useTasksRealtime)
+export function useTugasPrioritasRealtime(queryKeys: string[][] = [['tugas_prioritas']]) {
+  return useRealtime({
+    table: 'tugas_prioritas',
+    queryKeys,
+  })
+}
+
 export function usePrayerLogRealtime(dateKey: string) {
   return useRealtime({
     table: 'sholat',

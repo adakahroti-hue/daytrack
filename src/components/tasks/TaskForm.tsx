@@ -24,7 +24,8 @@ const taskSchema = z.object({
   prioritas: z.enum(['p1', 'p2', 'p3', 'p4']),
   status: z.enum(['belum', 'proses', 'selesai']),
   // Tab Prioritas: kelompok tugas — primer (inti) vs sekunder (pendukung)
-  jenjang: z.enum(['primer', 'sekunder']),
+  // Hanya dikirim saat showJenjang=true (tab Prioritas → tabel tugas_prioritas).
+  jenjang: z.enum(['primer', 'sekunder']).optional(),
 })
 
 type TaskFormData = z.infer<typeof taskSchema>
@@ -52,9 +53,10 @@ interface TaskFormProps {
   onSubmit: (data: TaskFormData) => void
   onCancel: () => void
   hideDate?: boolean
+  /** Tampilkan dropdown Jenjang — hanya tab Prioritas (tabel tugas_prioritas) */
+  showJenjang?: boolean
 }
-
-export function TaskForm({ initialData, onSubmit, onCancel, hideDate }: TaskFormProps) {
+export function TaskForm({ initialData, onSubmit, onCancel, hideDate, showJenjang }: TaskFormProps) {
   const {
     register,
     handleSubmit,
@@ -159,7 +161,7 @@ export function TaskForm({ initialData, onSubmit, onCancel, hideDate }: TaskForm
         <input type="hidden" {...register('estimasi_menit', { valueAsNumber: true })} />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className={`grid gap-4 ${showJenjang ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
         <div className="space-y-2">
           <Label htmlFor="prioritas">Prioritas</Label>
           <Controller
@@ -182,14 +184,15 @@ export function TaskForm({ initialData, onSubmit, onCancel, hideDate }: TaskForm
           />
         </div>
 
-        {/* Tab Prioritas: kelompok tugas — menuju kolom kiri (primer) / kanan (sekunder) */}
+        {/* Tab Prioritas saja: kelompok tugas — kolom kiri (primer) / kanan (sekunder) */}
+        {showJenjang && (
         <div className="space-y-2">
           <Label htmlFor="jenjang">Jenjang</Label>
           <Controller
             control={control}
             name="jenjang"
             render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange}>
+              <Select value={field.value ?? 'primer'} onValueChange={field.onChange}>
                 <SelectTrigger>
                   <SelectValue placeholder="Pilih jenjang" />
                 </SelectTrigger>
@@ -204,6 +207,7 @@ export function TaskForm({ initialData, onSubmit, onCancel, hideDate }: TaskForm
             )}
           />
         </div>
+        )}
 
         <div className="space-y-2">
           <Label htmlFor="status">Status</Label>
