@@ -616,7 +616,7 @@ export default function CatatanPage() {
 
       <Dialog open={!!editState} onOpenChange={(open) => !open && setEditState(null)}>
         <DialogContent className="max-w-[calc(100vw-8px)] sm:max-w-[calc(100vw-32px)] rounded-xl h-[calc(100svh-8px)] sm:h-[calc(100vh-24px)] sm:max-h-[980px] !p-3 sm:!p-4 gap-2 flex flex-col overflow-hidden">
-          <DialogHeader className="shrink-0">
+          <DialogHeader className="sr-only">
             <DialogTitle>{editState?.id ? "Edit Catatan" : "Tambah Catatan"}</DialogTitle>
           </DialogHeader>
           <div className="flex-1 min-h-0 flex flex-col gap-2 overflow-y-auto pr-0.5">
