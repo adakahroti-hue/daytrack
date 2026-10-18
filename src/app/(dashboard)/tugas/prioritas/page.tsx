@@ -313,7 +313,10 @@ function PrioritasPageClient() {
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{editingTask ? 'Edit Tugas' : 'Tambah Tugas Baru'}</DialogTitle>
+            {/* Judul tambah disembunyikan (sr-only) — siap pakai kembali saat mode edit */}
+            <DialogTitle className={editingTask ? undefined : 'sr-only'}>
+              {editingTask ? 'Edit Tugas' : 'Tambah Tugas Baru'}
+            </DialogTitle>
           </DialogHeader>
           {editingTask ? (
             <TaskForm
@@ -345,9 +348,7 @@ function PrioritasPageClient() {
                   onChange={(e) => setQuickNama(e.target.value)}
                 />
               </div>
-              <p className="text-xs text-slate-400">
-                Masuk kolom <span className="font-semibold text-slate-600 dark:text-slate-300">{addJenjang === 'primer' ? 'Primer' : 'Sekunder'}</span> — prioritas, estimasi & status bisa diatur lewat Edit.
-              </p>
+              {/* Teks petunjuk kolom dihapus sesuai permintaan — tambah tinggal isi nama */}
               <div className="flex justify-end gap-2 pt-2 border-t">
                 <Button type="button" variant="outline" onClick={() => { setIsFormOpen(false); setQuickNama('') }}>
                   Batal
