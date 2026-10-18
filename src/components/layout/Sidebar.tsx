@@ -103,9 +103,9 @@ const navigation: NavSection[] = [
     title: 'Tugas',
     icon: Calendar,
     items: [
+      { title: 'Prioritas', href: '/tugas/prioritas', icon: Flag },
       { title: 'Hari Ini', href: '/tugas/hari-ini', icon: Clock },
       { title: 'Semua', href: '/tugas/semua', icon: CalendarDays },
-      { title: 'Prioritas', href: '/tugas/prioritas', icon: Flag },
     ],
   },
   {
