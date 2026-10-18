@@ -588,8 +588,8 @@ export default function CatatanPage() {
             </DialogTitle>
           </DialogHeader>
           <NoteLines text={viewState?.isi ?? ""} className="text-sm leading-snug max-h-[60vh] overflow-y-auto text-slate-700" />
-          {/* Rev: Edit disebelah kiri Salin — bersebelahan di kiri (tanpa ml-auto) */}
-          <div className="flex items-center gap-2 pt-1">
+          {/* Rev: Edit & Salin sejajar di sebelah kanan (align right) */}
+          <div className="flex items-center justify-end gap-2 pt-1">
             <Button variant="outline" size="icon" onClick={() => {
               const v = viewState
               setViewState(null)
