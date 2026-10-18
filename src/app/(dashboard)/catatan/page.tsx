@@ -615,12 +615,12 @@ export default function CatatanPage() {
       </Dialog>
 
       <Dialog open={!!editState} onOpenChange={(open) => !open && setEditState(null)}>
-        <DialogContent className="max-w-[calc(100vw-16px)] sm:max-w-[calc(100vw-32px)] rounded-xl">
+        <DialogContent className="max-w-[calc(100vw-16px)] sm:max-w-[calc(100vw-32px)] rounded-xl h-[calc(100svh-24px)] sm:h-[calc(100vh-64px)] sm:max-h-[860px] flex flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle>{editState?.id ? "Edit Catatan" : "Tambah Catatan"}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-1.5">
+          <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-y-auto pr-0.5 pt-1">
+            <div className="shrink-0 space-y-1.5">
               <Label htmlFor="catatan-judul">Judul</Label>
               <Input
                 id="catatan-judul"
@@ -629,7 +629,7 @@ export default function CatatanPage() {
                 onChange={(e) => setEditState(prev => prev ? { ...prev, judul: e.target.value } : prev)}
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="shrink-0 space-y-1.5">
               <Label>Kategori</Label>
               {/* Rev mobile: pilih dari kategori yang sudah ada — multiselect */}
               {availableKats.length > 0 && (
@@ -663,10 +663,10 @@ export default function CatatanPage() {
                 </Button>
               </div>
             </div>
-            <div className="space-y-1.5">
+            <div className="flex flex-col flex-1 min-h-0 space-y-1.5">
               <Label htmlFor="catatan-isi">Isi</Label>
               {/* Rev: tombol Salin jadi ikon saja — kanan atas, sebaris dengan Bullet/Number, di luar field isi */}
-              <div className="flex items-center gap-1.5 mb-1.5">
+              <div className="shrink-0 flex items-center gap-1.5 mb-1.5">
                 <Button type="button" variant="outline" size="sm" onClick={() => wrapSelection("bold")}
                   className="h-7 gap-1 text-[11px] px-2" aria-label="Tebal" title="Tebal (bold)">
                   <Bold className="h-3.5 w-3.5" /> Bold
@@ -692,13 +692,12 @@ export default function CatatanPage() {
                 id="catatan-isi"
                 ref={isiRef}
                 placeholder="Tulis isi catatan..."
-                rows={10}
-                className="resize-y min-h-[80px] sm:min-h-[120px]"
+                className="resize-y flex-1 min-h-[240px] w-full"
                 value={editState?.isi ?? ""}
                 onChange={(e) => setEditState(prev => prev ? { ...prev, isi: e.target.value } : prev)}
               />
             </div>
-            <div className="flex justify-end gap-2 pt-1">
+            <div className="shrink-0 flex justify-end gap-2 pt-1">
               <Button variant="outline" onClick={() => setEditState(null)}>Batal</Button>
               <Button onClick={handleSave} disabled={isBusy || !editState?.judul.trim() || !editState?.isi.trim()}>
                 {isBusy && <span className="mr-1">…</span>} Simpan
