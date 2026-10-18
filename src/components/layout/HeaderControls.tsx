@@ -112,7 +112,7 @@ function getSubPageFromPath(pathname: string): string | null {
 }
 
 function getCategoryTitle(category: string, period: Period, subPage: string | null, tugasView?: 'hari-ini' | 'semua' | 'selesai'): string {
-  if (category === 'tugas' && subPage === 'prioritas') return 'Prioritas'
+  if (category === 'tugas' && subPage === 'prioritas') return 'Tugas'
 
   // Special handling for Tugas category - use internal view state
   if (category === 'tugas' && tugasView) {
@@ -186,7 +186,7 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
 }
 
 function getCategoryDescription(category: string, period: Period, subPage: string | null, tugasView?: 'hari-ini' | 'semua' | 'selesai'): string {
-  if (category === 'tugas' && subPage === 'prioritas') return 'Tugas primer (inti) dan sekunder (pendukung) dalam dua kolom'
+  if (category === 'tugas' && subPage === 'prioritas') return 'Kelompok primer (inti) dan sekunder (pendukung) dalam dua kolom'
 
   // Special handling for Tugas category - use internal view state
   if (category === 'tugas' && tugasView) {
