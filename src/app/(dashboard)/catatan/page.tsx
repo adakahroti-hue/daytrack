@@ -615,11 +615,11 @@ export default function CatatanPage() {
       </Dialog>
 
       <Dialog open={!!editState} onOpenChange={(open) => !open && setEditState(null)}>
-        <DialogContent className="max-w-[calc(100vw-16px)] sm:max-w-[calc(100vw-32px)] rounded-xl h-[calc(100svh-24px)] sm:h-[calc(100vh-64px)] sm:max-h-[860px] flex flex-col overflow-hidden">
-          <DialogHeader>
+        <DialogContent className="max-w-[calc(100vw-8px)] sm:max-w-[calc(100vw-32px)] rounded-xl h-[calc(100svh-8px)] sm:h-[calc(100vh-24px)] sm:max-h-[980px] !p-3 sm:!p-4 gap-2 flex flex-col overflow-hidden">
+          <DialogHeader className="shrink-0">
             <DialogTitle>{editState?.id ? "Edit Catatan" : "Tambah Catatan"}</DialogTitle>
           </DialogHeader>
-          <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-y-auto pr-0.5 pt-1">
+          <div className="flex-1 min-h-0 flex flex-col gap-2 overflow-y-auto pr-0.5">
             <div className="shrink-0 space-y-1.5">
               <Label htmlFor="catatan-judul">Judul</Label>
               <Input
@@ -692,12 +692,12 @@ export default function CatatanPage() {
                 id="catatan-isi"
                 ref={isiRef}
                 placeholder="Tulis isi catatan..."
-                className="resize-y flex-1 min-h-[240px] w-full"
+                className="resize-none flex-1 min-h-[160px] w-full h-full"
                 value={editState?.isi ?? ""}
                 onChange={(e) => setEditState(prev => prev ? { ...prev, isi: e.target.value } : prev)}
               />
             </div>
-            <div className="shrink-0 flex justify-end gap-2 pt-1">
+            <div className="shrink-0 flex justify-end gap-2 mt-1">
               <Button variant="outline" onClick={() => setEditState(null)}>Batal</Button>
               <Button onClick={handleSave} disabled={isBusy || !editState?.judul.trim() || !editState?.isi.trim()}>
                 {isBusy && <span className="mr-1">…</span>} Simpan
