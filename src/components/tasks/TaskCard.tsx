@@ -1,6 +1,6 @@
 "use client"
 
-import { memo } from 'react'
+import { memo, useEffect, useState } from 'react'
 import { format, isBefore, startOfDay, differenceInDays } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { Play, Check, CheckCircle2, MoreHorizontal, Edit, Trash2, Layers, Clock, Calendar, AlertTriangle, ArrowLeft, ArrowRight } from 'lucide-react'
@@ -26,6 +26,7 @@ export type TaskCardTask = {
   updated_at: string
   started_at: string | null
   completed_at: string | null
+  accumulated_seconds?: number | null
   terlewat_tanggal?: string | null
   // Tab Prioritas: kelompok tugas — primer (inti) vs sekunder (pendukung)
   jenjang?: 'primer' | 'sekunder' | null
@@ -42,6 +43,33 @@ function PrimaryButtonIcon({ isPending, isInProgress }: { isPending: boolean; is
   if (isPending) return <Play className="h-3.5 w-3.5" />
   if (isInProgress) return <Check className="h-3.5 w-3.5" />
   return <CheckCircle2 className="h-3.5 w-3.5" />
+}
+
+// Timer live — berdetik tiap detik untuk tugas status 'proses' (tab Prioritas).
+// Dipisah jadi komponen supaya hanya kartu proses yang re-render tiap detik.
+function LiveTimer({ startedAt, accumulatedSeconds }: { startedAt: string; accumulatedSeconds?: number | null }) {
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(t)
+  }, [])
+  const base = accumulatedSeconds || 0
+  const elapsed = Math.max(0, Math.floor((now - new Date(startedAt).getTime()) / 1000))
+  const total = base + elapsed
+  const hh = Math.floor(total / 3600)
+  const mm = Math.floor((total % 3600) / 60)
+  const ss = total % 60
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const label = hh > 0 ? `${hh}:${pad(mm)}:${pad(ss)}` : `${pad(mm)}:${pad(ss)}`
+  return (
+    <div className="flex items-center gap-1.5 text-xs font-mono font-semibold text-amber-700 dark:text-amber-300">
+      <span className="relative flex h-2 w-2">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
+      </span>
+      {label}
+    </div>
+  )
 }
 
 function TaskCardComponent({
@@ -243,6 +271,11 @@ function TaskCardComponent({
             </div>
           )}
         </div>
+        )}
+
+        {/* Timer berjalan — tugas status 'proses' (tampil di semua tab yang pakai kartu ini) */}
+        {task.status === 'proses' && task.started_at && (
+          <LiveTimer startedAt={task.started_at} accumulatedSeconds={task.accumulated_seconds} />
         )}
 
         {/* Bottom Row: Status Badge + Primary Action - Fixed at bottom */}
