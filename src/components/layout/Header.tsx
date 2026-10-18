@@ -603,8 +603,8 @@ export function Header({ onMenuClick }: HeaderProps) {
           </Button>
         )}
 
-        {/* Semua & Prioritas — tombol Tambah Tugas: ikon bulat hitam saja (rev mobile) */}
-        {(isSemua || isPrioritas) && (
+        {/* Semua — tombol Tambah Tugas (Prioritas TIDAK: tiap kolomnya punya tombol Tambah sendiri) */}
+        {isSemua && (
           <Button
             onClick={() => headerAddAction?.()}
             className='flex-shrink-0 h-9 w-9 rounded-full text-white shadow-sm bg-slate-900 hover:bg-slate-800'
