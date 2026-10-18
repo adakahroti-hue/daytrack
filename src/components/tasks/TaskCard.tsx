@@ -253,21 +253,18 @@ function TaskCardComponent({
           <Button
             variant={isCompleted ? 'outline' : 'default'}
             size="sm"
+            aria-label={primaryButtonText}
+            title={primaryButtonText}
             className={cn(
-              'w-auto sm:w-auto',
+              'h-8 w-8 p-0 shrink-0',
               isCompleted && 'bg-muted text-muted-foreground hover:bg-muted/80 border-border',
               isPending && `${BRAND_COLORS.primary} ${BRAND_COLORS.primaryHover} shadow-sm`,
               isInProgress && 'bg-green-600 hover:bg-green-700 text-white shadow-sm'
             )}
             onClick={handlePrimaryAction}
             disabled={primaryButtonDisabled}
-            aria-label={primaryButtonText}
           >
-            <span className="flex items-center gap-1.5">
-              <PrimaryButtonIcon isPending={isPending} isInProgress={isInProgress} />
-              <span className="hidden sm:inline">{primaryButtonText}</span>
-              <span className="sm:hidden">{isPending ? 'Mulai' : 'Selesai'}</span>
-            </span>
+            <PrimaryButtonIcon isPending={isPending} isInProgress={isInProgress} />
           </Button>
         </div>
       </CardContent>

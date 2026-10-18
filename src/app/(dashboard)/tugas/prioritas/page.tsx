@@ -43,8 +43,10 @@ const STATUS_ORDER: PriorityTask['status'][] = ['belum', 'proses', 'selesai']
 // Referensi Set kosong tetap (fitur pilih tugas sudah dihapus — hanya dipertahankan agar tipe kartu cocok)
 const EMPTY_SET: Set<string> = new Set()
 
-// Urut: prioritas tinggi dulu → anggota paket (parent dulu) → status → terbaru
+// Urut: status 'proses' PALING ATAS → prioritas tinggi → parent paket dulu → terbaru
 function byPrioritySort(a: PriorityTask, b: PriorityTask) {
+  const proses = (b.status === 'proses' ? 1 : 0) - (a.status === 'proses' ? 1 : 0)
+  if (proses !== 0) return proses
   const p = PRIORITY_ORDER.indexOf(a.prioritas) - PRIORITY_ORDER.indexOf(b.prioritas)
   if (p !== 0) return p
   if (a.group_id && b.group_id && a.group_id === b.group_id) {
