@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Target, Flag, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -326,7 +326,7 @@ function PrioritasPageClient() {
               showJenjang
             />
           ) : (
-            /* Tambah: field hanya Nama Tugas — jenjang mengikuti kolom tombol */
+            /* Tambah: field hanya Nama Tugas (3 baris) — jenjang mengikuti kolom tombol */
             <form
               className="space-y-4 p-4"
               onSubmit={(e) => {
@@ -340,10 +340,12 @@ function PrioritasPageClient() {
             >
               <div className="space-y-2">
                 <Label htmlFor="quick-nama">Nama Tugas</Label>
-                <Input
+                <Textarea
                   id="quick-nama"
                   autoFocus
-                  placeholder="Contoh: Kerjakan laporan bulanan"
+                  rows={3}
+                  placeholder="Tulis nama tugas..."
+                  className="resize-none"
                   value={quickNama}
                   onChange={(e) => setQuickNama(e.target.value)}
                 />
