@@ -1,8 +1,10 @@
 "use client"
 
 import { useState, useEffect, useMemo } from 'react'
-import { Target, Flag } from 'lucide-react'
+import { Target, Flag, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { cn, CARD_BASE } from '@/lib/utils'
@@ -61,6 +63,7 @@ function PriorityColumn({
   icon: Icon,
   accent,
   tasks,
+  onAdd,
   selectionMode,
   selectedIds,
   onEdit,
@@ -75,6 +78,7 @@ function PriorityColumn({
   icon: React.ComponentType<{ className?: string }>
   accent: string
   tasks: PriorityTask[]
+  onAdd?: () => void
   selectionMode: boolean
   selectedIds: Set<string>
   onEdit: (task: TaskCardTask) => void
@@ -98,6 +102,16 @@ function PriorityColumn({
         <span className="text-xs font-bold tabular-nums px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shrink-0">
           {tasks.length} tugas
         </span>
+        {/* Tombol Tambah KHUSUS kolom ini — tugas baru langsung masuk kolom ini */}
+        {onAdd && (
+          <Button
+            size="sm"
+            className="h-8 shrink-0 bg-slate-900 hover:bg-slate-800 text-white"
+            onClick={onAdd}
+          >
+            <Plus className="h-3.5 w-3.5" /> Tambah
+          </Button>
+        )}
       </div>
 
       {/* Daftar tugas */}
@@ -131,6 +145,8 @@ function PriorityColumn({
 function PrioritasPageClient() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<EditingTask | null>(null)
+  // Jenjang target saat menambah: 'primer' (kolom kiri) | 'sekunder' (kolom kanan)
+  const [addJenjang, setAddJenjang] = useState<'primer' | 'sekunder'>('primer')
   const [groupTask, setGroupTask] = useState<PriorityTask | null>(null)
   const { setHeaderAddAction } = useHeaderControls()
   const isMounted = useMounted()
@@ -138,7 +154,7 @@ function PrioritasPageClient() {
 
   // Tombol tambah di header kanan atas (sama seperti tab Semua)
   useEffect(() => {
-    setHeaderAddAction(() => () => { setEditingTask(null); setIsFormOpen(true) })
+    setHeaderAddAction(() => () => { setEditingTask(null); setAddJenjang('primer'); setIsFormOpen(true) })
     return () => setHeaderAddAction(null)
   }, [setHeaderAddAction])
 
@@ -194,10 +210,13 @@ function PrioritasPageClient() {
 
 
 
+  // Mode tambah cuma kirim nama — jenjang ikut kolom tombol, default lain dari schema
+  const [quickNama, setQuickNama] = useState('')
+
   const handleSubmit = (data: TaskFormData) => {
     const taskData = {
       ...data,
-      jenjang: data.jenjang ?? 'primer',
+      jenjang: data.jenjang ?? addJenjang,
       tanggal: data.tanggal && data.tanggal.length > 0 ? data.tanggal : undefined,
     }
     if (editingTask) {
@@ -265,6 +284,7 @@ function PrioritasPageClient() {
           icon={Target}
           accent="bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400"
           tasks={primerTasks}
+          onAdd={() => { setEditingTask(null); setAddJenjang('primer'); setQuickNama(''); setIsFormOpen(true) }}
           {...shared}
         />
         <PriorityColumn
@@ -273,6 +293,7 @@ function PrioritasPageClient() {
           icon={Flag}
           accent="bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400"
           tasks={sekunderTasks}
+          onAdd={() => { setEditingTask(null); setAddJenjang('sekunder'); setQuickNama(''); setIsFormOpen(true) }}
           {...shared}
         />
       </div>
@@ -292,12 +313,49 @@ function PrioritasPageClient() {
           <DialogHeader>
             <DialogTitle>{editingTask ? 'Edit Tugas' : 'Tambah Tugas Baru'}</DialogTitle>
           </DialogHeader>
-          <TaskForm
-            initialData={editingTask}
-            onSubmit={handleSubmit}
-            onCancel={() => { setIsFormOpen(false); setEditingTask(null) }}
-            showJenjang
-          />
+          {editingTask ? (
+            <TaskForm
+              initialData={editingTask}
+              onSubmit={handleSubmit}
+              onCancel={() => { setIsFormOpen(false); setEditingTask(null) }}
+              showJenjang
+            />
+          ) : (
+            /* Tambah: field hanya Nama Tugas — jenjang mengikuti kolom tombol */
+            <form
+              className="space-y-4 p-4"
+              onSubmit={(e) => {
+                e.preventDefault()
+                const nama = quickNama.trim()
+                if (!nama) return
+                createTask.mutate({ nama, jenjang: addJenjang, estimasi_menit: 0, prioritas: 'p3', status: 'belum' })
+                setQuickNama('')
+                setIsFormOpen(false)
+              }}
+            >
+              <div className="space-y-2">
+                <Label htmlFor="quick-nama">Nama Tugas</Label>
+                <Input
+                  id="quick-nama"
+                  autoFocus
+                  placeholder="Contoh: Kerjakan laporan bulanan"
+                  value={quickNama}
+                  onChange={(e) => setQuickNama(e.target.value)}
+                />
+              </div>
+              <p className="text-xs text-slate-400">
+                Masuk kolom <span className="font-semibold text-slate-600 dark:text-slate-300">{addJenjang === 'primer' ? 'Primer' : 'Sekunder'}</span> — prioritas, estimasi & status bisa diatur lewat Edit.
+              </p>
+              <div className="flex justify-end gap-2 pt-2 border-t">
+                <Button type="button" variant="outline" onClick={() => { setIsFormOpen(false); setQuickNama('') }}>
+                  Batal
+                </Button>
+                <Button type="submit" disabled={createTask.isPending || !quickNama.trim()}>
+                  {createTask.isPending ? 'Menyimpan...' : 'Simpan'}
+                </Button>
+              </div>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
 
