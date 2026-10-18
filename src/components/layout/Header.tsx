@@ -197,6 +197,7 @@ export function Header({ onMenuClick }: HeaderProps) {
     isOverviewPage ||
     isHariIni ||
     isSemua ||
+    isPrioritas ||
     isGoal ||
     isWaktu ||
     isCatatan ||
