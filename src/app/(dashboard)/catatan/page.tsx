@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect, useMemo, type ReactNode } from "react"
-import { Pencil, Trash2, List, ListOrdered, Copy, X, Plus, Bold, Italic } from "lucide-react"
+import { Pencil, Trash2, List, ListOrdered, Copy, Plus, Bold, Italic } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -588,11 +588,8 @@ export default function CatatanPage() {
             </DialogTitle>
           </DialogHeader>
           <NoteLines text={viewState?.isi ?? ""} className="text-sm leading-snug max-h-[60vh] overflow-y-auto text-slate-700" />
-          {/* Rev mobile: Tutup & Edit di kiri, Salin paling kanan — ikon saja */}
+          {/* Rev: tombol Close di footer dihapus — hanya X kanan atas bawaan dialog */}
           <div className="flex items-center gap-2 pt-1">
-            <Button variant="outline" size="icon" onClick={() => setViewState(null)} aria-label="Tutup" title="Tutup" className="h-9 w-9 p-0">
-              <X className="h-4 w-4" />
-            </Button>
             <Button size="icon" onClick={() => {
               const v = viewState
               setViewState(null)
