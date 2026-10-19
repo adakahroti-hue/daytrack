@@ -58,7 +58,19 @@ function byPrioritySort(a: PriorityTask, b: PriorityTask) {
   return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
 }
 
-// Satu kolom: judul + jumlah + daftar tugas
+// Urutan tampilan: aturan 'proses di atas' tetap gaya komputer; pos_order
+// = hasil drag manual hanya mengurut sepanjang sisa (non-proses). Tanpa
+// pos_order (NULL) = urutotomatis sepenuhnya.
+function byDisplayOrder(a: PriorityTask, b: PriorityTask) {
+  const proses = (b.status === 'proses' ? 1 : 0) - (a.status === 'proses' ? 1 : 0)
+  if (proses !== 0) return proses
+  const ao = a.pos_order
+  const bo = b.pos_order
+  if (ao != null && bo != null && ao !== bo) return ao - bo
+  if (ao != null && bo == null) return -1
+  if (ao == null && bo != null) return 1
+  return byPrioritySort(a, b)
+}
 function PriorityColumn({
   title,
   subtitle,
@@ -89,9 +101,10 @@ function PriorityColumn({
   currentJenjang: 'primer' | 'sekunder'
   dnd: {
     draggingId: string | null
-    dragOver: 'primer' | 'sekunder' | null
-    setDragOver: (v: 'primer' | 'sekunder' | null | ((prev: 'primer' | 'sekunder' | null) => 'primer' | 'sekunder' | null)) => void
-    onDropTask: (id: string, target: 'primer' | 'sekunder') => void
+    overList: 'primer' | 'sekunder' | null
+    overIndex: number | null
+    setDragOver: (col: 'primer' | 'sekunder', idx: number) => void
+    onDropCard: (col: 'primer' | 'sekunder', targetIndex: number) => void
     onDragEnd: () => void
     startDrag: (id: string, e: React.DragEvent) => void
   }
@@ -109,12 +122,11 @@ function PriorityColumn({
     <section
       className={cn(
         'min-w-0 rounded-xl p-2 -m-2 transition-colors',
-        dnd.dragOver === currentJenjang &&
-          'bg-yellow-100/70 ring-2 ring-yellow-400 ring-dashed dark:bg-yellow-950/30'
+        dnd.overList === currentJenjang && dnd.overIndex === tasks.length &&
+          'ring-2 ring-purple-400 dark:ring-purple-500'
       )}
-      onDragOver={(e) => { e.preventDefault(); dnd.setDragOver(currentJenjang) }}
-      onDragLeave={() => dnd.setDragOver((prev) => prev === currentJenjang ? null : prev)}
-      onDrop={(e) => { e.preventDefault(); const id = e.dataTransfer.getData('text/plain'); if (id) dnd.onDropTask(id, currentJenjang); dnd.setDragOver(null) }}
+      onDragOver={(e) => { e.preventDefault(); dnd.setDragOver(currentJenjang, tasks.length) }}
+      onDrop={(e) => { e.preventDefault(); dnd.onDropCard(currentJenjang, tasks.length) }}
     >
       {/* Header kolom */}
       <div className="flex items-center gap-2.5 pb-3 mb-4 border-b border-slate-200/60 dark:border-slate-700/60">
@@ -150,13 +162,20 @@ function PriorityColumn({
         </div>
       ) : (
         <div className="space-y-3">
-          {tasks.map((task) => (
+          {tasks.map((task, idx) => (
             <div
               key={task.id}
               draggable
               onDragStart={(e) => dnd.startDrag(task.id, e)}
               onDragEnd={dnd.onDragEnd}
-              className={cn('cursor-grab active:cursor-grabbing', dnd.draggingId === task.id && 'opacity-40')}
+              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); dnd.setDragOver(currentJenjang, idx) }}
+              onDrop={(e) => { e.preventDefault(); e.stopPropagation(); dnd.onDropCard(currentJenjang, idx) }}
+              className={cn(
+                'cursor-grab active:cursor-grabbing rounded-xl transition-all',
+                dnd.draggingId === task.id && 'opacity-40',
+                dnd.overList === currentJenjang && dnd.overIndex === idx && dnd.draggingId !== task.id &&
+                  'ring-2 ring-purple-400 dark:ring-purple-500 -translate-y-1'
+              )}
             >
               <TaskCard
                 task={task}
@@ -184,9 +203,9 @@ function PrioritasPageClient() {
   const [editingTask, setEditingTask] = useState<EditingTask | null>(null)
   // Jenjang target saat menambah: 'primer' (kolom kiri) | 'sekunder' (kolom kanan)
   const [addJenjang, setAddJenjang] = useState<'primer' | 'sekunder'>('primer')
-  // Drag & drop antar kolom (Primer <-> Sekunder)
+  // Drag & drop: geser posisi card DI DALAM kolom (pindah kolom via menu kartu)
   const [draggingId, setDraggingId] = useState<string | null>(null)
-  const [dragOver, setDragOver] = useState<'primer' | 'sekunder' | null>(null)
+  const [dragOver, setDragOver] = useState<{ col: 'primer' | 'sekunder'; idx: number } | null>(null)
   const [groupTask, setGroupTask] = useState<PriorityTask | null>(null)
   const { setHeaderAddAction } = useHeaderControls()
   const isMounted = useMounted()
@@ -212,11 +231,11 @@ function PrioritasPageClient() {
     [allTasks]
   )
   const primerTasks = useMemo(
-    () => activeTasks.filter((t) => t.jenjang === 'primer').sort(byPrioritySort),
+    () => activeTasks.filter((t) => t.jenjang === 'primer').sort(byDisplayOrder),
     [activeTasks]
   )
   const sekunderTasks = useMemo(
-    () => activeTasks.filter((t) => t.jenjang === 'sekunder').sort(byPrioritySort),
+    () => activeTasks.filter((t) => t.jenjang === 'sekunder').sort(byDisplayOrder),
     [activeTasks]
   )
 
@@ -248,15 +267,35 @@ function PrioritasPageClient() {
     updateTask.mutate({ id: task.id, data: { jenjang: next } })
   }
 
+  // Geser card dalam kolom: tulis ulang pos_order di kolom penerima
+  const handleReorder = (col: 'primer' | 'sekunder', draggedId: string, targetIndex: number) => {
+    const list = col === 'primer' ? primerTasks : sekunderTasks
+    const from = list.findIndex((t) => t.id === draggedId)
+    if (from === -1 || from === targetIndex) return
+    const next = [...list]
+    const [moved] = next.splice(from, 1)
+    // targetIndex dihitung terhadap list ASLI — dikoreksi bila shift setelah splice
+    const insertAt = targetIndex > from ? targetIndex - 1 : targetIndex
+    next.splice(insertAt, 0, moved)
+    // tulis pos_order hanya untuk baris yang nilainya berubah
+    next.forEach((t, i) => {
+      if (t.pos_order !== i) updateTask.mutate({ id: t.id, data: { pos_order: i } })
+    })
+  }
+
   const dnd = {
     draggingId,
-    dragOver,
-    setDragOver,
-    onDropTask: (id: string, target: 'primer' | 'sekunder') => {
+    overList: dragOver?.col ?? null,
+    overIndex: dragOver?.idx ?? null,
+    setDragOver: (col: 'primer' | 'sekunder', idx: number) => setDragOver({ col, idx }),
+    onDropCard: (col: 'primer' | 'sekunder', targetIndex: number) => {
+      const id = draggingId
+      setDragOver(null)
+      if (!id) return
+      // Hanya geser di dalam kolom yang sama — pindah kolom lewat menu ... saja
       const t = (allTasks as PriorityTask[]).find((x) => x.id === id)
-      if (!t) return
-      const current = t.jenjang ?? 'primer'
-      if (target !== current) updateTask.mutate({ id, data: { jenjang: target } })
+      if (!t || (t.jenjang ?? 'primer') !== col) return
+      handleReorder(col, id, targetIndex)
     },
     onDragEnd: () => { setDraggingId(null); setDragOver(null) },
     startDrag: (id: string, e: React.DragEvent) => {

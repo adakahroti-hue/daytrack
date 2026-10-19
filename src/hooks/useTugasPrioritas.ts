@@ -36,6 +36,8 @@ export interface TugasPrioritasRow {
   terlewat_tanggal?: string | null
   group_id?: string | null
   group_order?: number | null
+  /** Urutan manual per kolom dari drag (migrasi 20261018000004) — NULL = urut otomatis */
+  pos_order?: number | null
 }
 
 async function fetchTugasPrioritas() {

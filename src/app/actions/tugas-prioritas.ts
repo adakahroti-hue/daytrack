@@ -17,6 +17,8 @@ const prioritasSchema = z.object({
   jenjang: z.enum(["primer", "sekunder"]).default("primer"),
   group_id: z.string().uuid().nullable().optional(),
   group_order: z.number().int().nullable().optional(),
+  // Urutan manual per kolom (drag kartu) — migrasi 20261018000004
+  pos_order: z.number().int().nullable().optional(),
 })
 
 export type TugasPrioritasFormData = z.infer<typeof prioritasSchema>
