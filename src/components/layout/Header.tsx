@@ -302,7 +302,7 @@ export function Header({ onMenuClick }: HeaderProps) {
       )}
 
       {/* Page title & description — disembunyikan di tab yang punya header/konten sendiri */}
-      {!(isOverviewPage || isGoal || isWaktu || isHariIni || isSemua || isKeuangan || isMasalah || isMentalBlock || isSholat || isQuran || isDoa || isSyukur || isSedekah || isMinumAir || isPmo || isTidur || isMakan || isKesenangan || isCatatan || isAlquran) && (
+      {!(isOverviewPage || isGoal || isWaktu || isHariIni || isSemua || isPrioritas || isKeuangan || isMasalah || isMentalBlock || isSholat || isQuran || isDoa || isSyukur || isSedekah || isMinumAir || isPmo || isTidur || isMakan || isKesenangan || isCatatan || isAlquran) && (
       <div className="flex-1 min-w-0">
         <h1 className="flex items-center gap-2 text-lg font-semibold truncate">
           {(() => {
