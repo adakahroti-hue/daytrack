@@ -103,8 +103,8 @@ const navigation: NavSection[] = [
     icon: Calendar,
     items: [
       { title: 'Waktu', href: '/jejak-waktu', icon: Timer },
-      { title: 'Goal', href: '/goal', icon: Target },
       { title: 'Tugas', href: '/tugas/prioritas', icon: Flag },
+      { title: 'Goal', href: '/goal', icon: Target },
     ],
   },
   {
