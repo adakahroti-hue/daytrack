@@ -47,7 +47,6 @@ import {
   CheckCircle2,
   ListMusic,
   Wallet,
-  DollarSign,
   ShoppingCart,
   Target,
 
@@ -107,7 +106,6 @@ const navigation: NavSection[] = [
     title: 'Keuangan',
     icon: Wallet,
     items: [
-      { title: 'Arus Kas', href: '/arus-kas', icon: DollarSign },
       { title: 'Wishlist', href: '/keranjang', icon: ShoppingCart },
     ],
   },

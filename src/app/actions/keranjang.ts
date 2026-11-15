@@ -136,9 +136,8 @@ export async function getKeranjangRange(startDate: string, endDate: string) {
 }
 
 /**
- * Tandai keranjang sebagai "sudah" dibeli, lalu:
- *  - pindah ke arus_kas sebagai uang_keluar (nominal = harga, alasan = nama_barang)
- *  - hapus baris keranjang (langsung hilang dari tabel keranjang)
+ * Tandai keranjang sebagai "sudah" dibeli, lalu hapus barisnya.
+ * (Rev: tab Arus Kas dihapus — pembelian tak lagi dicatat ke catatan keuangan)
  */
 export async function beliKeranjang(id: string) {
   const supabase = await createClient()
@@ -155,24 +154,10 @@ export async function beliKeranjang(id: string) {
   if (fetchErr) throw new Error(fetchErr.message)
   if (!item) throw new Error("Item keranjang tidak ditemukan")
 
-  const dompet = (item.dompet as "kebutuhan" | "tabungan" | "self_reward" | "sedekah") || "kebutuhan"
-
-  // 1. Insert ke arus_kas (uang_keluar) dengan dompet sumber dana dari baris keranjang
-  const { error: insertErr } = await supabase.from("arus_kas").insert({
-    user_id: user.id,
-    tanggal: item.tanggal,
-    kategori: "uang_keluar",
-    nominal: item.harga,
-    alasan: item.nama_barang,
-    dompet,
-  })
-  if (insertErr) throw new Error(insertErr.message)
-
-  // 2. Hapus dari keranjang
+  // Hapus dari keranjang (pencatatan keuangan dibuang — tab Arus Kas sudah dihapus)
   const { error: delErr } = await supabase.from("keranjang").delete().eq("id", id).eq("user_id", user.id)
   if (delErr) throw new Error(delErr.message)
 
   revalidatePath("/keranjang")
-  revalidatePath("/arus-kas")
   return { error: null }
 }

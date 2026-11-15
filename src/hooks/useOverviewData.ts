@@ -46,12 +46,7 @@ export interface OverviewTidurRow {
   created_at?: string | null
 }
 
-/** Row arus kas (all-time) — kategori, nominal, dompet. */
-export interface OverviewArusKasRow {
-  kategori: string
-  nominal: number
-  dompet: string | null
-}
+
 
 /** Row masalah/refleksi — id, teks, waktu dibuat. */
 export interface OverviewMasalahRow {
@@ -68,7 +63,6 @@ export interface OverviewData {
   pmo: OverviewStatusRow[]
   pmo_all: OverviewStatusRow[]
   tidur: OverviewTidurRow[]
-  arus_kas: OverviewArusKasRow[]
   masalah: OverviewMasalahRow[]
 }
 
@@ -81,7 +75,7 @@ async function fetchOverviewData(start: string, end: string): Promise<OverviewDa
   if (error) throw new Error(error.message)
   return (data as OverviewData) || {
     prayer: [], quran: [], sunnah: [], water: [],
-    pmo: [], pmo_all: [], tidur: [], arus_kas: [], masalah: [],
+    pmo: [], pmo_all: [], tidur: [], masalah: [],
   }
 }
 

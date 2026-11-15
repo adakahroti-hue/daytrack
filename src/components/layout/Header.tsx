@@ -142,8 +142,6 @@ export function Header({ onMenuClick }: HeaderProps) {
     navigateIbadah,
     groupMode,
     setGroupMode,
-    arusKasShowAll,
-    setArusKasShowAll,
     category,
     waktuPeriod,
     setWaktuPeriod,
@@ -177,12 +175,9 @@ export function Header({ onMenuClick }: HeaderProps) {
   const isKesenangan = pathname === '/kesenangan'
   const isMentalBlock = pathname === '/mental-block'
 
-  // Tab keuangan (Arus Kas & Keranjang) ikut pakai toolbar navigasi tanggal + toggle periode ibadah-style di header
-  const isArusKas = pathname === '/arus-kas'
   const isKeranjang = pathname === '/keranjang'
   const isGoal = pathname === '/goal'
   // Rev: Keranjang (Belanja) keluar dari grup Keuangan — tak lagi ikut toolbar navigasi tanggal
-  const isKeuangan = isArusKas
 
   // Halaman yang menampilkan shortcut tab eksternal di header
   const isWaktu = pathname.startsWith('/jejak-waktu')
@@ -206,12 +201,11 @@ export function Header({ onMenuClick }: HeaderProps) {
     isMinumAir ||
     isPmo ||
     isTidur ||
-    isMakan ||
-    isKeuangan
+    isMakan
   // Semua tab bergaya tabel Quran memakai toolbar navigasi tanggal + toggle periode di header.
   // Journal-type tabs sengaja TIDAK masuk isTableTab: data di-fetch semua (fetch all), tidak
   // terpengaruh filter waktu — termasuk Mental Block, Refleksi (masalah) & Playlist (kesenangan).
-  const isTableTab = isSholat || isQuran || isMinumAir || isTidur || isPmo || isKeuangan || isMakan
+  const isTableTab = isSholat || isQuran || isMinumAir || isTidur || isPmo || isMakan
   // Revisi: tombol show/hide filter tanggal — toggle & navigasi tanggal mobile baru tampil setelah diklik
   const [showMobileControls, setShowMobileControls] = useState(false)
 
@@ -294,7 +288,7 @@ export function Header({ onMenuClick }: HeaderProps) {
       )}
 
       {/* Page title & description — disembunyikan di tab yang punya header/konten sendiri */}
-      {!(isOverviewPage || isGoal || isWaktu || isHariIni || isSemua || isPrioritas || isKeuangan || isMasalah || isMentalBlock || isSholat || isQuran || isMinumAir || isPmo || isTidur || isMakan || isKesenangan || isCatatan || isAlquran) && (
+      {!(isOverviewPage || isGoal || isWaktu || isHariIni || isSemua || isPrioritas || isMasalah || isMentalBlock || isSholat || isQuran || isMinumAir || isPmo || isTidur || isMakan || isKesenangan || isCatatan || isAlquran) && (
       <div className="flex-1 min-w-0">
         <h1 className="flex items-center gap-2 text-lg font-semibold truncate">
           {(() => {
@@ -471,19 +465,6 @@ export function Header({ onMenuClick }: HeaderProps) {
               </Button>
             </div>
             <div className="hidden sm:inline-flex items-center gap-0.5 py-1 px-0.5 bg-muted/50 rounded-lg border border-border">
-              {isArusKas && (
-                <button
-                  onClick={() => setArusKasShowAll(!arusKasShowAll)}
-                  className={cn(
-                    'px-2.5 h-8 rounded-md text-xs font-medium transition-colors whitespace-nowrap',
-                    arusKasShowAll
-                      ? 'bg-[#0F172A] text-white shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                  )}
-                >
-                  Semua
-                </button>
-              )}
               {ibadahPeriodOptions.map(opt => (
                 <button
                   key={opt.value}

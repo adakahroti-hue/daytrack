@@ -48,8 +48,6 @@ interface HeaderControls {
   ibadahDate: Date
   setIbadahPeriod: (period: IbadahPeriod) => void
   navigateIbadah: (direction: 'prev' | 'next') => void
-  arusKasShowAll: boolean
-  setArusKasShowAll: (v: boolean) => void
   waktuPeriod: 'harian' | 'kemarin' | 'shot' | 'mingguan' | 'bulanan' | 'tahunan'
   setWaktuPeriod: (p: 'harian' | 'kemarin' | 'shot' | 'mingguan' | 'bulanan' | 'tahunan') => void
   waktuDate: Date
@@ -82,7 +80,7 @@ function getCategoryFromPath(pathname: string): string {
   if (pathname.startsWith('/tidur') || pathname.startsWith('/minum-air') || pathname.startsWith('/makan')) return 'kesehatan'
   if (pathname.startsWith('/masalah') || pathname.startsWith('/pmo') || pathname.startsWith('/kesenangan') || pathname.startsWith('/mental-block')) return 'mental'
   if (pathname.startsWith('/goal')) return 'goal'
-  if (pathname.startsWith('/arus-kas') || pathname.startsWith('/keranjang')) return 'keuangan'
+  if (pathname.startsWith('/keranjang')) return 'keuangan'
   if (pathname.startsWith('/jejak-waktu')) return 'waktu'
   return 'overview'
 }
@@ -102,7 +100,6 @@ function getSubPageFromPath(pathname: string): string | null {
   if (pathname.startsWith('/mental-block')) return 'mental-block'
   if (pathname.startsWith('/pmo')) return 'pmo'
   if (pathname.startsWith('/kesenangan')) return 'kesenangan'
-  if (pathname.startsWith('/arus-kas')) return 'arus-kas'
   if (pathname.startsWith('/keranjang')) return 'keranjang'
   if (pathname.startsWith('/goal')) return 'goal'
   return null
@@ -150,7 +147,6 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
   if (category === 'goal') return 'Goal'
   if (category === 'keuangan' && subPage) {
     switch (subPage) {
-      case 'arus-kas': return 'Arus Kas'
       case 'keranjang': return 'Belanja'
     }
   }
@@ -221,7 +217,6 @@ function getCategoryDescription(category: string, period: Period, subPage: strin
   if (category === 'goal') return 'Target barang belanjaan & kebiasaan harian'
   if (category === 'keuangan' && subPage) {
     switch (subPage) {
-      case 'arus-kas': return 'Catat pemasukan dan pengeluaran harian Anda'
       case 'keranjang': return 'Catat rencana belanja Anda'
     }
   }
@@ -276,8 +271,6 @@ export function HeaderControlsProvider({
   const [tugasView, setTugasView] = useState<'hari-ini' | 'semua' | 'selesai'>('hari-ini')
   // Group mode board tugas tab Semua (prioritas/tanggal/durasi)
   const [groupMode, setGroupMode] = useState<GroupMode>('prioritas')
-  // Arus Kas: toggle "Semua" (abaikan periode) — dikelola di header
-  const [arusKasShowAll, setArusKasShowAll] = useState(false)
   const [waktuPeriod, setWaktuPeriod] = useState<'harian' | 'kemarin' | 'shot' | 'mingguan' | 'bulanan' | 'tahunan'>('harian')
   const [waktuDate, setWaktuDate] = useState<Date>(new Date())
   // Alquran: mode Pilih Surah / Mode Mengaji — dikelola di header
@@ -425,8 +418,6 @@ export function HeaderControlsProvider({
     ibadahDate,
     setIbadahPeriod,
     navigateIbadah,
-    arusKasShowAll,
-    setArusKasShowAll,
     waktuPeriod: waktuPeriod as 'harian' | 'kemarin' | 'shot' | 'mingguan' | 'bulanan' | 'tahunan',
     setWaktuPeriod: setWaktuPeriod as (p: 'harian' | 'kemarin' | 'shot' | 'mingguan' | 'bulanan' | 'tahunan') => void,
     waktuDate,
@@ -444,7 +435,7 @@ export function HeaderControlsProvider({
     setHeaderSelectActive,
     headerSearchQuery,
     setHeaderSearchQuery,
-  }), [dynamicTitle, dynamicDescription, currentDate, period, setPeriod, selectYesterday, page, setPage, navigate, goToToday, onRefresh, isLoading, isToday, navigateToPeriodStart, category, subPage, setSubPage, tugasView, setTugasView, groupMode, setGroupMode, ibadahPeriod, ibadahDate, setIbadahPeriod, navigateIbadah, arusKasShowAll, setArusKasShowAll, waktuPeriod, setWaktuPeriod, waktuDate, navigateWaktu, goToWaktuToday, alquranMode, headerAddAction, headerSelectAction, headerSelectDisabled, headerSelectActive])
+  }), [dynamicTitle, dynamicDescription, currentDate, period, setPeriod, selectYesterday, page, setPage, navigate, goToToday, onRefresh, isLoading, isToday, navigateToPeriodStart, category, subPage, setSubPage, tugasView, setTugasView, groupMode, setGroupMode, ibadahPeriod, ibadahDate, setIbadahPeriod, navigateIbadah, waktuPeriod, setWaktuPeriod, waktuDate, navigateWaktu, goToWaktuToday, alquranMode, headerAddAction, headerSelectAction, headerSelectDisabled, headerSelectActive])
 
   return (
     <HeaderControlsContext.Provider value={value}>

@@ -63,7 +63,6 @@ export function useBeliKeranjang() {
     mutationFn: (id: string) => beliKeranjang(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["keranjang"] })
-      queryClient.invalidateQueries({ queryKey: ["arus-kas"] })
     },
   })
 }

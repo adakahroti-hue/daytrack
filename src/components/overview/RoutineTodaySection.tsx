@@ -1,10 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { Check, Minus, Mosque, BookOpen, GlassWater, Shield, Moon, ArrowRight, Wallet, HandCoins, Sun, PersonStanding } from 'lucide-react'
+import { Check, Minus, Mosque, BookOpen, GlassWater, Shield, Moon, ArrowRight, Sun, PersonStanding } from 'lucide-react'
 import { format, differenceInCalendarDays } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { cn, formatRupiah } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { useOverviewData, type OverviewData } from "@/hooks/useOverviewData"
 import { PERIOD_LABEL, type OverviewPeriod } from './FocusTodaySection'
 
@@ -326,20 +326,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
     .sort((a, b) => a.tgl.localeCompare(b.tgl))
 
 
-  // Arus Kas — saldo & sisa alokasi kebutuhan (ALL-TIME, TIDAK dipengaruhi filter periode mana pun)
-  const arusKasEntries = ov.arus_kas ?? []
-  const arusKas = arusKasEntries || []
-  const akMasuk = arusKas.filter(e => e.kategori === 'uang_masuk').reduce((s, e) => s + (e.nominal || 0), 0)
-  const akKeluar = arusKas.filter(e => e.kategori === 'uang_keluar').reduce((s, e) => s + (e.nominal || 0), 0)
-  const akSaldo = akMasuk - akKeluar
-  const akPakaiKebutuhan = arusKas.filter(e => e.kategori === 'uang_keluar' && e.dompet === 'kebutuhan').reduce((s, e) => s + (e.nominal || 0), 0)
-  const akKebutuhanSisa = Math.max(0, Math.round((akMasuk * 70) / 100) - akPakaiKebutuhan)
-  const akPakaiSelfReward = arusKas.filter(e => e.kategori === 'uang_keluar' && e.dompet === 'self_reward').reduce((s, e) => s + (e.nominal || 0), 0)
-  const akSelfRewardSisa = Math.max(0, Math.round((akMasuk * 10) / 100) - akPakaiSelfReward)
-  const akPakaiTabung = arusKas.filter(e => e.kategori === 'uang_keluar' && e.dompet === 'tabung').reduce((s, e) => s + (e.nominal || 0), 0)
-  const akTabungSisa = Math.max(0, Math.round((akMasuk * 10) / 100) - akPakaiTabung)
-  const akPakaiSedekah = arusKas.filter(e => e.kategori === 'uang_keluar' && e.dompet === 'sedekah').reduce((s, e) => s + (e.nominal || 0), 0)
-  const akSedekahSisa = Math.max(0, Math.round((akMasuk * 10) / 100) - akPakaiSedekah)
   const countDays = <T extends { tanggal?: string }>(entries: T[], match: (e: T) => boolean) =>
     new Set(entries.filter(match).map(e => e.tanggal)).size
   const checklist = [
@@ -373,36 +359,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   return (
     <section>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        {/* Keuangan — posisi tukar dengan Refleksi di desktop (rev desktop); order mengikuti grid */}
-        <RoutineCard tint="bg-white border-slate-200" icon={Wallet} iconColor="text-emerald-500" title="Keuangan" href="/arus-kas" linkColor="text-emerald-500 hover:text-emerald-700" hideIcon arrowAdjacent className="order-5">
-          {/* Rev mobile: VERTICAL — Saldo di atas, lalu daftar alokasi (label kiri, nominal kanan) tiap baris.
-              Desktop (sm+): tetap 4 kolom sebaris seperti lama. */}
-          <div className="mt-3 flex flex-col sm:flex-row sm:items-stretch sm:gap-4">
-            {/* Saldo — mobile: baris penuh di atas; desktop: kiri, besar */}
-            <div className="flex flex-col justify-center sm:shrink-0 sm:pr-4 sm:border-r border-slate-100">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Saldo</p>
-              <p className="mt-0.5 text-lg font-bold text-slate-900 tabular-nums leading-none break-words">{formatRupiah(akSaldo)}</p>
-            </div>
-            {/* Sisa alokasi — mobile: list vertikal rapi (rata kiri-kanan, tanpa terpotong) */}
-            <div className="mt-2 sm:mt-0 sm:flex-1 sm:min-w-0 sm:grid sm:grid-cols-4 sm:gap-x-3">
-              {[
-                { label: 'Pokok', v: akKebutuhanSisa },
-                { label: 'Reward', v: akSelfRewardSisa },
-                { label: 'Tabung', v: akTabungSisa },
-                { label: 'Sedekah', v: akSedekahSisa },
-              ].map((it) => (
-                <div
-                  key={it.label}
-                  className="flex items-center justify-between gap-3 py-1.5 min-w-0 border-t border-slate-100 first:border-t-0 sm:flex-col sm:items-start sm:gap-0 sm:py-0 sm:border-t-0"
-                >
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{it.label}</p>
-                  <p className="text-sm font-bold text-slate-900 tabular-nums break-words">{formatRupiah(it.v)}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </RoutineCard>
-
         {/* Refleksi — list semua (tak dipengaruhi filter); disembunyikan saat tak ada data sama sekali */}
         {refleksiList.length > 0 && (
         <RoutineCard tint="bg-white border-slate-200" icon={PersonStanding} iconColor="text-slate-700" title="Refleksi" href="/masalah" linkColor="text-slate-700 hover:text-slate-900" className="col-span-1 order-1" hideIcon arrowAdjacent>
