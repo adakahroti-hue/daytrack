@@ -29,7 +29,7 @@ export interface OverviewWaterRow {
   status: string | null
 }
 
-/** Row checklist harian (syukur, doa, sedekah, pmo, pmo_all). */
+/** Row checklist harian (pmo, pmo_all). */
 export interface OverviewStatusRow {
   status: string | null
   tanggal: string
@@ -65,9 +65,6 @@ export interface OverviewData {
   quran: OverviewQuranRow[]
   sunnah: OverviewSunnahRow[]
   water: OverviewWaterRow[]
-  syukur: OverviewStatusRow[]
-  doa: OverviewStatusRow[]
-  sedekah: OverviewStatusRow[]
   pmo: OverviewStatusRow[]
   pmo_all: OverviewStatusRow[]
   tidur: OverviewTidurRow[]
@@ -83,8 +80,8 @@ async function fetchOverviewData(start: string, end: string): Promise<OverviewDa
   })
   if (error) throw new Error(error.message)
   return (data as OverviewData) || {
-    prayer: [], quran: [], sunnah: [], water: [], syukur: [],
-    doa: [], sedekah: [], pmo: [], pmo_all: [], tidur: [], arus_kas: [], masalah: [],
+    prayer: [], quran: [], sunnah: [], water: [],
+    pmo: [], pmo_all: [], tidur: [], arus_kas: [], masalah: [],
   }
 }
 

@@ -212,13 +212,6 @@ export function useQuranRealtime(queryKeys: string[][] = [['quran']]) {
   })
 }
 
-export function useDoaRealtime(queryKeys: string[][] = [['doa']]) {
-  return useRealtime({
-    table: 'doa',
-    queryKeys,
-  })
-}
-
 export function useTidurRealtime(queryKeys: string[][] = [['tidur']]) {
   return useRealtime({
     table: 'tidur',
@@ -243,13 +236,6 @@ export function useMasalahRealtime(queryKeys: string[][] = [['refleksi']]) {
 export function usePMORealtime(queryKeys: string[][] = [['pmo']]) {
   return useRealtime({
     table: 'pmo',
-    queryKeys,
-  })
-}
-
-export function useSyukurRealtime(queryKeys: string[][] = [['syukur']]) {
-  return useRealtime({
-    table: 'syukur',
     queryKeys,
   })
 }
@@ -282,22 +268,6 @@ export function useQuranLogRealtime(dateKey: string) {
     table: 'quran',
     filter: `tanggal=eq.${dateKey}`,
     queryKeys: [['quran', dateKey], ['quran', 'range']],
-  })
-}
-
-export function useDoaLogRealtime(dateKey: string) {
-  return useRealtime({
-    table: 'doa',
-    filter: `tanggal=eq.${dateKey}`,
-    queryKeys: [['doa', dateKey], ['doa', 'range']],
-  })
-}
-
-export function useSyukurLogRealtime(dateKey: string) {
-  return useRealtime({
-    table: 'syukur',
-    filter: `tanggal=eq.${dateKey}`,
-    queryKeys: [['syukur', dateKey], ['syukur', 'range']],
   })
 }
 
@@ -334,7 +304,7 @@ export function useOverviewRealtime() {
 
   useEffect(() => {
     const supabase = supabaseRef.current
-    const tables = ['tugas', 'sholat', 'quran', 'doa', 'tidur', 'minum_air', 'refleksi', 'pmo', 'syukur', 'sedekah', 'fun_queue', 'improvement_backlog']
+    const tables = ['tugas', 'sholat', 'quran', 'tidur', 'minum_air', 'refleksi', 'pmo', 'fun_queue', 'improvement_backlog']
     
     // Use stable channel name
     const channelName = `daytrack:overview:all`

@@ -78,7 +78,7 @@ const HeaderControlsContext = createContext<HeaderControls | null>(null)
 function getCategoryFromPath(pathname: string): string {
   if (pathname === '/overview') return 'overview'
   if (pathname.startsWith('/tugas')) return 'tugas'
-  if (pathname.startsWith('/sholat') || pathname.startsWith('/quran') || pathname.startsWith('/doa') || pathname.startsWith('/syukur') || pathname.startsWith('/sedekah')) return 'ibadah'
+  if (pathname.startsWith('/sholat') || pathname.startsWith('/quran')) return 'ibadah'
   if (pathname.startsWith('/tidur') || pathname.startsWith('/minum-air') || pathname.startsWith('/makan')) return 'kesehatan'
   if (pathname.startsWith('/masalah') || pathname.startsWith('/pmo') || pathname.startsWith('/kesenangan') || pathname.startsWith('/mental-block')) return 'mental'
   if (pathname.startsWith('/goal')) return 'goal'
@@ -96,9 +96,6 @@ function getSubPageFromPath(pathname: string): string | null {
   if (pathname.startsWith('/sholat-sunnah')) return 'sholat-sunnah'
   if (pathname.startsWith('/sholat')) return 'sholat'
   if (pathname.startsWith('/quran')) return 'quran'
-  if (pathname.startsWith('/doa')) return 'doa'
-  if (pathname.startsWith('/syukur')) return 'syukur'
-  if (pathname.startsWith('/sedekah')) return 'sedekah'
   if (pathname.startsWith('/tidur')) return 'tidur'
   if (pathname.startsWith('/minum-air')) return 'minum-air'
   if (pathname.startsWith('/masalah')) return 'masalah'
@@ -129,9 +126,6 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
       case 'sholat': return 'Sholat Wajib'
       case 'sholat-sunnah': return 'Sholat Sunnah'
       case 'quran': return 'Quran'
-      case 'doa': return 'Doa'
-      case 'syukur': return 'Syukur'
-      case 'sedekah': return 'Sedekah'
     }
   }
   if (category === 'kesehatan' && subPage) {
@@ -203,9 +197,6 @@ function getCategoryDescription(category: string, period: Period, subPage: strin
       case 'sholat': return 'Catat dan pantau sholat wajib harian Anda'
       case 'sholat-sunnah': return 'Catat dan pantau sholat sunnah (Dhuha & Tahajud)'
       case 'quran': return 'Baca dan catat progres Quran'
-      case 'doa': return 'Hafalkan dan catat doa harian'
-      case 'syukur': return 'Catat rasa syukur hari ini'
-      case 'sedekah': return 'Catat sedekah harian Anda'
     }
   }
   if (category === 'kesehatan' && subPage) {

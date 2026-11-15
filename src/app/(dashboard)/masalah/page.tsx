@@ -147,14 +147,14 @@ export default function MasalahPage() {
                   Refleksi
                 </div>
               </th>
+              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[110px] sm:min-w-[130px]', TABLE_BORDER)}>
+                Kategori
+              </th>
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[96px] sm:min-w-[120px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
                   <CheckCircle2 className="h-3.5 w-3.5 text-purple-500" />
                   Status
                 </div>
-              </th>
-              <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 border-r min-w-[110px] sm:min-w-[130px]', TABLE_BORDER)}>
-                Kategori
               </th>
               <th className={cn('px-2 sm:px-3 py-2 text-center font-semibold text-slate-700 min-w-[120px] sm:min-w-[160px]', TABLE_BORDER)}>
                 <div className="flex items-center justify-center gap-1">
@@ -220,13 +220,13 @@ export default function MasalahPage() {
                         <span className="text-slate-800 whitespace-normal break-words leading-snug">{entry.masalah}</span>
                       </td>
                       <td className={cn('px-2 sm:px-3 py-2 border-r', TABLE_BORDER)}>
-                        <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs border font-medium', STATUS_BADGE[entry.status] || 'bg-slate-100 text-slate-600 border-slate-200')}>
-                          {STATUS_LABEL[entry.status] || 'Belum'}
+                        <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs border font-medium whitespace-nowrap', kategoriBadge(entry.kategori))}>
+                          {kategoriLabel(entry.kategori)}
                         </span>
                       </td>
                       <td className={cn('px-2 sm:px-3 py-2 border-r', TABLE_BORDER)}>
-                        <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs border font-medium whitespace-nowrap', kategoriBadge(entry.kategori))}>
-                          {kategoriLabel(entry.kategori)}
+                        <span className={cn('inline-block px-2 py-0.5 rounded-full text-xs border font-medium', STATUS_BADGE[entry.status] || 'bg-slate-100 text-slate-600 border-slate-200')}>
+                          {STATUS_LABEL[entry.status] || 'Belum'}
                         </span>
                       </td>
                       <td className={cn('px-2 sm:px-3 py-2', TABLE_BORDER)}>

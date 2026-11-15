@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, X, Plus, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, BookMarked, Mosque, Heart, Moon, GlassWater, Shield, Smile, Sparkles, Target, History, Brain, Flame, ListMusic, StickyNote, Timer, Search, ListChecks, Flag } from 'lucide-react'
+import { Menu, X, Plus, RefreshCw, Calendar, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Clock, CalendarDays, CalendarRange, CheckCircle2, Trophy, LayoutDashboard, BookOpen, BookMarked, Mosque, Moon, GlassWater, Shield, Smile, Target, History, Brain, Flame, ListMusic, StickyNote, Timer, Search, ListChecks, Flag } from 'lucide-react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { usePathname } from 'next/navigation'
@@ -82,8 +82,6 @@ const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   '/tugas/prioritas': Flag,
   '/sholat': Mosque,
   '/quran': BookOpen,
-  '/doa': Heart,
-  '/syukur': Sparkles,
   '/tidur': Moon,
   '/minum-air': GlassWater,
   '/masalah': Shield,
@@ -172,9 +170,6 @@ export function Header({ onMenuClick }: HeaderProps) {
   const isSholat = pathname === '/sholat' || pathname === '/sholat-sunnah'
   const isQuran = pathname === '/quran'
   const isMinumAir = pathname === '/minum-air'
-  const isDoa = pathname === '/doa'
-  const isSyukur = pathname === '/syukur'
-  const isSedekah = pathname === '/sedekah'
   const isTidur = pathname === '/tidur'
   const isMakan = pathname === '/makan'
   const isPmo = pathname === '/pmo'
@@ -209,9 +204,6 @@ export function Header({ onMenuClick }: HeaderProps) {
     isSholat ||
     isQuran ||
     isMinumAir ||
-    isDoa ||
-    isSyukur ||
-    isSedekah ||
     isPmo ||
     isTidur ||
     isMakan ||
@@ -219,7 +211,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   // Semua tab bergaya tabel Quran memakai toolbar navigasi tanggal + toggle periode di header.
   // Journal-type tabs sengaja TIDAK masuk isTableTab: data di-fetch semua (fetch all), tidak
   // terpengaruh filter waktu — termasuk Mental Block, Refleksi (masalah) & Playlist (kesenangan).
-  const isTableTab = isSholat || isQuran || isMinumAir || isDoa || isSyukur || isTidur || isPmo || isSedekah || isKeuangan || isMakan
+  const isTableTab = isSholat || isQuran || isMinumAir || isTidur || isPmo || isKeuangan || isMakan
   // Revisi: tombol show/hide filter tanggal — toggle & navigasi tanggal mobile baru tampil setelah diklik
   const [showMobileControls, setShowMobileControls] = useState(false)
 
@@ -302,7 +294,7 @@ export function Header({ onMenuClick }: HeaderProps) {
       )}
 
       {/* Page title & description — disembunyikan di tab yang punya header/konten sendiri */}
-      {!(isOverviewPage || isGoal || isWaktu || isHariIni || isSemua || isPrioritas || isKeuangan || isMasalah || isMentalBlock || isSholat || isQuran || isDoa || isSyukur || isSedekah || isMinumAir || isPmo || isTidur || isMakan || isKesenangan || isCatatan || isAlquran) && (
+      {!(isOverviewPage || isGoal || isWaktu || isHariIni || isSemua || isPrioritas || isKeuangan || isMasalah || isMentalBlock || isSholat || isQuran || isMinumAir || isPmo || isTidur || isMakan || isKesenangan || isCatatan || isAlquran) && (
       <div className="flex-1 min-w-0">
         <h1 className="flex items-center gap-2 text-lg font-semibold truncate">
           {(() => {

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Check, Minus, Mosque, BookOpen, GlassWater, Sparkles, Shield, Moon, ArrowRight, Wallet, HandCoins, Sun, PersonStanding } from 'lucide-react'
+import { Check, Minus, Mosque, BookOpen, GlassWater, Shield, Moon, ArrowRight, Wallet, HandCoins, Sun, PersonStanding } from 'lucide-react'
 import { format, differenceInCalendarDays } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { cn, formatRupiah } from '@/lib/utils'
@@ -308,10 +308,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   )
 
   // Checklist
-  const syukurEntries = ov.syukur ?? []
-  const doaEntries = ov.doa ?? []
-  const sedekahEntries = ov.sedekah ?? []
-  const sedekahCount = sedekahEntries.filter(e => e.status === 'sudah').length
   const pmoEntries = ov.pmo ?? []
   const pmoAllEntries = ov.pmo_all ?? []
   const tidurEntries = ov.tidur ?? []
@@ -347,8 +343,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
   const countDays = <T extends { tanggal?: string }>(entries: T[], match: (e: T) => boolean) =>
     new Set(entries.filter(match).map(e => e.tanggal)).size
   const checklist = [
-    { label: 'Bersyukur', days: countDays(syukurEntries, e => e.status === 'sudah') },
-    { label: 'Mendoakan orang lain', days: countDays(doaEntries, e => e.status === 'sudah') },
     { label: 'Bebas PMO', days: countDays(pmoEntries, e => e.status === 'berhasil') },
     { label: 'Tidur tepat waktu', days: countDays(tidurEntries, e => e.status === 'tepat') },
   ]
@@ -362,15 +356,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
     }
     return cur
   })()
-  // Skor Hoki akumulasi = Bersyukur + Doakan + Sedekah (untuk bar chart di card Hoki)
-  const hokiParts = [
-    { label: 'Bersyukur', v: checklist[0].days, c: '#fde047' },
-    { label: 'Doakan', v: checklist[1].days, c: '#facc15' },
-    { label: 'Sedekah', v: sedekahCount, c: '#eab308' },
-  ]
-  const hokiDone = hokiParts.reduce((a, b) => a + b.v, 0)
-  const hokiMax = 3 * daysElapsed
-  const hokiPct = hokiMax > 0 ? Math.round((hokiDone / hokiMax) * 100) : 0
 
   const label = PERIOD_LABEL[period]
 
@@ -414,57 +399,6 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                   <p className="text-sm font-bold text-slate-900 tabular-nums break-words">{formatRupiah(it.v)}</p>
                 </div>
               ))}
-            </div>
-          </div>
-        </RoutineCard>
-
-        {/* Optimasi Hoki — dipindah ke sebaris Keuangan (posisi kanan baris 1) */}
-        <RoutineCard tint="bg-white border-slate-200" icon={Sparkles} iconColor="text-purple-500" title="Hoki" hideIcon className="order-2">
-          <div className="mt-3 px-2 sm:px-3 py-1 grid grid-cols-3 gap-2 sm:gap-3">
-            {/* Bersyukur */}
-            {/* Rev mobile: pie di atas teks (mobile saja) */}
-            <div className="relative text-left flex flex-col items-center gap-1.5 sm:flex-row sm:items-center sm:gap-2">
-              <XyPie value={checklist[0].days} target={daysElapsed} color="#111827" size={52} percentLabel percentOnSlice />
-              <div className="min-w-0 text-center sm:text-left">
-                <p className="text-xs font-medium text-slate-700">Bersyukur <span className="text-slate-900 tabular-nums">{checklist[0].days}/{daysElapsed}</span></p>
-              </div>
-              <Link href="/syukur" aria-label="Buka tab Syukur" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-            {/* Doakan */}
-            <div className="relative text-left flex flex-col items-center gap-1.5 sm:flex-row sm:items-center sm:gap-2 sm:border-l sm:border-slate-100 sm:pl-3 sm:pl-4">
-              <XyPie value={checklist[1].days} target={daysElapsed} color="#111827" size={52} percentLabel percentOnSlice />
-              <div className="min-w-0 text-center sm:text-left">
-                <p className="text-xs font-medium text-slate-700">Doakan <span className="text-slate-900 tabular-nums">{checklist[1].days}/{daysElapsed}</span></p>
-              </div>
-              <Link href="/doa" aria-label="Buka tab Doa" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-            {/* Sedekah */}
-            <div className="relative text-left flex flex-col items-center gap-1.5 sm:flex-row sm:items-center sm:gap-2 sm:border-l sm:border-slate-100 sm:pl-3 sm:pl-4">
-              <XyPie value={sedekahCount} target={daysElapsed} color="#111827" size={52} percentLabel percentOnSlice />
-              <div className="min-w-0 text-center sm:text-left">
-                <p className="text-xs font-medium text-slate-700">Sedekah <span className="text-slate-900 tabular-nums">{sedekahCount}/{daysElapsed}</span></p>
-              </div>
-              <Link href="/sedekah" aria-label="Buka tab Sedekah" className="absolute top-0 right-0 p-0.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-          </div>
-          {/* Bar skor Hoki akumulasi (Bersyukur + Doakan + Sedekah) — balok nyambung tanpa jeda */}
-          <div className="mt-3 pt-3 border-t border-slate-100">
-            <div className="flex items-center justify-between mb-1.5">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Skor Hoki</p>
-              <span className="text-xs font-bold tabular-nums bg-yellow-200/70 text-yellow-900 rounded px-1.5 py-0.5">{hokiPct}%</span>
-            </div>
-            <div className="h-3 w-full overflow-hidden rounded-sm bg-slate-100">
-              <div
-                className="h-full rounded-sm bg-slate-900 transition-all duration-700 ease-out"
-                style={{ width: `${hokiPct}%` }}
-                title={`Skor Hoki: ${hokiDone}/${hokiMax} (${hokiPct}%)`}
-              />
             </div>
           </div>
         </RoutineCard>
@@ -710,10 +644,10 @@ export function RoutineTodaySection({ startStr, endStr, metricEndStr, period }: 
                     </Link>
                   </div>
                   {isWeekly ? (
-                    <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{checklist[2].days}/{daysElapsed}</span> berhasil</p>
+                    <p className="mt-1 text-sm text-slate-500"><span className="font-semibold text-slate-900 tabular-nums">{checklist[0].days}/{daysElapsed}</span> berhasil</p>
                   ) : (
                     <p className="mt-1 flex items-baseline gap-1.5 leading-none">
-                      <span className={cn('text-[22px] font-bold tabular-nums', numColor(checklist[2].days >= daysElapsed))}>{checklist[2].days}<span className={cn('text-lg', numColorSoft(checklist[2].days >= daysElapsed))}>/{daysElapsed}</span></span>
+                      <span className={cn('text-[22px] font-bold tabular-nums', numColor(checklist[0].days >= daysElapsed))}>{checklist[0].days}<span className={cn('text-lg', numColorSoft(checklist[0].days >= daysElapsed))}>/{daysElapsed}</span></span>
                       <span className="text-sm font-medium text-slate-500">berhasil</span>
                     </p>
                   )}
