@@ -22,7 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import {
+import { HandCoins, DollarSign,
   LayoutDashboard,
   Calendar,
   CalendarDays,
@@ -106,6 +106,7 @@ const navigation: NavSection[] = [
     title: 'Keuangan',
     icon: Wallet,
     items: [
+      { title: 'Arus Kas', href: '/arus-kas', icon: DollarSign },
       { title: 'Wishlist', href: '/keranjang', icon: ShoppingCart },
     ],
   },
@@ -124,6 +125,7 @@ const navigation: NavSection[] = [
       { title: 'Sholat Wajib', href: '/sholat', icon: Mosque },
       { title: 'Sholat Sunnah', href: '/sholat-sunnah', icon: Sunrise },
       { title: 'Quran', href: '/quran', icon: BookOpen },
+      { title: 'Sedekah', href: '/sedekah', icon: HandCoins },
     ],
   },
   {

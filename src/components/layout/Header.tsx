@@ -172,6 +172,9 @@ export function Header({ onMenuClick }: HeaderProps) {
   const isMakan = pathname === '/makan'
   const isPmo = pathname === '/pmo'
   const isMasalah = pathname === '/masalah'
+  // Tab baru: Arus Kas (Keuangan) & Sedekah (Ibadah) — journal, tanpa toolbar tanggal
+  const isArusKasBaru = pathname === '/arus-kas'
+  const isSedekahBaru = pathname === '/sedekah'
   const isKesenangan = pathname === '/kesenangan'
   const isMentalBlock = pathname === '/mental-block'
 
@@ -196,6 +199,8 @@ export function Header({ onMenuClick }: HeaderProps) {
     isMentalBlock ||
 
     isMasalah ||
+    isArusKasBaru ||
+    isSedekahBaru ||
     isSholat ||
     isQuran ||
     isMinumAir ||
@@ -288,7 +293,7 @@ export function Header({ onMenuClick }: HeaderProps) {
       )}
 
       {/* Page title & description — disembunyikan di tab yang punya header/konten sendiri */}
-      {!(isOverviewPage || isGoal || isWaktu || isHariIni || isSemua || isPrioritas || isMasalah || isMentalBlock || isSholat || isQuran || isMinumAir || isPmo || isTidur || isMakan || isKesenangan || isCatatan || isAlquran) && (
+      {!(isOverviewPage || isGoal || isWaktu || isHariIni || isSemua || isPrioritas || isMasalah || isArusKasBaru || isSedekahBaru || isMentalBlock || isSholat || isQuran || isMinumAir || isPmo || isTidur || isMakan || isKesenangan || isCatatan || isAlquran) && (
       <div className="flex-1 min-w-0">
         <h1 className="flex items-center gap-2 text-lg font-semibold truncate">
           {(() => {

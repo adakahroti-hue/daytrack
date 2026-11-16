@@ -80,6 +80,8 @@ function getCategoryFromPath(pathname: string): string {
   if (pathname.startsWith('/tidur') || pathname.startsWith('/minum-air') || pathname.startsWith('/makan')) return 'kesehatan'
   if (pathname.startsWith('/masalah') || pathname.startsWith('/pmo') || pathname.startsWith('/kesenangan') || pathname.startsWith('/mental-block')) return 'mental'
   if (pathname.startsWith('/goal')) return 'goal'
+  if (pathname.startsWith('/arus-kas')) return 'keuangan'
+  if (pathname.startsWith('/sedekah')) return 'ibadah'
   if (pathname.startsWith('/keranjang')) return 'keuangan'
   if (pathname.startsWith('/jejak-waktu')) return 'waktu'
   return 'overview'
@@ -100,6 +102,8 @@ function getSubPageFromPath(pathname: string): string | null {
   if (pathname.startsWith('/mental-block')) return 'mental-block'
   if (pathname.startsWith('/pmo')) return 'pmo'
   if (pathname.startsWith('/kesenangan')) return 'kesenangan'
+  if (pathname.startsWith('/arus-kas')) return 'arus-kas'
+  if (pathname.startsWith('/sedekah')) return 'sedekah'
   if (pathname.startsWith('/keranjang')) return 'keranjang'
   if (pathname.startsWith('/goal')) return 'goal'
   return null
@@ -123,6 +127,7 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
       case 'sholat': return 'Sholat Wajib'
       case 'sholat-sunnah': return 'Sholat Sunnah'
       case 'quran': return 'Quran'
+      case 'sedekah': return 'Sedekah'
     }
   }
   if (category === 'kesehatan' && subPage) {
@@ -147,6 +152,7 @@ function getCategoryTitle(category: string, period: Period, subPage: string | nu
   if (category === 'goal') return 'Goal'
   if (category === 'keuangan' && subPage) {
     switch (subPage) {
+      case 'arus-kas': return 'Arus Kas'
       case 'keranjang': return 'Belanja'
     }
   }
@@ -193,6 +199,7 @@ function getCategoryDescription(category: string, period: Period, subPage: strin
       case 'sholat': return 'Catat dan pantau sholat wajib harian Anda'
       case 'sholat-sunnah': return 'Catat dan pantau sholat sunnah (Dhuha & Tahajud)'
       case 'quran': return 'Baca dan catat progres Quran'
+      case 'sedekah': return 'Catat sedekah, manfaat, dan ceritanya'
     }
   }
   if (category === 'kesehatan' && subPage) {
@@ -217,6 +224,7 @@ function getCategoryDescription(category: string, period: Period, subPage: strin
   if (category === 'goal') return 'Target barang belanjaan & kebiasaan harian'
   if (category === 'keuangan' && subPage) {
     switch (subPage) {
+      case 'arus-kas': return 'Catat pemasukan dan pengeluaran Anda'
       case 'keranjang': return 'Catat rencana belanja Anda'
     }
   }
