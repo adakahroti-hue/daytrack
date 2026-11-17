@@ -57,18 +57,34 @@ function genKode(): string {
   return `SDK-${out}`
 }
 
-export async function getCatatanSedekahAll() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Unauthorized")
-  const { data, error } = await supabase
-    .from("catatan_sedekah")
-    .select("*, benefits:catatan_sedekah_benefit(*)")
-    .eq("user_id", user.id)
-    .order("tanggal_sedekah", { ascending: false })
-    .order("created_at", { ascending: false })
-  if (error) throw new Error(error.message)
-  return (data || []) as SedekahEntry[]
+// Catatan: JANGAN throw — di produksi Next.js menyembunyikan pesan error server
+// action (jadi "An error occurred in the Server Components render"), sehingga
+// pengguna tak tahu penyebabnya. Kembalikan pesannya sebagai data.
+export async function getCatatanSedekahAll(): Promise<{ entries: SedekahEntry[]; error: string | null }> {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { entries: [], error: "Sesi login berakhir — logout lalu login lagi." }
+    const { data, error } = await supabase
+      .from("catatan_sedekah")
+      .select("*, benefits:catatan_sedekah_benefit(*)")
+      .eq("user_id", user.id)
+      .order("tanggal_sedekah", { ascending: false })
+      .order("created_at", { ascending: false })
+    if (error) return { entries: [], error: friendlySedekahError(error) }
+    return { entries: (data || []) as SedekahEntry[], error: null }
+  } catch (e) {
+    return { entries: [], error: e instanceof Error ? e.message : String(e) }
+  }
+}
+
+function friendlySedekahError(error: { code?: string | null; message: string }): string {
+  const m = error.message || ""
+  if (error.code === "PGRST205" || error.code === "42P01" || m.includes("schema cache") || m.includes("catatan_sedekah"))
+    return "Tabel catatan_sedekah belum ada — jalankan migrasi SQL 20261115000003 di Supabase."
+  if (/relationship/i.test(m)) return "Relasi benefit tidak dikenali — jalankan ulang migrasi SQL 20261115000003."
+  if (/URL|API key/i.test(m)) return "Konfigurasi Supabase (URL/API key) tidak terbaca di server."
+  return m
 }
 
 export async function saveCatatanSedekah(id: string | null, formData: SedekahFormData) {

@@ -12,7 +12,13 @@ const KEY = ["pencatatan-keuangan"]
 export function usePencatatanKeuanganAll() {
   return useQuery({
     queryKey: [...KEY, "all"],
-    queryFn: () => getPencatatanKeuanganAll(),
+    // Action tidak throw (prod menyembunyikan pesannya) → lempar ulang di sini
+    // supaya error.message yang tampil di halaman adalah pesan sebenarnya.
+    queryFn: async () => {
+      const res = await getPencatatanKeuanganAll()
+      if (res.error) throw new Error(res.error)
+      return res.entries
+    },
   })
 }
 

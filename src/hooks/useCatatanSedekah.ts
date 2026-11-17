@@ -11,7 +11,13 @@ const KEY = ["catatan-sedekah"]
 export function useCatatanSedekahAll() {
   return useQuery({
     queryKey: [...KEY, "all"],
-    queryFn: () => getCatatanSedekahAll(),
+    // Action tidak throw (prod menyembunyikan pesannya) → lempar ulang di sini
+    // supaya error.message yang tampil di halaman adalah pesan sebenarnya.
+    queryFn: async () => {
+      const res = await getCatatanSedekahAll()
+      if (res.error) throw new Error(res.error)
+      return res.entries
+    },
   })
 }
 
